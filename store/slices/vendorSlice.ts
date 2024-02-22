@@ -1,0 +1,168 @@
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {API} from "@/configs/api.config";
+
+interface IVendorState {
+    vendor: any;
+    vendorDetail: any
+    allVendors: any;
+    loading: boolean;
+    error: any;
+    success: boolean;
+    representatives: any;
+}
+
+// Initial state
+const initialState: IVendorState = {
+    vendor: null,
+    vendorDetail: null,
+    allVendors: null,
+    loading: false,
+    error: null,
+    success: false,
+    representatives: null,
+};
+
+interface IVendorForm {
+    vendor_number: string;
+    name: string;
+    vendor_type_id: number;
+    opening_balance: number,
+    phone: string,
+    email: string,
+    due_in_days: number,
+    postal_code: string,
+    website_url: string,
+    tax_reg_no: string,
+    address: string,
+    country_id: number,
+    state_id: number,
+    city_id: number,
+    image: File | null;
+    representatives: any[];
+    addresses: any[];
+    is_active: boolean;
+}
+
+// Async thunks
+export const getVendors = createAsyncThunk(
+    'vendors/all',
+    async (_, thunkAPI) => {
+        try {
+            const response = await API.get('/vendor');
+            return response.data;
+        } catch (error:any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const storeVendor = createAsyncThunk(
+    'vendors/store',
+    async (data: IVendorForm, thunkAPI) => {
+        try {
+            const response = await API.post('/vendor', data);
+            return response.data;
+        } catch (error:any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const deleteVendor = createAsyncThunk(
+    'vendors/delete',
+    async (id:number, thunkAPI) => {
+        try {
+            const response = await API.delete('/vendor/'+id);
+            return response.data;
+        } catch (error:any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const getRepresentatives = createAsyncThunk(
+    'vendors/representatives',
+    async (vendorId:number, thunkAPI) => {
+        try {
+            const response = await API.get('/representatives/' + vendorId);
+            return response.data;
+        } catch (error:any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+// Slice
+export const vendorSlice = createSlice({
+    name: 'vendors',
+    initialState,
+    reducers: {
+        clearVendorState: (state) => {
+            state.vendor = null;
+            state.error = null;
+            state.success = false;
+            state.vendorDetail = null;
+            state.representatives = null;
+        },
+    },
+    extraReducers: (builder) => {
+        builder
+            .addCase(getVendors.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getVendors.fulfilled, (state, action) => {
+                state.loading = false;
+                state.allVendors = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getVendors.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(storeVendor.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(storeVendor.fulfilled, (state, action) => {
+                state.loading = false;
+                state.vendor = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(storeVendor.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(deleteVendor.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(deleteVendor.fulfilled, (state, action) => {
+                state.loading = false;
+                state.success = action.payload.success;
+            })
+            .addCase(deleteVendor.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(getRepresentatives.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getRepresentatives.fulfilled, (state, action) => {
+                state.loading = false;
+                state.representatives = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getRepresentatives.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+    },
+});
+export const { clearVendorState } = vendorSlice.actions;
+export default vendorSlice.reducer;

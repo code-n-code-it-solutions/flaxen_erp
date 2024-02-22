@@ -1,7 +1,8 @@
 import axios from 'axios';
+import {BASE_URL} from "@/configs/server.config";
 
 const API = axios.create({
-    baseURL: 'http://localhost:8000/api'
+    baseURL: `${BASE_URL}/api`
 });
 
 const setAuthToken = (token:string) => {

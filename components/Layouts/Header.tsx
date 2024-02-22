@@ -10,18 +10,23 @@ import Dropdown from '../Dropdown';
 import {ThunkDispatch} from "redux-thunk";
 import {AnyAction} from "redux";
 import {logoutUser} from "@/store/slices/userSlice";
+import {clearMenuState, getPermittedMenu} from "@/store/slices/menuSlice";
 
 const Header = () => {
     const router = useRouter();
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
     const {isLoggedIn} = useSelector((state: IRootState) => state.user);
+    const {permittedMenus} = useSelector((state: IRootState) => state.menu);
     const handleLogout = () => {
+        dispatch(clearMenuState());
         dispatch(logoutUser());
     }
 
     useEffect(() => {
         if (!isLoggedIn) {
             router.push('/auth/signin')
+        } else {
+            dispatch(getPermittedMenu());
         }
     }, [isLoggedIn, router])
 
@@ -446,7 +451,8 @@ const Header = () => {
                                             <li className="mt-5 border-t border-white-light text-center dark:border-white/10">
                                                 <button type="button"
                                                         className="group !h-[48px] justify-center !py-4 font-semibold text-primary dark:text-gray-400">
-                                                    <span className="group-hover:underline ltr:mr-1 rtl:ml-1">VIEW ALL ACTIVITIES</span>
+                                                    <span className="group-hover:underline ltr:mr-1 rtl:ml-1">VIEW ALL
+                                                        ACTIVITIES</span>
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
                                                         className="h-4 w-4 transition duration-300 group-hover:translate-x-1 ltr:ml-1 rtl:mr-1"
@@ -726,134 +732,328 @@ const Header = () => {
 
                 {/* horizontal menu */}
                 <ul className="horizontal-menu hidden border-t border-[#ebedf2] bg-white py-1.5 px-6 font-semibold text-black rtl:space-x-reverse dark:border-[#191e3a] dark:bg-black dark:text-white-dark lg:space-x-1.5 xl:space-x-8">
-                    <li className="menu nav-item relative">
-                        <button type="button" className="nav-link">
-                            <div className="flex items-center">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                                     xmlns="http://www.w3.org/2000/svg">
-                                    <path
-                                        opacity="0.5"
-                                        d="M2 12.2039C2 9.91549 2 8.77128 2.5192 7.82274C3.0384 6.87421 3.98695 6.28551 5.88403 5.10813L7.88403 3.86687C9.88939 2.62229 10.8921 2 12 2C13.1079 2 14.1106 2.62229 16.116 3.86687L18.116 5.10812C20.0131 6.28551 20.9616 6.87421 21.4808 7.82274C22 8.77128 22 9.91549 22 12.2039V13.725C22 17.6258 22 19.5763 20.8284 20.7881C19.6569 22 17.7712 22 14 22H10C6.22876 22 4.34315 22 3.17157 20.7881C2 19.5763 2 17.6258 2 13.725V12.2039Z"
-                                        fill="currentColor"
-                                    />
-                                    <path
-                                        d="M9 17.25C8.58579 17.25 8.25 17.5858 8.25 18C8.25 18.4142 8.58579 18.75 9 18.75H15C15.4142 18.75 15.75 18.4142 15.75 18C15.75 17.5858 15.4142 17.25 15 17.25H9Z"
-                                        fill="currentColor"
-                                    />
-                                </svg>
-                                <span className="px-1">{t('dashboard')}</span>
-                            </div>
-                            <div className="right_arrow">
-                                <svg className="rotate-90" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                                     xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M9 5L15 12L9 19" stroke="currentColor" strokeWidth="1.5"
-                                          strokeLinecap="round" strokeLinejoin="round"/>
-                                </svg>
-                            </div>
-                        </button>
-                        <ul className="sub-menu">
-                            <li>
-                                <Link href="/main">{t('main')}</Link>
-                            </li>
-                            <li>
-                                <Link href="/inventory">{t('inventory')}</Link>
-                            </li>
-                            <li>
-                                <Link href="/finance">{t('finance')}</Link>
-                            </li>
-                            <li>
-                                <Link href="/cms">{t('cms')}</Link>
-                            </li>
-                        </ul>
-                    </li>
-                    <li className="menu nav-item relative">
-                        <button type="button" className="nav-link">
-                            <div className="flex items-center">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                                     xmlns="http://www.w3.org/2000/svg">
-                                    <g opacity="0.5">
-                                        <path
-                                            d="M14 2.75C15.9068 2.75 17.2615 2.75159 18.2892 2.88976C19.2952 3.02503 19.8749 3.27869 20.2981 3.7019C20.7213 4.12511 20.975 4.70476 21.1102 5.71085C21.2484 6.73851 21.25 8.09318 21.25 10C21.25 10.4142 21.5858 10.75 22 10.75C22.4142 10.75 22.75 10.4142 22.75 10V9.94359C22.75 8.10583 22.75 6.65019 22.5969 5.51098C22.4392 4.33856 22.1071 3.38961 21.3588 2.64124C20.6104 1.89288 19.6614 1.56076 18.489 1.40314C17.3498 1.24997 15.8942 1.24998 14.0564 1.25H14C13.5858 1.25 13.25 1.58579 13.25 2C13.25 2.41421 13.5858 2.75 14 2.75Z"
-                                            fill="currentColor"
-                                        />
-                                        <path
-                                            d="M9.94358 1.25H10C10.4142 1.25 10.75 1.58579 10.75 2C10.75 2.41421 10.4142 2.75 10 2.75C8.09318 2.75 6.73851 2.75159 5.71085 2.88976C4.70476 3.02503 4.12511 3.27869 3.7019 3.7019C3.27869 4.12511 3.02503 4.70476 2.88976 5.71085C2.75159 6.73851 2.75 8.09318 2.75 10C2.75 10.4142 2.41421 10.75 2 10.75C1.58579 10.75 1.25 10.4142 1.25 10V9.94358C1.24998 8.10583 1.24997 6.65019 1.40314 5.51098C1.56076 4.33856 1.89288 3.38961 2.64124 2.64124C3.38961 1.89288 4.33856 1.56076 5.51098 1.40314C6.65019 1.24997 8.10583 1.24998 9.94358 1.25Z"
-                                            fill="currentColor"
-                                        />
-                                        <path
-                                            d="M22 13.25C22.4142 13.25 22.75 13.5858 22.75 14V14.0564C22.75 15.8942 22.75 17.3498 22.5969 18.489C22.4392 19.6614 22.1071 20.6104 21.3588 21.3588C20.6104 22.1071 19.6614 22.4392 18.489 22.5969C17.3498 22.75 15.8942 22.75 14.0564 22.75H14C13.5858 22.75 13.25 22.4142 13.25 22C13.25 21.5858 13.5858 21.25 14 21.25C15.9068 21.25 17.2615 21.2484 18.2892 21.1102C19.2952 20.975 19.8749 20.7213 20.2981 20.2981C20.7213 19.8749 20.975 19.2952 21.1102 18.2892C21.2484 17.2615 21.25 15.9068 21.25 14C21.25 13.5858 21.5858 13.25 22 13.25Z"
-                                            fill="currentColor"
-                                        />
-                                        <path
-                                            d="M2.75 14C2.75 13.5858 2.41421 13.25 2 13.25C1.58579 13.25 1.25 13.5858 1.25 14V14.0564C1.24998 15.8942 1.24997 17.3498 1.40314 18.489C1.56076 19.6614 1.89288 20.6104 2.64124 21.3588C3.38961 22.1071 4.33856 22.4392 5.51098 22.5969C6.65019 22.75 8.10583 22.75 9.94359 22.75H10C10.4142 22.75 10.75 22.4142 10.75 22C10.75 21.5858 10.4142 21.25 10 21.25C8.09318 21.25 6.73851 21.2484 5.71085 21.1102C4.70476 20.975 4.12511 20.7213 3.7019 20.2981C3.27869 19.8749 3.02503 19.2952 2.88976 18.2892C2.75159 17.2615 2.75 15.9068 2.75 14Z"
-                                            fill="currentColor"
-                                        />
-                                    </g>
-                                    <path
-                                        d="M5.52721 5.52721C5 6.05442 5 6.90294 5 8.6C5 9.73137 5 10.2971 5.35147 10.6485C5.70294 11 6.26863 11 7.4 11H8.6C9.73137 11 10.2971 11 10.6485 10.6485C11 10.2971 11 9.73137 11 8.6V7.4C11 6.26863 11 5.70294 10.6485 5.35147C10.2971 5 9.73137 5 8.6 5C6.90294 5 6.05442 5 5.52721 5.52721Z"
-                                        fill="currentColor"
-                                    />
-                                    <path
-                                        d="M5.52721 18.4728C5 17.9456 5 17.0971 5 15.4C5 14.2686 5 13.7029 5.35147 13.3515C5.70294 13 6.26863 13 7.4 13H8.6C9.73137 13 10.2971 13 10.6485 13.3515C11 13.7029 11 14.2686 11 15.4V16.6C11 17.7314 11 18.2971 10.6485 18.6485C10.2971 19 9.73138 19 8.60002 19C6.90298 19 6.05441 19 5.52721 18.4728Z"
-                                        fill="currentColor"
-                                    />
-                                    <path
-                                        d="M13 7.4C13 6.26863 13 5.70294 13.3515 5.35147C13.7029 5 14.2686 5 15.4 5C17.0971 5 17.9456 5 18.4728 5.52721C19 6.05442 19 6.90294 19 8.6C19 9.73137 19 10.2971 18.6485 10.6485C18.2971 11 17.7314 11 16.6 11H15.4C14.2686 11 13.7029 11 13.3515 10.6485C13 10.2971 13 9.73137 13 8.6V7.4Z"
-                                        fill="currentColor"
-                                    />
-                                    <path
-                                        d="M13.3515 18.6485C13 18.2971 13 17.7314 13 16.6V15.4C13 14.2686 13 13.7029 13.3515 13.3515C13.7029 13 14.2686 13 15.4 13H16.6C17.7314 13 18.2971 13 18.6485 13.3515C19 13.7029 19 14.2686 19 15.4C19 17.097 19 17.9456 18.4728 18.4728C17.9456 19 17.0971 19 15.4 19C14.2687 19 13.7029 19 13.3515 18.6485Z"
-                                        fill="currentColor"
-                                    />
-                                </svg>
-                                <span className="px-1">{t('inventory')}</span>
-                            </div>
-                            <div className="right_arrow">
-                                <svg className="rotate-90" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                                     xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M9 5L15 12L9 19" stroke="currentColor" strokeWidth="1.5"
-                                          strokeLinecap="round" strokeLinejoin="round"/>
-                                </svg>
-                            </div>
-                        </button>
-                        <ul className="sub-menu">
-                            <li className="relative">
-                                <button type="button">
-                                    {t('heads')}
-                                    <div className="ltr:ml-auto rtl:mr-auto rtl:rotate-180">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                                             xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M9 5L15 12L9 19" stroke="currentColor" strokeWidth="1.5"
-                                                  strokeLinecap="round" strokeLinejoin="round"/>
-                                        </svg>
-                                    </div>
-                                </button>
-                                <ul className="absolute top-0 z-[10] hidden min-w-[180px] rounded bg-white p-0 py-2 text-dark shadow ltr:left-[95%] rtl:right-[95%] dark:bg-[#1b2e4b] dark:text-white-dark">
-                                    <li>
-                                        <Link href="/">{t('categories')}</Link>
-                                    </li>
-                                    <li>
-                                        <Link href="/units">{t('units')}</Link>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li>
-                                <Link href="/inventory/products">{t('products')}</Link>
-                            </li>
-                            <li>
-                                <Link href="/inventory/product-assembly">{t('product_assembly')}</Link>
-                            </li>
-                            <li>
-                                <Link href="/inventory/productions">{t('productions')}</Link>
-                            </li>
-                            <li>
-                                <Link href="/inventory/fillings">{t('fillings')}</Link>
-                            </li>
-                            <li>
-                                <Link href="/inventory/invoicing">{t('invoicing')}</Link>
-                            </li>
-                        </ul>
-                    </li>
+                    {permittedMenus?.map((module: any, moduleIndex: number) => (
+                        <li className="menu nav-item relative" key={moduleIndex}>
+                            <button type="button" className="nav-link">
+                                <div className="flex items-center">
+                                    <div dangerouslySetInnerHTML={{__html: module.icon}}></div>
+                                    <span className="px-1">{t(module.translation_key)}</span>
+                                </div>
+                                <div className="right_arrow">
+                                    <svg className="rotate-90" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                         xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M9 5L15 12L9 19" stroke="currentColor" strokeWidth="1.5"
+                                              strokeLinecap="round" strokeLinejoin="round"/>
+                                    </svg>
+                                </div>
+                            </button>
+                            <ul className="sub-menu">
+
+                                {module.menus?.map((menu: any, menuIndex: number) => (
+                                    menu.children?.length > 0
+                                        ? (
+                                            <li className="relative" key={menuIndex}>
+                                                <button type="button">
+                                                    {t(menu.translation_key)}
+                                                    <div className="ltr:ml-auto rtl:mr-auto rtl:rotate-180">
+                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                                             xmlns="http://www.w3.org/2000/svg">
+                                                            <path d="M9 5L15 12L9 19" stroke="currentColor"
+                                                                  strokeWidth="1.5"
+                                                                  strokeLinecap="round" strokeLinejoin="round"/>
+                                                        </svg>
+                                                    </div>
+                                                </button>
+                                                <ul className="absolute top-0 z-[10] hidden min-w-[180px] rounded bg-white p-0 py-2 text-dark shadow ltr:left-[95%] rtl:right-[95%] dark:bg-[#1b2e4b] dark:text-white-dark">
+                                                    {menu.children.map((subMenu: any, subMenuIndex: number) => (
+                                                        <li key={subMenuIndex}>
+                                                            <Link href={subMenu.route}>{t(subMenu.translation_key)}</Link>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </li>
+                                        )
+                                        : (
+                                            <li key={menuIndex}>
+                                                <Link href={menu.route}>{t(menu.translation_key)}</Link>
+                                            </li>
+                                        )
+                                ))}
+                            </ul>
+                        </li>
+                    ))}
+
+                    {/*<li className="menu nav-item relative">*/}
+                    {/*    <button type="button" className="nav-link">*/}
+                    {/*        <div className="flex items-center">*/}
+                    {/*            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"*/}
+                    {/*                 xmlns="http://www.w3.org/2000/svg">*/}
+                    {/*                <path*/}
+                    {/*                    opacity="0.5"*/}
+                    {/*                    d="M2 12.2039C2 9.91549 2 8.77128 2.5192 7.82274C3.0384 6.87421 3.98695 6.28551 5.88403 5.10813L7.88403 3.86687C9.88939 2.62229 10.8921 2 12 2C13.1079 2 14.1106 2.62229 16.116 3.86687L18.116 5.10812C20.0131 6.28551 20.9616 6.87421 21.4808 7.82274C22 8.77128 22 9.91549 22 12.2039V13.725C22 17.6258 22 19.5763 20.8284 20.7881C19.6569 22 17.7712 22 14 22H10C6.22876 22 4.34315 22 3.17157 20.7881C2 19.5763 2 17.6258 2 13.725V12.2039Z"*/}
+                    {/*                    fill="currentColor"*/}
+                    {/*                />*/}
+                    {/*                <path*/}
+                    {/*                    d="M9 17.25C8.58579 17.25 8.25 17.5858 8.25 18C8.25 18.4142 8.58579 18.75 9 18.75H15C15.4142 18.75 15.75 18.4142 15.75 18C15.75 17.5858 15.4142 17.25 15 17.25H9Z"*/}
+                    {/*                    fill="currentColor"*/}
+                    {/*                />*/}
+                    {/*            </svg>*/}
+                    {/*            <span className="px-1">{t('dashboard')}</span>*/}
+                    {/*        </div>*/}
+                    {/*        <div className="right_arrow">*/}
+                    {/*            <svg className="rotate-90" width="16" height="16" viewBox="0 0 24 24" fill="none"*/}
+                    {/*                 xmlns="http://www.w3.org/2000/svg">*/}
+                    {/*                <path d="M9 5L15 12L9 19" stroke="currentColor" strokeWidth="1.5"*/}
+                    {/*                      strokeLinecap="round" strokeLinejoin="round"/>*/}
+                    {/*            </svg>*/}
+                    {/*        </div>*/}
+                    {/*    </button>*/}
+                    {/*    <ul className="sub-menu">*/}
+                    {/*        <li>*/}
+                    {/*            <Link href="/main">{t('main')}</Link>*/}
+                    {/*        </li>*/}
+                    {/*        <li>*/}
+                    {/*            <Link href="/inventory">{t('inventory')}</Link>*/}
+                    {/*        </li>*/}
+                    {/*        <li>*/}
+                    {/*            <Link href="/finance">{t('finance')}</Link>*/}
+                    {/*        </li>*/}
+                    {/*        <li>*/}
+                    {/*            <Link href="/cms">{t('cms')}</Link>*/}
+                    {/*        </li>*/}
+                    {/*    </ul>*/}
+                    {/*</li>*/}
+                    {/*<li className="menu nav-item relative">*/}
+                    {/*    <button type="button" className="nav-link">*/}
+                    {/*        <div className="flex items-center">*/}
+                    {/*            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"*/}
+                    {/*                 xmlns="http://www.w3.org/2000/svg">*/}
+                    {/*                <g opacity="0.5">*/}
+                    {/*                    <path*/}
+                    {/*                        d="M14 2.75C15.9068 2.75 17.2615 2.75159 18.2892 2.88976C19.2952 3.02503 19.8749 3.27869 20.2981 3.7019C20.7213 4.12511 20.975 4.70476 21.1102 5.71085C21.2484 6.73851 21.25 8.09318 21.25 10C21.25 10.4142 21.5858 10.75 22 10.75C22.4142 10.75 22.75 10.4142 22.75 10V9.94359C22.75 8.10583 22.75 6.65019 22.5969 5.51098C22.4392 4.33856 22.1071 3.38961 21.3588 2.64124C20.6104 1.89288 19.6614 1.56076 18.489 1.40314C17.3498 1.24997 15.8942 1.24998 14.0564 1.25H14C13.5858 1.25 13.25 1.58579 13.25 2C13.25 2.41421 13.5858 2.75 14 2.75Z"*/}
+                    {/*                        fill="currentColor"*/}
+                    {/*                    />*/}
+                    {/*                    <path*/}
+                    {/*                        d="M9.94358 1.25H10C10.4142 1.25 10.75 1.58579 10.75 2C10.75 2.41421 10.4142 2.75 10 2.75C8.09318 2.75 6.73851 2.75159 5.71085 2.88976C4.70476 3.02503 4.12511 3.27869 3.7019 3.7019C3.27869 4.12511 3.02503 4.70476 2.88976 5.71085C2.75159 6.73851 2.75 8.09318 2.75 10C2.75 10.4142 2.41421 10.75 2 10.75C1.58579 10.75 1.25 10.4142 1.25 10V9.94358C1.24998 8.10583 1.24997 6.65019 1.40314 5.51098C1.56076 4.33856 1.89288 3.38961 2.64124 2.64124C3.38961 1.89288 4.33856 1.56076 5.51098 1.40314C6.65019 1.24997 8.10583 1.24998 9.94358 1.25Z"*/}
+                    {/*                        fill="currentColor"*/}
+                    {/*                    />*/}
+                    {/*                    <path*/}
+                    {/*                        d="M22 13.25C22.4142 13.25 22.75 13.5858 22.75 14V14.0564C22.75 15.8942 22.75 17.3498 22.5969 18.489C22.4392 19.6614 22.1071 20.6104 21.3588 21.3588C20.6104 22.1071 19.6614 22.4392 18.489 22.5969C17.3498 22.75 15.8942 22.75 14.0564 22.75H14C13.5858 22.75 13.25 22.4142 13.25 22C13.25 21.5858 13.5858 21.25 14 21.25C15.9068 21.25 17.2615 21.2484 18.2892 21.1102C19.2952 20.975 19.8749 20.7213 20.2981 20.2981C20.7213 19.8749 20.975 19.2952 21.1102 18.2892C21.2484 17.2615 21.25 15.9068 21.25 14C21.25 13.5858 21.5858 13.25 22 13.25Z"*/}
+                    {/*                        fill="currentColor"*/}
+                    {/*                    />*/}
+                    {/*                    <path*/}
+                    {/*                        d="M2.75 14C2.75 13.5858 2.41421 13.25 2 13.25C1.58579 13.25 1.25 13.5858 1.25 14V14.0564C1.24998 15.8942 1.24997 17.3498 1.40314 18.489C1.56076 19.6614 1.89288 20.6104 2.64124 21.3588C3.38961 22.1071 4.33856 22.4392 5.51098 22.5969C6.65019 22.75 8.10583 22.75 9.94359 22.75H10C10.4142 22.75 10.75 22.4142 10.75 22C10.75 21.5858 10.4142 21.25 10 21.25C8.09318 21.25 6.73851 21.2484 5.71085 21.1102C4.70476 20.975 4.12511 20.7213 3.7019 20.2981C3.27869 19.8749 3.02503 19.2952 2.88976 18.2892C2.75159 17.2615 2.75 15.9068 2.75 14Z"*/}
+                    {/*                        fill="currentColor"*/}
+                    {/*                    />*/}
+                    {/*                </g>*/}
+                    {/*                <path*/}
+                    {/*                    d="M5.52721 5.52721C5 6.05442 5 6.90294 5 8.6C5 9.73137 5 10.2971 5.35147 10.6485C5.70294 11 6.26863 11 7.4 11H8.6C9.73137 11 10.2971 11 10.6485 10.6485C11 10.2971 11 9.73137 11 8.6V7.4C11 6.26863 11 5.70294 10.6485 5.35147C10.2971 5 9.73137 5 8.6 5C6.90294 5 6.05442 5 5.52721 5.52721Z"*/}
+                    {/*                    fill="currentColor"*/}
+                    {/*                />*/}
+                    {/*                <path*/}
+                    {/*                    d="M5.52721 18.4728C5 17.9456 5 17.0971 5 15.4C5 14.2686 5 13.7029 5.35147 13.3515C5.70294 13 6.26863 13 7.4 13H8.6C9.73137 13 10.2971 13 10.6485 13.3515C11 13.7029 11 14.2686 11 15.4V16.6C11 17.7314 11 18.2971 10.6485 18.6485C10.2971 19 9.73138 19 8.60002 19C6.90298 19 6.05441 19 5.52721 18.4728Z"*/}
+                    {/*                    fill="currentColor"*/}
+                    {/*                />*/}
+                    {/*                <path*/}
+                    {/*                    d="M13 7.4C13 6.26863 13 5.70294 13.3515 5.35147C13.7029 5 14.2686 5 15.4 5C17.0971 5 17.9456 5 18.4728 5.52721C19 6.05442 19 6.90294 19 8.6C19 9.73137 19 10.2971 18.6485 10.6485C18.2971 11 17.7314 11 16.6 11H15.4C14.2686 11 13.7029 11 13.3515 10.6485C13 10.2971 13 9.73137 13 8.6V7.4Z"*/}
+                    {/*                    fill="currentColor"*/}
+                    {/*                />*/}
+                    {/*                <path*/}
+                    {/*                    d="M13.3515 18.6485C13 18.2971 13 17.7314 13 16.6V15.4C13 14.2686 13 13.7029 13.3515 13.3515C13.7029 13 14.2686 13 15.4 13H16.6C17.7314 13 18.2971 13 18.6485 13.3515C19 13.7029 19 14.2686 19 15.4C19 17.097 19 17.9456 18.4728 18.4728C17.9456 19 17.0971 19 15.4 19C14.2687 19 13.7029 19 13.3515 18.6485Z"*/}
+                    {/*                    fill="currentColor"*/}
+                    {/*                />*/}
+                    {/*            </svg>*/}
+                    {/*            <span className="px-1">{t('inventory')}</span>*/}
+                    {/*        </div>*/}
+                    {/*        <div className="right_arrow">*/}
+                    {/*            <svg className="rotate-90" width="16" height="16" viewBox="0 0 24 24" fill="none"*/}
+                    {/*                 xmlns="http://www.w3.org/2000/svg">*/}
+                    {/*                <path d="M9 5L15 12L9 19" stroke="currentColor" strokeWidth="1.5"*/}
+                    {/*                      strokeLinecap="round" strokeLinejoin="round"/>*/}
+                    {/*            </svg>*/}
+                    {/*        </div>*/}
+                    {/*    </button>*/}
+                    {/*    <ul className="sub-menu">*/}
+                    {/*        <li className="relative">*/}
+                    {/*            <button type="button">*/}
+                    {/*                {t('heads')}*/}
+                    {/*                <div className="ltr:ml-auto rtl:mr-auto rtl:rotate-180">*/}
+                    {/*                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"*/}
+                    {/*                         xmlns="http://www.w3.org/2000/svg">*/}
+                    {/*                        <path d="M9 5L15 12L9 19" stroke="currentColor" strokeWidth="1.5"*/}
+                    {/*                              strokeLinecap="round" strokeLinejoin="round"/>*/}
+                    {/*                    </svg>*/}
+                    {/*                </div>*/}
+                    {/*            </button>*/}
+                    {/*            <ul className="absolute top-0 z-[10] hidden min-w-[180px] rounded bg-white p-0 py-2 text-dark shadow ltr:left-[95%] rtl:right-[95%] dark:bg-[#1b2e4b] dark:text-white-dark">*/}
+                    {/*                <li>*/}
+                    {/*                    <Link href="/">{t('categories')}</Link>*/}
+                    {/*                </li>*/}
+                    {/*                <li>*/}
+                    {/*                    <Link href="/units">{t('units')}</Link>*/}
+                    {/*                </li>*/}
+                    {/*            </ul>*/}
+                    {/*        </li>*/}
+                    {/*        <li>*/}
+                    {/*            <Link href="/inventory/products">{t('products')}</Link>*/}
+                    {/*        </li>*/}
+                    {/*        <li>*/}
+                    {/*            <Link href="/inventory/product-assembly">{t('product_assembly')}</Link>*/}
+                    {/*        </li>*/}
+                    {/*        <li>*/}
+                    {/*            <Link href="/inventory/productions">{t('productions')}</Link>*/}
+                    {/*        </li>*/}
+                    {/*        <li>*/}
+                    {/*            <Link href="/inventory/fillings">{t('fillings')}</Link>*/}
+                    {/*        </li>*/}
+                    {/*        <li>*/}
+                    {/*            <Link href="/inventory/invoicing">{t('invoicing')}</Link>*/}
+                    {/*        </li>*/}
+                    {/*    </ul>*/}
+                    {/*</li>*/}
+                    {/*<li className="menu nav-item relative">*/}
+                    {/*    <button type="button" className="nav-link">*/}
+                    {/*        <div className="flex items-center">*/}
+                    {/*            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"*/}
+                    {/*                 xmlns="http://www.w3.org/2000/svg">*/}
+                    {/*                <path fillRule="evenodd" clipRule="evenodd"*/}
+                    {/*                      d="M2 21.25C1.58579 21.25 1.25 21.5858 1.25 22C1.25 22.4142 1.58579 22.75 2 22.75H22C22.4142 22.75 22.75 22.4142 22.75 22C22.75 21.5858 22.4142 21.25 22 21.25H21H18.5H17V16C17 14.1144 17 13.1716 16.4142 12.5858C15.8284 12 14.8856 12 13 12H11C9.11438 12 8.17157 12 7.58579 12.5858C7 13.1716 7 14.1144 7 16V21.25H5.5H3H2ZM9.25 15C9.25 14.5858 9.58579 14.25 10 14.25H14C14.4142 14.25 14.75 14.5858 14.75 15C14.75 15.4142 14.4142 15.75 14 15.75H10C9.58579 15.75 9.25 15.4142 9.25 15ZM9.25 18C9.25 17.5858 9.58579 17.25 10 17.25H14C14.4142 17.25 14.75 17.5858 14.75 18C14.75 18.4142 14.4142 18.75 14 18.75H10C9.58579 18.75 9.25 18.4142 9.25 18Z"*/}
+                    {/*                      fill="currentColor"/>*/}
+                    {/*                <g opacity="0.5">*/}
+                    {/*                    <path*/}
+                    {/*                        d="M8 4.5C8.94281 4.5 9.41421 4.5 9.70711 4.79289C10 5.08579 10 5.55719 10 6.5L9.99999 8.29243C10.1568 8.36863 10.2931 8.46469 10.4142 8.58579C10.8183 8.98987 10.9436 9.56385 10.9825 10.5V12C9.10855 12 8.16976 12.0018 7.58579 12.5858C7 13.1716 7 14.1144 7 16V21.25H3V12C3 10.1144 3 9.17157 3.58579 8.58579C3.70688 8.46469 3.84322 8.36864 4 8.29243V6.5C4 5.55719 4 5.08579 4.29289 4.79289C4.58579 4.5 5.05719 4.5 6 4.5H6.25V3C6.25 2.58579 6.58579 2.25 7 2.25C7.41421 2.25 7.75 2.58579 7.75 3V4.5H8Z"*/}
+                    {/*                        fill="currentColor"/>*/}
+                    {/*                    <path*/}
+                    {/*                        d="M20.6439 5.24676C20.2877 4.73284 19.66 4.49743 18.4045 4.02663C15.9493 3.10592 14.7216 2.64555 13.8608 3.2421C13 3.83864 13 5.14974 13 7.77195V12C14.8856 12 15.8284 12 16.4142 12.5858C17 13.1716 17 14.1144 17 16V21.25H21V7.77195C21 6.4311 21 5.76068 20.6439 5.24676Z"*/}
+                    {/*                        fill="currentColor"/>*/}
+                    {/*                </g>*/}
+                    {/*            </svg>*/}
+
+                    {/*            <span className="px-1">{t('admin')}</span>*/}
+                    {/*        </div>*/}
+                    {/*        <div className="right_arrow">*/}
+                    {/*            <svg className="rotate-90" width="16" height="16" viewBox="0 0 24 24" fill="none"*/}
+                    {/*                 xmlns="http://www.w3.org/2000/svg">*/}
+                    {/*                <path d="M9 5L15 12L9 19" stroke="currentColor" strokeWidth="1.5"*/}
+                    {/*                      strokeLinecap="round" strokeLinejoin="round"/>*/}
+                    {/*            </svg>*/}
+                    {/*        </div>*/}
+                    {/*    </button>*/}
+                    {/*    <ul className="sub-menu">*/}
+                    {/*        <li>*/}
+                    {/*            <Link href="/admin/vendors">{t('vendors')}</Link>*/}
+                    {/*        </li>*/}
+                    {/*    </ul>*/}
+                    {/*</li>*/}
+                    {/*<li className="menu nav-item relative">*/}
+                    {/*    <button type="button" className="nav-link">*/}
+                    {/*        <div className="flex items-center">*/}
+                    {/*            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"*/}
+                    {/*                 xmlns="http://www.w3.org/2000/svg">*/}
+                    {/*                <circle cx="9" cy="9" r="2" stroke="currentColor" strokeWidth="1.5"/>*/}
+                    {/*                <path*/}
+                    {/*                    d="M13 15C13 16.1046 13 17 9 17C5 17 5 16.1046 5 15C5 13.8954 6.79086 13 9 13C11.2091 13 13 13.8954 13 15Z"*/}
+                    {/*                    stroke="currentColor" strokeWidth="1.5"/>*/}
+                    {/*                <path*/}
+                    {/*                    d="M2 12C2 8.22876 2 6.34315 3.17157 5.17157C4.34315 4 6.22876 4 10 4H14C17.7712 4 19.6569 4 20.8284 5.17157C22 6.34315 22 8.22876 22 12C22 15.7712 22 17.6569 20.8284 18.8284C19.6569 20 17.7712 20 14 20H10C6.22876 20 4.34315 20 3.17157 18.8284C2 17.6569 2 15.7712 2 12Z"*/}
+                    {/*                    stroke="currentColor" strokeWidth="1.5"/>*/}
+                    {/*                <path d="M19 12H15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>*/}
+                    {/*                <path d="M19 9H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>*/}
+                    {/*                <path d="M19 15H16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>*/}
+                    {/*            </svg>*/}
+                    {/*            <span className="px-1">{t('human_resource')}</span>*/}
+                    {/*        </div>*/}
+                    {/*        <div className="right_arrow">*/}
+                    {/*            <svg className="rotate-90" width="16" height="16" viewBox="0 0 24 24" fill="none"*/}
+                    {/*                 xmlns="http://www.w3.org/2000/svg">*/}
+                    {/*                <path d="M9 5L15 12L9 19" stroke="currentColor" strokeWidth="1.5"*/}
+                    {/*                      strokeLinecap="round" strokeLinejoin="round"/>*/}
+                    {/*            </svg>*/}
+                    {/*        </div>*/}
+                    {/*    </button>*/}
+                    {/*    <ul className="sub-menu">*/}
+                    {/*        <li>*/}
+                    {/*            <Link href="/hr/employee">{t('employees')}</Link>*/}
+                    {/*        </li>*/}
+                    {/*    </ul>*/}
+                    {/*</li>*/}
+                    {/*<li className="menu nav-item relative">*/}
+                    {/*    <button type="button" className="nav-link">*/}
+                    {/*        <div className="flex items-center">*/}
+                    {/*            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"*/}
+                    {/*                 xmlns="http://www.w3.org/2000/svg">*/}
+                    {/*                <path*/}
+                    {/*                    d="M4.72848 16.1369C3.18295 14.5914 2.41018 13.8186 2.12264 12.816C1.83509 11.8134 2.08083 10.7485 2.57231 8.61875L2.85574 7.39057C3.26922 5.59881 3.47597 4.70292 4.08944 4.08944C4.70292 3.47597 5.5988 3.26922 7.39057 2.85574L8.61875 2.57231C10.7485 2.08083 11.8134 1.83509 12.816 2.12264C13.8186 2.41018 14.5914 3.18295 16.1369 4.72848L17.9665 6.55812C20.6555 9.24711 22 10.5916 22 12.2623C22 13.933 20.6555 15.2775 17.9665 17.9665C15.2775 20.6555 13.933 22 12.2623 22C10.5916 22 9.24711 20.6555 6.55812 17.9665L4.72848 16.1369Z"*/}
+                    {/*                    stroke="currentColor" strokeWidth="1.5"/>*/}
+                    {/*                <path*/}
+                    {/*                    d="M15.3893 15.3891C15.9751 14.8033 16.0542 13.9327 15.5661 13.4445C15.0779 12.9564 14.2073 13.0355 13.6215 13.6213C13.0358 14.2071 12.1652 14.2863 11.677 13.7981C11.1888 13.3099 11.268 12.4393 11.8538 11.8536M15.3893 15.3891L15.7429 15.7426M15.3893 15.3891C14.9883 15.7901 14.4539 15.9537 14 15.8604M11.5002 11.5L11.8538 11.8536M11.8538 11.8536C12.185 11.5223 12.6073 11.3531 13 11.3568"*/}
+                    {/*                    stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>*/}
+                    {/*                <circle cx="8.60724" cy="8.87891" r="2" transform="rotate(-45 8.60724 8.87891)"*/}
+                    {/*                        stroke="currentColor" strokeWidth="1.5"/>*/}
+                    {/*            </svg>*/}
+
+                    {/*            <span className="px-1">{t('purchases')}</span>*/}
+                    {/*        </div>*/}
+                    {/*        <div className="right_arrow">*/}
+                    {/*            <svg className="rotate-90" width="16" height="16" viewBox="0 0 24 24" fill="none"*/}
+                    {/*                 xmlns="http://www.w3.org/2000/svg">*/}
+                    {/*                <path d="M9 5L15 12L9 19" stroke="currentColor" strokeWidth="1.5"*/}
+                    {/*                      strokeLinecap="round" strokeLinejoin="round"/>*/}
+                    {/*            </svg>*/}
+                    {/*        </div>*/}
+                    {/*    </button>*/}
+                    {/*    <ul className="sub-menu">*/}
+                    {/*        <li>*/}
+                    {/*            <Link href="/purchase/purchase-requisition">{t('purchase_requisition')}</Link>*/}
+                    {/*        </li>*/}
+                    {/*        <li>*/}
+                    {/*            <Link href="/purchase/lpo">{t('lpo')}</Link>*/}
+                    {/*        </li>*/}
+                    {/*        <li>*/}
+                    {/*            <Link href="/purchase/good-receive-note">{t('good_receive_note')}</Link>*/}
+                    {/*        </li>*/}
+                    {/*        <li>*/}
+                    {/*            <Link href="/purchase/vendor-bill">{t('vendor_bill')}</Link>*/}
+                    {/*        </li>*/}
+                    {/*    </ul>*/}
+                    {/*</li>*/}
+
+                    {/*<li className="menu nav-item relative">*/}
+                    {/*    <button type="button" className="nav-link">*/}
+                    {/*        <div className="flex items-center">*/}
+                    {/*            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"*/}
+                    {/*                 xmlns="http://www.w3.org/2000/svg">*/}
+                    {/*                <path d="M22 22H2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>*/}
+                    {/*                <path*/}
+                    {/*                    d="M21 22V14.5C21 13.6716 20.3284 13 19.5 13H16.5C15.6716 13 15 13.6716 15 14.5V22"*/}
+                    {/*                    stroke="currentColor" strokeWidth="1.5"/>*/}
+                    {/*                <path*/}
+                    {/*                    d="M15 22V5C15 3.58579 15 2.87868 14.5607 2.43934C14.1213 2 13.4142 2 12 2C10.5858 2 9.87868 2 9.43934 2.43934C9 2.87868 9 3.58579 9 5V22"*/}
+                    {/*                    stroke="currentColor" strokeWidth="1.5"/>*/}
+                    {/*                <path d="M9 22V9.5C9 8.67157 8.32843 8 7.5 8H4.5C3.67157 8 3 8.67157 3 9.5V22"*/}
+                    {/*                      stroke="currentColor" strokeWidth="1.5"/>*/}
+                    {/*            </svg>*/}
+
+
+                    {/*            <span className="px-1">{t('reports')}</span>*/}
+                    {/*        </div>*/}
+                    {/*        <div className="right_arrow">*/}
+                    {/*            <svg className="rotate-90" width="16" height="16" viewBox="0 0 24 24" fill="none"*/}
+                    {/*                 xmlns="http://www.w3.org/2000/svg">*/}
+                    {/*                <path d="M9 5L15 12L9 19" stroke="currentColor" strokeWidth="1.5"*/}
+                    {/*                      strokeLinecap="round" strokeLinejoin="round"/>*/}
+                    {/*            </svg>*/}
+                    {/*        </div>*/}
+                    {/*    </button>*/}
+                    {/*    <ul className="sub-menu">*/}
+                    {/*        <li>*/}
+                    {/*            <Link href="/report/stock">{t('stock_report')}</Link>*/}
+                    {/*        </li>*/}
+                    {/*        <li>*/}
+                    {/*            <Link href="/report/vendor">{t('vendor_report')}</Link>*/}
+                    {/*        </li>*/}
+                    {/*    </ul>*/}
+                    {/*</li>*/}
                 </ul>
             </div>
         </header>
@@ -861,3 +1061,4 @@ const Header = () => {
 };
 
 export default Header;
+

@@ -83,9 +83,12 @@ const Sidebar = () => {
                     <PerfectScrollbar className="relative h-[calc(100vh-80px)]">
                         <ul className="relative space-y-0.5 p-4 py-0 font-semibold">
                             <li className="menu nav-item">
-                                <button type="button" className={`${currentMenu === 'dashboard' ? 'active' : ''} nav-link group w-full`} onClick={() => toggleMenu('dashboard')}>
+                                <button type="button"
+                                        className={`${currentMenu === 'dashboard' ? 'active' : ''} nav-link group w-full`}
+                                        onClick={() => toggleMenu('dashboard')}>
                                     <div className="flex items-center">
-                                        <svg className="group-hover:!text-primary" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <svg className="group-hover:!text-primary" width="20" height="20"
+                                             viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <path
                                                 opacity="0.5"
                                                 d="M2 12.2039C2 9.91549 2 8.77128 2.5192 7.82274C3.0384 6.87421 3.98695 6.28551 5.88403 5.10813L7.88403 3.86687C9.88939 2.62229 10.8921 2 12 2C13.1079 2 14.1106 2.62229 16.116 3.86687L18.116 5.10812C20.0131 6.28551 20.9616 6.87421 21.4808 7.82274C22 8.77128 22 9.91549 22 12.2039V13.725C22 17.6258 22 19.5763 20.8284 20.7881C19.6569 22 17.7712 22 14 22H10C6.22876 22 4.34315 22 3.17157 20.7881C2 19.5763 2 17.6258 2 13.725V12.2039Z"
@@ -96,12 +99,15 @@ const Sidebar = () => {
                                                 fill="currentColor"
                                             />
                                         </svg>
-                                        <span className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t('dashboard')}</span>
+                                        <span
+                                            className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t('dashboard')}</span>
                                     </div>
 
                                     <div className={currentMenu === 'dashboard' ? 'rotate-90' : 'rtl:rotate-180'}>
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M9 5L15 12L9 19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                             xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M9 5L15 12L9 19" stroke="currentColor" strokeWidth="1.5"
+                                                  strokeLinecap="round" strokeLinejoin="round"/>
                                         </svg>
                                     </div>
                                 </button>
@@ -125,7 +131,8 @@ const Sidebar = () => {
                             </li>
 
                             <h2 className="-mx-4 mb-1 flex items-center bg-white-light/30 py-3 px-7 font-extrabold uppercase dark:bg-dark dark:bg-opacity-[0.08]">
-                                <svg className="hidden h-5 w-4 flex-none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                                <svg className="hidden h-5 w-4 flex-none" viewBox="0 0 24 24" stroke="currentColor"
+                                     strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
                                     <line x1="5" y1="12" x2="19" y2="12"></line>
                                 </svg>
                                 <span>{t('inventory')}</span>
@@ -134,9 +141,12 @@ const Sidebar = () => {
                             <li className="nav-item">
                                 <ul>
                                     <li className="menu nav-item">
-                                        <button type="button" className={`${currentMenu === 'heads' ? 'active' : ''} nav-link group w-full`} onClick={() => toggleMenu('heads')}>
+                                        <button type="button"
+                                                className={`${currentMenu === 'heads' ? 'active' : ''} nav-link group w-full`}
+                                                onClick={() => toggleMenu('heads')}>
                                             <div className="flex items-center">
-                                                <svg className="group-hover:!text-primary" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <svg className="group-hover:!text-primary" width="20" height="20"
+                                                     viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                     <path
                                                         opacity="0.5"
                                                         d="M2 12.2039C2 9.91549 2 8.77128 2.5192 7.82274C3.0384 6.87421 3.98695 6.28551 5.88403 5.10813L7.88403 3.86687C9.88939 2.62229 10.8921 2 12 2C13.1079 2 14.1106 2.62229 16.116 3.86687L18.116 5.10812C20.0131 6.28551 20.9616 6.87421 21.4808 7.82274C22 8.77128 22 9.91549 22 12.2039V13.725C22 17.6258 22 19.5763 20.8284 20.7881C19.6569 22 17.7712 22 14 22H10C6.22876 22 4.34315 22 3.17157 20.7881C2 19.5763 2 17.6258 2 13.725V12.2039Z"
@@ -147,12 +157,15 @@ const Sidebar = () => {
                                                         fill="currentColor"
                                                     />
                                                 </svg>
-                                                <span className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t('heads')}</span>
+                                                <span
+                                                    className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t('heads')}</span>
                                             </div>
 
                                             <div className={currentMenu === 'heads' ? 'rotate-90' : 'rtl:rotate-180'}>
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M9 5L15 12L9 19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                                     xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M9 5L15 12L9 19" stroke="currentColor" strokeWidth="1.5"
+                                                          strokeLinecap="round" strokeLinejoin="round"/>
                                                 </svg>
                                             </div>
                                         </button>
@@ -171,7 +184,8 @@ const Sidebar = () => {
                                     <li className="nav-item">
                                         <Link href="/inventory/products" className="group">
                                             <div className="flex items-center">
-                                                <svg className="group-hover:!text-primary" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <svg className="group-hover:!text-primary" width="20" height="20"
+                                                     viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                     <path
                                                         fillRule="evenodd"
                                                         clipRule="evenodd"
@@ -184,15 +198,19 @@ const Sidebar = () => {
                                                         fill="currentColor"
                                                     />
                                                 </svg>
-                                                <span className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t('products')}</span>
+                                                <span
+                                                    className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t('products')}</span>
                                             </div>
                                         </Link>
                                     </li>
                                     <li className="nav-item">
                                         <Link href="/inventory/product-assembly" className="group">
                                             <div className="flex items-center">
-                                                <svg className="group-hover:!text-primary" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M24 5C24 6.65685 22.6569 8 21 8C19.3431 8 18 6.65685 18 5C18 3.34315 19.3431 2 21 2C22.6569 2 24 3.34315 24 5Z" fill="currentColor" />
+                                                <svg className="group-hover:!text-primary" width="20" height="20"
+                                                     viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path
+                                                        d="M24 5C24 6.65685 22.6569 8 21 8C19.3431 8 18 6.65685 18 5C18 3.34315 19.3431 2 21 2C22.6569 2 24 3.34315 24 5Z"
+                                                        fill="currentColor"/>
                                                     <path
                                                         d="M17.2339 7.46394L15.6973 8.74444C14.671 9.59966 13.9585 10.1915 13.357 10.5784C12.7747 10.9529 12.3798 11.0786 12.0002 11.0786C11.6206 11.0786 11.2258 10.9529 10.6435 10.5784C10.0419 10.1915 9.32941 9.59966 8.30315 8.74444L5.92837 6.76546C5.57834 6.47377 5.05812 6.52106 4.76643 6.87109C4.47474 7.22112 4.52204 7.74133 4.87206 8.03302L7.28821 10.0465C8.2632 10.859 9.05344 11.5176 9.75091 11.9661C10.4775 12.4334 11.185 12.7286 12.0002 12.7286C12.8154 12.7286 13.523 12.4334 14.2495 11.9661C14.947 11.5176 15.7372 10.859 16.7122 10.0465L18.3785 8.65795C17.9274 8.33414 17.5388 7.92898 17.2339 7.46394Z"
                                                         fill="currentColor"
@@ -207,14 +225,16 @@ const Sidebar = () => {
                                                         fill="currentColor"
                                                     />
                                                 </svg>
-                                                <span className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t('product_assembly')}</span>
+                                                <span
+                                                    className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t('product_assembly')}</span>
                                             </div>
                                         </Link>
                                     </li>
                                     <li className="nav-item">
                                         <Link href="/inventory/productions" className="group">
                                             <div className="flex items-center">
-                                                <svg className="group-hover:!text-primary" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <svg className="group-hover:!text-primary" width="20" height="20"
+                                                     viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                     <path
                                                         opacity="0.5"
                                                         d="M3 10C3 6.22876 3 4.34315 4.17157 3.17157C5.34315 2 7.22876 2 11 2H13C16.7712 2 18.6569 2 19.8284 3.17157C21 4.34315 21 6.22876 21 10V14C21 17.7712 21 19.6569 19.8284 20.8284C18.6569 22 16.7712 22 13 22H11C7.22876 22 5.34315 22 4.17157 20.8284C3 19.6569 3 17.7712 3 14V10Z"
@@ -227,14 +247,16 @@ const Sidebar = () => {
                                                         fill="currentColor"
                                                     />
                                                 </svg>
-                                                <span className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t('productions')}</span>
+                                                <span
+                                                    className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t('productions')}</span>
                                             </div>
                                         </Link>
                                     </li>
                                     <li className="nav-item">
                                         <Link href="/inventory/fillings" className="group">
                                             <div className="flex items-center">
-                                                <svg className="group-hover:!text-primary" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <svg className="group-hover:!text-primary" width="20" height="20"
+                                                     viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                     <path
                                                         opacity="0.5"
                                                         d="M3 10C3 6.22876 3 4.34315 4.17157 3.17157C5.34315 2 7.22876 2 11 2H13C16.7712 2 18.6569 2 19.8284 3.17157C21 4.34315 21 6.22876 21 10V14C21 17.7712 21 19.6569 19.8284 20.8284C18.6569 22 16.7712 22 13 22H11C7.22876 22 5.34315 22 4.17157 20.8284C3 19.6569 3 17.7712 3 14V10Z"
@@ -259,7 +281,8 @@ const Sidebar = () => {
                                                         fill="currentColor"
                                                     />
                                                 </svg>
-                                                <span className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t('fillings')}</span>
+                                                <span
+                                                    className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t('fillings')}</span>
                                             </div>
                                         </Link>
                                     </li>
@@ -267,7 +290,8 @@ const Sidebar = () => {
                                     <li className="nav-item">
                                         <Link href="/inventory/invoicing" className="group">
                                             <div className="flex items-center">
-                                                <svg className="group-hover:!text-primary" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <svg className="group-hover:!text-primary" width="20" height="20"
+                                                     viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                     <path
                                                         opacity="0.5"
                                                         fillRule="evenodd"
@@ -282,11 +306,105 @@ const Sidebar = () => {
                                                         fill="currentColor"
                                                     />
                                                 </svg>
-                                                <span className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t('invoicing')}</span>
+                                                <span
+                                                    className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t('invoicing')}</span>
                                             </div>
                                         </Link>
                                     </li>
                                 </ul>
+                            </li>
+                            <h2 className="-mx-4 mb-1 flex items-center bg-white-light/30 py-3 px-7 font-extrabold uppercase dark:bg-dark dark:bg-opacity-[0.08]">
+                                <svg className="hidden h-5 w-4 flex-none" viewBox="0 0 24 24" stroke="currentColor"
+                                     strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                <span>{t('admin')}</span>
+                            </h2>
+
+                            <li className="nav-item">
+                                <Link href="/admin/vendors" className="group">
+                                    <div className="flex items-center">
+
+
+                                        <svg className="group-hover:!text-primary" width="20" height="20"
+                                             viewBox="0 0 24 24" fill="none"
+                                             xmlns="http://www.w3.org/2000/svg">
+                                            <circle opacity="0.5" cx="15" cy="6" r="3" fill="currentColor"/>
+                                            <ellipse opacity="0.5" cx="16" cy="17" rx="5" ry="3"
+                                                     fill="currentColor"/>
+                                            <circle cx="9.00098" cy="6" r="4" fill="currentColor"/>
+                                            <ellipse cx="9.00098" cy="17.001" rx="7" ry="4" fill="currentColor"/>
+                                        </svg>
+                                        <span
+                                            className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t('vendors')}</span>
+                                    </div>
+                                </Link>
+                            </li>
+                            <h2 className="-mx-4 mb-1 flex items-center bg-white-light/30 py-3 px-7 font-extrabold uppercase dark:bg-dark dark:bg-opacity-[0.08]">
+                                <svg className="hidden h-5 w-4 flex-none" viewBox="0 0 24 24" stroke="currentColor"
+                                     strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                <span>{t('human_resource')}</span>
+                            </h2>
+                            <li className="nav-item">
+                                <Link href="/hr/employee" className="group">
+                                    <div className="flex items-center">
+
+                                        <svg className="group-hover:!text-primary" width="20" height="20"
+                                             viewBox="0 0 24 24" fill="none"
+                                             xmlns="http://www.w3.org/2000/svg">
+                                            <circle cx="9" cy="9" r="2" stroke="currentColor" strokeWidth="1.5"/>
+                                            <path
+                                                d="M13 15C13 16.1046 13 17 9 17C5 17 5 16.1046 5 15C5 13.8954 6.79086 13 9 13C11.2091 13 13 13.8954 13 15Z"
+                                                stroke="currentColor" strokeWidth="1.5"/>
+                                            <path
+                                                d="M2 12C2 8.22876 2 6.34315 3.17157 5.17157C4.34315 4 6.22876 4 10 4H14C17.7712 4 19.6569 4 20.8284 5.17157C22 6.34315 22 8.22876 22 12C22 15.7712 22 17.6569 20.8284 18.8284C19.6569 20 17.7712 20 14 20H10C6.22876 20 4.34315 20 3.17157 18.8284C2 17.6569 2 15.7712 2 12Z"
+                                                stroke="currentColor" strokeWidth="1.5"/>
+                                            <path d="M19 12H15" stroke="currentColor" strokeWidth="1.5"
+                                                  strokeLinecap="round"/>
+                                            <path d="M19 9H14" stroke="currentColor" strokeWidth="1.5"
+                                                  strokeLinecap="round"/>
+                                            <path d="M19 15H16" stroke="currentColor" strokeWidth="1.5"
+                                                  strokeLinecap="round"/>
+                                        </svg>
+                                        <span
+                                            className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t('employees')}</span>
+                                    </div>
+                                </Link>
+                            </li>
+                            <h2 className="-mx-4 mb-1 flex items-center bg-white-light/30 py-3 px-7 font-extrabold uppercase dark:bg-dark dark:bg-opacity-[0.08]">
+                                <svg className="hidden h-5 w-4 flex-none" viewBox="0 0 24 24" stroke="currentColor"
+                                     strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                <span>{t('purchases')}</span>
+                            </h2>
+                            <li className="nav-item">
+                                <Link href="/purchase/purchase-requisition" className="group">
+                                    <div className="flex items-center">
+
+                                        <svg className="group-hover:!text-primary" width="20" height="20"
+                                             viewBox="0 0 24 24" fill="none"
+                                             xmlns="http://www.w3.org/2000/svg">
+                                            <circle cx="9" cy="9" r="2" stroke="currentColor" strokeWidth="1.5"/>
+                                            <path
+                                                d="M13 15C13 16.1046 13 17 9 17C5 17 5 16.1046 5 15C5 13.8954 6.79086 13 9 13C11.2091 13 13 13.8954 13 15Z"
+                                                stroke="currentColor" strokeWidth="1.5"/>
+                                            <path
+                                                d="M2 12C2 8.22876 2 6.34315 3.17157 5.17157C4.34315 4 6.22876 4 10 4H14C17.7712 4 19.6569 4 20.8284 5.17157C22 6.34315 22 8.22876 22 12C22 15.7712 22 17.6569 20.8284 18.8284C19.6569 20 17.7712 20 14 20H10C6.22876 20 4.34315 20 3.17157 18.8284C2 17.6569 2 15.7712 2 12Z"
+                                                stroke="currentColor" strokeWidth="1.5"/>
+                                            <path d="M19 12H15" stroke="currentColor" strokeWidth="1.5"
+                                                  strokeLinecap="round"/>
+                                            <path d="M19 9H14" stroke="currentColor" strokeWidth="1.5"
+                                                  strokeLinecap="round"/>
+                                            <path d="M19 15H16" stroke="currentColor" strokeWidth="1.5"
+                                                  strokeLinecap="round"/>
+                                        </svg>
+                                        <span
+                                            className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t('purchase_requisition')}</span>
+                                    </div>
+                                </Link>
                             </li>
                         </ul>
                     </PerfectScrollbar>

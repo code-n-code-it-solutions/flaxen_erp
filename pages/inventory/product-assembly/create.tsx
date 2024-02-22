@@ -1,97 +1,200 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import Breadcrumb from "@/components/Breadcrumb";
-import ImageUploader from "@/components/ImageUploader";
 // import Select from 'react-select';
 import Link from "next/link";
-import {getRandomInt} from "@/pages/helper";
 import dynamic from 'next/dynamic';
+import {useDispatch, useSelector} from "react-redux";
+import {ThunkDispatch} from "redux-thunk";
+import {IRootState} from "@/store";
+import {AnyAction} from "redux";
+import {useRouter} from "next/router";
+import {setPageTitle} from "@/store/slices/themeConfigSlice";
+import {setAuthToken} from "@/configs/api.config";
+import {getProductCategory} from "@/store/slices/categorySlice";
+import FormulaRawProductForm from "@/components/FormulaRawProductForm";
+import {clearProductAssemblyState, storeProductAssembly} from "@/store/slices/productAssemblySlice";
+import {getColorCodes, storeColorCode} from "@/store/slices/colorCodeSlice";
+import ColorCodeFormModal from "@/components/ColorCodeFormModal";
+import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
+import {FORM_CODE_TYPE} from "@/utils/enums";
 
 const Select = dynamic(
     () => import('react-select'),
     {ssr: false} // This will load the component only on the client-side
 );
 
-interface TableRow {
+interface ITableRow {
     id: number;
-    product_id: string;
+    raw_product_id: string;
+    raw_product_title: string;
     unit_id: string;
+    unit_title: string;
+    unit_price: number;
     quantity: number;
     cost: number;
     total: number;
 }
 
+interface IFormData {
+    formula_name: string;
+    formula_code: string;
+    category_id: number;
+    color_code_id: number;
+    raw_products: IRawProduct[];
+}
+
+interface IRawProduct {
+    raw_product_id: number
+    unit_id: number
+    quantity: number
+    unit_price: number
+    total: number
+}
+
 const Create = () => {
+    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
+    const router = useRouter();
+    const {token} = useSelector((state: IRootState) => state.user);
+    const {allProductCategory} = useSelector((state: IRootState) => state.productCategory);
+    const {code} = useSelector((state: IRootState) => state.util);
+    const colorCodeState = useSelector((state: IRootState) => state.colorCode);
+    const {productAssembly, success} = useSelector((state: IRootState) => state.productAssembly);
+
     const [formulaName, setFormulaName] = useState('');
     const [formulaCode, setFormulaCode] = useState('');
     const [categoryId, setCategoryId] = useState('');
-    const [itemObject, setItemObject] = useState({
-        product_id: '',
-        unit_id: '',
-        quantity: '',
-        unit_cost: '',
-        total_cost: ''
-    });
+    const [colorCodeId, setColorCodeId] = useState('');
+    const [modal, setModal] = useState(false);
+    const [colorCodeModal, setColorCodeModal] = useState(false);
 
-    const [categoryOptions, setCategoryOptions] = useState([
-        {value: '1', label: 'Category 1'},
-        {value: '2', label: 'Category 2'},
-        {value: '3', label: 'Category 3'},
-    ]);
 
-    const [unitOptions, setUnitOptions] = useState([
-        {value: '1', label: 'Unit 1'},
-        {value: '2', label: 'Unit 2'},
-        {value: '3', label: 'Unit 3'},
-    ]);
+    const [rawProducts, setRawProducts] = useState<ITableRow[]>([]);
+    const [categoryOptions, setCategoryOptions] = useState<any>([]);
+    const [colorCodeOptions, setColorCodeOptions] = useState<any>([]);
 
-    const [productOptions, setProductOptions] = useState([
-        {value: '1', label: 'Product 1'},
-        {value: '2', label: 'Product 2'},
-        {value: '3', label: 'Product 3'},
-    ]);
+    const [totalQuantity, setTotalQuantity] = useState(0);
+    const [totalCost, setTotalCost] = useState(0);
 
-    const [rows, setRows] = useState<TableRow[]>([]);
-
-    const handleAddRow = () => {
-        const newRow: TableRow = {
-            id: Date.now() + getRandomInt(1, 100),
-            product_id: '',
-            unit_id: '',
-            quantity: 0,
-            cost: 0,
-            total: 0
-        };
-        setRows([...rows, newRow]);
-    };
+    const handleAddRow = (value: any) => {
+        setRawProducts(prev => [...prev, value]);
+        setModal(false);
+    }
 
     const handleRemoveRow = (id: number) => {
-        setRows(rows.filter(row => row.id !== id));
-    };
-
-    const handleChange = (id: number, event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        const updatedRows = rows.map(row => {
-            if (row.id === id) {
-                return {...row, [event.target.name]: event.target.value};
-            }
-            return row;
-        });
-        setRows(updatedRows);
+        setRawProducts(rawProducts.filter(row => row.id !== id));
     };
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        console.log(rows)
-        // console.log('Form Data:', formData);
-        // Here you can also send the data to a server or API
+
+        let rawProductsData: IRawProduct[] = rawProducts.map((row: any) => {
+            return {
+                raw_product_id: row.raw_product_id,
+                unit_id: row.unit_id,
+                quantity: row.quantity,
+                unit_price: row.quantity*row.unit_price,
+                total: row.total,
+            }
+        });
+        const formData: IFormData = {
+            formula_name: formulaName,
+            formula_code: formulaCode,
+            category_id: parseInt(categoryId),
+            color_code_id: parseInt(colorCodeId),
+            raw_products: rawProductsData,
+        };
+        setAuthToken(token)
+        dispatch(clearProductAssemblyState());
+        dispatch(storeProductAssembly(formData));
     };
 
-    const valueInput = (id: number) => {
-        return rows.map(row => {
-            if (row.id === id) {
-                return row
-            }
-        })
+    const handleColorCodeSubmit = (value: any) => {
+        // setColorCodeModal(false);
+        dispatch(storeColorCode(value));
     }
+
+    useEffect(() => {
+        setAuthToken(token)
+        dispatch(setPageTitle('Create Product Assembly'));
+        dispatch(clearUtilState());
+        dispatch(getProductCategory());
+        dispatch(getColorCodes());
+        dispatch(generateCode(FORM_CODE_TYPE.PRODUCT_ASSEMBLY));
+        // dispatch(clearRawProduct());
+        // if (id) {
+        //     dispatch(editRawProduct(id));
+        // }
+    }, []);
+
+    useEffect(() => {
+        if (code) {
+            setFormulaCode(code);
+        }
+    }, [code]);
+
+    useEffect(() => {
+        if (productAssembly && success) {
+            dispatch(clearProductAssemblyState());
+            router.push('/inventory/product-assembly');
+        }
+    }, [productAssembly, success]);
+
+    useEffect(() => {
+        if (colorCodeState.colorCode && colorCodeState.success) {
+            setColorCodeModal(false);
+            dispatch(getColorCodes());
+        }
+    }, [colorCodeState.colorCode, success]);
+
+
+    useEffect(() => {
+        if (allProductCategory) {
+            let categoryOptions = allProductCategory.map((category: any) => {
+                return {
+                    value: category.id,
+                    label: category.name,
+                };
+            })
+            setCategoryOptions([{value: '', label: 'Select Category'}, ...categoryOptions]);
+        }
+    }, [allProductCategory]);
+
+    useEffect(() => {
+        if (colorCodeState.allColorCodes) {
+            let colorCodes = colorCodeState.allColorCodes.map((code: any) => {
+                const simpleLabel = `${code.name} - ${code.hex_code} (${code.code})`;
+
+                return {
+                    value: code.id,
+                    label: simpleLabel, // Use the simple label for searching
+                    colorCode: code.hex_code, // Additional data for custom rendering
+                };
+            })
+            setColorCodeOptions([{value: '', label: 'Select Color Code'}, ...colorCodes]);
+        }
+    }, [colorCodeState.allColorCodes]);
+
+    useEffect(() => {
+        let total: any = rawProducts.reduce((sum, row) => sum + +row.quantity, 0)
+        total = isNaN(total) ? 0 : total.toFixed(2);
+        setTotalQuantity(total);
+    }, [rawProducts]);
+
+    useEffect(() => {
+        let total: any = rawProducts.reduce((sum, row) => sum + +row.quantity*row.unit_price, 0)
+        total = isNaN(total) ? 0 : total.toFixed(2);
+        setTotalCost(total);
+    }, [rawProducts]);
+
+    const customStyles = {
+        option: (provided:any, state:any) => ({
+            ...provided,
+            backgroundColor: state.data.colorCode,
+            color: 'black', // Adjust text color here if needed
+            padding: 20,
+        }),
+        // Add other custom styles here if needed
+    };
 
     return (
         <div>
@@ -118,8 +221,8 @@ const Create = () => {
                             <span className="flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ltr:mr-2 rtl:ml-2" width="24"
                                      height="24" viewBox="0 0 24 24" fill="none">
-                                  <path d="M15 5L9 12L15 19" stroke="currentColor" strokeWidth="1.5"
-                                        strokeLinecap="round" strokeLinejoin="round"/>
+                                    <path d="M15 5L9 12L15 19" stroke="currentColor" strokeWidth="1.5"
+                                          strokeLinecap="round" strokeLinejoin="round"/>
                                 </svg>
                                 Back
                             </span>
@@ -137,7 +240,7 @@ const Create = () => {
                             <div className="w-full">
                                 <label htmlFor="formula_code">Formula Code</label>
                                 <input id="formula_code" type="text" name="formula_code"
-                                       placeholder="Enter Formula Code"
+                                       placeholder="Enter Formula Code" disabled={true}
                                        value={formulaCode} onChange={(e) => setFormulaCode(e.target.value)}
                                        className="form-input"/>
                             </div>
@@ -149,16 +252,52 @@ const Create = () => {
                                     isSearchable={true}
                                     isClearable={true}
                                     placeholder={'Select Category'}
-                                    onChange={(e) => {
-                                        setCategoryId(e ? e.value : '');
-                                    }}
+                                    onChange={(e: any) => setCategoryId(e ? e.value : '')}
                                 />
+                            </div>
+                            {/*<div className="w-full">*/}
+                            {/*    <label htmlFor="category_id">Color Code</label>*/}
+                            {/*    <Select*/}
+                            {/*        defaultValue={colorCodeOptions[0]}*/}
+                            {/*        options={colorCodeOptions}*/}
+                            {/*        isSearchable={true}*/}
+                            {/*        isClearable={true}*/}
+                            {/*        styles={customStyles}*/}
+                            {/*        placeholder={'Select Color Code'}*/}
+                            {/*        onChange={(e: any) => setColorCodeId(e ? e.value : '')}*/}
+                            {/*    />*/}
+                            {/*</div>*/}
+                            <div className="w-full flex justify-center items-end gap-2">
+                                <div className="w-full">
+                                    <label htmlFor="category_id">Color Code</label>
+                                    <Select
+                                        defaultValue={colorCodeOptions[0]}
+                                        options={colorCodeOptions}
+                                        isSearchable={true}
+                                        isClearable={true}
+                                        styles={customStyles}
+                                        placeholder={'Select Color Code'}
+                                        onChange={(e: any) => setColorCodeId(e ? e.value : '')}
+                                    />
+                                </div>
+                                <button type="button" className="btn btn-primary btn-sm flex justify-center items-center"
+                                        onClick={() => setColorCodeModal(true)}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                         className="h-5 w-5 ltr:mr-2 rtl:ml-2"
+                                         fill="none">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
+                                        <path d="M15 12L12 12M12 12L9 12M12 12L12 9M12 12L12 15" stroke="currentColor"
+                                              strokeWidth="1.5" strokeLinecap="round"/>
+                                    </svg>
+                                </button>
                             </div>
                         </div>
 
                         <div>
                             <div className="flex justify-end items-center mb-3">
-                                <button onClick={handleAddRow} className="btn btn-primary btn-sm">Add Row</button>
+                                <button type="button" onClick={() => setModal(true)}
+                                        className="btn btn-primary btn-sm">Add Row
+                                </button>
                             </div>
                             <table>
                                 <thead>
@@ -167,76 +306,18 @@ const Create = () => {
                                     <th>Unit</th>
                                     <th>Qty</th>
                                     <th>Cost</th>
-                                    <th>Total</th>
-                                    <th></th>
+                                    {/*<th>Total</th>*/}
+                                    <th>Action</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {rows.map(row => (
+                                {rawProducts.map((row: ITableRow) => (
                                     <tr key={row.id}>
-                                        <td>
-                                            <Select
-                                                defaultValue={productOptions[0]}
-                                                options={productOptions}
-                                                isSearchable={true}
-                                                isClearable={true}
-                                                placeholder={'Select Product'}
-                                                onChange={(e) => {
-                                                    const updatedRows = rows.map(row2 => {
-                                                        if (row2.id === row.id) {
-                                                            return {...row2, product_id: e ? e.value : ''};
-                                                        }
-                                                        return row;
-                                                    });
-                                                    setRows(updatedRows);
-                                                }}
-                                            />
-                                        </td>
-                                        <td>
-                                            <Select
-                                                defaultValue={unitOptions[0]}
-                                                options={unitOptions}
-                                                isSearchable={true}
-                                                isClearable={true}
-                                                placeholder={'Select Unit'}
-                                                onChange={(e) => {
-                                                    const updatedRows = rows.map(row2 => {
-                                                        if (row2.id === row.id) {
-                                                            return {...row2, unit_id: e ? e.value : ''};
-                                                        }
-                                                        return row;
-                                                    });
-                                                    setRows(updatedRows);
-                                                }}
-                                            />
-                                        </td>
-                                        <td>
-                                            <input
-                                                type="number"
-                                                name="quantity"
-                                                className="form-input"
-                                                value={valueInput(row.id).quantity}
-                                                onChange={e => handleChange(row.id, e)}
-                                            />
-                                        </td>
-                                        <td>
-                                            <input
-                                                type="number"
-                                                name="cost"
-                                                className="form-input"
-                                                value={valueInput(row.id).cost}
-                                                onChange={e => handleChange(row.id, e)}
-                                            />
-                                        </td>
-                                        <td>
-                                            <input
-                                                type="number"
-                                                name="total"
-                                                className="form-input"
-                                                value={valueInput(row.id).total}
-                                                onChange={e => handleChange(row.id, e)}
-                                            />
-                                        </td>
+                                        <td>{row.raw_product_title}</td>
+                                        <td>{row.unit_title}</td>
+                                        <td>{row.quantity}</td>
+                                        <td>{(row.unit_price*row.quantity).toFixed(2)}</td>
+                                        {/*<td>{row.total}</td>*/}
                                         <td>
                                             <button onClick={() => handleRemoveRow(row.id)}
                                                     className="btn btn-danger btn-sm">
@@ -255,6 +336,17 @@ const Create = () => {
                                         </td>
                                     </tr>
                                 ))}
+
+                                {rawProducts.length > 0 &&
+                                    <tr className='bg-gray-100'>
+                                        <td></td>
+                                        <td>Total Quantity</td>
+                                        <td>{totalQuantity}</td>
+                                        <td>{totalCost}</td>
+                                        {/*<td></td>*/}
+                                        <td></td>
+                                    </tr>
+                                }
                                 </tbody>
                             </table>
                         </div>
@@ -263,6 +355,16 @@ const Create = () => {
                             Submit
                         </button>
                     </form>
+                    <FormulaRawProductForm
+                        modal={modal}
+                        setModal={setModal}
+                        handleAddRawProduct={(value: any) => handleAddRow(value)}
+                    />
+                    <ColorCodeFormModal
+                        colorCodeModal={colorCodeModal}
+                        setColorCodeModal={setColorCodeModal}
+                        handleAddNewCode={(value: any) => handleColorCodeSubmit(value)}
+                    />
                 </div>
             </div>
         </div>

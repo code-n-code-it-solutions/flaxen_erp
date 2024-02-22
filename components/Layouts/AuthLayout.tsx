@@ -7,6 +7,7 @@ import {checkServerSideAuth} from "@/utils/authCheck";
 import {ThunkDispatch} from "redux-thunk";
 import {AnyAction} from "redux";
 import {logoutUser} from "@/store/slices/userSlice";
+import {clearMenuState} from "@/store/slices/menuSlice";
 
 const AuthLayout = ({children}: PropsWithChildren) => {
     const {token, isLoggedIn} = useSelector((state: IRootState) => state.user);
@@ -23,6 +24,7 @@ const AuthLayout = ({children}: PropsWithChildren) => {
                         router.push('/main');
                     } else {
                         dispatch(logoutUser());
+                        dispatch(clearMenuState());
                     }
                 })
         }

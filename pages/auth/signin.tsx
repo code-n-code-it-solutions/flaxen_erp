@@ -33,7 +33,7 @@ const Login = () => {
 
 
     return (
-        isLoggedIn &&
+        !isLoggedIn &&
         <div
             className="flex min-h-screen items-center justify-center bg-[url('/assets/images/map.svg')] bg-cover bg-center dark:bg-[url('/assets/images/map-dark.svg')]">
             <div className="panel m-6 w-full max-w-lg sm:w-[480px]">

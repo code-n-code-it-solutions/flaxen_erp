@@ -7,7 +7,9 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { store, persistor } from '@/store';
 import { appWithI18Next } from 'ni18n';
 import { ni18nConfig } from 'ni18n.config.ts';
-
+import { config } from '@fortawesome/fontawesome-svg-core'
+import '@fortawesome/fontawesome-svg-core/styles.css'
+config.autoAddCss = false
 // Perfect Scrollbar
 import 'react-perfect-scrollbar/dist/css/styles.css';
 

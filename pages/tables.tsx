@@ -1061,7 +1061,7 @@ const tableData = [
                                             </div>
                                         </td>
                                         <td className="border-b border-[#ebedf2] p-3 text-center dark:border-[#191e3a]">
-                                            <Tippy content="Edit">
+                                            <Tippy content="Id">
                                                 <button type="button">
                                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4.5 w-4.5 ltr:mr-2 rtl:ml-2">
                                                         <path
@@ -1218,7 +1218,7 @@ const tableData = [
                             </div>
                         </td>
                         <td className="p-3 border-b border-[#ebedf2] dark:border-[#191e3a] text-center">
-                            <Tippy content="Edit">
+                            <Tippy content="Id">
                                 <button type="button">
                                     <svg>...</svg>
                                 </button>
@@ -1531,7 +1531,7 @@ const tableData = [
                                                             <button type="button">Share</button>
                                                         </li>
                                                         <li>
-                                                            <button type="button">Edit</button>
+                                                            <button type="button">Id</button>
                                                         </li>
                                                         <li>
                                                             <button type="button">Delete</button>
@@ -1660,7 +1660,7 @@ const tableData = [
                                             <button type="button">Share</button>
                                         </li>
                                         <li>
-                                            <button type="button">Edit</button>
+                                            <button type="button">Id</button>
                                         </li>
                                         <li>
                                             <button type="button">Delete</button>
@@ -1727,7 +1727,7 @@ const tableData = [
                                         <td className="text-center">
                                             <ul className="flex items-center justify-center gap-2">
                                                 <li>
-                                                    <Tippy content="Edit">
+                                                    <Tippy content="Id">
                                                         <button type="button">
                                                             <svg className="text-primary" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                                 <circle opacity="0.5" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
@@ -1841,7 +1841,7 @@ const tableData = [
                         <td className="text-center">
                             <ul className="flex items-center justify-center gap-2">
                                 <li>
-                                    <Tippy content="Edit">
+                                    <Tippy content="Id">
                                         <button type="button">
                                             <svg>...</svg>
                                         </button>
@@ -1943,7 +1943,7 @@ const tableData = [
                                                     </Tippy>
                                                 </li>
                                                 <li>
-                                                    <Tippy content="Edit">
+                                                    <Tippy content="Id">
                                                         <button type="button">
                                                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-success">
                                                                 <path
@@ -2085,7 +2085,7 @@ const tableData = [
                                     </Tippy>
                                 </li>
                                 <li>
-                                    <Tippy content="Edit">
+                                    <Tippy content="Id">
                                         <button type="button" >
                                             <svg>...</svg>
                                         </button>

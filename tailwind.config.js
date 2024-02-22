@@ -7,6 +7,20 @@ module.exports = {
             center: true,
         },
         extend: {
+            width: {
+                'a4': '794px', // Custom width for A4
+                'a4-landscape': '1123px', // Custom width for A4 landscape
+            },
+            height: {
+                'a4': '1123px', // Custom height for A4
+                'a4-landscape': '794px', // Custom height for A4 landscape
+                'a4-header': '120px', // Custom height for A4 header
+                'a4-footer': '30px', // Custom height for A4 header
+                'a4-content': '940px', // Custom height for A4 header
+                'a4-landscape-header': '120px', // Custom height for A4 landscape header
+                'a4-landscape-footer': '30px', // Custom height for A4 landscape header
+                'a4-landscape-content': '673px', // Custom height for A4 landscape header
+            },
             colors: {
                 primary: {
                     DEFAULT: '#4361ee',
