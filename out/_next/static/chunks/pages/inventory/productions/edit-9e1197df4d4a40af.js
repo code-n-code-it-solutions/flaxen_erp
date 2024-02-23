@@ -1,1 +1,0 @@
-(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[2319],{95649:function(n,t,u){(window.__NEXT_P=window.__NEXT_P||[]).push(["/inventory/productions/edit",function(){return u(7983)}])},7983:function(n,t,u){"use strict";u.r(t);var i=u(85893);u(67294);let _=()=>(0,i.jsx)("div",{});t.default=_}},function(n){n.O(0,[9774,2888,179],function(){return n(n.s=95649)}),_N_E=n.O()}]);

@@ -1,1 +1,0 @@
-(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[1056],{92780:function(n,e,t){(window.__NEXT_P=window.__NEXT_P||[]).push(["/inventory/heads/categories",function(){return t(79706)}])},79706:function(n,e,t){"use strict";t.r(e);var u=t(85893);t(67294);let _=()=>(0,u.jsx)("div",{});e.default=_}},function(n){n.O(0,[9774,2888,179],function(){return n(n.s=92780)}),_N_E=n.O()}]);

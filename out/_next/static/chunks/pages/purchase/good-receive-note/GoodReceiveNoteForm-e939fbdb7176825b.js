@@ -1,1 +1,0 @@
-(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[1932],{83375:function(e,n,o){(window.__NEXT_P=window.__NEXT_P||[]).push(["/purchase/good-receive-note/GoodReceiveNoteForm",function(){return o(16255)}])}},function(e){e.O(0,[100,9443,6255,9774,2888,179],function(){return e(e.s=83375)}),_N_E=e.O()}]);

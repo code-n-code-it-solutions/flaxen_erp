@@ -1,1 +1,0 @@
-(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[6537],{71598:function(n,u,_){(window.__NEXT_P=window.__NEXT_P||[]).push(["/inventory/products/ProductForm",function(){return _(46921)}])}},function(n){n.O(0,[100,9443,6921,9774,2888,179],function(){return n(n.s=71598)}),_N_E=n.O()}]);

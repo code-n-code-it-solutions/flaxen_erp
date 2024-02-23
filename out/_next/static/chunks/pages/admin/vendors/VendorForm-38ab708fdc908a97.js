@@ -1,1 +1,0 @@
-(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[2451],{26125:function(n,_,u){(window.__NEXT_P=window.__NEXT_P||[]).push(["/admin/vendors/VendorForm",function(){return u(38254)}])}},function(n){n.O(0,[100,9443,546,6795,8254,9774,2888,179],function(){return n(n.s=26125)}),_N_E=n.O()}]);
