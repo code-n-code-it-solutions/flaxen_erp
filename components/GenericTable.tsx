@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from 'react';
 import {DataTable, DataTableSortStatus} from "mantine-datatable";
-import {downloadExcel} from "react-export-table-to-excel";
 import sortBy from 'lodash/sortBy';
 import type {DataTableColumn} from "mantine-datatable/dist/types/DataTableColumn";
 

@@ -1,10 +1,10 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import CodeHighlight from '../../components/Highlight';
+import CodeHighlight from '@/components/Highlight';
 import { useDispatch, useSelector } from 'react-redux';
-import { IRootState } from '../../store';
-import Dropdown from '../../components/Dropdown';
-import { setPageTitle } from '../../store/slices/themeConfigSlice';
+import { IRootState } from '@/store';
+import Dropdown from '@/components/Dropdown';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
 
 const Buttongroups = () => {
     const dispatch = useDispatch();
@@ -287,7 +287,7 @@ const Buttongroups = () => {
                     </div>
                     {codeArr.includes('code3') && (
                         <CodeHighlight>
-                            <pre className="language-typescript">{`import Dropdown from '../../components/Dropdown';
+                            <pre className="language-typescript">{`import Dropdown from '@/components/Dropdown';
 
 <div className="relative inline-flex align-middle flex-col items-start justify-center">
     <button type="button" className="btn btn-dark rounded-b-none w-full">

@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { Tab } from '@headlessui/react';
 import { Fragment, useEffect, useState } from 'react';
-import CodeHighlight from '../../components/Highlight';
+import CodeHighlight from '@/components/Highlight';
 import { useDispatch } from 'react-redux';
-import { setPageTitle } from '../../store/slices/themeConfigSlice';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
 
 const Tabs = () => {
     const dispatch = useDispatch();

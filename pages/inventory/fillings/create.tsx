@@ -16,7 +16,7 @@ import {
     getProductAssemblies
 } from "@/store/slices/productAssemblySlice";
 import {clearProductionState, storeProduction} from "@/store/slices/productionSlice";
-import {getRandomInt} from "@/pages/helper";
+import {getRandomInt} from "@/utils/helper";
 
 const Select = dynamic(
     () => import('react-select'),

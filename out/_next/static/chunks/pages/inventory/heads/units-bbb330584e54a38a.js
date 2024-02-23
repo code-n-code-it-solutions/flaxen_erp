@@ -1,0 +1,1 @@
+(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[2622],{10666:function(n,u,t){(window.__NEXT_P=window.__NEXT_P||[]).push(["/inventory/heads/units",function(){return t(3099)}])},3099:function(n,u,t){"use strict";t.r(u);var _=t(85893);t(67294);let e=()=>(0,_.jsx)("div",{});u.default=e}},function(n){n.O(0,[9774,2888,179],function(){return n(n.s=10666)}),_N_E=n.O()}]);

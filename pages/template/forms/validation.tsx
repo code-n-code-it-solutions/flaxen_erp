@@ -1,10 +1,10 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import CodeHighlight from '../../components/Highlight';
+import CodeHighlight from '@/components/Highlight';
 import * as Yup from 'yup';
 import { Field, Form, Formik } from 'formik';
 import Swal from 'sweetalert2';
-import { setPageTitle } from '../../store/slices/themeConfigSlice';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import { useDispatch } from 'react-redux';
 
 const Validation = () => {

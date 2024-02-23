@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { setPageTitle } from '../../store/slices/themeConfigSlice';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import { useRouter } from 'next/router';
 import BlankLayout from '@/components/Layouts/BlankLayout';
 const ContactForm = () => {

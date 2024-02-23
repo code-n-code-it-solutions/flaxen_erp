@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import AnimateHeight from 'react-animate-height';
-import { setPageTitle } from '../../store/slices/themeConfigSlice';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import { useDispatch } from 'react-redux';
 
 const KnowledgeBase = () => {

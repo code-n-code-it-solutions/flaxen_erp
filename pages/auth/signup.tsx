@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { useDispatch, useSelector } from 'react-redux';
-import { IRootState } from '../../store';
-import { setPageTitle } from '../../store/slices/themeConfigSlice';
+import { IRootState } from '@/store';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import BlankLayout from '@/components/Layouts/BlankLayout';

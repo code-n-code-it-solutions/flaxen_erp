@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import Lightbox from 'react-18-image-lightbox';
 import 'react-18-image-lightbox/style.css';
 import { useDispatch } from 'react-redux';
-import { setPageTitle } from '../../store/slices/themeConfigSlice';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
 
 const getItems = [
     {

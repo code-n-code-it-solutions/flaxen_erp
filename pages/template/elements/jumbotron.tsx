@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import CodeHighlight from '../../components/Highlight';
+import CodeHighlight from '@/components/Highlight';
 import { useDispatch } from 'react-redux';
-import { setPageTitle } from '../../store/slices/themeConfigSlice';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
 
 const Jumbotron = () => {
     const dispatch = useDispatch();

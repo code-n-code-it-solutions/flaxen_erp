@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import CodeHighlight from '../../components/Highlight';
+import CodeHighlight from '@/components/Highlight';
 import 'react-quill/dist/quill.snow.css';
-import { setPageTitle } from '../../store/slices/themeConfigSlice';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import { useDispatch } from 'react-redux';
 import dynamic from 'next/dynamic';
 const ReactQuill = dynamic(import('react-quill'), { ssr: false });

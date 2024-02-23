@@ -1,8 +1,8 @@
 import { useRouter } from 'next/router';
 import { useDispatch, useSelector } from 'react-redux';
-import { IRootState } from '../../store';
+import { IRootState } from '@/store';
 import { useEffect } from 'react';
-import { setPageTitle } from '../../store/slices/themeConfigSlice';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import BlankLayout from '@/components/Layouts/BlankLayout';
 
 const RecoverIdBox = () => {

@@ -1,10 +1,10 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import CodeHighlight from '../../components/Highlight';
+import CodeHighlight from '@/components/Highlight';
 import { useDispatch, useSelector } from 'react-redux';
-import { IRootState } from '../../store';
-import Dropdown from '../../components/Dropdown';
-import { setPageTitle } from '../../store/slices/themeConfigSlice';
+import { IRootState } from '@/store';
+import Dropdown from '@/components/Dropdown';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
 
 const InputGroup = () => {
     const dispatch = useDispatch();
@@ -466,7 +466,7 @@ const InputGroup = () => {
                         </div>
                         {codeArr.includes('code4') && (
                             <CodeHighlight>
-                                <pre className="language-typescript">{`import Dropdown from '../../components/Dropdown';
+                                <pre className="language-typescript">{`import Dropdown from '@/components/Dropdown';
 <div className="flex">
     <div className="dropdown">
         <Dropdown
@@ -1041,7 +1041,7 @@ const InputGroup = () => {
                         </div>
                         {codeArr.includes('code11') && (
                             <CodeHighlight>
-                                <pre className="language-typescript">{`import Dropdown from '../../components/Dropdown';
+                                <pre className="language-typescript">{`import Dropdown from '@/components/Dropdown';
 <form>
     <div className="mb-5 dropdown">
         <label htmlFor="dropdownLeftButton">Left</label>
@@ -1215,7 +1215,7 @@ const InputGroup = () => {
                         </div>
                         {codeArr.includes('code12') && (
                             <CodeHighlight>
-                                <pre className="language-typescript">{`import Dropdown from '../../components/Dropdown';
+                                <pre className="language-typescript">{`import Dropdown from '@/components/Dropdown';
 <form>
     <div className="mb-5 dropdown">
         <label htmlFor="btnLeft">Left</label>

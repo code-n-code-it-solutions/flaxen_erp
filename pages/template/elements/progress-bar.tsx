@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import Link from 'next/link';
-import CodeHighlight from '../../components/Highlight';
-import { setPageTitle } from '../../store/slices/themeConfigSlice';
+import CodeHighlight from '@/components/Highlight';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
 const Progressbar = () => {
     const dispatch = useDispatch();
     useEffect(() => {

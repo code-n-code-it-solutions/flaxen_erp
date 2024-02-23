@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { IRootState } from '../store';
+import { IRootState } from '@/store';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import Dropdown from '../components/Dropdown';
-import { setPageTitle } from '../store/slices/themeConfigSlice';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import dynamic from 'next/dynamic';
 const ReactApexChart = dynamic(() => import('react-apexcharts'), {
     ssr: false,

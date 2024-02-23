@@ -64,7 +64,7 @@ const Index = () => {
 
     const handleItemShowModal = (row: any) => {
         console.log(row);
-        router.push(`/inventory/product-assembly/view/${row.id}`);
+        // router.push(`/inventory/product-assembly/view/${row.id}`);
     }
 
     useEffect(() => {

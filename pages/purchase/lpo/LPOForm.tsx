@@ -1,3 +1,4 @@
+"use client";
 import React, {useEffect, useState} from 'react';
 import {setAuthToken, setContentType} from "@/configs/api.config";
 import {useDispatch, useSelector} from "react-redux";
@@ -11,9 +12,7 @@ import dynamic from 'next/dynamic';
 const ReactQuill = dynamic(import('react-quill'), {ssr: false});
 import {
     clearPurchaseRequisitionState, getPurchaseRequisitionByStatuses,
-    storePurchaseRequest
 } from "@/store/slices/purchaseRequisitionSlice";
-import PRRawProductModal from "@/components/PRRawProductModal";
 import {clearVendorState, getRepresentatives, getVendors} from "@/store/slices/vendorSlice";
 import Link from "next/link";
 import {getCurrencies} from "@/store/slices/currencySlice";
@@ -809,7 +808,7 @@ const LPOForm = ({id}: IFormProps) => {
                     </button>
                     <button
                         type="button"
-                        onClick={() => window.location.reload()}
+                        onClick={() => window?.location?.reload()}
                         className="btn btn-info"
                     >
                         Clear

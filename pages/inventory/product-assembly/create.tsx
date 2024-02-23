@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from 'react';
 import Breadcrumb from "@/components/Breadcrumb";
-// import Select from 'react-select';
 import Link from "next/link";
 import dynamic from 'next/dynamic';
 import {useDispatch, useSelector} from "react-redux";
@@ -255,18 +254,6 @@ const Create = () => {
                                     onChange={(e: any) => setCategoryId(e ? e.value : '')}
                                 />
                             </div>
-                            {/*<div className="w-full">*/}
-                            {/*    <label htmlFor="category_id">Color Code</label>*/}
-                            {/*    <Select*/}
-                            {/*        defaultValue={colorCodeOptions[0]}*/}
-                            {/*        options={colorCodeOptions}*/}
-                            {/*        isSearchable={true}*/}
-                            {/*        isClearable={true}*/}
-                            {/*        styles={customStyles}*/}
-                            {/*        placeholder={'Select Color Code'}*/}
-                            {/*        onChange={(e: any) => setColorCodeId(e ? e.value : '')}*/}
-                            {/*    />*/}
-                            {/*</div>*/}
                             <div className="w-full flex justify-center items-end gap-2">
                                 <div className="w-full">
                                     <label htmlFor="category_id">Color Code</label>

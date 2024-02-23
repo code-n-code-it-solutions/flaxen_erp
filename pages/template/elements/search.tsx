@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import CodeHighlight from '../../components/Highlight';
+import CodeHighlight from '@/components/Highlight';
 import ClickAwayListener from 'react-click-away-listener';
-import { setPageTitle } from '../../store/slices/themeConfigSlice';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import { useDispatch } from 'react-redux';
 
 const items = [

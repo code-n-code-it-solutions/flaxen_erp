@@ -1,15 +1,10 @@
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import Breadcrumb from "@/components/Breadcrumb";
-import ImageUploader from "@/components/ImageUploader";
-import Select from 'react-select';
 import Link from "next/link";
 import {useDispatch, useSelector} from "react-redux";
 import {ThunkDispatch} from "redux-thunk";
 import {IRootState} from "@/store";
 import {AnyAction} from "redux";
-import {getUnits} from "@/store/slices/unitSlice";
-import {setAuthToken, setContentType} from "@/configs/api.config";
-import {clearRawProduct, storeRawProduct} from "@/store/slices/rawProductSlice";
 import {useRouter} from "next/router";
 import {setPageTitle} from "@/store/slices/themeConfigSlice";
 import ProductForm from "@/pages/inventory/products/ProductForm";

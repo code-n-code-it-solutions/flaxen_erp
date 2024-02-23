@@ -1,11 +1,11 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import CodeHighlight from '../../components/Highlight';
+import CodeHighlight from '@/components/Highlight';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import { useDispatch, useSelector } from 'react-redux';
-import { IRootState } from '../../store';
-import { setPageTitle } from '../../store/slices/themeConfigSlice';
+import { IRootState } from '@/store';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
 
 const Notification = () => {
     const dispatch = useDispatch();

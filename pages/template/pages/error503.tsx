@@ -2,7 +2,7 @@ import React from 'react';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import Link from 'next/link';
-import { setPageTitle } from '../../store/slices/themeConfigSlice';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import BlankLayout from '@/components/Layouts/BlankLayout';
 
 const Error503 = () => {

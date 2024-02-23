@@ -1,16 +1,16 @@
 import Link from 'next/link';
-import CodeHighlight from '../../components/Highlight';
+import CodeHighlight from '@/components/Highlight';
 import { useState, Fragment, useEffect, useRef } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { useDispatch, useSelector } from 'react-redux';
-import { IRootState } from '../../store';
+import { IRootState } from '@/store';
 import { Tab } from '@headlessui/react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import { Navigation, Pagination } from 'swiper';
-import { setPageTitle } from '../../store/slices/themeConfigSlice';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
 
 const Modals = () => {
     const swiperRef = useRef<any>();

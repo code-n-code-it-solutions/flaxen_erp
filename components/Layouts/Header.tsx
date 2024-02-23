@@ -1,11 +1,12 @@
+"use client";
 import {useEffect, useState} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import Link from 'next/link';
 import {useRouter} from 'next/router';
-import {IRootState} from '../../store';
-import {toggleLocale, toggleTheme} from '../../store/slices/themeConfigSlice';
+import {IRootState} from '@/store';
+import {toggleLocale, toggleTheme} from '@/store/slices/themeConfigSlice';
 import {useTranslation} from 'react-i18next';
-import {toggleSidebar} from '../../store/slices/themeConfigSlice';
+import {toggleSidebar} from '@/store/slices/themeConfigSlice';
 import Dropdown from '../Dropdown';
 import {ThunkDispatch} from "redux-thunk";
 import {AnyAction} from "redux";
@@ -31,7 +32,7 @@ const Header = () => {
     }, [isLoggedIn, router])
 
     useEffect(() => {
-        const selector = document.querySelector('ul.horizontal-menu a[href="' + window.location.pathname + '"]');
+        const selector = document.querySelector('ul.horizontal-menu a[href="' + window?.location?.pathname + '"]');
         if (selector) {
             const all: any = document.querySelectorAll('ul.horizontal-menu .nav-link.active');
             for (let i = 0; i < all.length; i++) {

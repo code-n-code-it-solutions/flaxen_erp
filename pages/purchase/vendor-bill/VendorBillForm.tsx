@@ -1,3 +1,4 @@
+"use client";
 import React, {useEffect, useState} from 'react';
 import {setAuthToken, setContentType} from "@/configs/api.config";
 import {useDispatch, useSelector} from "react-redux";
@@ -5,27 +6,7 @@ import {ThunkDispatch} from "redux-thunk";
 import {IRootState} from "@/store";
 import {AnyAction} from "redux";
 import Select from "react-select";
-import 'react-quill/dist/quill.snow.css';
-import dynamic from 'next/dynamic';
-
-const ReactQuill = dynamic(import('react-quill'), {ssr: false});
-import {
-    clearPurchaseRequisitionState, getPurchaseRequisitionByStatuses,
-    storePurchaseRequest
-} from "@/store/slices/purchaseRequisitionSlice";
-import PRRawProductModal from "@/components/PRRawProductModal";
-import {clearVendorState, getRepresentatives, getVendors} from "@/store/slices/vendorSlice";
-import Link from "next/link";
-import {getCurrencies} from "@/store/slices/currencySlice";
-import VehicleFormModal from "@/components/VehicleFormModal";
-import {clearVehicleState, getVehicles, storeVehicle} from "@/store/slices/vehicleSlice";
-import LPORawProductModal from "@/components/LPORawProductModal";
-import Image from "next/image";
-import {BASE_URL} from "@/configs/server.config";
-import {getEmployees} from "@/store/slices/employeeSlice";
-import {getLPOByStatuses, storeLPO} from "@/store/slices/localPurchaseOrderSlice";
-import {clearGoodReceiveNoteState, getGRN, getGRNByStatuses, storeGRN} from "@/store/slices/goodReceiveNoteSlice";
-import lpo from "@/pages/purchase/lpo";
+import {getGRN} from "@/store/slices/goodReceiveNoteSlice";
 import {clearVendorBillState, storeVendorBill} from "@/store/slices/vendorBillSlice";
 import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
 import {FORM_CODE_TYPE} from "@/utils/enums";
@@ -442,7 +423,7 @@ const VendorBillForm = ({id}: IFormProps) => {
                     </button>
                     <button
                         type="button"
-                        onClick={() => window.location.reload()}
+                        onClick={() => window?.location?.reload()}
                         className="btn btn-info"
                     >
                         Clear

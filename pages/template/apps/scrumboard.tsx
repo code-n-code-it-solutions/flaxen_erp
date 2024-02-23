@@ -1,11 +1,11 @@
-import Dropdown from '../../components/Dropdown';
+import Dropdown from '@/components/Dropdown';
 import { useDispatch, useSelector } from 'react-redux';
 import { ReactSortable } from 'react-sortablejs';
-import { IRootState } from '../../store';
+import { IRootState } from '@/store';
 import { useState, Fragment, useEffect } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import Swal from 'sweetalert2';
-import { setPageTitle } from '../../store/slices/themeConfigSlice';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
 
 const Scrumboard = () => {
     const dispatch = useDispatch();

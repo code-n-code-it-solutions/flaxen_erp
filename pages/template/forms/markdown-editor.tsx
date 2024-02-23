@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import CodeHighlight from '../../components/Highlight';
-import { setPageTitle } from '../../store/slices/themeConfigSlice';
+import CodeHighlight from '@/components/Highlight';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import { useDispatch } from 'react-redux';
 import dynamic from 'next/dynamic';
 import 'easymde/dist/easymde.min.css';

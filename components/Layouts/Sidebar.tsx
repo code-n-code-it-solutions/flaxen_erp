@@ -2,9 +2,9 @@ import PerfectScrollbar from 'react-perfect-scrollbar';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import Link from 'next/link';
-import { toggleSidebar } from '../../store/slices/themeConfigSlice';
+import { toggleSidebar } from '@/store/slices/themeConfigSlice';
 import AnimateHeight from 'react-animate-height';
-import { IRootState } from '../../store';
+import { IRootState } from '@/store';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 
@@ -21,8 +21,9 @@ const Sidebar = () => {
     };
 
     useEffect(() => {
-        const selector = document.querySelector('.sidebar ul a[href="' + window.location.pathname + '"]');
-        if (selector) {
+
+            const selector = document.querySelector('.sidebar ul a[href="' + window?.location?.pathname + '"]');
+         if (selector) {
             selector.classList.add('active');
             const ul: any = selector.closest('ul.sub-menu');
             if (ul) {
@@ -50,7 +51,9 @@ const Sidebar = () => {
             const element = allLinks[i];
             element?.classList.remove('active');
         }
-        const selector = document.querySelector('.sidebar ul a[href="' + window.location.pathname + '"]');
+
+            const selector = document.querySelector('.sidebar ul a[href="' + window?.location?.pathname + '"]');
+
         selector?.classList.add('active');
     };
 

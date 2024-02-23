@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import CodeHighlight from '../../components/Highlight';
-import { setPageTitle } from '../../store/slices/themeConfigSlice';
+import CodeHighlight from '@/components/Highlight';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import { useDispatch } from 'react-redux';
 
 const Infobox = () => {

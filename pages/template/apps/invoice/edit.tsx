@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { setPageTitle } from '../../../store/slices/themeConfigSlice';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
 
 const Edit = () => {
     const dispatch = useDispatch();

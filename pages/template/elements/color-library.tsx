@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { useDispatch } from 'react-redux';
-import { setPageTitle } from '../../store/slices/themeConfigSlice';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import { useEffect } from 'react';
 
 const Colorlibrary = () => {

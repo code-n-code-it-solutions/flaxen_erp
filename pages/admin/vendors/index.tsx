@@ -1,13 +1,12 @@
 import {useEffect, useState} from 'react';
 import Swal from 'sweetalert2';
 import {useDispatch, useSelector} from 'react-redux';
-import {setPageTitle} from '../../../store/slices/themeConfigSlice';
+import {setPageTitle} from '@/store/slices/themeConfigSlice';
 import Link from "next/link";
 import Breadcrumb from "@/components/Breadcrumb";
 import {ThunkDispatch} from "redux-thunk";
 import {IRootState} from "@/store";
 import {AnyAction} from "redux";
-import {deleteRawProduct, getRawProducts} from "@/store/slices/rawProductSlice";
 import {setAuthToken, setContentType} from "@/configs/api.config";
 import GenericTable from "@/components/GenericTable";
 import {deleteVendor, getVendors} from "@/store/slices/vendorSlice";

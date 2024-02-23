@@ -1,9 +1,9 @@
 import Link from 'next/link';
-import CodeHighlight from '../../components/Highlight';
+import CodeHighlight from '@/components/Highlight';
 import { useEffect, useState } from 'react';
 import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css';
-import { setPageTitle } from '../../store/slices/themeConfigSlice';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import { useDispatch } from 'react-redux';
 
 const Tooltip = () => {

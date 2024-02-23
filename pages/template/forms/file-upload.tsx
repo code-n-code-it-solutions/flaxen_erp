@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import CodeHighlight from '../../components/Highlight';
+import CodeHighlight from '@/components/Highlight';
 import ImageUploading, { ImageListType } from 'react-images-uploading';
 // import "file-upload-with-preview/dist/file-upload-with-preview.min.css";
-import { setPageTitle } from '../../store/slices/themeConfigSlice';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import { useDispatch } from 'react-redux';
 
 const FileUploadPreview = () => {

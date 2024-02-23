@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import AnimateHeight from 'react-animate-height';
 import { useDispatch } from 'react-redux';
-import { setPageTitle } from '../../store/slices/themeConfigSlice';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
 
 const Faq = () => {
     const dispatch = useDispatch();

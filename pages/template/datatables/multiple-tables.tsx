@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import sortBy from 'lodash/sortBy';
 import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css';
-import { setPageTitle } from '../../store/slices/themeConfigSlice';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import { useDispatch } from 'react-redux';
 
 const rowData = [

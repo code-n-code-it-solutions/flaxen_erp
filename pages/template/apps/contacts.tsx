@@ -3,7 +3,7 @@ import { useState, Fragment, useEffect } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import Swal from 'sweetalert2';
 import { useDispatch } from 'react-redux';
-import { setPageTitle } from '../../store/slices/themeConfigSlice';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
 
 const Contacts = () => {
     const dispatch = useDispatch();

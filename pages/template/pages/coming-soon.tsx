@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { setPageTitle } from '../../store/slices/themeConfigSlice';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import { useDispatch } from 'react-redux';
 import { useRouter } from 'next/router';
 import BlankLayout from '@/components/Layouts/BlankLayout';

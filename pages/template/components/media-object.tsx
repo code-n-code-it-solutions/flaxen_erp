@@ -1,10 +1,10 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import CodeHighlight from '../../components/Highlight';
+import CodeHighlight from '@/components/Highlight';
 import { useDispatch, useSelector } from 'react-redux';
-import { IRootState } from '../../store';
-import Dropdown from '../../components/Dropdown';
-import { setPageTitle } from '../../store/slices/themeConfigSlice';
+import { IRootState } from '@/store';
+import Dropdown from '@/components/Dropdown';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
 
 const MediaObject = () => {
     const dispatch = useDispatch();
@@ -1039,7 +1039,7 @@ const MediaObject = () => {
                     {codeArr.includes('code12') && (
                         <CodeHighlight>
                             <pre className="language-xml">
-                                {`import Dropdown from '../../components/Dropdown';
+                                {`import Dropdown from '@/components/Dropdown';
 
 <div className="mb-5 dropdown">
     <div className="flex">

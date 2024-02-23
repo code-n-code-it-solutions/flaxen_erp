@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { IRootState } from '../../store';
-import { toggleAnimation, toggleLayout, toggleMenu, toggleNavbar, toggleRTL, toggleTheme, toggleSemidark } from '../../store/slices/themeConfigSlice';
+import { IRootState } from '@/store';
+import { toggleAnimation, toggleLayout, toggleMenu, toggleNavbar, toggleRTL, toggleTheme, toggleSemidark } from '@/store/slices/themeConfigSlice';
 
 const Setting = () => {
     const themeConfig = useSelector((state: IRootState) => state.themeConfig);

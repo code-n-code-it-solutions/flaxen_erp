@@ -4,7 +4,7 @@ import sortBy from 'lodash/sortBy';
 import dynamic from 'next/dynamic';
 const ReactApexChart = dynamic(() => import('react-apexcharts'), { ssr: false });
 import { useDispatch } from 'react-redux';
-import { setPageTitle } from '../../store/slices/themeConfigSlice';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
 
 const Basic = () => {
     const dispatch = useDispatch();

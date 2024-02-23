@@ -2,14 +2,12 @@ import React, {Fragment, useEffect, useState} from 'react';
 import {Dialog, Transition} from "@headlessui/react";
 import {setAuthToken} from "@/configs/api.config";
 import {getUnits} from "@/store/slices/unitSlice";
-import {getProductCategory} from "@/store/slices/categorySlice";
 import {getRawProducts} from "@/store/slices/rawProductSlice";
 import {useDispatch, useSelector} from "react-redux";
 import {ThunkDispatch} from "redux-thunk";
 import {IRootState} from "@/store";
 import {AnyAction} from "redux";
 import Select from "react-select";
-import {getRandomInt} from "@/pages/helper";
 import {getTaxCategories} from "@/store/slices/taxCategorySlice";
 
 interface IProps {

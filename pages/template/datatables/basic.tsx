@@ -1,7 +1,7 @@
 import { DataTable } from 'mantine-datatable';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { setPageTitle } from '../../store/slices/themeConfigSlice';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
 const rowData = [
     {
         id: 1,

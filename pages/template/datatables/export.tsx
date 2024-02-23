@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import sortBy from 'lodash/sortBy';
 import { downloadExcel } from 'react-export-table-to-excel';
 import { useDispatch } from 'react-redux';
-import { setPageTitle } from '../../store/slices/themeConfigSlice';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
 
 const rowData = [
     {

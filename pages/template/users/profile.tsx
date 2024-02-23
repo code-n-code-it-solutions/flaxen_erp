@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { useDispatch, useSelector } from 'react-redux';
-import { IRootState } from '../../store';
-import Dropdown from '../../components/Dropdown';
-import { setPageTitle } from '../../store/slices/themeConfigSlice';
+import { IRootState } from '@/store';
+import Dropdown from '@/components/Dropdown';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import { useEffect } from 'react';
 
 const Profile = () => {
