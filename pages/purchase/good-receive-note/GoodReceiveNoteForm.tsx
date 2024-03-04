@@ -163,7 +163,7 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
         if (code) {
             setFormData(prev => ({
                 ...prev,
-                grn_number: code
+                grn_number: code[FORM_CODE_TYPE.GOOD_RECEIVE_NOTE]
             }))
         }
     }, [code])

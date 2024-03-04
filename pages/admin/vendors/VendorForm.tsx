@@ -1,21 +1,23 @@
 import React, {useEffect, useState} from 'react';
-import ImageUploader from "@/components/ImageUploader";
+import ImageUploader from "@/components/form/ImageUploader";
 import {setAuthToken, setContentType} from "@/configs/api.config";
 import {useDispatch, useSelector} from "react-redux";
 import {ThunkDispatch} from "redux-thunk";
 import {IRootState} from "@/store";
 import {AnyAction} from "redux";
 import Select from "react-select";
-import VendorTypeFormModal from "@/components/VendorTypeFormModal";
-import VendorAddressModal from "@/components/VendorAddressModal";
-import VendorRepresentativeModal from "@/components/VendorRepresentativeModal";
+import VendorTypeFormModal from "@/components/specific-modal/VendorTypeFormModal";
+import VendorAddressModal from "@/components/specific-modal/VendorAddressModal";
+import VendorRepresentativeModal from "@/components/specific-modal/VendorRepresentativeModal";
 import {clearLocationState, getCities, getCountries, getStates} from "@/store/slices/locationSlice";
 import {getVendorTypes, storeVendorType} from "@/store/slices/vendorTypeSlice";
 import {clearVendorState, storeVendor} from "@/store/slices/vendorSlice";
 import {useRouter} from "next/router";
-import BankDetailModal from "@/components/BankDetailModal";
+import BankDetailModal from "@/components/specific-modal/BankDetailModal";
 import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
 import {FORM_CODE_TYPE} from "@/utils/enums";
+import MaskedInput from "react-text-mask";
+import {MaskConfig} from "@/configs/mask.config";
 
 interface IFormData {
     vendor_number: string;
@@ -107,7 +109,7 @@ const VendorForm = ({id}: IFormProps) => {
         name: '',
         vendor_type_id: 0,
         opening_balance: 0,
-        phone: '',
+        phone: '+971',
         email: '',
         due_in_days: 0,
         postal_code: '',
@@ -234,7 +236,7 @@ const VendorForm = ({id}: IFormProps) => {
 
     useEffect(() => {
         if (code) {
-            setFormData(prev => ({...prev, vendor_number: code}))
+            setFormData(prev => ({...prev, vendor_number: code[FORM_CODE_TYPE.VENDOR]}))
         }
     }, [code])
 
@@ -335,9 +337,20 @@ const VendorForm = ({id}: IFormProps) => {
                     </div>
                     <div className="w-full">
                         <label htmlFor="phone">Phone</label>
-                        <input id="phone" type="number" name="phone" placeholder="Enter Phone number"
-                               value={formData.phone} onChange={handleChange}
-                               className="form-input"/>
+                        <MaskedInput
+                            id="phone"
+                            type="text"
+                            placeholder={MaskConfig.phone.placeholder}
+                            className="form-input"
+                            guide={true}
+                            name="phone"
+                            value={formData.phone}
+                            onChange={handleChange}
+                            mask={MaskConfig.phone.pattern}
+                        />
+                        {/*<input id="phone" type="number" name="phone" placeholder="Enter Phone number"*/}
+                        {/*       value={formData.phone} onChange={handleChange}*/}
+                        {/*       className="form-input"/>*/}
                     </div>
                     <div className="w-full">
                         <label htmlFor="email">Email</label>

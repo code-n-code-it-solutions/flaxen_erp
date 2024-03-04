@@ -162,7 +162,7 @@ const VendorBillForm = ({id}: IFormProps) => {
         if (code) {
             setFormData(prev => ({
                 ...prev,
-                bill_number: code
+                bill_number: code[FORM_CODE_TYPE.VENDOR_BILL]
             }))
         }
     }, [code])

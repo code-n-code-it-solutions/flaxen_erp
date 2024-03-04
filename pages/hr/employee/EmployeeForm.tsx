@@ -1,29 +1,24 @@
 import React, {useEffect, useState} from 'react';
-import ImageUploader from "@/components/ImageUploader";
+import ImageUploader from "@/components/form/ImageUploader";
 import {setAuthToken, setContentType} from "@/configs/api.config";
 import {useDispatch, useSelector} from "react-redux";
 import {ThunkDispatch} from "redux-thunk";
 import {IRootState} from "@/store";
 import {AnyAction} from "redux";
 import Select from "react-select";
-import VendorTypeFormModal from "@/components/VendorTypeFormModal";
-import VendorAddressModal from "@/components/VendorAddressModal";
-import VendorRepresentativeModal from "@/components/VendorRepresentativeModal";
 import {clearLocationState, getCities, getCountries, getStates} from "@/store/slices/locationSlice";
-import {getVendorTypes, storeVendorType} from "@/store/slices/vendorTypeSlice";
-import {clearVendorState, storeVendor} from "@/store/slices/vendorSlice";
 import {useRouter} from "next/router";
-import BankDetailModal from "@/components/BankDetailModal";
-import {date} from "yup";
+import BankDetailModal from "@/components/specific-modal/BankDetailModal";
 import {clearEmployeeState, storeEmployee} from "@/store/slices/employeeSlice";
 import {clearDesignationState, getDesignationByDepartmentID, storeDesignation} from "@/store/slices/designationSlice";
 import {clearDepartmentState, getDepartments, storeDepartment} from "@/store/slices/departmentSlice";
-import DepartmentFormModal from "@/components/DepartmentFormModal";
-import DesignationFormModal from "@/components/DesignationFormModal";
-import designationFormModal from "@/components/DesignationFormModal";
-import DocumentFormModal from "@/components/DocumentFormModal";
+import DepartmentFormModal from "@/components/specific-modal/DepartmentFormModal";
+import DesignationFormModal from "@/components/specific-modal/DesignationFormModal";
+import DocumentFormModal from "@/components/specific-modal/DocumentFormModal";
 import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
 import {FORM_CODE_TYPE} from "@/utils/enums";
+import {MaskConfig} from "@/configs/mask.config";
+import MaskedInput from "react-text-mask";
 
 interface IFormData {
     employee_code: string;
@@ -86,7 +81,7 @@ const EmployeeForm = ({id}: IFormProps) => {
     const [formData, setFormData] = useState<IFormData>({
         employee_code: '',
         name: '',
-        phone: '',
+        phone: '+971',
         email: '',
         password: '',
         postal_code: '',
@@ -190,7 +185,7 @@ const EmployeeForm = ({id}: IFormProps) => {
 
     useEffect(() => {
         if (code) {
-            setFormData(prev => ({...prev, employee_code: code}))
+            setFormData(prev => ({...prev, employee_code: code[FORM_CODE_TYPE.EMPLOYEE]}))
         }
     }, [code])
 
@@ -337,9 +332,20 @@ const EmployeeForm = ({id}: IFormProps) => {
                 <div className="flex flex-col md:flex-row gap-3 w-full">
                     <div className="w-full">
                         <label htmlFor="phone">Phone</label>
-                        <input id="phone" type="number" name="phone" placeholder="Enter Phone number"
-                               value={formData.phone} onChange={handleChange}
-                               className="form-input"/>
+                        <MaskedInput
+                            id="phone"
+                            type="text"
+                            placeholder={MaskConfig.phone.placeholder}
+                            className="form-input"
+                            guide={true}
+                            name="phone"
+                            value={formData.phone}
+                            onChange={handleChange}
+                            mask={MaskConfig.phone.pattern}
+                        />
+                        {/*<input id="phone" type="number" name="phone" placeholder="Enter Phone number"*/}
+                        {/*       value={formData.phone} onChange={handleChange}*/}
+                        {/*       className="form-input"/>*/}
                     </div>
 
                     <div className="w-full">
@@ -360,9 +366,20 @@ const EmployeeForm = ({id}: IFormProps) => {
                 <div className="flex flex-col md:flex-row gap-3 w-full">
                     <div className="w-full">
                         <label htmlFor="id_number">ID #</label>
-                        <input id="id_number" type="text" name="id_number" placeholder="Enter national identity number"
-                               value={formData.id_number} onChange={handleChange}
-                               className="form-input"/>
+                        <MaskedInput
+                            id="id_number"
+                            type="text"
+                            placeholder={MaskConfig.identityNumber.placeholder}
+                            className="form-input"
+                            guide={true}
+                            name="id_number"
+                            value={formData.id_number}
+                            onChange={handleChange}
+                            mask={MaskConfig.identityNumber.pattern}
+                        />
+                        {/*<input id="id_number" type="text" name="id_number" placeholder="Enter national identity number"*/}
+                        {/*       value={formData.id_number} onChange={handleChange}*/}
+                        {/*       className="form-input"/>*/}
                     </div>
 
                     <div className="w-full">

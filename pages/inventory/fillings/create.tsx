@@ -10,7 +10,7 @@ import {AnyAction} from "redux";
 import {useRouter} from "next/router";
 import {setPageTitle} from "@/store/slices/themeConfigSlice";
 import {setAuthToken, setContentType} from "@/configs/api.config";
-import FormulaRawProductForm from "@/components/FormulaRawProductForm";
+import FormulaRawProductForm from "@/components/specific-modal/FormulaRawProductForm";
 import {
     clearProductAssemblyState, getAssemblyItems,
     getProductAssemblies

@@ -27,6 +27,8 @@ import reportReducer from './slices/reportSlice';
 import utilReducer from './slices/utilSlice';
 import menuReducer from './slices/menuSlice';
 import permissionReducer from './slices/permissionSlice';
+import assetReducer from './slices/assetSlice';
+import serviceReducer from './slices/serviceSlice';
 
 const persistConfig = {
     key: 'root',
@@ -54,7 +56,9 @@ const persistConfig = {
         'vendorBill',
         'report',
         'util',
-        'permission'
+        'permission',
+        'asset',
+        'service'
     ]
 };
 
@@ -84,7 +88,9 @@ const rootReducer = combineReducers({
     report: reportReducer,
     util: utilReducer,
     menu: menuReducer,
-    permission: permissionReducer
+    permission: permissionReducer,
+    asset: assetReducer,
+    service: serviceReducer
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

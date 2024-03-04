@@ -12,11 +12,12 @@ import {ThunkDispatch} from "redux-thunk";
 import {AnyAction} from "redux";
 import {logoutUser} from "@/store/slices/userSlice";
 import {clearMenuState, getPermittedMenu} from "@/store/slices/menuSlice";
+import {setAuthToken} from "@/configs/api.config";
 
 const Header = () => {
     const router = useRouter();
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
-    const {isLoggedIn} = useSelector((state: IRootState) => state.user);
+    const {isLoggedIn, token} = useSelector((state: IRootState) => state.user);
     const {permittedMenus} = useSelector((state: IRootState) => state.menu);
     const handleLogout = () => {
         dispatch(clearMenuState());
@@ -27,6 +28,7 @@ const Header = () => {
         if (!isLoggedIn) {
             router.push('/auth/signin')
         } else {
+            setAuthToken(token)
             dispatch(getPermittedMenu());
         }
     }, [isLoggedIn, router])
@@ -142,9 +144,9 @@ const Header = () => {
                 <div className="relative flex w-full items-center bg-white px-5 py-2.5 dark:bg-black">
                     <div className="horizontal-logo flex items-center justify-between ltr:mr-2 rtl:ml-2 lg:hidden">
                         <Link href="/" className="main-logo flex shrink-0 items-center">
-                            <img className="inline w-8 ltr:-ml-1 rtl:-mr-1" src="/assets/images/logo.svg" alt="logo"/>
+                            {/*<img className="inline w-8 ltr:-ml-1 rtl:-mr-1" src="/assets/images/logo.svg" alt="logo"/>*/}
                             <span
-                                className="hidden align-middle text-2xl  font-semibold  transition-all duration-300 ltr:ml-1.5 rtl:mr-1.5 dark:text-white-light md:inline">VRISTO</span>
+                                className="hidden align-middle text-2xl  font-semibold  transition-all duration-300 ltr:ml-1.5 rtl:mr-1.5 dark:text-white-light md:inline">FLAXEN PAINTS</span>
                         </Link>
                         <button
                             type="button"

@@ -1,15 +1,22 @@
 import React, {useEffect, useState} from 'react';
-import ImageUploader from "@/components/ImageUploader";
-import Select from "react-select";
+import ImageUploader from "@/components/form/ImageUploader";
 import {useDispatch, useSelector} from "react-redux";
 import {IRootState} from "@/store";
 import {getUnits} from "@/store/slices/unitSlice";
-import {clearRawProductState, editRawProduct, storeRawProduct} from "@/store/slices/rawProductSlice";
+import {clearRawProductState, editRawProduct, storeRawProduct, updateRawProduct} from "@/store/slices/rawProductSlice";
 import {ThunkDispatch} from "redux-thunk";
 import {AnyAction} from "redux";
 import {setAuthToken, setContentType} from "@/configs/api.config";
 import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
-import {FORM_CODE_TYPE} from "@/utils/enums";
+import {ButtonType, ButtonVariant, FORM_CODE_TYPE} from "@/utils/enums";
+import {Dropdown} from "@/components/form/Dropdown";
+import {Input} from "@/components/form/Input";
+import Textarea from "@/components/form/Textarea";
+import Button from "@/components/Button";
+import {isNull} from "lodash";
+import {BASE_URL} from "@/configs/server.config";
+import {imagePath} from "@/utils/helper";
+import {router} from "next/client";
 
 interface IFormData {
     item_code: string;
@@ -54,6 +61,7 @@ const ProductForm = ({id}: IFormProps) => {
         image: null,
     });
 
+    const [imagePreview, setImagePreview] = useState('');
     const [unitOptions, setUnitOptions] = useState([]);
     const [subUnitOptions, setSubUnitOptions] = useState([]);
     const [valuationMethodOptions, setValuationMethodOptions] = useState([
@@ -70,22 +78,18 @@ const ProductForm = ({id}: IFormProps) => {
     ]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
+        const {name, value} = e.target;
         setFormData(prevFormData => {
             // Start with the current form data.
-            let updatedFormData = { ...prevFormData, [name]: value };
+            let updatedFormData = {...prevFormData, [name]: value};
 
             // Calculate the new values based on the change.
             if (name === 'opening_stock') {
-                const openingStock = parseInt(value, 10); // Ensure we're working with a number.
+                const openingStock = Number(value);
                 updatedFormData.opening_stock_total_balance = openingStock * prevFormData.opening_stock_unit_balance;
             } else if (name === 'opening_stock_unit_balance') {
-                const openingStockUnitBalance = parseFloat(value); // Ensure we're working with a number.
+                const openingStockUnitBalance = Number(value);
                 updatedFormData.opening_stock_total_balance = prevFormData.opening_stock * openingStockUnitBalance;
-            } else if (name === 'opening_stock_total_balance') {
-                const openingStockTotalBalance = parseFloat(value); // Ensure we're working with a number.
-                // Protect against division by zero for opening_stock to calculate opening_stock_unit_balance.
-                updatedFormData.opening_stock_unit_balance = prevFormData.opening_stock ? openingStockTotalBalance / prevFormData.opening_stock : 0;
             }
 
             return updatedFormData;
@@ -98,7 +102,7 @@ const ProductForm = ({id}: IFormProps) => {
         setAuthToken(token)
         setContentType('multipart/form-data')
         if (id) {
-            // dispatch(updateRawProduct(id, formData));
+            dispatch(updateRawProduct({id, rawProductData: formData}));
         } else {
             dispatch(storeRawProduct(formData));
         }
@@ -109,17 +113,31 @@ const ProductForm = ({id}: IFormProps) => {
     }
 
     useEffect(() => {
-        allUnitOptions();
-        dispatch(clearRawProductState());
+        dispatch(getUnits());
         dispatch(clearUtilState());
-        dispatch(generateCode(FORM_CODE_TYPE.RAW_MATERIAL));
-        if (id) {
-            dispatch(editRawProduct(id));
+        setAuthToken(token);
+        setContentType('application/json');
+    }, [dispatch, token]);
+
+    useEffect(() => {
+        if (!id) {
+            dispatch(generateCode(FORM_CODE_TYPE.RAW_MATERIAL));
+            setImagePreview(imagePath(''));
         }
-    }, [])
+        return () => {
+            dispatch(clearRawProductState());
+        };
+    }, [id, dispatch]);
+
+    useEffect(() => {
+        if (code && isNull(id)) {
+            setFormData(prev => ({...prev, item_code: code[FORM_CODE_TYPE.RAW_MATERIAL]}))
+        }
+    }, [code]);
 
     useEffect(() => {
         if (rawProductDetail) {
+            setImagePreview(imagePath(rawProductDetail.thumbnail))
             setFormData({
                 ...formData,
                 item_code: rawProductDetail.item_code,
@@ -135,23 +153,17 @@ const ProductForm = ({id}: IFormProps) => {
                 opening_stock_total_balance: rawProductDetail.opening_stock_total_balance,
                 sale_description: rawProductDetail.sale_description,
             });
+        } else {
+            setImagePreview(imagePath(''))
         }
     }, [rawProductDetail]);
-
-    const handleProductTypeChange = (e: any) => {
-        if (e.value === 'empty') {
-            setFormData(prev => ({...prev, item_code: 'EM-'+code}))
-        } else {
-            setFormData(prev => ({...prev, item_code: 'RM-'+code}))
-        }
-    }
 
     useEffect(() => {
         const parentUnits = ['BAG', 'DRUM', 'GLN', 'QTY', 'NUMBER', 'BOTTLE']
         const childUnits = ['KG', 'LTR', 'GRM']
         if (units) {
-            let mainUnits = units.filter((unit:any) => parentUnits.includes(unit.label))
-            let subUnits = units.filter((unit:any) => childUnits.includes(unit.label))
+            let mainUnits = units.filter((unit: any) => parentUnits.includes(unit.label))
+            let subUnits = units.filter((unit: any) => childUnits.includes(unit.label))
             setUnitOptions(mainUnits);
             setSubUnitOptions(subUnits)
         }
@@ -160,157 +172,181 @@ const ProductForm = ({id}: IFormProps) => {
     return (
         <form className="space-y-5" onSubmit={handleSubmit}>
             <div className="flex justify-center items-center">
-                <ImageUploader image={image} setImage={setImage}/>
+                <ImageUploader image={image} setImage={setImage} existingImage={imagePreview}/>
             </div>
             <div className="flex justify-start flex-col items-start space-y-3">
-                <div className="flex flex-col md:flex-row justify-center items-center gap-3">
-                    <div>
-                        <label htmlFor="unit_id">Product Type</label>
-                        <Select
-                            defaultValue={productTypeOptions[0]}
-                            options={productTypeOptions}
-                            isSearchable={true}
-                            isClearable={true}
-                            placeholder={'Select Product Type'}
-                            onChange={(e: any) => handleProductTypeChange(e)}
-                        />
-                    </div>
-                    <div>
-                        <label htmlFor="item_code">Item Code</label>
-                        <input id="item_code" type="text" name="item_code" placeholder="Enter Item code"
-                               value={formData.item_code} onChange={handleChange} disabled={true}
-                               className="form-input"/>
-                    </div>
-                </div>
-                <div className="w-full md:w-1/2">
-                    <label htmlFor="title">Item Title</label>
-                    <input id="title" type="text" name="title" placeholder="Enter Item TItle"
-                           value={formData.title} onChange={handleChange}
-                           className="form-input" style={{height: 45}}/>
-                </div>
-            </div>
-            <div className='flex justify-between items-center flex-col md:flex-row gap-3'>
-                <div className='w-full'>
-                    <label htmlFor="unit_id">Unit</label>
-                    <Select
-                        defaultValue={unitOptions[0]}
-                        options={unitOptions}
-                        isSearchable={true}
-                        isClearable={true}
-                        placeholder={'Select Unit'}
-                        onChange={(e: any) => {
-                            setFormData({
-                                ...formData,
-                                unit_id: e ? e.value : ''
-                            });
-                        }}
-                    />
-                </div>
-                <div className='w-full'>
-                    <label htmlFor="sub_unit_id">Sub Unit</label>
-                    <Select
-                        defaultValue={subUnitOptions[0]}
-                        options={subUnitOptions}
-                        isSearchable={true}
-                        isClearable={true}
-                        placeholder={'Select Sub Unit'}
-                        onChange={(e: any) => {
-                            setFormData({
-                                ...formData,
-                                sub_unit_id: e ? e.value : ''
-                            });
-                        }}
-                    />
-                </div>
-
-                <div className='w-full'>
-                    <label htmlFor="value_per_unit">Value per Unit (According to sub unit)</label>
-                    <input id="value_per_unit" type="number" name="value_per_unit"
-                           placeholder="Enter weight per main unit"
-                           value={formData.value_per_unit} onChange={handleChange}
-                           className="form-input"/>
-                </div>
-            </div>
-            <div className='flex justify-between items-center flex-col md:flex-row gap-3'>
-                <div className='w-full'>
-                    <label htmlFor="min_stock_level">Min Stock Level (Main Unit)</label>
-                    <input id="min_stock_level" type="number" name="min_stock_level"
-                           placeholder="Set min stock level"
-                           value={formData.min_stock_level} onChange={handleChange}
-                           className="form-input"/>
-                </div>
-                <div className='w-full'>
-                    <label htmlFor="opening_stock">Opening Stock Count (Sub Unit)</label>
-                    <input id="opening_stock" type="number" name="opening_stock"
-                           placeholder="Enter Opening Stock Count"
-                           value={formData.opening_stock} onChange={handleChange}
-                           className="form-input"/>
-                </div>
-                <div className="w-full flex justify-between items-center flex-col md:flex-row gap-3">
-                    <div className='w-full'>
-                        <label htmlFor="opening_stock_balance">Opening Per Sub Unit Price</label>
-                        <input id="opening_stock_unit_price" type="number" name="opening_stock_unit_price"
-                               placeholder="Enter Opening Stock Unit Balance"
-                               value={formData.opening_stock_unit_balance} onChange={handleChange}
-                               className="form-input"/>
-                    </div>
-                    <div className='w-full'>
-                        <label htmlFor="opening_stock_balance">Opening Stock Total Balance</label>
-                        <input id="opening_stock_total_balance" type="number" name="opening_stock_total_balance"
-                               placeholder="Enter Opening Stock Total Balance"
-                               value={formData.opening_stock_total_balance} onChange={handleChange}
-                               className="form-input"/>
-                    </div>
-                </div>
-
-            </div>
-
-            <div>
-                <label htmlFor="valuation_method">Valuation Method</label>
-                <Select
-                    defaultValue={valuationMethodOptions[0]}
-                    options={valuationMethodOptions}
-                    isSearchable={true}
-                    isClearable={true}
-                    placeholder={'Select Valuation Method'}
-                    onChange={(e) => {
-                        setFormData({
-                            ...formData,
-                            valuation_method: e ? e.value : ''
-                        });
-                    }}
+                <Input
+                    label='Item Code'
+                    type='text'
+                    name='item_code'
+                    value={formData.item_code}
+                    onChange={handleChange}
+                    isMasked={false}
+                    placeholder='Enter Item code'
+                    disabled={true}
+                />
+                <Input
+                    divClasses='w-full md:w-1/2'
+                    label='Item Title'
+                    type='text'
+                    name='title'
+                    value={formData.title}
+                    onChange={handleChange}
+                    isMasked={false}
+                    styles={{height: 45}}
                 />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div>
-                    <label htmlFor="purchase_description">Purchase Description</label>
-                    <textarea
-                        id="purchase_description"
-                        rows={3}
-                        name="purchase_description"
-                        className="form-textarea"
+            <div className='flex justify-between items-center flex-col md:flex-row gap-3'>
+                <Dropdown
+                    divClasses='w-full'
+                    label='Unit'
+                    name='unit_id'
+                    options={unitOptions}
+                    value={formData.unit_id}
+                    onChange={(e: any) => {
+                        if (e && typeof e !== 'undefined') {
+                            setFormData({
+                                ...formData,
+                                unit_id: e.value
+                            })
+                        } else {
+                            setFormData({
+                                ...formData,
+                                unit_id: ''
+                            })
+                        }
+                    }}
+                />
+
+                <Dropdown
+                    divClasses='w-full'
+                    label='Sub Unit'
+                    name='sub_unit_id'
+                    options={subUnitOptions}
+                    value={formData.sub_unit_id}
+                    onChange={(e: any) => {
+                        if (e && typeof e !== 'undefined') {
+                            setFormData({
+                                ...formData,
+                                sub_unit_id: e.value
+                            })
+                        } else {
+                            setFormData({
+                                ...formData,
+                                sub_unit_id: ''
+                            })
+                        }
+                    }}
+                />
+                <Input
+                    divClasses='w-full'
+                    label='Value per Unit (According to sub unit)'
+                    type='number'
+                    name='value_per_unit'
+                    value={formData.value_per_unit}
+                    onChange={handleChange}
+                    isMasked={false}
+                    placeholder='Enter weight per main unit'
+                />
+            </div>
+            <div className='flex justify-between items-center flex-col md:flex-row gap-3'>
+                <Input
+                    divClasses='w-full'
+                    label='Min Stock Level (Main Unit)'
+                    type='number'
+                    name='min_stock_level'
+                    value={formData.min_stock_level}
+                    onChange={handleChange}
+                    isMasked={false}
+                    placeholder='Set min stock level'
+                />
+
+                <Input
+                    divClasses='w-full'
+                    label='Opening Stock Count (Sub Unit)'
+                    type='number'
+                    name='opening_stock'
+                    value={formData.opening_stock.toString()}
+                    onChange={handleChange}
+                    isMasked={false}
+                    placeholder='Enter Opening Stock Count'
+                />
+
+                <div className="w-full flex justify-between items-center flex-col md:flex-row gap-3">
+                    <Input
+                        divClasses='w-full'
+                        label='Opening Per Sub Unit Price'
+                        type='number'
+                        name='opening_stock_unit_balance'
+                        value={formData.opening_stock_unit_balance.toString()}
                         onChange={handleChange}
-                        placeholder="Enter description for purchase"
-                        defaultValue={formData.purchase_description}
-                    ></textarea>
-                </div>
-                <div>
-                    <label htmlFor="sale_description">Sale Description</label>
-                    <textarea
-                        id="sale_description"
-                        rows={3}
-                        name="sale_description"
-                        className="form-textarea"
+                        isMasked={false}
+                        placeholder='Enter Opening Stock Unit Balance'
+                    />
+                    <Input
+                        divClasses='w-full'
+                        label='Opening Stock Total Balance'
+                        type='number'
+                        name='opening_stock_total_balance'
+                        value={formData.opening_stock_total_balance.toString()}
                         onChange={handleChange}
-                        placeholder="Enter descriptin for sales"
-                        defaultValue={formData.sale_description}
-                    ></textarea>
+                        isMasked={false}
+                        disabled={true}
+                        placeholder='Enter Opening Stock Total Balance'
+                    />
+
                 </div>
             </div>
 
-            <button type="submit" className="btn btn-primary !mt-6" disabled={loading}>
-                {loading ? 'Loading...' : 'Create'}
-            </button>
+            <Dropdown
+                divClasses='w-full'
+                label='Valuation Method'
+                name='valuation_method'
+                options={valuationMethodOptions}
+                value={formData.valuation_method}
+                onChange={(e: any) => {
+                    if (e && typeof e !== 'undefined') {
+                        setFormData({
+                            ...formData,
+                            valuation_method: e.value
+                        })
+                    } else {
+                        setFormData({
+                            ...formData,
+                            valuation_method: ''
+                        })
+                    }
+                }}
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <Textarea
+                    label='Purchase Description'
+                    name='purchase_description'
+                    value={formData.purchase_description}
+                    onChange={handleChange}
+                    isReactQuill={false}
+                    rows={3}
+                    placeholder='Enter description for purchase'
+                />
+
+                <Textarea
+                    label='Sale Description'
+                    name='sale_description'
+                    value={formData.sale_description}
+                    onChange={handleChange}
+                    isReactQuill={false}
+                    rows={3}
+                    placeholder='Enter description for sales'
+                />
+            </div>
+            <Button
+                type={ButtonType.submit}
+                text={loading ? 'Loading...' : id ? 'Update' : 'Create'}
+                variant={ButtonVariant.primary}
+                disabled={loading}
+                classes='!mt-6'
+            />
         </form>
     );
 };
