@@ -343,7 +343,7 @@ const ProductForm = ({id}: IFormProps) => {
             <Button
                 type={ButtonType.submit}
                 text={loading ? 'Loading...' : id ? 'Update' : 'Create'}
-                variant={ButtonVariant.primary}
+                variant={ButtonVariant.info}
                 disabled={loading}
                 classes='!mt-6'
             />
