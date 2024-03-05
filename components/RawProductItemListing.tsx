@@ -7,9 +7,9 @@ import {AnyAction} from "redux";
 import {setAuthToken} from "@/configs/api.config";
 import {getUnits} from "@/store/slices/unitSlice";
 import {getTaxCategories} from "@/store/slices/taxCategorySlice";
-import Select from "react-select";
-import {RAW_PRODUCT_LIST_TYPE} from "@/utils/enums";
+import {ButtonVariant, IconType, RAW_PRODUCT_LIST_TYPE} from "@/utils/enums";
 import RawProductModal from "@/components/specific-modal/raw-modal/RawProductModal";
+import IconButton from "@/components/IconButton";
 
 interface IRawProduct {
     type: string | 'add';
@@ -30,30 +30,25 @@ interface IRawProduct {
 interface RawProductItemsProps {
     rawProducts: any[];
     setRawProducts: Dispatch<SetStateAction<any[]>>;
-    // handleEditProductItem: (args: any) => void;
-    // handleRemove: (index: number) => void;
     type: RAW_PRODUCT_LIST_TYPE;
 }
 
-// <th>Product</th>
-// <th>Unit</th>
-// <th>Unit Price (KG)</th>
-// <th>Qty</th>
-// <th>Available QTY (KG)</th>
-// <th>Required QTY (KG)</th>
-// <th>Cost</th>
-// <th>Action</th>
+interface Totals {
+    [key: string]: number;
+}
 
 const tableStructure = [
     {
         listingFor: RAW_PRODUCT_LIST_TYPE.PRODUCT_ASSEMBLY,
         header: ['Product', 'Desc', 'Unit', 'Qty (KG)', 'Unit Price (KG)', 'Total'],
-        columns: ['raw_product_id', 'description', 'unit_id', 'quantity', 'unit_price', 'total']
+        columns: ['raw_product_id', 'description', 'unit_id', 'quantity', 'unit_price', 'total'],
+        numericColumns: ['quantity', 'unit_price', 'total']
     },
     {
         listingFor: RAW_PRODUCT_LIST_TYPE.PRODUCTION,
         header: ['Product', 'Desc', 'Unit', 'Unit Price (KG)', 'Qty (KG)', 'Available Qty (KG)', 'Required Qty (KG)', 'Total'],
-        columns: ['raw_product_id', 'description', 'unit_id', 'unit_price', 'quantity', 'availableQuantity', 'requiredQuantity', 'total']
+        columns: ['raw_product_id', 'description', 'unit_id', 'unit_price', 'quantity', 'availableQuantity', 'requiredQuantity', 'total'],
+        numericColumns: ['quantity', 'unit_price', 'availableQuantity', 'requiredQuantity', 'total']
     },
     // {
     //     listingFor: RAW_PRODUCT_LIST_TYPE.FILLING,
@@ -70,6 +65,7 @@ export const RawProductItemListing: FC<RawProductItemsProps> = ({
                                                                     type
                                                                 }) => {
     const [modalOpen, setModalOpen] = useState(false);
+    const [productDetail, setProductDetail] = useState({});
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
     const [unitOptions, setUnitOptions] = useState<any>([]);
     const [productOptions, setProductOptions] = useState<any>([]);
@@ -78,7 +74,7 @@ export const RawProductItemListing: FC<RawProductItemsProps> = ({
     const {units} = useSelector((state: IRootState) => state.unit);
     const {allRawProducts} = useSelector((state: IRootState) => state.rawProduct);
     const {taxCategories} = useSelector((state: IRootState) => state.taxCategory);
-
+    // console.log(rawProducts)
     const handleAddRow = () => {
         setRawProducts((prev: any) => {
             let maxId = 0;
@@ -143,8 +139,31 @@ export const RawProductItemListing: FC<RawProductItemsProps> = ({
     }
 
     const handleRemove = (id: number) => {
-        setRawProducts(rawProducts.filter(row => row.id !== id));
+        setRawProducts(rawProducts.filter((row:any, index:number) => index !== id));
     };
+
+    const calculateTotals = (rawProducts: any[], type: RAW_PRODUCT_LIST_TYPE) => {
+        const tableConfig = tableStructure.find(table => table.listingFor === type);
+        const numericColumns = tableConfig ? new Set(tableConfig.numericColumns) : new Set();
+        const totals: Totals = {};
+
+        if (tableConfig) {
+            tableConfig.numericColumns.forEach(column => {
+                totals[column] = 0;
+            });
+
+            rawProducts.forEach((product) => {
+                tableConfig.numericColumns.forEach(column => {
+                    const value = product[column];
+                    totals[column] += value;
+                });
+            });
+        }
+
+        return totals;
+    };
+
+    const columnTotals = calculateTotals(rawProducts, type);
 
     useEffect(() => {
         setAuthToken(token)
@@ -194,7 +213,10 @@ export const RawProductItemListing: FC<RawProductItemsProps> = ({
                 <button
                     type="button"
                     className="btn btn-primary btn-sm"
-                    onClick={() => setModalOpen(true)}
+                    onClick={() => {
+                        setProductDetail({})
+                        setModalOpen(true)
+                    }}
                 >
                     Add New Item
                 </button>
@@ -202,214 +224,84 @@ export const RawProductItemListing: FC<RawProductItemsProps> = ({
             <table>
                 <thead>
                 <tr>
-                    {tableStructure.map(table=>{
-                        if (table.listingFor===type) {
-                            return table.header.map((head:string, index:number)=>(
+                    {tableStructure.map(table => {
+                        if (table.listingFor === type) {
+                            return table.header.map((head: string, index: number) => (
                                 <th key={index}>{head}</th>
                             ))
                         }
                     })}
-                    {/*<th>Raw Product</th>*/}
-                    {/*<th>Description</th>*/}
-                    {/*<th>Unit</th>*/}
-
-                    {/*<th>PR Quantity</th>*/}
-                    {/*<th>Unit Price</th>*/}
-                    {/*<th>LPO Quantity</th>*/}
-                    {/*<th>Total</th>*/}
-                    {/*<th>Tax Category</th>*/}
-                    {/*<th>Tax Rate(%)</th>*/}
-                    {/*<th>Tax Amount</th>*/}
-                    {/*<th>Row Total</th>*/}
                     <th>Action</th>
                 </tr>
                 </thead>
                 <tbody>
-                {rawProducts.map((product, index:number)=>(
+                {rawProducts.map((product, index: number) => (
                     <tr key={index}>
-                        {tableStructure.map(table=>{
-                            if (table.listingFor===type) {
-                                return table.columns.map((column:string, index:number)=>(
-                                    <td key={index}>{product[column]}</td>
+                        {tableStructure.map(table => {
+                            if (table.listingFor === type) {
+                                return table.columns.map((column: string, index: number) => (
+                                    column === 'raw_product_id'
+                                        ? <td key={index}>
+                                            {productOptions.filter((item: any) => item.value === product[column])[0]?.label}
+                                        </td>
+                                        : column === 'unit_id'
+                                            ? <td key={index}>
+                                                {unitOptions.filter((item: any) => item.value === product[column])[0]?.label}
+                                            </td>
+                                            : column === 'tax_category_id'
+                                                ? <td key={index}>
+                                                    {taxCategoryOptions.filter((item: any) => item.value === product[column])[0]?.label}
+                                                </td>
+                                                : <td key={index}>
+                                                    {typeof product[column] === 'number' ? product[column].toFixed(2) : product[column]}
+                                                </td>
                                 ))
                             }
                         })}
+                        <td>
+                            <div className="flex justify-center items-center gap-1">
+                                <IconButton
+                                    icon={IconType.edit}
+                                    color={ButtonVariant.primary}
+                                    onClick={() => {
+                                        setProductDetail(product)
+                                        setModalOpen(true)
+                                    }}
+                                    tooltip="Edit"
+                                />
+                                <IconButton
+                                    icon={IconType.delete}
+                                    color={ButtonVariant.danger}
+                                    onClick={() => handleRemove(index)}
+                                    tooltip="Remove"
+                                />
+                            </div>
+
+
+                        </td>
                     </tr>
                 ))}
-                {/*{rawProducts.map((product, index) => (*/}
-                {/*    <tr key={index}>*/}
-                {/*        <td>*/}
-                {/*            <Select*/}
-                {/*                defaultValue={productOptions[0]}*/}
-                {/*                value={productOptions.map((option: any) => {*/}
-                {/*                    return option.value === product.raw_product_id ? option : null*/}
-                {/*                })}*/}
-                {/*                menuPortalTarget={document.body}*/}
-                {/*                options={productOptions}*/}
-                {/*                isSearchable={true}*/}
-                {/*                isClearable={true}*/}
-                {/*                placeholder={'Select Product'}*/}
-                {/*                onChange={(e: any) => handleEditProductItem({*/}
-                {/*                    index: index,*/}
-                {/*                    field: 'raw_product_id',*/}
-                {/*                    value: e.value,*/}
-                {/*                    maxQuantity: 0,*/}
-                {/*                })}*/}
-                {/*            />*/}
-                {/*        </td>*/}
-                {/*        /!*<td>*!/*/}
-                {/*        /!*    <input*!/*/}
-                {/*        /!*        type="text"*!/*/}
-                {/*        /!*        className="form-input"*!/*/}
-                {/*        /!*        value={product.description}*!/*/}
-                {/*        /!*        onChange={(e) => handleEditProductItem({*!/*/}
-                {/*        /!*            index: index,*!/*/}
-                {/*        /!*            field: 'description',*!/*/}
-                {/*        /!*            value: e.target.value,*!/*/}
-                {/*        /!*            maxQuantity: 0,*!/*/}
-                {/*        /!*        })}*!/*/}
-                {/*        /!*    />*!/*/}
-                {/*        /!*</td>*!/*/}
-                {/*        <td>*/}
-                {/*            KG*/}
-                {/*        </td>*/}
-                {/*        <td>*/}
-                {/*            <input*/}
-                {/*                type="number"*/}
-                {/*                className="form-input"*/}
-                {/*                disabled={true}*/}
-                {/*                value={product.quantity}*/}
-                {/*                onChange={(e) => handleEditProductItem({*/}
-                {/*                    index: index,*/}
-                {/*                    field: 'quantity',*/}
-                {/*                    value: e.target.valueAsNumber,*/}
-                {/*                    maxQuantity: 0,*/}
-                {/*                })}*/}
-                {/*            />*/}
-                {/*        </td>*/}
-                {/*        <td>{product.unit_price}</td>*/}
-                {/*        <td>*/}
-                {/*            <input*/}
-                {/*                type="number"*/}
-                {/*                className="form-input"*/}
-                {/*                value={product.lpo_quantity}*/}
-                {/*                onChange={(e) => handleEditProductItem({*/}
-                {/*                    index: index,*/}
-                {/*                    field: 'lpo_quantity',*/}
-                {/*                    value: e.target.valueAsNumber,*/}
-                {/*                    maxQuantity: product.quantity,*/}
-                {/*                })}*/}
-                {/*            />*/}
-                {/*        </td>*/}
-
-                {/*        <td>{product.lpo_quantity * product.unit_price}</td>*/}
-                {/*        <td>*/}
-                {/*            <select*/}
-                {/*                name="tax_category_id"*/}
-                {/*                id="tax_category_id"*/}
-                {/*                className="form-select"*/}
-                {/*                value={product.tax_category_id}*/}
-                {/*                onChange={(e) => handleEditProductItem({*/}
-                {/*                    index: index,*/}
-                {/*                    field: 'tax_category_id',*/}
-                {/*                    value: e.target.value,*/}
-                {/*                    maxQuantity: 0,*/}
-                {/*                })}*/}
-                {/*            >*/}
-                {/*                {taxCategoryOptions.map((taxCategory: any, index: number) => (*/}
-                {/*                    <option key={index}*/}
-                {/*                            value={taxCategory.value}>{taxCategory.label}</option>*/}
-                {/*                ))}*/}
-                {/*            </select>*/}
-                {/*            /!*{product.tax_category_name}*!/*/}
-                {/*        </td>*/}
-                {/*        <td>*/}
-                {/*            <input*/}
-                {/*                type="number"*/}
-                {/*                className="form-input"*/}
-                {/*                value={product.tax_rate}*/}
-                {/*                onChange={(e) => handleEditProductItem({*/}
-                {/*                    index: index,*/}
-                {/*                    field: 'tax_rate',*/}
-                {/*                    value: parseFloat(e.target.value),*/}
-                {/*                    maxQuantity: 0,*/}
-                {/*                })}*/}
-                {/*            />*/}
-                {/*            /!*{product.tax_rate}*!/*/}
-                {/*        </td>*/}
-                {/*        <td>{((product.lpo_quantity * product.unit_price) * (product.tax_rate / 100)).toFixed(2)}</td>*/}
-                {/*        <td>{((product.lpo_quantity * product.unit_price) + (product.lpo_quantity * product.unit_price) * (product.tax_rate / 100)).toFixed(2)}</td>*/}
-                {/*        <td>*/}
-                {/*            <div className="flex gap-3 items-center">*/}
-                {/*                <button*/}
-                {/*                    type="button"*/}
-                {/*                    onClick={() => handleRemove(index)}*/}
-                {/*                    className="btn btn-outline-danger btn-sm"*/}
-                {/*                >*/}
-                {/*                    <svg xmlns="http://www.w3.org/2000/svg" width="24"*/}
-                {/*                         height="24"*/}
-                {/*                         className="h-5 w-5"*/}
-                {/*                         viewBox="0 0 24 24" fill="none">*/}
-                {/*                        <path*/}
-                {/*                            d="M9.1709 4C9.58273 2.83481 10.694 2 12.0002 2C13.3064 2 14.4177 2.83481 14.8295 4"*/}
-                {/*                            stroke="currentColor"*/}
-                {/*                            strokeWidth="1.5" strokeLinecap="round"/>*/}
-                {/*                        <path d="M20.5001 6H3.5" stroke="currentColor"*/}
-                {/*                              strokeWidth="1.5"*/}
-                {/*                              strokeLinecap="round"/>*/}
-                {/*                        <path*/}
-                {/*                            d="M18.8332 8.5L18.3732 15.3991C18.1962 18.054 18.1077 19.3815 17.2427 20.1907C16.3777 21 15.0473 21 12.3865 21H11.6132C8.95235 21 7.62195 21 6.75694 20.1907C5.89194 19.3815 5.80344 18.054 5.62644 15.3991L5.1665 8.5"*/}
-                {/*                            stroke="currentColor" strokeWidth="1.5"*/}
-                {/*                            strokeLinecap="round"/>*/}
-                {/*                        <path d="M9.5 11L10 16" stroke="currentColor"*/}
-                {/*                              strokeWidth="1.5"*/}
-                {/*                              strokeLinecap="round"/>*/}
-                {/*                        <path d="M14.5 11L14 16" stroke="currentColor"*/}
-                {/*                              strokeWidth="1.5"*/}
-                {/*                              strokeLinecap="round"/>*/}
-                {/*                    </svg>*/}
-                {/*                </button>*/}
-                {/*            </div>*/}
-                {/*        </td>*/}
-                {/*    </tr>*/}
-                {/*))}*/}
-                {/*{rawProducts.length === 0 ? (*/}
-                {/*    <tr>*/}
-                {/*        <td colSpan={11} className="text-center">No Item Added</td>*/}
-                {/*    </tr>*/}
-                {/*) : (*/}
-                {/*    <tr>*/}
-                {/*        <td colSpan={3} className="font-bold text-center">Total</td>*/}
-                {/*        <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.quantity, 0).toFixed(2)}</td>*/}
-                {/*        <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.unit_price, 0).toFixed(2)}</td>*/}
-                {/*        <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.lpo_quantity, 0).toFixed(2)}</td>*/}
-                {/*        <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.unit_price * item.lpo_quantity, 0).toFixed(2)}</td>*/}
-                {/*        <td></td>*/}
-                {/*        <td></td>*/}
-                {/*        <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.tax_amount, 0).toFixed(2)}</td>*/}
-                {/*        <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + ((item.lpo_quantity * item.unit_price) + (item.lpo_quantity * item.unit_price) * (item.tax_rate / 100)), 0).toFixed(2)}</td>*/}
-                {/*    </tr>*/}
-                {/*)}*/}
                 </tbody>
+                {rawProducts.length > 0 && (
+                    <tfoot>
+                    <tr>
+                        {tableStructure.find(table => table.listingFor === type)?.columns.map((column, index) => (
+                            tableStructure.find(table => table.listingFor === type)?.numericColumns.includes(column)
+                                ? <td key={index}>{columnTotals[column]?.toFixed(2)}</td>
+                                : <td key={index}></td>
+                        ))}
+                        <td></td>
+                    </tr>
+                    </tfoot>
+                )}
             </table>
             <RawProductModal
                 modalOpen={modalOpen}
                 setModalOpen={setModalOpen}
                 handleSubmit={(val: any) => handleAdd(val)}
                 listFor={type}
+                detail={productDetail}
             />
-            {/*{type === 'pr'*/}
-            {/*    ? <PRRawProductModal*/}
-            {/*        modal={modalOpen}*/}
-            {/*        setModal={setModalOpen}*/}
-            {/*        handleAddRawProduct={(value: any) => handleAdd(value)}/>*/}
-            {/*    : <LPORawProductModal*/}
-            {/*        modal={modalOpen}*/}
-            {/*        setModal={setModalOpen}*/}
-            {/*        handleAddRawProduct={(value: any) => handleAddItemRow(value)}*/}
-            {/*    />*/}
-            {/*}*/}
-
         </div>
     );
 };

@@ -130,7 +130,7 @@ const ProductForm = ({id}: IFormProps) => {
     }, [id, dispatch]);
 
     useEffect(() => {
-        if (code && isNull(id)) {
+        if (code) {
             setFormData(prev => ({...prev, item_code: code[FORM_CODE_TYPE.RAW_MATERIAL]}))
         }
     }, [code]);

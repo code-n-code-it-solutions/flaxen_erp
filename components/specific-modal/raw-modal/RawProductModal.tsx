@@ -19,11 +19,12 @@ interface IProps {
     setModalOpen: (value: boolean) => void;
     handleSubmit: (value: any) => void;
     listFor: RAW_PRODUCT_LIST_TYPE;
+    detail?: any;
     // title: string;
     // footer: React.ReactNode;
 }
 
-const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor}: IProps) => {
+const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail}: IProps) => {
     const [formData, setFormData] = useState<any>({})
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
     const [unitOptions, setUnitOptions] = useState<any>([]);
@@ -60,7 +61,10 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor}: IProp
         if (modalOpen) {
             dispatch(getUnits());
             dispatch(getRawProducts());
-            // setFormData({...formData, quantity: 0, unit_price: 0, total: 0, description: ''})
+            setFormData({})
+            if (detail) {
+                setFormData(detail)
+            }
         } else {
             dispatch(clearUtilState());
             dispatch(clearRawProductState());
@@ -104,7 +108,7 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor}: IProp
                     </button>
                     <button type="button" className="btn btn-primary ltr:ml-4 rtl:mr-4"
                             onClick={() => handleSubmit(formData)}>
-                        Add
+                        {Object.keys(detail).length > 0 ? 'Update' : 'Add'}
                     </button>
                 </div>
             }
@@ -152,7 +156,7 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor}: IProp
                         label='Total'
                         type='number'
                         name='total'
-                        value={formData.total}
+                        value={formData.total?.toFixed(2)}
                         disabled={true}
                         onChange={(e) => handleChange('total', parseFloat(e.target.value))}
                         isMasked={false}
