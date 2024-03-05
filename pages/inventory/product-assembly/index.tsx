@@ -20,10 +20,6 @@ const Index = () => {
     const {token} = useSelector((state: IRootState) => state.user);
     const {allProductAssemblies, loading, success} = useSelector((state: IRootState) => state.productAssembly);
     const [deleteLoading, setDeleteLoading] = useState(false);
-
-    useEffect(() => {
-        dispatch(setPageTitle('All Product Assemblies'));
-    });
     const [rowData, setRowData] = useState([]);
     const breadCrumbItems = [
         {
@@ -43,6 +39,7 @@ const Index = () => {
     }
 
     useEffect(() => {
+        dispatch(setPageTitle('All Product Assemblies'));
         getRawItems();
     }, []);
 
@@ -71,11 +68,6 @@ const Index = () => {
                 setDeleteLoading(true);
             }
         });
-    }
-
-    const handleItemShowModal = (row: any) => {
-        console.log(row);
-        // router.push(`/inventory/product-assembly/view/${row.id}`);
     }
 
     useEffect(() => {
