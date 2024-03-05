@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from 'react';
 import Link from "next/link";
-import dynamic from 'next/dynamic';
 import {useDispatch, useSelector} from "react-redux";
 import {ThunkDispatch} from "redux-thunk";
 import {IRootState} from "@/store";
@@ -14,16 +13,10 @@ import {getColorCodes, storeColorCode} from "@/store/slices/colorCodeSlice";
 import ColorCodeFormModal from "@/components/specific-modal/ColorCodeFormModal";
 import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
 import {FORM_CODE_TYPE, RAW_PRODUCT_LIST_TYPE} from "@/utils/enums";
-import RawProductModal from "@/components/specific-modal/raw-modal/RawProductModal";
 import {Input} from "@/components/form/Input";
 import {Dropdown} from "@/components/form/Dropdown";
 import PageWrapper from "@/components/PageWrapper";
 import {RawProductItemListing} from "@/components/RawProductItemListing";
-
-const Select = dynamic(
-    () => import('react-select'),
-    {ssr: false} // This will load the component only on the client-side
-);
 
 interface ITableRow {
     id: number;
@@ -220,6 +213,7 @@ const Create = () => {
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormulaName(e.target.value)}
                             isMasked={false}
                         />
+
                         <Input
                             divClasses='w-full'
                             label='Formula Code'
@@ -231,6 +225,7 @@ const Create = () => {
                             isMasked={false}
                             disabled={true}
                         />
+
                         <Dropdown
                             divClasses='w-full'
                             label='Category'
@@ -239,6 +234,7 @@ const Create = () => {
                             options={categoryOptions}
                             onChange={(e: any) => setCategoryId(e && typeof e !== 'undefined' ? e.value : '')}
                         />
+
                         <div className="w-full flex justify-center items-end gap-2">
                             <Dropdown
                                 divClasses='w-full'
@@ -262,11 +258,10 @@ const Create = () => {
                             </button>
                         </div>
                     </div>
+
                     <RawProductItemListing
                         rawProducts={rawProducts}
                         setRawProducts={setRawProducts}
-                        // handleEditProductItem={}
-                        // handleRemove={}
                         type={RAW_PRODUCT_LIST_TYPE.PRODUCT_ASSEMBLY}
                     />
 
@@ -274,6 +269,7 @@ const Create = () => {
                         Submit
                     </button>
                 </form>
+
                 <ColorCodeFormModal
                     modalOpen={colorCodeModal}
                     setModalOpen={setColorCodeModal}

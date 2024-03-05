@@ -176,12 +176,14 @@ const Index = () => {
                                     tooltip='View'
                                     link={`/inventory/products/view/${row.id}`}
                                 />
+
                                 <IconButton
                                     icon={IconType.edit}
                                     color={ButtonVariant.primary}
                                     tooltip='Edit'
                                     link={`/inventory/products/edit/${row.id}`}
                                 />
+
                                 <IconButton
                                     icon={IconType.delete}
                                     color={ButtonVariant.danger}
