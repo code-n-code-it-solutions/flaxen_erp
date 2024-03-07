@@ -122,23 +122,23 @@ const Preview = ({ content }: any) => {
                                 <td></td>
                                 <th>Total</th>
                                 <td></td>
-                                <td style={{ ...myStyle, textAlign: 'center' }}>
+                                <th style={{ ...myStyle, textAlign: 'center' }}>
                                     {content?.production_items.reduce((totalUnitCost: number, item: any) => totalUnitCost + parseFloat(item.unit_cost), 0)}
-                                </td>
-                                <td style={{ ...myStyle, textAlign: 'center' }}>
+                                </th>
+                                <th style={{ ...myStyle, textAlign: 'center' }}>
                                     {content?.production_items.reduce((totalQuantity: number, item: any) => totalQuantity + parseFloat(item.quantity), 0)}
-                                </td>
-                                <td style={{ ...myStyle, textAlign: 'center' }}>
+                                </th>
+                                <th style={{ ...myStyle, textAlign: 'center' }}>
                                     {content?.production_items.reduce((totalAvaQuantity: number, item: any) => totalAvaQuantity + parseFloat(item.available_quantity), 0)}
-                                </td>
-                                <td style={{ ...myStyle, textAlign: 'center' }}>
+                                </th>
+                                <th style={{ ...myStyle, textAlign: 'center' }}>
                                     {content?.production_items.reduce((totalReqQuantity: number, item: any) => totalReqQuantity + parseFloat(item.required_quantity), 0)}
-                                </td>
-                                <td style={{ ...myStyle, textAlign: 'center' }}>
+                                </th>
+                                <th style={{ ...myStyle, textAlign: 'center' }}>
                                     {content?.production_items
                                         .reduce((total: number, item: any) => total + parseFloat(item.unit_cost) * parseFloat(item.quantity) * parseFloat(item.required_quantity), 0)
                                         .toFixed(2)}
-                                </td>
+                                </th>
                             </tr>
                         </tbody>
                     </table>
