@@ -152,7 +152,7 @@ export const RawProductItemListing: FC<RawProductItemsProps> = ({
                 totals[column] = 0;
             });
 
-            rawProducts.forEach((product) => {
+            rawProducts?.forEach((product) => {
                 tableConfig.numericColumns.forEach(column => {
                     const value = product[column];
                     totals[column] += value;
@@ -235,7 +235,7 @@ export const RawProductItemListing: FC<RawProductItemsProps> = ({
                 </tr>
                 </thead>
                 <tbody>
-                {rawProducts.map((product, index: number) => (
+                {rawProducts?.map((product, index: number) => (
                     <tr key={index}>
                         {tableStructure.map(table => {
                             if (table.listingFor === type) {
@@ -282,7 +282,7 @@ export const RawProductItemListing: FC<RawProductItemsProps> = ({
                     </tr>
                 ))}
                 </tbody>
-                {rawProducts.length > 0 && (
+                {rawProducts?.length > 0 && (
                     <tfoot>
                     <tr>
                         {tableStructure.find(table => table.listingFor === type)?.columns.map((column, index) => (
