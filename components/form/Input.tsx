@@ -1,5 +1,6 @@
 import React, {FC} from 'react';
-import {MaskConfig} from "@/configs/mask.config";
+import Flatpickr from 'react-flatpickr';
+import 'flatpickr/dist/flatpickr.css';
 import MaskedInput from "react-text-mask";
 
 interface IProps {
@@ -9,11 +10,10 @@ interface IProps {
     name: string;
     value: string;
     placeholder?: string;
-    otherOptions?: Record<string, any>;
     readonly?: boolean;
     required?: boolean;
     disabled?: boolean;
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onChange: (e: any) => void;
     errorMessage?: string;
     isMasked: boolean;
     maskPattern?: any[];
@@ -27,7 +27,6 @@ export const Input: FC<IProps> = ({
                                       name,
                                       value,
                                       placeholder,
-                                      otherOptions = {}, // Provide a default value
                                       onChange,
                                       errorMessage, // Use the errorMessage prop
                                       isMasked,
@@ -37,7 +36,6 @@ export const Input: FC<IProps> = ({
                                       disabled = false,
                                       styles
                                   }) => {
-    // console.log(otherOptions)
     return (
         <div className={divClasses}>
             <label htmlFor={name} className="form-label flex">
@@ -60,19 +58,29 @@ export const Input: FC<IProps> = ({
                     readOnly={readonly}
                     style={styles}
                 />
-                : <input
-                    type={type}
-                    name={name}
-                    id={name}
-                    value={value}
-                    onChange={onChange}
-                    placeholder={placeholder}
-                    className={`form-input ${errorMessage ? 'border-red-500' : ''}`}
-                    disabled={disabled}
-                    required={required}
-                    readOnly={readonly}
-                    style={styles}
-                />
+                : type === 'date'
+                    ? <Flatpickr
+                        value={value}
+                        placeholder={placeholder}
+                        options={{
+                            dateFormat: 'Y-m-d'
+                        }}
+                        className="form-input"
+                        onChange={onChange}
+                    />
+                    : <input
+                        type={type}
+                        name={name}
+                        id={name}
+                        value={value}
+                        onChange={onChange}
+                        placeholder={placeholder}
+                        className={`form-input ${errorMessage ? 'border-red-500' : ''}`}
+                        disabled={disabled}
+                        required={required}
+                        readOnly={readonly}
+                        style={styles}
+                    />
             }
 
             {errorMessage && <p className="text-sm text-red-500">{errorMessage}</p>}

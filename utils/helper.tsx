@@ -2,7 +2,6 @@ import {BASE_URL} from "@/configs/server.config";
 import {IconType} from "@/utils/enums";
 import React from "react";
 import ReactDOMServer from "react-dom/server";
-import Preview from "@/pages/purchase/lpo/preview";
 
 export const getRandomInt = (min: number, max: number) => {
     min = Math.ceil(min);
@@ -15,6 +14,11 @@ export const imagePath = (image: any) => {
         return BASE_URL + '/' + image.path;
     }
     return '/assets/images/default.jpeg'
+}
+
+export const createBlobUrl = (file: File) => {
+    if (file) return URL.createObjectURL(file);
+    return null
 }
 
 export const getIcon = (icon: IconType, width?: number, height?: number, classes?: string) => {
@@ -99,6 +103,31 @@ export const getIcon = (icon: IconType, width?: number, height?: number, classes
                       strokeWidth="1.5"
                       strokeLinecap="round"/>
             </svg>
+        case IconType.add:
+            return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        className="h-5 w-5 ltr:mr-2 rtl:ml-2"
+                        fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
+                <path d="M15 12L12 12M12 12L9 12M12 12L12 9M12 12L12 15" stroke="currentColor"
+                      strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+        case IconType.download:
+            return <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                    d="M3 15C3 17.8284 3 19.2426 3.87868 20.1213C4.75736 21 6.17157 21 9 21H15C17.8284 21 19.2426 21 20.1213 20.1213C21 19.2426 21 17.8284 21 15"
+                    stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M12 3V16M12 16L16 11.625M12 16L8 11.625" stroke="currentColor" strokeWidth="1.5"
+                      strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+        case IconType.upload:
+            return <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                    d="M3 15C3 17.8284 3 19.2426 3.87868 20.1213C4.75736 21 6.17157 21 9 21H15C17.8284 21 19.2426 21 20.1213 20.1213C21 19.2426 21 17.8284 21 15"
+                    stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M12 16V3M12 3L16 7.375M12 3L8 7.375" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"
+                      strokeLinejoin="round"/>
+            </svg>
+
         default:
             return <></>
     }

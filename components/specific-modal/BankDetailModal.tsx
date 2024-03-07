@@ -14,12 +14,12 @@ import Modal from "@/components/Modal";
 interface IProps {
     modalOpen: boolean;
     setModalOpen: (value: boolean) => void;
-    handleAddition: (value: any) => void;
+    handleSubmit: (value: any) => void;
     modalFormData?: any;
     title: string;
 }
 
-const BankDetailModal = ({modalOpen, setModalOpen, handleAddition, modalFormData, title}: IProps) => {
+const BankDetailModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData, title}: IProps) => {
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
     const {token} = useSelector((state: IRootState) => state.user);
     const {banks, bank, success} = useSelector((state: IRootState) => state.bank);
@@ -113,7 +113,7 @@ const BankDetailModal = ({modalOpen, setModalOpen, handleAddition, modalFormData
                         Discard
                     </button>
                     <button type="button" className="btn btn-primary ltr:ml-4 rtl:mr-4"
-                            onClick={() => handleAddition(formData)}>
+                            onClick={() => handleSubmit(formData)}>
                         {modalFormData ? 'Update' : 'Add'}
                     </button>
                 </div>
@@ -215,9 +215,9 @@ const BankDetailModal = ({modalOpen, setModalOpen, handleAddition, modalFormData
                 />
             </div>
             <BankFormModal
-                bankFormModal={bankFormModal}
-                setBankFormModal={setBankFormModal}
-                handleBankFormSubmit={(value: any) => handleBankSubmit(value)}
+                modalOpen={bankFormModal}
+                setModalOpen={setBankFormModal}
+                handleSubmit={(value: any) => handleBankSubmit(value)}
             />
         </Modal>
 
