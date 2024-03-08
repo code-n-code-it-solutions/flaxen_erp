@@ -69,6 +69,51 @@ export const storeEmployee = createAsyncThunk(
     }
 );
 
+export const showDetails = createAsyncThunk(
+    'employees/show',
+    async (id:number, thunkAPI) => {
+        try {
+            const response = await API.get('/employee/'+id);
+            return response.data;
+        } catch (error:any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const editEmployee = createAsyncThunk(
+    'employees/edit',
+    async (id:number, thunkAPI) => {
+        try {
+            const response = await API.get('/employee/edit/'+id);
+            console.log(response)
+            return response.data;
+        } catch (error:any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to edit';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const updateEmployee = createAsyncThunk(
+    'employees/update',
+    async (data:any, thunkAPI) => {
+        try {
+            const {id, rawProductData} = data
+            console.log(id, rawProductData)
+            const response = await API.post('/employee/update/'+id, rawProductData);
+            return response.data;
+        } catch (error:any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to login';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 export const deleteEmployee = createAsyncThunk(
     'employees/delete',
     async (id:number, thunkAPI) => {
@@ -118,6 +163,42 @@ export const employeeSlice = createSlice({
                 state.success = action.payload.success;
             })
             .addCase(storeEmployee.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(showDetails.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(showDetails.fulfilled, (state, action) => {
+                state.loading = false;
+                state.employeeDetail = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(showDetails.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(editEmployee.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(editEmployee.fulfilled, (state, action) => {
+                state.loading = false;
+                state.employeeDetail = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(editEmployee.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(updateEmployee.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(updateEmployee.fulfilled, (state, action) => {
+                state.loading = false;
+                state.employee = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(updateEmployee.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })

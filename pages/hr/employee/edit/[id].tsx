@@ -1,21 +1,19 @@
-import React, {useEffect} from 'react';
-import Breadcrumb from "@/components/Breadcrumb";
-import Link from "next/link";
+import React, {useEffect, useState} from 'react';
+import {clearRawProductState, editRawProduct} from "@/store/slices/rawProductSlice";
 import {useDispatch, useSelector} from "react-redux";
 import {ThunkDispatch} from "redux-thunk";
 import {IRootState} from "@/store";
 import {AnyAction} from "redux";
 import {useRouter} from "next/router";
-import {setPageTitle} from "@/store/slices/themeConfigSlice";
-import {clearRawProductState} from "@/store/slices/rawProductSlice";
-import EmployeeForm from "@/pages/hr/employee/EmployeeForm";
+import {clearEmployeeState, editEmployee} from "@/store/slices/employeeSlice";
 import PageWrapper from "@/components/PageWrapper";
-import {clearEmployeeState} from "@/store/slices/employeeSlice";
+import Link from "next/link";
+import EmployeeForm from "@/pages/hr/employee/EmployeeForm";
 
-const Create = () => {
+const Edit = () => {
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
     const router = useRouter();
-    const {rawProduct, loading, success} = useSelector((state: IRootState) => state.rawProduct);
+    const {employee, loading} = useSelector((state: IRootState) => state.employee);
     const breadCrumbItems = [
         {
             title: 'Home',
@@ -30,32 +28,35 @@ const Create = () => {
             href: '/hr/employee',
         },
         {
-            title: 'Create New',
+            title: 'Edit Employee',
             href: '#',
         },
     ];
 
     useEffect(() => {
-        dispatch(setPageTitle('New Employee'));
-    }, []);
-
-    useEffect(() => {
-        if (rawProduct && success) {
+        if (employee) {
             dispatch(clearEmployeeState());
             router.push('/hr/employee');
         }
-    }, [rawProduct, success]);
+    }, [employee]);
+
+    useEffect(() => {
+        const {id} = router.query;
+        if (typeof id === 'string' && id) {
+            dispatch(editEmployee(parseInt(id)))
+        }
+    }, [router.query]);
 
     return (
         <PageWrapper
+            loading={loading}
             embedLoader={true}
             breadCrumbItems={breadCrumbItems}
-            loading={loading}
         >
             <div>
                 <div className="mb-5 flex items-center justify-between">
                     <h5 className="text-lg font-semibold dark:text-white-light">
-                        Enter Details of Employees
+                        Edit Employee Detail
                     </h5>
                     <Link href="/hr/employee"
                           className="btn btn-primary btn-sm m-1">
@@ -69,10 +70,10 @@ const Create = () => {
                         </span>
                     </Link>
                 </div>
-                <EmployeeForm/>
+                <EmployeeForm id={router.query.id}/>
             </div>
         </PageWrapper>
     );
 };
 
-export default Create;
+export default Edit;

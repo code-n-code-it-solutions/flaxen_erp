@@ -64,6 +64,7 @@ export const RawProductItemListing: FC<RawProductItemsProps> = ({
                                                                     // handleRemove,
                                                                     type
                                                                 }) => {
+    console.log('from listing', rawProducts)
     const [modalOpen, setModalOpen] = useState(false);
     const [productDetail, setProductDetail] = useState({});
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
@@ -139,7 +140,7 @@ export const RawProductItemListing: FC<RawProductItemsProps> = ({
     }
 
     const handleRemove = (id: number) => {
-        setRawProducts(rawProducts.filter((row:any, index:number) => index !== id));
+        setRawProducts(rawProducts.filter((row: any, index: number) => index !== id));
     };
 
     const calculateTotals = (rawProducts: any[], type: RAW_PRODUCT_LIST_TYPE) => {
@@ -152,14 +153,14 @@ export const RawProductItemListing: FC<RawProductItemsProps> = ({
                 totals[column] = 0;
             });
 
-            rawProducts.forEach((product) => {
+            rawProducts?.forEach((product) => {
                 tableConfig.numericColumns.forEach(column => {
                     const value = product[column];
                     totals[column] += value;
                 });
             });
         }
-
+        console.log('totals', totals)
         return totals;
     };
 
@@ -235,7 +236,7 @@ export const RawProductItemListing: FC<RawProductItemsProps> = ({
                 </tr>
                 </thead>
                 <tbody>
-                {rawProducts.map((product, index: number) => (
+                {rawProducts?.map((product, index: number) => (
                     <tr key={index}>
                         {tableStructure.map(table => {
                             if (table.listingFor === type) {
@@ -282,12 +283,13 @@ export const RawProductItemListing: FC<RawProductItemsProps> = ({
                     </tr>
                 ))}
                 </tbody>
-                {rawProducts.length > 0 && (
+                {rawProducts?.length > 0 && (
                     <tfoot>
                     <tr>
                         {tableStructure.find(table => table.listingFor === type)?.columns.map((column, index) => (
                             tableStructure.find(table => table.listingFor === type)?.numericColumns.includes(column)
-                                ? <td key={index}>{columnTotals[column]?.toFixed(2)}</td>
+                                ?
+                                <td key={index}>{isNaN(columnTotals[column]) ? 0.00 : columnTotals[column].toFixed(2)}</td>
                                 : <td key={index}></td>
                         ))}
                         <td></td>

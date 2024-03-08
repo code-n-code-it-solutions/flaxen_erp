@@ -18,7 +18,7 @@ interface IProps {
     modalFormData?: any;
 }
 
-const VendorRepresentativeModal: FC<IProps> = ({
+const BankFormModal: FC<IProps> = ({
                                                    modalOpen,
                                                    setModalOpen,
                                                    handleSubmit,
@@ -133,7 +133,7 @@ const VendorRepresentativeModal: FC<IProps> = ({
                         Discard
                     </button>
                     <button type="button" className="btn btn-primary ltr:ml-4 rtl:mr-4"
-                            onClick={() => setModalOpen(formData)}>
+                            onClick={() => handleSubmit(formData)}>
                         {modalFormData ? 'Update' : 'Add'}
                     </button>
                 </div>
@@ -230,4 +230,4 @@ const VendorRepresentativeModal: FC<IProps> = ({
     );
 };
 
-export default VendorRepresentativeModal;
+export default BankFormModal;

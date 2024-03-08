@@ -25,7 +25,8 @@ export enum ButtonType {
     button = 'button',
     submit = 'submit',
     reset = 'reset',
-    link = 'link'
+    link = 'link',
+    icon = 'icon'
 }
 
 export enum ButtonVariant {
@@ -50,5 +51,8 @@ export enum IconType {
     print = 'print',
     view = 'view',
     edit = 'edit',
-    delete = 'delete'
+    delete = 'delete',
+    add = 'add',
+    download = 'download',
+    upload = 'upload',
 }

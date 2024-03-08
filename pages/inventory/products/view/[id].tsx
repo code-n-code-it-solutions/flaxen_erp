@@ -38,7 +38,7 @@ const View = () => {
         dispatch(clearRawProductState());
 
         const productId = router.query.id;
-        console.log('Product ID:', productId);
+        // console.log('Product ID:', productId);
 
         if (productId) {
             // If the productId is an array (with catch-all routes), take the first element.

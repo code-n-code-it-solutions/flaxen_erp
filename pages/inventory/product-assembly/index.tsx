@@ -184,7 +184,7 @@ const Index = () => {
                                     icon={IconType.edit}
                                     color={ButtonVariant.primary}
                                     tooltip='Edit'
-                                    link={`/inventory/products/edit/${row.id}`}
+                                    link={`/inventory/product-assembly/edit/${row.id}`}
                                 />
 
                                 <IconButton

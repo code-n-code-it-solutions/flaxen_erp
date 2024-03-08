@@ -82,11 +82,11 @@ export const storeProductAssembly = createAsyncThunk(
     }
 );
 
-export const editRawProduct = createAsyncThunk(
+export const editProductAssembly = createAsyncThunk(
     'productAssemblies/edit',
     async (id: number, thunkAPI) => {
         try {
-            const response = await API.get('/product-assemblies/' + id);
+            const response = await API.get('/product-assemblies/edit/' + id);
             return response.data;
         } catch (error: any) {
             const message =
@@ -96,19 +96,20 @@ export const editRawProduct = createAsyncThunk(
     }
 );
 
-// export const updateRawProduct = createAsyncThunk(
-//     'rawProducts/update',
-//     async (rawProductData, thunkAPI) => {
-//         try {
-//             const response = await API.put('/raw-products/'+rawProductData.id, rawProductData);
-//             return response.data;
-//         } catch (error:any) {
-//             const message =
-//                 error.response?.data?.message || error.message || 'Failed to login';
-//             return thunkAPI.rejectWithValue(message);
-//         }
-//     }
-// );
+export const updateProductAssembly = createAsyncThunk(
+    'productAssemblies/update',
+    async (data:any, thunkAPI) => {
+        try {
+            const {id, productAssemblyData} = data;
+            const response = await API.post('/product-assemblies/update/'+id, productAssemblyData);
+            return response.data;
+        } catch (error:any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to login';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
 
 
 export const deleteProductAssembly = createAsyncThunk(
@@ -162,6 +163,28 @@ export const productAssemblySlice = createSlice({
                 state.allProductAssemblies = action.payload.data;
             })
             .addCase(getProductAssemblies.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(updateProductAssembly.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(updateProductAssembly.fulfilled, (state, action) => {
+                state.loading = false;
+                state.productAssembly = action.payload.data;
+            })
+            .addCase(updateProductAssembly.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(editProductAssembly.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(editProductAssembly.fulfilled, (state, action) => {
+                state.loading = false;
+                state.productAssemblyDetail = action.payload.data;
+            })
+            .addCase(editProductAssembly.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })
