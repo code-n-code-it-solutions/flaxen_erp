@@ -14,6 +14,8 @@ import 'tippy.js/dist/tippy.css';
 import IconButton from "@/components/IconButton";
 import {ButtonVariant, IconType} from "@/utils/enums";
 import PageWrapper from "@/components/PageWrapper";
+import {generatePDF} from "@/utils/helper";
+import Preview from "@/pages/inventory/product-assembly/preview";
 
 const Index = () => {
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
@@ -21,6 +23,7 @@ const Index = () => {
     const {allProductAssemblies, loading, success} = useSelector((state: IRootState) => state.productAssembly);
     const [deleteLoading, setDeleteLoading] = useState(false);
     const [rowData, setRowData] = useState([]);
+    const [printLoading, setPrintLoading] = useState<boolean>(false)
     const breadCrumbItems = [
         {
             title: 'Home',
@@ -166,8 +169,8 @@ const Index = () => {
                                     icon={IconType.print}
                                     color={ButtonVariant.secondary}
                                     tooltip='Print'
-                                    onClick={() => {
-                                    }}
+                                    onClick={() => generatePDF(<Preview content={row}/>, setPrintLoading)
+                                    }
                                 />
 
                                 <IconButton
