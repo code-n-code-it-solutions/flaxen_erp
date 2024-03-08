@@ -177,7 +177,7 @@ const Index = () => {
                                     icon={IconType.view}
                                     color={ButtonVariant.info}
                                     tooltip='View'
-                                    link={`/inventory/products/view/${row.id}`}
+                                    link={`/inventory/product-assembly/view/${row.id}`}
                                 />
 
                                 <IconButton

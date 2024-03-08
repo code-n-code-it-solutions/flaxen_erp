@@ -54,6 +54,20 @@ export const getProductAssemblies = createAsyncThunk(
     }
 );
 
+export const showDetails = createAsyncThunk(
+    'productAssemblies/show',
+    async (id:number, thunkAPI) => {
+        try {
+            const response = await API.get('/product-assemblies/'+id);
+            return response.data;
+        } catch (error:any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 export const storeProductAssembly = createAsyncThunk(
     'productAssemblies/store',
     async (productAssemblyData: IProductAssembly, thunkAPI) => {
@@ -183,6 +197,18 @@ export const productAssemblySlice = createSlice({
                 state.assemblyItems = action.payload.data;
             })
             .addCase(getAssemblyItems.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(showDetails.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(showDetails.fulfilled, (state, action) => {
+                state.loading = false;
+                state.productAssemblyDetail = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(showDetails.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })
