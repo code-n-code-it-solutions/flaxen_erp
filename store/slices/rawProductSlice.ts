@@ -100,7 +100,6 @@ export const updateRawProduct = createAsyncThunk(
     async (data:any, thunkAPI) => {
         try {
             const {id, rawProductData} = data
-            console.log(id, rawProductData)
             const response = await API.post('/raw-products/update/'+id, rawProductData);
             return response.data;
         } catch (error:any) {

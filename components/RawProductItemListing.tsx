@@ -64,6 +64,7 @@ export const RawProductItemListing: FC<RawProductItemsProps> = ({
                                                                     // handleRemove,
                                                                     type
                                                                 }) => {
+    console.log('from listing', rawProducts)
     const [modalOpen, setModalOpen] = useState(false);
     const [productDetail, setProductDetail] = useState({});
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
@@ -139,7 +140,7 @@ export const RawProductItemListing: FC<RawProductItemsProps> = ({
     }
 
     const handleRemove = (id: number) => {
-        setRawProducts(rawProducts.filter((row:any, index:number) => index !== id));
+        setRawProducts(rawProducts.filter((row: any, index: number) => index !== id));
     };
 
     const calculateTotals = (rawProducts: any[], type: RAW_PRODUCT_LIST_TYPE) => {
@@ -159,7 +160,7 @@ export const RawProductItemListing: FC<RawProductItemsProps> = ({
                 });
             });
         }
-
+        console.log('totals', totals)
         return totals;
     };
 
@@ -287,7 +288,8 @@ export const RawProductItemListing: FC<RawProductItemsProps> = ({
                     <tr>
                         {tableStructure.find(table => table.listingFor === type)?.columns.map((column, index) => (
                             tableStructure.find(table => table.listingFor === type)?.numericColumns.includes(column)
-                                ? <td key={index}>{columnTotals[column]?.toFixed(2)}</td>
+                                ?
+                                <td key={index}>{isNaN(columnTotals[column]) ? 0.00 : columnTotals[column].toFixed(2)}</td>
                                 : <td key={index}></td>
                         ))}
                         <td></td>

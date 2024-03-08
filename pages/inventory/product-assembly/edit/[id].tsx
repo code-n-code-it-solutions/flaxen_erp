@@ -5,11 +5,10 @@ import {IRootState} from "@/store";
 import {AnyAction} from "redux";
 import {useRouter} from "next/router";
 import {setPageTitle} from "@/store/slices/themeConfigSlice";
-import {clearRawProductState, editRawProduct} from "@/store/slices/rawProductSlice";
 import {
     clearProductAssemblyState,
     editProductAssembly,
-    storeProductAssembly
+    storeProductAssembly, updateProductAssembly
 } from "@/store/slices/productAssemblySlice";
 import PageWrapper from "@/components/PageWrapper";
 import Link from "next/link";
@@ -55,10 +54,10 @@ const Edit = () => {
     const router = useRouter();
     const {productAssembly, loading,productAssemblyDetail} = useSelector((state: IRootState) => state.productAssembly);
 
-    const [formulaName, setFormulaName] = useState('');
-    const [formulaCode, setFormulaCode] = useState('');
-    const [categoryId, setCategoryId] = useState('');
-    const [colorCodeId, setColorCodeId] = useState('');
+    const [formulaName, setFormulaName] = useState<string>('');
+    const [formulaCode, setFormulaCode] = useState<string>('');
+    const [categoryId, setCategoryId] = useState<number>(0);
+    const [colorCodeId, setColorCodeId] = useState<number>(0);
     const [colorCodeModal, setColorCodeModal] = useState(false);
 
 
@@ -91,11 +90,26 @@ const Edit = () => {
 
     useEffect(() => {
         if (productAssemblyDetail) {
+            console.log(productAssemblyDetail)
             setFormulaName(productAssemblyDetail.formula_name);
             setFormulaCode(productAssemblyDetail.formula_code);
-            setCategoryId(productAssemblyDetail.category_id.toString());
-            setColorCodeId(productAssemblyDetail.color_code_id.toString());
-            setRawProducts(productAssemblyDetail.raw_products);
+            setCategoryId(productAssemblyDetail.category_id);
+            setColorCodeId(productAssemblyDetail.color_code_id);
+            setRawProducts(productAssemblyDetail.product_assembly_items.map((item: any) => {
+                return {
+                    id: item.id,
+                    raw_product_id: item.raw_product_id,
+                    raw_product_title: item.product.title,
+                    unit_id: item.unit_id,
+                    unit_title: item.unit.name,
+                    unit_price: parseFloat(item.product.opening_stock_unit_balance),
+                    quantity: parseFloat(item.quantity),
+                    cost: parseFloat(item.cost),
+                    total: parseFloat(item.total),
+                }
+            }));
+            dispatch(getProductCategory());
+            dispatch(getColorCodes());
         }
     }, [productAssemblyDetail]);
 
@@ -111,8 +125,7 @@ const Edit = () => {
         if (typeof id === 'string' && id) {
             dispatch(editProductAssembly(parseInt(id)))
         }
-        dispatch(getProductCategory());
-        dispatch(getColorCodes());
+
         dispatch(setPageTitle('Edit Product Assembly'));
     }, [router.query]);
 
@@ -166,13 +179,13 @@ const Edit = () => {
         const formData: IFormData = {
             formula_name: formulaName,
             formula_code: formulaCode,
-            category_id: parseInt(categoryId),
-            color_code_id: parseInt(colorCodeId),
+            category_id: categoryId,
+            color_code_id: colorCodeId,
             raw_products: rawProductsData,
         };
         setAuthToken(token)
         dispatch(clearProductAssemblyState());
-        dispatch(storeProductAssembly(formData));
+        dispatch(updateProductAssembly({id: productAssemblyDetail.id, productAssemblyData: formData}));
     };
     const handleColorCodeSubmit = (value: any) => {
         // setColorCodeModal(false);
@@ -191,8 +204,9 @@ const Edit = () => {
 
     return (
         <PageWrapper
-            embedLoader={false}
+            embedLoader={true}
             breadCrumbItems={breadCrumbItems}
+            loading={loading}
         >
             <div>
                 <div className="mb-5 flex items-center justify-between">
@@ -209,74 +223,78 @@ const Edit = () => {
                         </span>
                     </Link>
                 </div>
-                <form className="space-y-5" onSubmit={handleSubmit}>
-                    <div className="flex justify-start flex-col items-start space-y-3 w-full md:w-1/2">
-                        <Input
-                            divClasses='w-full'
-                            label='Formula Name'
-                            type='text'
-                            name='formula_name'
-                            value={formulaName}
-                            placeholder='Enter Formula Name'
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormulaName(e.target.value)}
-                            isMasked={false}
-                        />
+                {productAssemblyDetail && (
+                    <form className="space-y-5" onSubmit={handleSubmit}>
+                        <div className="flex justify-start flex-col items-start space-y-3 w-full md:w-1/2">
+                            <Input
+                                divClasses='w-full'
+                                label='Formula Name'
+                                type='text'
+                                name='formula_name'
+                                value={formulaName}
+                                placeholder='Enter Formula Name'
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormulaName(e.target.value)}
+                                isMasked={false}
+                            />
 
-                        <Input
-                            divClasses='w-full'
-                            label='Formula Code'
-                            type='text'
-                            name='formula_code'
-                            value={formulaCode}
-                            placeholder='Enter Formula Code'
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormulaCode(e.target.value)}
-                            isMasked={false}
-                            disabled={true}
-                        />
+                            <Input
+                                divClasses='w-full'
+                                label='Formula Code'
+                                type='text'
+                                name='formula_code'
+                                value={formulaCode}
+                                placeholder='Enter Formula Code'
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormulaCode(e.target.value)}
+                                isMasked={false}
+                                disabled={true}
+                            />
 
-                        <Dropdown
-                            divClasses='w-full'
-                            label='Category'
-                            name='category_id'
-                            value={categoryId}
-                            options={categoryOptions}
-                            onChange={(e: any) => setCategoryId(e && typeof e !== 'undefined' ? e.value : '')}
-                        />
-
-                        <div className="w-full flex justify-center items-end gap-2">
                             <Dropdown
                                 divClasses='w-full'
-                                label='Color Code'
-                                name='color_code_id'
-                                value={colorCodeId}
-                                styles={customStyles}
-                                options={colorCodeOptions}
-                                onChange={(e: any) => setColorCodeId(e && typeof e !== 'undefined' ? e.value : '')}
+                                label='Category'
+                                name='category_id'
+                                value={categoryId}
+                                options={categoryOptions}
+                                onChange={(e: any) => setCategoryId(e && typeof e !== 'undefined' ? e.value : '')}
                             />
-                            <button type="button"
-                                    className="btn btn-primary btn-sm flex justify-center items-center"
-                                    onClick={() => setColorCodeModal(true)}>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                     className="h-5 w-5 ltr:mr-2 rtl:ml-2"
-                                     fill="none">
-                                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
-                                    <path d="M15 12L12 12M12 12L9 12M12 12L12 9M12 12L12 15" stroke="currentColor"
-                                          strokeWidth="1.5" strokeLinecap="round"/>
-                                </svg>
-                            </button>
+
+                            <div className="w-full flex justify-center items-end gap-2">
+                                <Dropdown
+                                    divClasses='w-full'
+                                    label='Color Code'
+                                    name='color_code_id'
+                                    value={colorCodeId}
+                                    styles={customStyles}
+                                    options={colorCodeOptions}
+                                    onChange={(e: any) => setColorCodeId(e && typeof e !== 'undefined' ? e.value : '')}
+                                />
+                                <button type="button"
+                                        className="btn btn-primary btn-sm flex justify-center items-center"
+                                        onClick={() => setColorCodeModal(true)}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                         className="h-5 w-5 ltr:mr-2 rtl:ml-2"
+                                         fill="none">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
+                                        <path d="M15 12L12 12M12 12L9 12M12 12L12 9M12 12L12 15" stroke="currentColor"
+                                              strokeWidth="1.5" strokeLinecap="round"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
-                    </div>
 
-                    <RawProductItemListing
-                        rawProducts={rawProducts}
-                        setRawProducts={setRawProducts}
-                        type={RAW_PRODUCT_LIST_TYPE.PRODUCT_ASSEMBLY}
-                    />
+                        <RawProductItemListing
+                            rawProducts={rawProducts}
+                            setRawProducts={setRawProducts}
+                            type={RAW_PRODUCT_LIST_TYPE.PRODUCT_ASSEMBLY}
+                        />
 
-                    <button type="submit" className="btn btn-primary !mt-6">
-                        Submit
-                    </button>
-                </form>
+
+                        <button type="submit" className="btn btn-primary !mt-6">
+                            Update Product Assembly
+                        </button>
+                    </form>
+                )}
+
 
                 <ColorCodeFormModal
                     modalOpen={colorCodeModal}
