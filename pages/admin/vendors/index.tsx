@@ -114,6 +114,7 @@ const Index = () => {
                             Add New
                         </span>
                     </Link>
+
                 </div>
                 <GenericTable
                     colName={colName}
