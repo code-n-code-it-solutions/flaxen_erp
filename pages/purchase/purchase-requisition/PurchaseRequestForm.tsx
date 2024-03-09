@@ -4,19 +4,15 @@ import {useDispatch, useSelector} from "react-redux";
 import {ThunkDispatch} from "redux-thunk";
 import {IRootState} from "@/store";
 import {AnyAction} from "redux";
-import Select from "react-select";
-import {
-    clearPurchaseRequisitionState,
-    storePurchaseRequest
-} from "@/store/slices/purchaseRequisitionSlice";
+import {clearPurchaseRequisitionState, storePurchaseRequest} from "@/store/slices/purchaseRequisitionSlice";
 import PRRawProductModal from "@/components/specific-modal/purchase-requisition/PRRawProductModal";
 import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
-import {FORM_CODE_TYPE} from "@/utils/enums";
-import Flatpickr from 'react-flatpickr';
+import {ButtonType, ButtonVariant, FORM_CODE_TYPE} from "@/utils/enums";
 import 'flatpickr/dist/flatpickr.css';
 import PRServiceModal from "@/components/specific-modal/purchase-requisition/PRServiceModal";
-import {string} from "yup";
 import {Dropdown} from "@/components/form/Dropdown";
+import {Input} from "@/components/form/Input";
+import Button from "@/components/Button";
 
 interface IFormData {
     pr_title: string;
@@ -92,8 +88,7 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
         {value: 'Service', label: 'Service'},
     ]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const {name, value} = e.target;
+    const handleChange = (name:string, value:any) => {
         setFormData(prevFormData => {
             return {...prevFormData, [name]: value};
         });
@@ -127,22 +122,10 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
                 ...prev,
                 type: e.value
             }))
-            if (e.value === 'Material') {
-                setShowItemDetail({
-                    show: true,
-                    type: 'Material'
-                })
-            } else if (e.value === 'Service') {
-                setShowItemDetail({
-                    show: true,
-                    type: 'Service'
-                })
-            } else {
-                setShowItemDetail({
-                    show: false,
-                    type: null
-                })
-            }
+            setShowItemDetail({
+                show: true,
+                type: e.value
+            })
         } else {
             setShowItemDetail({
                 show: false,
@@ -210,59 +193,67 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
             <div className="flex justify-start flex-col items-start space-y-3">
                 <Dropdown
                     divClasses='w-full md:w-1/3'
-                    label='Status'
-                    name='status_id'
+                    label='Requistion Type'
+                    name='type'
                     options={requisitionTypeOptions}
                     value={formData.type}
                     onChange={(e: any) => handleRequisitionTypeChange(e)}
                 />
+                <Input
+                    divClasses='w-full md:w-1/3'
+                    label='Purchase Request Code'
+                    type='text'
+                    name='pr_code'
+                    placeholder="Enter Purchase Request Code"
+                    value={formData.pr_code}
+                    onChange={(e: any) => handleChange(e.target.name, e.target.value)}
+                    disabled={true}
+                    isMasked={false}
+                />
 
-                <div className="w-full md:w-1/3">
-                    <label htmlFor="pr_code">Purchase Request Code</label>
-                    <input id="pr_code" type="text" name="pr_code" placeholder="Enter Purchase Request Code"
-                           value={formData.pr_code} onChange={handleChange} disabled={true}
-                           className="form-input"/>
-                </div>
-                <div className="w-full md:w-1/3">
-                    <label htmlFor="requisition_date">Requisition Date</label>
-                    <Flatpickr
-                        value={formData.requisition_date}
-                        placeholder={'Select Date'}
-                        options={{
-                            dateFormat: 'Y-m-d'
-                        }}
-                        className="form-input"
-                        onChange={(date) => setFormData(prev => ({
-                            ...prev,
-                            requisition_date: date[0].toLocaleDateString()
-                        }))}
-                    />
-                    {/*<input id="requisition_date" type="date" name="requisition_date"*/}
-                    {/*       placeholder="Enter Purchase Request Date"*/}
-                    {/*       value={formData.requisition_date} onChange={handleChange}*/}
-                    {/*       className="form-input"/>*/}
-                </div>
-                <div className="w-full md:w-1/3">
-                    <label htmlFor="status_id">Status</label>
-                    <Select
-                        defaultValue={requisitionStatusOptions[0]}
-                        options={requisitionStatusOptions}
-                        isSearchable={true}
-                        isClearable={true}
-                        placeholder={'Select Status'}
-                        onChange={(e: any) => setFormData(prev => ({
-                            ...prev,
-                            status: e && typeof e !== 'undefined' ? e.value : ''
-                        }))}
-                    />
-                </div>
+                <Input
+                    divClasses='w-full md:w-1/3'
+                    label='Requisition Date'
+                    type='date'
+                    name='requisition_date'
+                    placeholder="Select Date"
+                    value={formData.pr_code}
+                    onChange={(e: any) => handleChange('requisition_date', e[0].toLocaleDateString())}
+                    isMasked={false}
+                />
 
-                <div className="w-full md:w-1/2">
-                    <label htmlFor="pr_title">Purchase Request Name (Optional)</label>
-                    <input id="pr_title" type="text" name="pr_title" placeholder="Enter Purchase Request Name"
-                           value={formData.pr_title} onChange={handleChange}
-                           className="form-input" style={{height: 45}}/>
-                </div>
+                <Dropdown
+                    divClasses='w-full md:w-1/3'
+                    label='Status'
+                    name='status_id'
+                    options={requisitionStatusOptions}
+                    value={formData.type}
+                    onChange={(e: any) => {
+                        if (e && typeof e !== 'undefined') {
+                            setFormData(prev => ({
+                                ...prev,
+                                status: e.value
+                            }))
+                        } else {
+                            setFormData(prev => ({
+                                ...prev,
+                                status: ''
+                            }))
+                        }
+                    }}
+                />
+
+                <Input
+                    divClasses='w-full md:w-1/2'
+                    label='Purchase Request Name (Optional)'
+                    type='text'
+                    name='pr_title'
+                    placeholder="Enter Purchase Request Name"
+                    value={formData.pr_title}
+                    onChange={(e: any) => handleChange(e.target.name, e.target.value)}
+                    isMasked={false}
+                    styles={{height: 45}}
+                />
 
                 <div className="table-responsive w-full">
 
@@ -367,13 +358,12 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
                 </div>
 
                 <div className="w-full">
-                    <button
-                        type="submit"
-                        className="btn btn-primary"
+                    <Button
+                        type={ButtonType.submit}
+                        text={loading ? 'Loading...' : id ? 'Update Purchase Request' : 'Save Purchase Request'}
+                        variant={ButtonVariant.primary}
                         disabled={loading}
-                    >
-                        {loading ? 'Loading...' : 'Save Purchase Request'}
-                    </button>
+                    />
                 </div>
             </div>
             <PRRawProductModal
