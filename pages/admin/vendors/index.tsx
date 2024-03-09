@@ -143,6 +143,12 @@ const Index = () => {
                                 render: (row: any) => (
                                     <div className="flex items-center gap-3">
                                         <IconButton icon={IconType.print} color={ButtonVariant.secondary} tooltip="Print" onClick={() => generatePDF(<Preview content={row} />, setPrintLoading)} />
+                                        <IconButton
+                                    icon={IconType.view}
+                                    color={ButtonVariant.info}
+                                    tooltip='View'
+                                    link={`/admin/vendors/view/${row.id}`}
+                                />
                                         <Link href={`/inventory/products/edit/${row.id}`}>
                                             <span className="text-primary">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" className="h-5 w-5 ltr:mr-2 rtl:ml-2" viewBox="0 0 24 24" fill="none">
