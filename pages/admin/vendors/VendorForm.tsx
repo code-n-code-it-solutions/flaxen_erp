@@ -5,7 +5,6 @@ import {useDispatch, useSelector} from "react-redux";
 import {ThunkDispatch} from "redux-thunk";
 import {IRootState} from "@/store";
 import {AnyAction} from "redux";
-import Select from "react-select";
 import VendorTypeFormModal from "@/components/specific-modal/VendorTypeFormModal";
 import VendorAddressModal from "@/components/specific-modal/VendorAddressModal";
 import VendorRepresentativeModal from "@/components/specific-modal/VendorRepresentativeModal";
@@ -15,9 +14,11 @@ import {clearVendorState, storeVendor} from "@/store/slices/vendorSlice";
 import {useRouter} from "next/router";
 import BankDetailModal from "@/components/specific-modal/BankDetailModal";
 import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
-import {FORM_CODE_TYPE} from "@/utils/enums";
-import MaskedInput from "react-text-mask";
+import {ButtonSize, ButtonType, ButtonVariant, FORM_CODE_TYPE} from "@/utils/enums";
 import {MaskConfig} from "@/configs/mask.config";
+import {Dropdown} from "@/components/form/Dropdown";
+import Button from "@/components/Button";
+import {Input} from "@/components/form/Input";
 
 interface IFormData {
     vendor_number: string;
@@ -293,156 +294,198 @@ const VendorForm = ({id}: IFormProps) => {
             </div>
             <div className="flex justify-start flex-col items-start space-y-3">
                 <div className='flex justify-center items-end gap-2 w-full md:w-1/3'>
-                    <div className='w-full'>
-                        <label htmlFor="vendor_type_id">Vendor Type</label>
-                        <Select
-                            defaultValue={vendorTypeOptions[0]}
-                            options={vendorTypeOptions}
-                            isSearchable={true}
-                            isClearable={true}
-                            placeholder={'Select Vendor Type'}
-                            onChange={(e: any) => setFormData(prev => ({...prev, vendor_type_id: e ? e.value : 0}))}
-                        />
-                    </div>
-                    <button type="button" className="btn btn-primary btn-sm flex justify-center items-center"
-                            onClick={() => setVendorTypeModal(true)}>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                             className="h-5 w-5 ltr:mr-2 rtl:ml-2"
-                             fill="none">
+                    <Dropdown
+                        divClasses='w-full'
+                        label='Vendor Type'
+                        name='vendor_type_id'
+                        options={vendorTypeOptions}
+                        value={formData.vendor_type_id}
+                        onChange={(e: any) => {
+                            if (e && e.value && typeof e !== 'undefined') {
+                                setFormData(prev => ({...prev, vendor_type_id: e.value}))
+                            } else {
+                                setFormData(prev => ({...prev, vendor_type_id: 0}))
+                            }
+                        }}
+                    />
+                    <Button
+                        type={ButtonType.button}
+                        text={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                   className="h-5 w-5 ltr:mr-2 rtl:ml-2"
+                                   fill="none">
                             <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
                             <path d="M15 12L12 12M12 12L9 12M12 12L12 9M12 12L12 15" stroke="currentColor"
                                   strokeWidth="1.5" strokeLinecap="round"/>
-                        </svg>
-                    </button>
+                        </svg>}
+                        variant={ButtonVariant.primary}
+                        onClick={() => setVendorTypeModal(true)}
+                    />
                 </div>
-                <div className="w-full md:w-1/3">
-                    <label htmlFor="vendor_number">Vendor Number</label>
-                    <input id="vendor_number" type="text" name="vendor_number" placeholder="Enter Vendor Code"
-                           value={formData.vendor_number} onChange={handleChange} disabled={true}
-                           className="form-input"/>
-                </div>
-                <div className="w-full md:w-1/2">
-                    <label htmlFor="name">Vendor Name</label>
-                    <input id="name" type="text" name="name" placeholder="Enter Vendor Name"
-                           value={formData.name} onChange={handleChange}
-                           className="form-input" style={{height: 45}}/>
-                </div>
+
+                <Input
+                    divClasses='w-full md:w-1/3'
+                    label='Vendor Number'
+                    type='text'
+                    name='vendor_number'
+                    value={formData.vendor_number}
+                    onChange={handleChange}
+                    placeholder="Enter Vendor Code"
+                    isMasked={false}
+                    disabled={true}
+                />
+
+                <Input
+                    divClasses='w-full md:w-1/2'
+                    label='Vendor Name'
+                    type='text'
+                    name='name'
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="Enter Vendor Name"
+                    isMasked={false}
+                    styles={{height: 45}}
+                />
+
                 <div className="flex flex-col md:flex-row gap-3 w-full">
-                    <div className="w-full">
-                        <label htmlFor="opening_balance">Opening Balance</label>
-                        <input id="opening_balance" type="number" name="opening_balance"
-                               placeholder="Enter Opening Balance"
-                               value={formData.opening_balance} onChange={handleChange}
-                               className="form-input"/>
-                    </div>
-                    <div className="w-full">
-                        <label htmlFor="phone">Phone</label>
-                        <MaskedInput
-                            id="phone"
-                            type="text"
-                            placeholder={MaskConfig.phone.placeholder}
-                            className="form-input"
-                            guide={true}
-                            name="phone"
-                            value={formData.phone}
-                            onChange={handleChange}
-                            mask={MaskConfig.phone.pattern}
-                        />
-                        {/*<input id="phone" type="number" name="phone" placeholder="Enter Phone number"*/}
-                        {/*       value={formData.phone} onChange={handleChange}*/}
-                        {/*       className="form-input"/>*/}
-                    </div>
-                    <div className="w-full">
-                        <label htmlFor="email">Email</label>
-                        <input id="email" type="email" name="email" placeholder="Enter email address"
-                               value={formData.email} onChange={handleChange}
-                               className="form-input"/>
-                    </div>
+                    <Input
+                        divClasses='w-full'
+                        label='Opening Balance'
+                        type='number'
+                        name='opening_balance'
+                        value={formData.opening_balance.toString()}
+                        onChange={handleChange}
+                        placeholder="Enter Opening Balance"
+                        isMasked={false}
+                    />
+
+                    <Input
+                        divClasses='w-full'
+                        label='Phone'
+                        type='number'
+                        name='phone'
+                        value={formData.phone}
+                        onChange={handleChange}
+                        placeholder={MaskConfig.phone.placeholder}
+                        isMasked={true}
+                        maskPattern={MaskConfig.phone.pattern}
+                    />
+
+                    <Input
+                        divClasses='w-full'
+                        label='Email'
+                        type='email'
+                        name='email'
+                        value={formData.email}
+                        onChange={handleChange}
+                        placeholder="Enter email address"
+                        isMasked={false}
+                    />
 
                 </div>
                 <div className="flex flex-col md:flex-row gap-3 w-full">
-                    <div className="w-full">
-                        <label htmlFor="due_in_days">Due In (Days)</label>
-                        <input id="due_in_days" type="number" name="due_in_days" placeholder="Enter due in days"
-                               value={formData.due_in_days} onChange={handleChange}
-                               className="form-input"/>
-                    </div>
+                    <Input
+                        divClasses='w-full'
+                        label='Due In (Days)'
+                        type='text'
+                        name='due_in_days'
+                        value={formData.due_in_days.toString()}
+                        onChange={handleChange}
+                        placeholder="Enter due in days"
+                        isMasked={false}
+                    />
 
-                    <div className="w-full">
-                        <label htmlFor="website_url">Website</label>
-                        <input id="website_url" type="text" name="website_url" placeholder="Enter Vendor Website"
-                               value={formData.website_url} onChange={handleChange}
-                               className="form-input"/>
-                    </div>
-                    <div className="w-full">
-                        <label htmlFor="tax_reg_no">Tax Reg No</label>
-                        <input id="tax_reg_no" type="text" name="tax_reg_no" placeholder="Enter tax regiration no"
-                               value={formData.tax_reg_no} onChange={handleChange}
-                               className="form-input"/>
-                    </div>
+                    <Input
+                        divClasses='w-full'
+                        label='Website'
+                        type='text'
+                        name='website_url'
+                        value={formData.website_url}
+                        onChange={handleChange}
+                        placeholder="Enter Vendor Website"
+                        isMasked={false}
+                    />
+
+                    <Input
+                        divClasses='w-full'
+                        label='Tax Reg No'
+                        type='text'
+                        name='tax_reg_no'
+                        value={formData.tax_reg_no}
+                        onChange={handleChange}
+                        placeholder="Enter tax regiration no"
+                        isMasked={false}
+                    />
 
                 </div>
 
                 <div className="flex flex-col md:flex-row gap-3 w-full">
-                    <div className="w-full">
-                        <label htmlFor="country_id">Country</label>
-                        <Select
-                            defaultValue={countryOptions[0]}
-                            options={countryOptions}
-                            isSearchable={true}
-                            isClearable={true}
-                            placeholder={'Select Country'}
-                            onChange={(e: any) => handleCountryChange(e)}
-                        />
-                    </div>
-                    <div className="w-full">
-                        <label htmlFor="state_id">State</label>
-                        <Select
-                            defaultValue={stateOptions[0]}
-                            options={stateOptions}
-                            isSearchable={true}
-                            isClearable={true}
-                            placeholder={'Select State'}
-                            onChange={(e: any) => handleStateChange(e)}
-                        />
-                    </div>
-                    <div className="w-full">
-                        <label htmlFor="city_id">City</label>
-                        <Select
-                            defaultValue={cityOptions[0]}
-                            options={cityOptions}
-                            isSearchable={true}
-                            isClearable={true}
-                            placeholder={'Select City'}
-                            onChange={(e: any) => setFormData(prev => ({...prev, city_id: e ? e.value : 0}))}
-                        />
-                    </div>
+                    <Dropdown
+                        divClasses='w-full'
+                        label='Country'
+                        name='country_id'
+                        options={countryOptions}
+                        value={formData.country_id}
+                        onChange={(e: any) => handleCountryChange(e)}
+                    />
+
+                    <Dropdown
+                        divClasses='w-full'
+                        label='State'
+                        name='state_id'
+                        options={stateOptions}
+                        value={formData.state_id}
+                        onChange={(e: any) => handleStateChange(e)}
+                    />
+
+                    <Dropdown
+                        divClasses='w-full'
+                        label='City'
+                        name='city_id'
+                        options={stateOptions}
+                        value={formData.city_id}
+                        onChange={(e: any) => {
+                            if (e && e.value && typeof e !== 'undefined') {
+                                setFormData(prev => ({...prev, city_id: e.value}))
+                            } else {
+                                setFormData(prev => ({...prev, city_id: 0}))
+                            }
+                        }}
+                    />
                 </div>
                 <div className="flex flex-col md:flex-row gap-3 w-full">
-                    <div className="w-full md:w-1/3">
-                        <label htmlFor="postal_code">Postal Code</label>
-                        <input id="postal_code" type="text" name="postal_code" placeholder="Enter postal code"
-                               value={formData.postal_code} onChange={handleChange}
-                               className="form-input"/>
-                    </div>
-                    <div className="w-full">
-                        <label htmlFor="address">Official Address</label>
-                        <input id="address" type="text" name="address" placeholder="Enter address"
-                               value={formData.address} onChange={handleChange}
-                               className="form-input"/>
-                    </div>
+                    <Input
+                        divClasses='w-full md:w-1/3'
+                        label='Postal Code'
+                        type='text'
+                        name='postal_code'
+                        value={formData.postal_code}
+                        onChange={handleChange}
+                        placeholder="Enter postal code"
+                        isMasked={false}
+                    />
+
+                    <Input
+                        divClasses='w-full'
+                        label='Official Address'
+                        type='text'
+                        name='address'
+                        value={formData.address}
+                        onChange={handleChange}
+                        placeholder="Enter address"
+                        isMasked={false}
+                    />
+
                 </div>
 
                 <div className="table-responsive w-full">
                     <div className="flex justify-between items-center flex-col md:flex-row space-y-3 md:space-y-0 mb-3">
                         <h3 className="text-lg font-semibold">Vendor Representatives</h3>
-                        <button
-                            type="button"
-                            className="btn btn-primary btn-sm"
+                        <Button
+                            text='Add Representative'
+                            variant={ButtonVariant.primary}
+                            size={ButtonSize.small}
                             onClick={() => setVendorRepresentativeModal(true)}
-                        >
-                            Add Representative
-                        </button>
+                        />
                     </div>
                     <table>
                         <thead>
@@ -487,13 +530,13 @@ const VendorForm = ({id}: IFormProps) => {
                 <div className="table-responsive w-full">
                     <div className="flex justify-between items-center flex-col md:flex-row space-y-3 md:space-y-0 mb-3">
                         <h3 className="text-lg font-semibold">Vendor Addresses</h3>
-                        <button
-                            type="button"
-                            className="btn btn-primary btn-sm"
+
+                        <Button
+                            text='Add Address'
+                            variant={ButtonVariant.primary}
+                            size={ButtonSize.small}
                             onClick={() => setVendorAddressModal(true)}
-                        >
-                            Add Address
-                        </button>
+                        />
                     </div>
                     <table>
                         <thead>
@@ -534,13 +577,13 @@ const VendorForm = ({id}: IFormProps) => {
                 <div className="table-responsive w-full">
                     <div className="flex justify-between items-center flex-col md:flex-row space-y-3 md:space-y-0 mb-3">
                         <h3 className="text-lg font-semibold">Vendor Bank Accounts</h3>
-                        <button
-                            type="button"
-                            className="btn btn-primary btn-sm"
+
+                        <Button
+                            text='Add Bank Details'
+                            variant={ButtonVariant.primary}
+                            size={ButtonSize.small}
                             onClick={() => setVendorBankModal(true)}
-                        >
-                            Add Bank Details
-                        </button>
+                        />
                     </div>
                     <table>
                         <thead>
@@ -586,14 +629,14 @@ const VendorForm = ({id}: IFormProps) => {
                         className="btn btn-primary"
                         disabled={loading}
                     >
-                        {loading ? 'Loading...' : 'Save Vendor'}
+                        {loading ? 'Loading...' : id ? 'Update Vendor' : 'Save Vendor'}
                     </button>
                 </div>
             </div>
             <VendorTypeFormModal
-                vendorTypeFormModal={vendorTypeModal}
-                setVendorTypeFormModal={setVendorTypeModal}
-                handleSubmitVendorType={(value: any) => handleVendorSubmit(value)}
+                modalOpen={vendorTypeModal}
+                setModalOpen={setVendorTypeModal}
+                handleSubmit={(value: any) => handleVendorSubmit(value)}
             />
             <VendorAddressModal
                 vendorAddressModal={vendorAddressModal}
@@ -615,7 +658,7 @@ const VendorForm = ({id}: IFormProps) => {
                 title='Vendor'
                 modalOpen={vendorBankModal}
                 setModalOpen={setVendorBankModal}
-                handleAddition={(value:any) => {
+                handleSubmit={(value: any) => {
                     setVendorBankAccounts([...vendorBankAccounts, value])
                     setVendorBankModal(false)
                 }}
