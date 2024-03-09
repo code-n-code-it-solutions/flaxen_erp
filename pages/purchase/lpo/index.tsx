@@ -3,7 +3,6 @@ import Swal from 'sweetalert2';
 import {useDispatch, useSelector} from 'react-redux';
 import {setPageTitle} from '@/store/slices/themeConfigSlice';
 import Link from "next/link";
-import Breadcrumb from "@/components/Breadcrumb";
 import {ThunkDispatch} from "redux-thunk";
 import {IRootState} from "@/store";
 import {AnyAction} from "redux";
@@ -13,11 +12,11 @@ import Image from "next/image";
 import {BASE_URL} from "@/configs/server.config";
 import {deleteLPO, getLPO} from "@/store/slices/localPurchaseOrderSlice";
 import Preview from "@/pages/purchase/lpo/preview";
-import ReactDOMServer from 'react-dom/server';
 import IconButton from "@/components/IconButton";
-import {ButtonVariant, IconType} from "@/utils/enums";
-import {generatePDF} from "@/utils/helper";
+import {ButtonType, ButtonVariant, IconType} from "@/utils/enums";
+import {generatePDF, imagePath} from "@/utils/helper";
 import PageWrapper from "@/components/PageWrapper";
+import Button from "@/components/Button";
 
 const Index = () => {
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
@@ -100,19 +99,23 @@ const Index = () => {
             <div>
                 <div className="mb-5 flex items-center justify-between">
                     <h5 className="text-lg font-semibold dark:text-white-light">All LPOs</h5>
-                    <Link href="/purchase/lpo/create"
-                          className="btn btn-primary btn-sm m-1">
-                        <span className="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                 className="h-5 w-5 ltr:mr-2 rtl:ml-2"
-                                 fill="none">
-                                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
-                                <path d="M15 12L12 12M12 12L9 12M12 12L12 9M12 12L12 15" stroke="currentColor"
-                                      strokeWidth="1.5" strokeLinecap="round"/>
-                            </svg>
-                            Add New
-                        </span>
-                    </Link>
+                    <Button
+                        type={ButtonType.link}
+                        text={
+                            <span className="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                     className="h-5 w-5 ltr:mr-2 rtl:ml-2"
+                                     fill="none">
+                                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
+                                    <path d="M15 12L12 12M12 12L9 12M12 12L12 9M12 12L12 15" stroke="currentColor"
+                                          strokeWidth="1.5" strokeLinecap="round"/>
+                                </svg>
+                                Add New
+                            </span>
+                        }
+                        variant={ButtonVariant.primary}
+                        link={'/purchase/lpo/create'}
+                    />
                 </div>
                 <GenericTable
                     colName={colName}
@@ -135,7 +138,7 @@ const Index = () => {
                             title: 'Vendor',
                             render: (row: any) => (
                                 <div className="flex flex-col items-center gap-3">
-                                    <Image src={`${BASE_URL}/${row.vendor.thumbnail?.path}`} alt={row.vendor.name}
+                                    <Image src={imagePath(row.vendor.thumbnail)} alt={row.vendor.name}
                                            width={50} height={50} className="rounded"/>
                                     <span>{row.vendor.name}</span>
                                 </div>
@@ -147,7 +150,7 @@ const Index = () => {
                             title: 'V Representative',
                             render: (row: any) => (
                                 <div className="flex flex-col items-center gap-3">
-                                    <Image src={`${BASE_URL}/${row.vendor_representative.thumbnail?.path}`}
+                                    <Image src={imagePath(row.vendor_representative.thumbnail)}
                                            alt={row.vendor_representative.name} width={50} height={50}
                                            className="rounded"/>
                                     <span>{row.vendor_representative.name}</span>
@@ -160,7 +163,7 @@ const Index = () => {
                             title: 'Vehicle',
                             render: (row: any) => (
                                 <div className="flex flex-col items-center gap-3">
-                                    <Image src={`${BASE_URL}/${row.vehicle.thumbnail?.path}`} alt={row.vehicle.make}
+                                    <Image src={imagePath(row.vehicle.thumbnail)} alt={row.vehicle.make}
                                            width={50} height={50} className="rounded"/>
                                     <span>{row.vehicle.make + '-' + row.vehicle.model + ' (' + row.vehicle.number_plate + ')'}</span>
                                 </div>
@@ -168,7 +171,7 @@ const Index = () => {
                             sortable: true
                         },
                         {accessor: 'purchased_by.name', title: 'Purchased By', sortable: true},
-                        {accessor: 'received_by.name', title: 'Received By', sortable: true},
+                        // {accessor: 'received_by.name', title: 'Received By', sortable: true},
                         {accessor: 'delivery_due_date', title: 'Due Date', sortable: true},
                         {
                             accessor: 'actions',
