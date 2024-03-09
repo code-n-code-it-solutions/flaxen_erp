@@ -50,6 +50,12 @@ const tableStructure = [
         columns: ['raw_product_id', 'description', 'unit_id', 'unit_price', 'quantity', 'availableQuantity', 'requiredQuantity', 'total'],
         numericColumns: ['quantity', 'unit_price', 'availableQuantity', 'requiredQuantity', 'total']
     },
+    {
+        listingFor: RAW_PRODUCT_LIST_TYPE.PURCHASE_REQUISITION,
+        header: ['Product', 'Desc', 'Unit', 'Qty (KG)', 'Unit Price (KG)', 'Total'],
+        columns: ['raw_product_id', 'description', 'unit_id', 'quantity', 'unit_price', 'total'],
+        numericColumns: ['quantity', 'unit_price', 'total']
+    },
     // {
     //     listingFor: RAW_PRODUCT_LIST_TYPE.FILLING,
     //     header: ['Product', 'Desc', 'Unit', 'Unit Price (KG)', 'Qty (KG)', 'Available Qty (KG)', 'Required Qty (KG)', 'Total'],

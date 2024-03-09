@@ -7,12 +7,13 @@ import {AnyAction} from "redux";
 import {clearPurchaseRequisitionState, storePurchaseRequest} from "@/store/slices/purchaseRequisitionSlice";
 import PRRawProductModal from "@/components/specific-modal/purchase-requisition/PRRawProductModal";
 import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
-import {ButtonType, ButtonVariant, FORM_CODE_TYPE} from "@/utils/enums";
+import {ButtonType, ButtonVariant, FORM_CODE_TYPE, RAW_PRODUCT_LIST_TYPE} from "@/utils/enums";
 import 'flatpickr/dist/flatpickr.css';
 import PRServiceModal from "@/components/specific-modal/purchase-requisition/PRServiceModal";
 import {Dropdown} from "@/components/form/Dropdown";
 import {Input} from "@/components/form/Input";
 import Button from "@/components/Button";
+import {RawProductItemListing} from "@/components/RawProductItemListing";
 
 interface IFormData {
     pr_title: string;
@@ -142,12 +143,13 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
         e.preventDefault();
         setAuthToken(token)
         setContentType('multipart/form-data')
-        setFormData(prev => ({
-            ...prev,
+        let finalData = {
+            ...formData,
             user_id: user.id,
+            pr_code: code[FORM_CODE_TYPE.PURCHASE_REQUISITION],
             department_id: user.employee?.department_id,
             designation_id: user.employee?.designation_id,
-            items: prev.type === 'Material'
+            items: formData.type === 'Material'
                 ? rawProducts.map((product: any) => {
                     return {
                         raw_product_id: product.raw_product_id,
@@ -155,16 +157,17 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
                         quantity: product.quantity,
                         unit_price: product.unit_price,
                         total_price: product.total,
-                        description: product.description
+                        description: product.description ? product.description : ''
                     }
                 })
-                : prev.type === 'Service'
+                : formData.type === 'Service'
                     ? serviceItems
                     : []
-        }))
+        }
         if (id) {
             // dispatch(updateRawProduct(id, formData));
         } else {
+            // console.log(finalData)
             dispatch(storePurchaseRequest(formData));
         }
     };
@@ -256,104 +259,110 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
                 />
 
                 <div className="table-responsive w-full">
-
-                    {showItemDetail.show && (
-                        <>
-                            <div
-                                className="flex justify-between items-center flex-col md:flex-row space-y-3 md:space-y-0 mb-3">
-                                <h3 className="text-lg font-semibold">Item Details</h3>
-                                <button
-                                    type="button"
-                                    className="btn btn-primary btn-sm"
-                                    onClick={() => showItemDetail.type === 'Material' ? setRawProductModalOpen(true) : setServiceModalOpen(true)}
-                                >
-                                    Add New Item
-                                </button>
-                            </div>
-                            {showItemDetail.type === 'Material'
-                                ? (
-                                    <table>
-                                        <thead>
-                                        <tr>
-                                            <th>Raw Product</th>
-                                            <th>Description</th>
-                                            <th>Unit</th>
-                                            <th>Quantity</th>
-                                            <th>Unit Price</th>
-                                            <th>Total</th>
-                                            <th>Action</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        {rawProducts.map((product, index) => (
-                                            <tr key={index}>
-                                                <td>{product.raw_product_title}</td>
-                                                <td>{product.description}</td>
-                                                <td>{product.unit_title}</td>
-                                                <td>{product.quantity}</td>
-                                                <td>{product.unit_price}</td>
-                                                <td>{product.total}</td>
-                                                <td>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleRemoveItem(index, 'Material')}
-                                                        className="btn btn-outline-danger btn-sm"
-                                                    >
-                                                        Delete
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                        {rawProducts.length === 0 ? (
-                                            <tr>
-                                                <td colSpan={7} className="text-center">No Data Found</td>
-                                            </tr>
-                                        ) : (
-                                            <tr>
-                                                <td colSpan={3} className="text-right font-semibold">Total</td>
-                                                <td>{rawProducts.reduce((acc, curr) => acc + curr.quantity, 0)}</td>
-                                                <td>{rawProducts.reduce((acc, curr) => acc + curr.unit_price, 0)}</td>
-                                                <td>{rawProducts.reduce((acc, curr) => acc + curr.total, 0)}</td>
-                                            </tr>
-                                        )}
-                                        </tbody>
-                                    </table>
-                                )
-                                : (
-                                    <table>
-                                        <thead>
-                                        <tr>
-                                            <th>Asset</th>
-                                            <th>Service</th>
-                                            <th>Description</th>
-                                            <th>Quantity</th>
-                                            <th>Action</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        {serviceItems.map((service, index) => (
-                                            <tr key={index}>
-                                                <td>{service.asset_names}</td>
-                                                <td>{service.name}</td>
-                                                <td>{service.description}</td>
-                                                <td>{service.quantity}</td>
-                                                <td>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleRemoveItem(index, 'Service')}
-                                                        className="btn btn-outline-danger btn-sm"
-                                                    >
-                                                        Delete
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                        </tbody>
-                                    </table>
-                                )
-                            }
-                        </>
+                    {showItemDetail.show && showItemDetail.type==='Material' && (
+                        <RawProductItemListing
+                            rawProducts={rawProducts}
+                            setRawProducts={setRawProducts}
+                            type={RAW_PRODUCT_LIST_TYPE.PURCHASE_REQUISITION}
+                        />
                     )}
+                    {/*{showItemDetail.show && (*/}
+                    {/*    <>*/}
+                    {/*        <div*/}
+                    {/*            className="flex justify-between items-center flex-col md:flex-row space-y-3 md:space-y-0 mb-3">*/}
+                    {/*            <h3 className="text-lg font-semibold">Item Details</h3>*/}
+                    {/*            <button*/}
+                    {/*                type="button"*/}
+                    {/*                className="btn btn-primary btn-sm"*/}
+                    {/*                onClick={() => showItemDetail.type === 'Material' ? setRawProductModalOpen(true) : setServiceModalOpen(true)}*/}
+                    {/*            >*/}
+                    {/*                Add New Item*/}
+                    {/*            </button>*/}
+                    {/*        </div>*/}
+                    {/*        {showItemDetail.type === 'Material'*/}
+                    {/*            ? (*/}
+                    {/*                <table>*/}
+                    {/*                    <thead>*/}
+                    {/*                    <tr>*/}
+                    {/*                        <th>Raw Product</th>*/}
+                    {/*                        <th>Description</th>*/}
+                    {/*                        <th>Unit</th>*/}
+                    {/*                        <th>Quantity</th>*/}
+                    {/*                        <th>Unit Price</th>*/}
+                    {/*                        <th>Total</th>*/}
+                    {/*                        <th>Action</th>*/}
+                    {/*                    </tr>*/}
+                    {/*                    </thead>*/}
+                    {/*                    <tbody>*/}
+                    {/*                    {rawProducts.map((product, index) => (*/}
+                    {/*                        <tr key={index}>*/}
+                    {/*                            <td>{product.raw_product_title}</td>*/}
+                    {/*                            <td>{product.description}</td>*/}
+                    {/*                            <td>{product.unit_title}</td>*/}
+                    {/*                            <td>{product.quantity}</td>*/}
+                    {/*                            <td>{product.unit_price}</td>*/}
+                    {/*                            <td>{product.total}</td>*/}
+                    {/*                            <td>*/}
+                    {/*                                <button*/}
+                    {/*                                    type="button"*/}
+                    {/*                                    onClick={() => handleRemoveItem(index, 'Material')}*/}
+                    {/*                                    className="btn btn-outline-danger btn-sm"*/}
+                    {/*                                >*/}
+                    {/*                                    Delete*/}
+                    {/*                                </button>*/}
+                    {/*                            </td>*/}
+                    {/*                        </tr>*/}
+                    {/*                    ))}*/}
+                    {/*                    {rawProducts.length === 0 ? (*/}
+                    {/*                        <tr>*/}
+                    {/*                            <td colSpan={7} className="text-center">No Data Found</td>*/}
+                    {/*                        </tr>*/}
+                    {/*                    ) : (*/}
+                    {/*                        <tr>*/}
+                    {/*                            <td colSpan={3} className="text-right font-semibold">Total</td>*/}
+                    {/*                            <td>{rawProducts.reduce((acc, curr) => acc + curr.quantity, 0)}</td>*/}
+                    {/*                            <td>{rawProducts.reduce((acc, curr) => acc + curr.unit_price, 0)}</td>*/}
+                    {/*                            <td>{rawProducts.reduce((acc, curr) => acc + curr.total, 0)}</td>*/}
+                    {/*                        </tr>*/}
+                    {/*                    )}*/}
+                    {/*                    </tbody>*/}
+                    {/*                </table>*/}
+                    {/*            )*/}
+                    {/*            : (*/}
+                    {/*                <table>*/}
+                    {/*                    <thead>*/}
+                    {/*                    <tr>*/}
+                    {/*                        <th>Asset</th>*/}
+                    {/*                        <th>Service</th>*/}
+                    {/*                        <th>Description</th>*/}
+                    {/*                        <th>Quantity</th>*/}
+                    {/*                        <th>Action</th>*/}
+                    {/*                    </tr>*/}
+                    {/*                    </thead>*/}
+                    {/*                    <tbody>*/}
+                    {/*                    {serviceItems.map((service, index) => (*/}
+                    {/*                        <tr key={index}>*/}
+                    {/*                            <td>{service.asset_names}</td>*/}
+                    {/*                            <td>{service.name}</td>*/}
+                    {/*                            <td>{service.description}</td>*/}
+                    {/*                            <td>{service.quantity}</td>*/}
+                    {/*                            <td>*/}
+                    {/*                                <button*/}
+                    {/*                                    type="button"*/}
+                    {/*                                    onClick={() => handleRemoveItem(index, 'Service')}*/}
+                    {/*                                    className="btn btn-outline-danger btn-sm"*/}
+                    {/*                                >*/}
+                    {/*                                    Delete*/}
+                    {/*                                </button>*/}
+                    {/*                            </td>*/}
+                    {/*                        </tr>*/}
+                    {/*                    ))}*/}
+                    {/*                    </tbody>*/}
+                    {/*                </table>*/}
+                    {/*            )*/}
+                    {/*        }*/}
+                    {/*    </>*/}
+                    {/*)}*/}
 
                 </div>
 

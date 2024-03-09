@@ -141,7 +141,7 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                 onChange={(e) => handleChange('quantity', parseFloat(e.target.value))}
                 isMasked={false}
             />
-            {(listFor === RAW_PRODUCT_LIST_TYPE.PRODUCT_ASSEMBLY || listFor === RAW_PRODUCT_LIST_TYPE.PRODUCTION) && (
+            {(listFor === RAW_PRODUCT_LIST_TYPE.PRODUCT_ASSEMBLY || listFor === RAW_PRODUCT_LIST_TYPE.PRODUCTION || listFor===RAW_PRODUCT_LIST_TYPE.PURCHASE_REQUISITION) && (
                 <>
                     <Input
                         label='Unit Cost'
