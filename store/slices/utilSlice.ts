@@ -10,7 +10,7 @@ interface IUTILState {
 
 // Initial state
 const initialState: IUTILState = {
-    code: null,
+    code: {},
     loading: false,
     error: null,
     success: false,
@@ -37,7 +37,7 @@ export const utilSlice = createSlice({
     initialState,
     reducers: {
         clearUtilState: (state) => {
-            state.code = null;
+            state.code = {};
             state.error = null;
             state.success = false;
         },

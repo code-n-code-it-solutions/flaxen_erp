@@ -7,7 +7,6 @@ import {IRootState} from "@/store";
 import {AnyAction} from "redux";
 import {useRouter} from "next/router";
 import {setPageTitle} from "@/store/slices/themeConfigSlice";
-import ProductForm from "@/pages/inventory/products/ProductForm";
 import {clearRawProductState} from "@/store/slices/rawProductSlice";
 import VendorForm from "@/pages/admin/vendors/VendorForm";
 

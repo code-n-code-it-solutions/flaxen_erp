@@ -1,0 +1,37 @@
+.imageContainer {
+    position: relative;
+    width: 96px; /* Adjust based on your needs */
+    height: 96px; /* Adjust based on your needs */
+    cursor: pointer;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.imageContainer:hover .image {
+    filter: blur(4px);
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0,0,0,0.4); /* Semi-transparent overlay */
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+.imageContainer:hover .overlay {
+    opacity: 1;
+}
+
+.plusIcon {
+    font-size: 24px;
+    color: white;
+}

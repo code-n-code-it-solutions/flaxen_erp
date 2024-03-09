@@ -5,21 +5,24 @@ import {ThunkDispatch} from "redux-thunk";
 import {IRootState} from "@/store";
 import {AnyAction} from "redux";
 import Select from "react-select";
-import {useRouter} from "next/router";
 import {
     clearPurchaseRequisitionState,
-    getRequisitionStatues,
     storePurchaseRequest
 } from "@/store/slices/purchaseRequisitionSlice";
-import PRRawProductModal from "@/components/PRRawProductModal";
+import PRRawProductModal from "@/components/specific-modal/purchase-requisition/PRRawProductModal";
 import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
 import {FORM_CODE_TYPE} from "@/utils/enums";
+import Flatpickr from 'react-flatpickr';
+import 'flatpickr/dist/flatpickr.css';
+import PRServiceModal from "@/components/specific-modal/purchase-requisition/PRServiceModal";
+import {string} from "yup";
 
 interface IFormData {
     pr_title: string;
     pr_code: string;
     description: string;
     user_id: number;
+    type: string,
     department_id: number | null;
     designation_id: number | null;
     requisition_date: string;
@@ -38,6 +41,14 @@ interface IRawProduct {
     description: string;
 }
 
+interface IServiceItems {
+    name: string;
+    asset_names: string;
+    asset_ids: string;
+    quantity: number;
+    description: string;
+}
+
 interface IFormProps {
     id?: any
 }
@@ -49,12 +60,19 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
     const {code} = useSelector((state: IRootState) => state.util);
 
     const [rawProductModalOpen, setRawProductModalOpen] = useState<boolean>(false);
+    const [serviceModalOpen, setServiceModalOpen] = useState<boolean>(false);
+    const [showItemDetail, setShowItemDetail] = useState<any>({
+        show: false,
+        type: null
+    });
     const [rawProducts, setRawProducts] = useState<IRawProduct[]>([]);
+    const [serviceItems, setServiceItems] = useState<IServiceItems[]>([]);
     const [formData, setFormData] = useState<IFormData>({
         pr_title: '',
         pr_code: '',
         description: '',
         user_id: 0,
+        type: '',
         department_id: 0,
         designation_id: 0,
         requisition_date: '',
@@ -67,6 +85,11 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
         {value: 'Draft', label: 'Draft'},
         {value: 'Pending', label: 'Proceed'},
     ]);
+    const [requisitionTypeOptions, setRequisitionTypeOptions] = useState<any[]>([
+        {value: '', label: 'Select Type'},
+        {value: 'Material', label: 'Material'},
+        {value: 'Service', label: 'Service'},
+    ]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const {name, value} = e.target;
@@ -75,14 +98,60 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
         });
     };
 
-    const handleAddItemRow = (value: any) => {
-        setRawProducts(prev => ([...prev, value]));
-        setRawProductModalOpen(false);
+
+    const handleAddItemRow = (value: any, type: string) => {
+        if (type === 'Material') {
+            setRawProducts(prev => ([...prev, value]));
+            setRawProductModalOpen(false);
+        } else {
+            setServiceItems(prev => ([...prev, value]));
+            setServiceModalOpen(false);
+        }
     }
 
-    const handleRemoveItem = (index: number) => {
-        const newItems = rawProducts.filter((address, i) => i !== index);
-        setRawProducts(newItems);
+    const handleRemoveItem = (index: number, type: string) => {
+        if (type === 'Material') {
+            const newItems = rawProducts.filter((address, i) => i !== index);
+            setRawProducts(newItems);
+        } else {
+            const newItems = serviceItems.filter((address, i) => i !== index);
+            setServiceItems(newItems);
+        }
+    }
+
+    const handleRequisitionTypeChange = (e: any) => {
+
+        if (e && typeof e !== 'undefined') {
+            setFormData(prev => ({
+                ...prev,
+                type: e.value
+            }))
+            if (e.value === 'Material') {
+                setShowItemDetail({
+                    show: true,
+                    type: 'Material'
+                })
+            } else if (e.value === 'Service') {
+                setShowItemDetail({
+                    show: true,
+                    type: 'Service'
+                })
+            } else {
+                setShowItemDetail({
+                    show: false,
+                    type: null
+                })
+            }
+        } else {
+            setShowItemDetail({
+                show: false,
+                type: null
+            })
+            setFormData(prev => ({
+                ...prev,
+                type: ''
+            }))
+        }
     }
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -94,16 +163,20 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
             user_id: user.id,
             department_id: user.employee?.department_id,
             designation_id: user.employee?.designation_id,
-            items: rawProducts.map((product: any) => {
-                return {
-                    raw_product_id: product.raw_product_id,
-                    unit_id: product.unit_id,
-                    quantity: product.quantity,
-                    unit_price: product.unit_price,
-                    total_price: product.total,
-                    description: product.description
-                }
-            })
+            items: prev.type === 'Material'
+                ? rawProducts.map((product: any) => {
+                    return {
+                        raw_product_id: product.raw_product_id,
+                        unit_id: product.unit_id,
+                        quantity: product.quantity,
+                        unit_price: product.unit_price,
+                        total_price: product.total,
+                        description: product.description
+                    }
+                })
+                : prev.type === 'Service'
+                    ? serviceItems
+                    : []
         }))
         if (id) {
             // dispatch(updateRawProduct(id, formData));
@@ -117,6 +190,8 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
         setAuthToken(token)
         setContentType('application/json')
         dispatch(clearUtilState())
+        setServiceModalOpen(false)
+        setRawProductModalOpen(false)
         dispatch(generateCode(FORM_CODE_TYPE.PURCHASE_REQUISITION))
     }, [])
 
@@ -124,7 +199,7 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
         if (code) {
             setFormData(prev => ({
                 ...prev,
-                pr_code: code
+                pr_code: code[FORM_CODE_TYPE.PURCHASE_REQUISITION]
             }))
         }
     }, [code])
@@ -133,6 +208,17 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
         <form className="space-y-5" onSubmit={handleSubmit}>
             <div className="flex justify-start flex-col items-start space-y-3">
                 <div className="w-full md:w-1/3">
+                    <label htmlFor="status_id">Status</label>
+                    <Select
+                        defaultValue={requisitionTypeOptions[0]}
+                        options={requisitionTypeOptions}
+                        isSearchable={true}
+                        isClearable={true}
+                        placeholder={'Select Request Type'}
+                        onChange={(e: any) => handleRequisitionTypeChange(e)}
+                    />
+                </div>
+                <div className="w-full md:w-1/3">
                     <label htmlFor="pr_code">Purchase Request Code</label>
                     <input id="pr_code" type="text" name="pr_code" placeholder="Enter Purchase Request Code"
                            value={formData.pr_code} onChange={handleChange} disabled={true}
@@ -140,10 +226,22 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
                 </div>
                 <div className="w-full md:w-1/3">
                     <label htmlFor="requisition_date">Requisition Date</label>
-                    <input id="requisition_date" type="date" name="requisition_date"
-                           placeholder="Enter Purchase Request Date"
-                           value={formData.requisition_date} onChange={handleChange}
-                           className="form-input"/>
+                    <Flatpickr
+                        value={formData.requisition_date}
+                        placeholder={'Select Date'}
+                        options={{
+                            dateFormat: 'Y-m-d'
+                        }}
+                        className="form-input"
+                        onChange={(date) => setFormData(prev => ({
+                            ...prev,
+                            requisition_date: date[0].toLocaleDateString()
+                        }))}
+                    />
+                    {/*<input id="requisition_date" type="date" name="requisition_date"*/}
+                    {/*       placeholder="Enter Purchase Request Date"*/}
+                    {/*       value={formData.requisition_date} onChange={handleChange}*/}
+                    {/*       className="form-input"/>*/}
                 </div>
                 <div className="w-full md:w-1/3">
                     <label htmlFor="status_id">Status</label>
@@ -167,64 +265,106 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
                            className="form-input" style={{height: 45}}/>
                 </div>
 
-
                 <div className="table-responsive w-full">
-                    <div className="flex justify-between items-center flex-col md:flex-row space-y-3 md:space-y-0 mb-3">
-                        <h3 className="text-lg font-semibold">Item Details</h3>
-                        <button
-                            type="button"
-                            className="btn btn-primary btn-sm"
-                            onClick={() => setRawProductModalOpen(true)}
-                        >
-                            Add New Item
-                        </button>
-                    </div>
-                    <table>
-                        <thead>
-                        <tr>
-                            <th>Raw Product</th>
-                            <th>Description</th>
-                            <th>Unit</th>
-                            <th>Quantity</th>
-                            <th>Unit Price</th>
-                            <th>Total</th>
-                            <th>Action</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {rawProducts.map((product, index) => (
-                            <tr key={index}>
-                                <td>{product.raw_product_title}</td>
-                                <td>{product.description}</td>
-                                <td>{product.unit_title}</td>
-                                <td>{product.quantity}</td>
-                                <td>{product.unit_price}</td>
-                                <td>{product.total}</td>
-                                <td>
-                                    <button
-                                        type="button"
-                                        onClick={() => handleRemoveItem(index)}
-                                        className="btn btn-outline-danger btn-sm"
-                                    >
-                                        Delete
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                        {rawProducts.length === 0 ? (
-                            <tr>
-                                <td colSpan={7} className="text-center">No Data Found</td>
-                            </tr>
-                        ) : (
-                            <tr>
-                                <td colSpan={3} className="text-right font-semibold">Total</td>
-                                <td>{rawProducts.reduce((acc, curr) => acc + curr.quantity, 0)}</td>
-                                <td>{rawProducts.reduce((acc, curr) => acc + curr.unit_price, 0)}</td>
-                                <td>{rawProducts.reduce((acc, curr) => acc + curr.total, 0)}</td>
-                            </tr>
-                        )}
-                        </tbody>
-                    </table>
+
+                    {showItemDetail.show && (
+                        <>
+                            <div
+                                className="flex justify-between items-center flex-col md:flex-row space-y-3 md:space-y-0 mb-3">
+                                <h3 className="text-lg font-semibold">Item Details</h3>
+                                <button
+                                    type="button"
+                                    className="btn btn-primary btn-sm"
+                                    onClick={() => showItemDetail.type === 'Material' ? setRawProductModalOpen(true) : setServiceModalOpen(true)}
+                                >
+                                    Add New Item
+                                </button>
+                            </div>
+                            {showItemDetail.type === 'Material'
+                                ? (
+                                    <table>
+                                        <thead>
+                                        <tr>
+                                            <th>Raw Product</th>
+                                            <th>Description</th>
+                                            <th>Unit</th>
+                                            <th>Quantity</th>
+                                            <th>Unit Price</th>
+                                            <th>Total</th>
+                                            <th>Action</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {rawProducts.map((product, index) => (
+                                            <tr key={index}>
+                                                <td>{product.raw_product_title}</td>
+                                                <td>{product.description}</td>
+                                                <td>{product.unit_title}</td>
+                                                <td>{product.quantity}</td>
+                                                <td>{product.unit_price}</td>
+                                                <td>{product.total}</td>
+                                                <td>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRemoveItem(index, 'Material')}
+                                                        className="btn btn-outline-danger btn-sm"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {rawProducts.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={7} className="text-center">No Data Found</td>
+                                            </tr>
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={3} className="text-right font-semibold">Total</td>
+                                                <td>{rawProducts.reduce((acc, curr) => acc + curr.quantity, 0)}</td>
+                                                <td>{rawProducts.reduce((acc, curr) => acc + curr.unit_price, 0)}</td>
+                                                <td>{rawProducts.reduce((acc, curr) => acc + curr.total, 0)}</td>
+                                            </tr>
+                                        )}
+                                        </tbody>
+                                    </table>
+                                )
+                                : (
+                                    <table>
+                                        <thead>
+                                        <tr>
+                                            <th>Asset</th>
+                                            <th>Service</th>
+                                            <th>Description</th>
+                                            <th>Quantity</th>
+                                            <th>Action</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {serviceItems.map((service, index) => (
+                                            <tr key={index}>
+                                                <td>{service.asset_names}</td>
+                                                <td>{service.name}</td>
+                                                <td>{service.description}</td>
+                                                <td>{service.quantity}</td>
+                                                <td>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRemoveItem(index, 'Service')}
+                                                        className="btn btn-outline-danger btn-sm"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        </tbody>
+                                    </table>
+                                )
+                            }
+                        </>
+                    )}
+
                 </div>
 
                 <div className="w-full">
@@ -240,7 +380,12 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
             <PRRawProductModal
                 modal={rawProductModalOpen}
                 setModal={setRawProductModalOpen}
-                handleAddRawProduct={(value: any) => handleAddItemRow(value)}
+                handleAddRawProduct={(value: any) => handleAddItemRow(value, 'Material')}
+            />
+            <PRServiceModal
+                modalOpen={serviceModalOpen}
+                setModalOpen={setServiceModalOpen}
+                handleSubmit={(val) => handleAddItemRow(val, 'Service')}
             />
         </form>
     );

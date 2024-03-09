@@ -1,6 +1,6 @@
 import React, {Fragment, useEffect, useState} from 'react';
 import {Dialog, Transition} from "@headlessui/react";
-import ImageUploader from "@/components/ImageUploader";
+import ImageUploader from "@/components/form/ImageUploader";
 
 interface IProps {
     modalOpen: boolean;

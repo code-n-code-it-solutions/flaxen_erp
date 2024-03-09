@@ -6,8 +6,10 @@ import {ThunkDispatch} from "redux-thunk";
 import {IRootState} from "@/store";
 import {AnyAction} from "redux";
 import Select from "react-select";
-import ImageUploader from "@/components/ImageUploader";
+import ImageUploader from "@/components/form/ImageUploader";
 import {clearLocationState, getCities, getCountries, getStates} from "@/store/slices/locationSlice";
+import {MaskConfig} from "@/configs/mask.config";
+import MaskedInput from "react-text-mask";
 
 interface IProps {
     vendorRepresentativeModal: boolean;
@@ -29,7 +31,7 @@ const VendorRepresentativeModal = ({
     const [image, setImage] = useState<File | null>(null);
     const [formData, setFormData] = useState<any>({
         name: '',
-        phone: '',
+        phone: '+971',
         email: '',
         country_id: 0,
         country_name: '',
@@ -184,9 +186,20 @@ const VendorRepresentativeModal = ({
                                     </div>
                                     <div className="w-full">
                                         <label htmlFor="phone">Phone</label>
-                                        <input id="phone" type="number" name="phone" placeholder="Enter Phone number"
-                                               value={formData.phone} onChange={handleChange}
-                                               className="form-input"/>
+                                        <MaskedInput
+                                            id="phone"
+                                            type="text"
+                                            placeholder={MaskConfig.phone.placeholder}
+                                            className="form-input"
+                                            guide={true}
+                                            name="phone"
+                                            value={formData.phone}
+                                            onChange={handleChange}
+                                            mask={MaskConfig.phone.pattern}
+                                        />
+                                        {/*<input id="phone" type="number" name="phone" placeholder="Enter Phone number"*/}
+                                        {/*       value={formData.phone} onChange={handleChange}*/}
+                                        {/*       className="form-input"/>*/}
                                     </div>
                                     <div className="w-full">
                                         <label htmlFor="email">Email</label>

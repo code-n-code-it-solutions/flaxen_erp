@@ -52,6 +52,20 @@ export const getRawProducts = createAsyncThunk(
     }
 );
 
+export const showDetails = createAsyncThunk(
+    'rawProducts/show',
+    async (id:number, thunkAPI) => {
+        try {
+            const response = await API.get('/raw-products/'+id);
+            return response.data;
+        } catch (error:any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 export const storeRawProduct = createAsyncThunk(
     'rawProducts/store',
     async (productData:IRawProduct, thunkAPI) => {
@@ -70,7 +84,8 @@ export const editRawProduct = createAsyncThunk(
     'rawProducts/edit',
     async (id:number, thunkAPI) => {
         try {
-            const response = await API.get('/raw-products/'+id);
+            const response = await API.get('/raw-products/edit/'+id);
+            console.log(response)
             return response.data;
         } catch (error:any) {
             const message =
@@ -80,19 +95,21 @@ export const editRawProduct = createAsyncThunk(
     }
 );
 
-// export const updateRawProduct = createAsyncThunk(
-//     'rawProducts/update',
-//     async (rawProductData, thunkAPI) => {
-//         try {
-//             const response = await API.put('/raw-products/'+rawProductData.id, rawProductData);
-//             return response.data;
-//         } catch (error:any) {
-//             const message =
-//                 error.response?.data?.message || error.message || 'Failed to login';
-//             return thunkAPI.rejectWithValue(message);
-//         }
-//     }
-// );
+export const updateRawProduct = createAsyncThunk(
+    'rawProducts/update',
+    async (data:any, thunkAPI) => {
+        try {
+            const {id, rawProductData} = data
+            console.log(id, rawProductData)
+            const response = await API.post('/raw-products/update/'+id, rawProductData);
+            return response.data;
+        } catch (error:any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to login';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
 
 
 export const deleteRawProduct = createAsyncThunk(
@@ -143,6 +160,42 @@ export const rawProductSlice = createSlice({
                 state.success = action.payload.success;
             })
             .addCase(storeRawProduct.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(showDetails.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(showDetails.fulfilled, (state, action) => {
+                state.loading = false;
+                state.rawProductDetail = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(showDetails.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(editRawProduct.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(editRawProduct.fulfilled, (state, action) => {
+                state.loading = false;
+                state.rawProductDetail = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(editRawProduct.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(updateRawProduct.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(updateRawProduct.fulfilled, (state, action) => {
+                state.loading = false;
+                state.rawProduct = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(updateRawProduct.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })

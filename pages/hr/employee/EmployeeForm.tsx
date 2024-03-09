@@ -1,29 +1,28 @@
 import React, {useEffect, useState} from 'react';
-import ImageUploader from "@/components/ImageUploader";
+import ImageUploader from "@/components/form/ImageUploader";
 import {setAuthToken, setContentType} from "@/configs/api.config";
 import {useDispatch, useSelector} from "react-redux";
 import {ThunkDispatch} from "redux-thunk";
 import {IRootState} from "@/store";
 import {AnyAction} from "redux";
-import Select from "react-select";
-import VendorTypeFormModal from "@/components/VendorTypeFormModal";
-import VendorAddressModal from "@/components/VendorAddressModal";
-import VendorRepresentativeModal from "@/components/VendorRepresentativeModal";
 import {clearLocationState, getCities, getCountries, getStates} from "@/store/slices/locationSlice";
-import {getVendorTypes, storeVendorType} from "@/store/slices/vendorTypeSlice";
-import {clearVendorState, storeVendor} from "@/store/slices/vendorSlice";
 import {useRouter} from "next/router";
-import BankDetailModal from "@/components/BankDetailModal";
-import {date} from "yup";
+import BankDetailModal from "@/components/specific-modal/BankDetailModal";
 import {clearEmployeeState, storeEmployee} from "@/store/slices/employeeSlice";
 import {clearDesignationState, getDesignationByDepartmentID, storeDesignation} from "@/store/slices/designationSlice";
 import {clearDepartmentState, getDepartments, storeDepartment} from "@/store/slices/departmentSlice";
-import DepartmentFormModal from "@/components/DepartmentFormModal";
-import DesignationFormModal from "@/components/DesignationFormModal";
-import designationFormModal from "@/components/DesignationFormModal";
-import DocumentFormModal from "@/components/DocumentFormModal";
+import DepartmentFormModal from "@/components/specific-modal/DepartmentFormModal";
+import DesignationFormModal from "@/components/specific-modal/DesignationFormModal";
+import DocumentFormModal from "@/components/specific-modal/DocumentFormModal";
 import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
-import {FORM_CODE_TYPE} from "@/utils/enums";
+import {ButtonSize, ButtonType, ButtonVariant, FORM_CODE_TYPE, IconType} from "@/utils/enums";
+import {MaskConfig} from "@/configs/mask.config";
+import {Input} from "@/components/form/Input";
+import {Dropdown} from "@/components/form/Dropdown";
+import Button from "@/components/Button";
+import {createBlobUrl, getIcon, imagePath} from "@/utils/helper";
+import FileDownloader from "@/components/FileDownloader";
+import {clearRawProductState} from "@/store/slices/rawProductSlice";
 
 interface IFormData {
     employee_code: string;
@@ -62,7 +61,6 @@ interface IDocuments {
     document: File | null;
     name: string;
     description: string;
-    is_active: boolean;
 }
 
 interface IFormProps {
@@ -86,7 +84,7 @@ const EmployeeForm = ({id}: IFormProps) => {
     const [formData, setFormData] = useState<IFormData>({
         employee_code: '',
         name: '',
-        phone: '',
+        phone: '+971',
         email: '',
         password: '',
         postal_code: '',
@@ -104,7 +102,7 @@ const EmployeeForm = ({id}: IFormProps) => {
         documents: [],
         is_active: true
     });
-
+    const [imagePreview, setImagePreview] = useState('');
     const [departmentModalOpen, setDepartmentModalOpen] = useState(false);
     const [documentModalOpen, setDocumentModalOpen] = useState(false);
     const [designationModalOpen, setDesignationModalOpen] = useState(false);
@@ -114,8 +112,7 @@ const EmployeeForm = ({id}: IFormProps) => {
     const [departmentOptions, setDepartmentOptions] = useState<any[]>([]);
     const [designationOptions, setDesignationOptions] = useState<any[]>([]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const {name, value} = e.target;
+    const handleChange = (name: string, value: any) => {
         setFormData(prevFormData => {
             return {...prevFormData, [name]: value};
         });
@@ -125,6 +122,10 @@ const EmployeeForm = ({id}: IFormProps) => {
         if (e && e.value && typeof e !== 'undefined') {
             setFormData(prev => ({...prev, department_id: e.value}))
             dispatch(getDesignationByDepartmentID(parseInt(e.value)))
+        } else {
+            setDesignationOptions([])
+            setFormData(prev => ({...prev, department_id: 0}))
+            setFormData(prev => ({...prev, designation_id: 0}))
         }
     }
 
@@ -132,6 +133,11 @@ const EmployeeForm = ({id}: IFormProps) => {
         if (e && e.value && typeof e !== 'undefined') {
             setFormData(prev => ({...prev, country_id: e.value}))
             dispatch(getStates(parseInt(e.value)))
+        } else {
+            setFormData(prev => ({...prev, country_id: 0}))
+            setFormData(prev => ({...prev, state_id: 0}))
+            setStateOptions([])
+            setCityOptions([])
         }
     }
 
@@ -139,6 +145,10 @@ const EmployeeForm = ({id}: IFormProps) => {
         if (e && e.value && typeof e !== 'undefined') {
             setFormData(prev => ({...prev, state_id: e.value}))
             dispatch(getCities({countryId: formData.country_id, stateId: parseInt(e.value)}))
+        } else {
+            setFormData(prev => ({...prev, state_id: 0}))
+            setFormData(prev => ({...prev, city_id: 0}))
+            setCityOptions([])
         }
     }
 
@@ -179,18 +189,59 @@ const EmployeeForm = ({id}: IFormProps) => {
     };
 
     useEffect(() => {
+        if (employee.employeeDetail) {
+            const employeeDetail = employee.employeeDetail;
+            console.log(employeeDetail)
+            setImagePreview(imagePath(employeeDetail.thumbnail))
+            setFormData({
+                ...formData,
+                employee_code: employeeDetail.employee_code,
+                name: employeeDetail.user.name,
+                phone: employeeDetail.phone,
+                email: employeeDetail.user.email,
+                postal_code: employeeDetail.postal_code,
+                address: employeeDetail.address,
+                date_of_joining: employeeDetail.date_of_joining,
+                passport_number: employeeDetail.passport_number,
+                id_number: employeeDetail.id_number,
+                department_id: employeeDetail.department_id,
+                designation_id: employeeDetail.designation_id,
+                country_id: employeeDetail.country_id,
+                state_id: employeeDetail.state_id,
+                city_id: employeeDetail.city_id,
+                bank_accounts: employeeDetail.bank_accounts,
+                documents: employeeDetail.documents,
+            });
+            setEmployeeBankAccounts(employeeDetail.bank_accounts)
+            setEmployeeDocuments(employeeDetail.documents)
+        } else {
+            setImagePreview(imagePath(''))
+        }
+    }, [employee.employeeDetail]);
+
+    useEffect(() => {
         dispatch(clearLocationState())
         dispatch(clearEmployeeState())
         dispatch(clearUtilState())
         setAuthToken(token)
         dispatch(getCountries())
         dispatch(getDepartments())
-        dispatch(generateCode(FORM_CODE_TYPE.EMPLOYEE))
-    }, [])
+        setContentType('application/json');
+    }, [dispatch, token]);
+
+    useEffect(() => {
+        if (!id) {
+            dispatch(generateCode(FORM_CODE_TYPE.EMPLOYEE))
+            setImagePreview(imagePath(''));
+        }
+        return () => {
+            dispatch(clearRawProductState());
+        };
+    }, [id, dispatch]);
 
     useEffect(() => {
         if (code) {
-            setFormData(prev => ({...prev, employee_code: code}))
+            setFormData(prev => ({...prev, employee_code: code[FORM_CODE_TYPE.EMPLOYEE]}))
         }
     }, [code])
 
@@ -217,13 +268,6 @@ const EmployeeForm = ({id}: IFormProps) => {
             }))
         }
     }, [cities]);
-
-    useEffect(() => {
-        if (employee.employee && employee.success) {
-            router.push('/hr/employee')
-            dispatch(clearEmployeeState())
-        }
-    }, [employee.employee, employee.success])
 
     useEffect(() => {
         if (designation.designations) {
@@ -270,178 +314,221 @@ const EmployeeForm = ({id}: IFormProps) => {
     return (
         <form className="space-y-5" onSubmit={(e) => handleSubmit(e)}>
             <div className="flex justify-center items-center">
-                <ImageUploader image={image} setImage={setImage}/>
+                <ImageUploader image={image} setImage={setImage} existingImage={imagePreview}/>
             </div>
             <div className="flex justify-start flex-col items-start space-y-3">
-                <div className="w-full md:w-1/3">
-                    <label htmlFor="employee_code">Employee Code</label>
-                    <input id="employee_code" type="text" name="employee_code" placeholder="Enter Employee Code"
-                           value={formData.employee_code} onChange={handleChange} disabled={true}
-                           className="form-input"/>
+                <Input
+                    divClasses='w-full md:w-1/3'
+                    label='Employee Code'
+                    type='text'
+                    name='employee_code'
+                    value={formData.employee_code}
+                    onChange={(e) => handleChange('employee_code', e.target.value)}
+                    isMasked={false}
+                    disabled={true}
+                    placeholder='Enter Employee Code'
+                />
+                <div className="w-full md:w-1/2 flex justify-center items-end gap-3">
+                    <Dropdown
+                        divClasses='w-full'
+                        label='Departments'
+                        name='deparment_id'
+                        options={departmentOptions}
+                        value={formData.department_id}
+                        onChange={(e: any) => handleDepartmentChange(e)}
+                    />
+                    <Button
+                        text={getIcon(IconType.add)}
+                        variant={ButtonVariant.primary}
+                        onClick={() => setDepartmentModalOpen(true)}
+                        type={ButtonType.button}
+                        size={ButtonSize.small}
+                    />
                 </div>
                 <div className="w-full md:w-1/2 flex justify-center items-end gap-3">
-                    <div className="w-full">
-                        <label htmlFor="deparment_id">Departments</label>
-                        <Select
-                            defaultValue={departmentOptions[0]}
-                            options={departmentOptions}
-                            isSearchable={true}
-                            isClearable={true}
-                            placeholder={'Select Department'}
-                            onChange={(e: any) => handleDepartmentChange(e)}
-                        />
-                    </div>
-                    <button className="btn btn-primary btn-sm flex justify-center items-center"
-                            onClick={() => setDepartmentModalOpen(true)}>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                             className="h-5 w-5 ltr:mr-2 rtl:ml-2"
-                             fill="none">
-                            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
-                            <path d="M15 12L12 12M12 12L9 12M12 12L12 9M12 12L12 15" stroke="currentColor"
-                                  strokeWidth="1.5" strokeLinecap="round"/>
-                        </svg>
-                    </button>
+                    <Dropdown
+                        divClasses='w-full'
+                        label='Designations'
+                        name='designation_id'
+                        options={designationOptions}
+                        value={formData.designation_id}
+                        onChange={(e: any) => {
+                            if (e && typeof e !== 'undefined') {
+                                setFormData(prev => ({
+                                    ...prev,
+                                    designation_id: e.value
+                                }))
+                            } else {
+                                setFormData(prev => ({
+                                    ...prev,
+                                    designation_id: 0
+                                }))
+                            }
+                        }}
+                    />
+                    <Button
+                        text={getIcon(IconType.add)}
+                        variant={ButtonVariant.primary}
+                        onClick={() => setDesignationModalOpen(true)}
+                        type={ButtonType.button}
+                        size={ButtonSize.small}
+                    />
                 </div>
-                <div className="w-full md:w-1/2 flex justify-center items-end gap-3">
-                    <div className='w-full'>
-                        <label htmlFor="designation_id">Designations</label>
-                        <Select
-                            defaultValue={designationOptions[0]}
-                            options={designationOptions}
-                            isSearchable={true}
-                            isClearable={true}
-                            placeholder={'Select Designation'}
-                            onChange={(e: any) => setFormData(prev => ({
-                                ...prev,
-                                designation_id: e && typeof e !== 'undefined' ? e.value : 0
-                            }))}
+                <Input
+                    divClasses='w-full md:w-1/2'
+                    label='Employee Name'
+                    type='text'
+                    name='name'
+                    value={formData.name}
+                    onChange={(e) => handleChange('name', e.target.value)}
+                    isMasked={false}
+                    styles={{height: 45}}
+                    placeholder='Enter Employee Name'
+                />
+                <div className="flex flex-col md:flex-row gap-3 w-full">
+                    <Input
+                        divClasses='w-full'
+                        label='Phone'
+                        type='text'
+                        name='phone'
+                        value={formData.phone}
+                        onChange={(e) => handleChange('phone', e.target.value)}
+                        isMasked={true}
+                        placeholder={MaskConfig.phone.placeholder}
+                        maskPattern={MaskConfig.phone.pattern}
+                    />
+
+                    <Input
+                        divClasses='w-full'
+                        label='Email Address'
+                        type='email'
+                        name='email'
+                        value={formData.email}
+                        onChange={(e) => handleChange('email', e.target.value)}
+                        isMasked={false}
+                        placeholder='Enter email address'
+                    />
+                    {!router.query.id && (
+                        <Input
+                            divClasses='w-full'
+                            label='Password'
+                            type='password'
+                            name='password'
+                            value={formData.password}
+                            onChange={(e) => handleChange('password', e.target.value)}
+                            isMasked={false}
+                            placeholder='Enter login password'
                         />
-                    </div>
-                    <button className="btn btn-primary btn-sm flex justify-center items-center"
-                            onClick={() => setDesignationModalOpen(true)}>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                             className="h-5 w-5 ltr:mr-2 rtl:ml-2"
-                             fill="none">
-                            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
-                            <path d="M15 12L12 12M12 12L9 12M12 12L12 9M12 12L12 15" stroke="currentColor"
-                                  strokeWidth="1.5" strokeLinecap="round"/>
-                        </svg>
-                    </button>
-                </div>
-                <div className="w-full md:w-1/2">
-                    <label htmlFor="name">Employee Name</label>
-                    <input id="name" type="text" name="name" placeholder="Enter Employee Name"
-                           value={formData.name} onChange={handleChange}
-                           className="form-input" style={{height: 45}}/>
+                    )}
+
+
                 </div>
                 <div className="flex flex-col md:flex-row gap-3 w-full">
-                    <div className="w-full">
-                        <label htmlFor="phone">Phone</label>
-                        <input id="phone" type="number" name="phone" placeholder="Enter Phone number"
-                               value={formData.phone} onChange={handleChange}
-                               className="form-input"/>
-                    </div>
+                    <Input
+                        divClasses='w-full'
+                        label='ID #'
+                        type='text'
+                        name='id_number'
+                        value={formData.id_number}
+                        onChange={(e) => handleChange('id_number', e.target.value)}
+                        isMasked={true}
+                        placeholder={MaskConfig.identityNumber.placeholder}
+                        maskPattern={MaskConfig.identityNumber.pattern}
+                    />
 
-                    <div className="w-full">
-                        <label htmlFor="email">Email</label>
-                        <input id="email" type="email" name="email" placeholder="Enter email address"
-                               value={formData.email} onChange={handleChange}
-                               className="form-input"/>
-                    </div>
-
-                    <div className="w-full">
-                        <label htmlFor="password">Password</label>
-                        <input id="password" type="password" name="password" placeholder="Enter password"
-                               value={formData.password} onChange={handleChange}
-                               className="form-input"/>
-                    </div>
-
-                </div>
-                <div className="flex flex-col md:flex-row gap-3 w-full">
-                    <div className="w-full">
-                        <label htmlFor="id_number">ID #</label>
-                        <input id="id_number" type="text" name="id_number" placeholder="Enter national identity number"
-                               value={formData.id_number} onChange={handleChange}
-                               className="form-input"/>
-                    </div>
-
-                    <div className="w-full">
-                        <label htmlFor="passport_number">Passport #</label>
-                        <input id="passport_number" type="text" name="passport_number"
-                               placeholder="Enter passport number"
-                               value={formData.passport_number} onChange={handleChange}
-                               className="form-input"/>
-                    </div>
-                    <div className="w-full">
-                        <label htmlFor="date_of_joining">Date of Joining</label>
-                        <input id="date_of_joining" type="date" name="date_of_joining"
-                               placeholder="Enter date of joining"
-                               value={formData.date_of_joining} onChange={handleChange}
-                               className="form-input"/>
-                    </div>
+                    <Input
+                        divClasses='w-full'
+                        label='Passport #'
+                        type='text'
+                        name='passport_number'
+                        value={formData.passport_number}
+                        onChange={(e) => handleChange('passport_number', e.target.value)}
+                        isMasked={false}
+                        placeholder='Enter passport number'
+                    />
+                    <Input
+                        divClasses='w-full'
+                        label='Date of Joining'
+                        type='date'
+                        name='date_of_joining'
+                        value={formData.date_of_joining}
+                        onChange={(date) => handleChange('date_of_joining', date[0].toLocaleDateString())}
+                        isMasked={false}
+                        placeholder='Enter passport number'
+                    />
 
                 </div>
 
                 <div className="flex flex-col md:flex-row gap-3 w-full">
-                    <div className="w-full">
-                        <label htmlFor="country_id">Country</label>
-                        <Select
-                            defaultValue={countryOptions[0]}
-                            options={countryOptions}
-                            isSearchable={true}
-                            isClearable={true}
-                            placeholder={'Select Country'}
-                            onChange={(e: any) => handleCountryChange(e)}
-                        />
-                    </div>
-                    <div className="w-full">
-                        <label htmlFor="state_id">State</label>
-                        <Select
-                            defaultValue={stateOptions[0]}
-                            options={stateOptions}
-                            isSearchable={true}
-                            isClearable={true}
-                            placeholder={'Select State'}
-                            onChange={(e: any) => handleStateChange(e)}
-                        />
-                    </div>
-                    <div className="w-full">
-                        <label htmlFor="city_id">City</label>
-                        <Select
-                            defaultValue={cityOptions[0]}
-                            options={cityOptions}
-                            isSearchable={true}
-                            isClearable={true}
-                            placeholder={'Select City'}
-                            onChange={(e: any) => setFormData(prev => ({...prev, city_id: e ? e.value : 0}))}
-                        />
-                    </div>
+                    <Dropdown
+                        divClasses='w-full'
+                        label='Country'
+                        name='country_id'
+                        options={countryOptions}
+                        value={formData.country_id}
+                        onChange={(e: any) => handleCountryChange(e)}
+                    />
+
+                    <Dropdown
+                        divClasses='w-full'
+                        label='State'
+                        name='state_id'
+                        options={stateOptions}
+                        value={formData.state_id}
+                        onChange={(e: any) => handleStateChange(e)}
+                    />
+
+                    <Dropdown
+                        divClasses='w-full'
+                        label='City'
+                        name='city_id'
+                        options={cityOptions}
+                        value={formData.city_id}
+                        onChange={(e: any) => {
+                            if (e && typeof e !== 'undefined') {
+                                handleChange('city_id', e.value)
+                            } else {
+                                setFormData(prev => ({
+                                    ...prev,
+                                    city_id: 0
+                                }))
+                            }
+                        }}
+                    />
                 </div>
                 <div className="flex flex-col md:flex-row gap-3 w-full">
-                    <div className="w-full md:w-1/3">
-                        <label htmlFor="postal_code">Postal Code</label>
-                        <input id="postal_code" type="text" name="postal_code" placeholder="Enter postal code"
-                               value={formData.postal_code} onChange={handleChange}
-                               className="form-input"/>
-                    </div>
-                    <div className="w-full">
-                        <label htmlFor="address">Address</label>
-                        <input id="address" type="text" name="address" placeholder="Enter address"
-                               value={formData.address} onChange={handleChange}
-                               className="form-input"/>
-                    </div>
+                    <Input
+                        divClasses='w-full md:w-1/3'
+                        label='Postal Code'
+                        type='text'
+                        name='postal_code'
+                        value={formData.postal_code}
+                        onChange={(e) => handleChange('postal_code', e.target.value)}
+                        isMasked={false}
+                        placeholder='Enter postal code'
+                    />
+                    <Input
+                        divClasses='w-full'
+                        label='Address'
+                        type='text'
+                        name='address'
+                        value={formData.address}
+                        onChange={(e) => handleChange('address', e.target.value)}
+                        isMasked={false}
+                        placeholder='Enter street address'
+                    />
                 </div>
 
                 <div className="table-responsive w-full">
                     <div className="flex justify-between items-center flex-col md:flex-row space-y-3 md:space-y-0 mb-3">
                         <h3 className="text-lg font-semibold">Employee Documents</h3>
-                        <button
-                            type="button"
-                            className="btn btn-primary btn-sm"
+                        <Button
+                            type={ButtonType.button}
+                            variant={ButtonVariant.primary}
+                            size={ButtonSize.small}
+                            text='Add Document'
                             onClick={() => setDocumentModalOpen(true)}
-                        >
-                            Add Document
-                        </button>
+                        />
                     </div>
                     <table>
                         <thead>
@@ -456,10 +543,24 @@ const EmployeeForm = ({id}: IFormProps) => {
                         <tbody>
                         {employeeDocuments.map((document, index) => (
                             <tr key={index}>
-                                <td></td>
+                                <td>
+                                    {document.document && createBlobUrl(document.document)
+                                        ? <span className="flex gap-2 items-center text-primary">
+                                            <FileDownloader
+                                                file={document.document}
+                                                title='Preview'
+                                                buttonVariant={ButtonVariant.primary}
+                                                size={ButtonSize.small}
+                                                buttonType={ButtonType.icon}
+                                            />
+                                            <span>Download</span>
+                                        </span>
+                                        : <span>No Preview</span>
+                                    }
+                                </td>
                                 <td>{document.name}</td>
                                 <td>{document.description}</td>
-                                <td>{document.is_active ? 'Active' : 'Inactive'}</td>
+                                {/*<td>{document.is_active ? 'Active' : 'Inactive'}</td>*/}
                                 <td>
                                     <button
                                         type="button"
@@ -478,13 +579,13 @@ const EmployeeForm = ({id}: IFormProps) => {
                 <div className="table-responsive w-full">
                     <div className="flex justify-between items-center flex-col md:flex-row space-y-3 md:space-y-0 mb-3">
                         <h3 className="text-lg font-semibold">Employee Bank Accounts</h3>
-                        <button
-                            type="button"
-                            className="btn btn-primary btn-sm"
+                        <Button
+                            type={ButtonType.button}
+                            variant={ButtonVariant.primary}
+                            size={ButtonSize.small}
+                            text='Add Bank Detail'
                             onClick={() => setBankModalOpen(true)}
-                        >
-                            Add Bank Details
-                        </button>
+                        />
                     </div>
                     <table>
                         <thead>
@@ -525,19 +626,24 @@ const EmployeeForm = ({id}: IFormProps) => {
                 </div>
 
                 <div className="w-full">
-                    <button
-                        type="submit"
-                        className="btn btn-primary"
-                        disabled={employee.loading}
-                    >
-                        {employee.loading ? 'Loading...' : 'Save Employee'}
-                    </button>
+                    <Button
+                        text={employee.loading ? 'Loading...' : router.query.id ? 'Update Employee' : 'Save Employee'}
+                        variant={ButtonVariant.primary}
+                        type={ButtonType.submit}
+                    />
+                    {/*<button*/}
+                    {/*    type="submit"*/}
+                    {/*    className="btn btn-primary"*/}
+                    {/*    // disabled={employee.loading}*/}
+                    {/*>*/}
+                    {/*    {employee.loading ? 'Loading...' : 'Save Employee'}*/}
+                    {/*</button>*/}
                 </div>
             </div>
             <DocumentFormModal
                 modalOpen={documentModalOpen}
                 setModalOpen={setDocumentModalOpen}
-                handleAddition={(value: any) => {
+                handleSubmit={(value: any) => {
                     setEmployeeDocuments([...employeeDocuments, value])
                     setDocumentModalOpen(false)
                 }}
@@ -559,7 +665,7 @@ const EmployeeForm = ({id}: IFormProps) => {
                 modalOpen={designationModalOpen}
                 departments={departmentOptions}
                 setModalOpen={setDesignationModalOpen}
-                handleAddition={(value: any) => {
+                handleSubmit={(value: any) => {
                     dispatch(storeDesignation({
                         name: value.name,
                         department_id: value.departmentId,
@@ -572,7 +678,7 @@ const EmployeeForm = ({id}: IFormProps) => {
                 title='Employee'
                 modalOpen={bankModalOpen}
                 setModalOpen={setBankModalOpen}
-                handleAddition={(value: any) => {
+                handleSubmit={(value: any) => {
                     setEmployeeBankAccounts([...employeeBankAccounts, value])
                     setBankModalOpen(false)
                 }}

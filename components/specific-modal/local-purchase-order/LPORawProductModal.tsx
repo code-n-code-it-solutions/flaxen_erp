@@ -320,6 +320,7 @@ const LPORawProductModal = ({modal, setModal, handleAddRawProduct, modalFormData
                                                     unit_title: unitTitle,
                                                     unit_price: rawProductUnitPrice,
                                                     quantity,
+                                                    lpo_quantity: quantity,
                                                     total,
                                                     tax_category_id: taxCategoryId,
                                                     tax_category_name: taxCategoryName,
