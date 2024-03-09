@@ -91,6 +91,7 @@ const View = () => {
                         />
                     </div>
                 </div>
+                {console.log(rawProductDetail)}
                 {rawProductDetail && (
                     <div className='flex w-full flex-col justify-center items-center'>
                         <div className='w-full flex justify-center items-center'>
