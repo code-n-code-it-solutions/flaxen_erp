@@ -631,13 +631,6 @@ const EmployeeForm = ({id}: IFormProps) => {
                         variant={ButtonVariant.primary}
                         type={ButtonType.submit}
                     />
-                    {/*<button*/}
-                    {/*    type="submit"*/}
-                    {/*    className="btn btn-primary"*/}
-                    {/*    // disabled={employee.loading}*/}
-                    {/*>*/}
-                    {/*    {employee.loading ? 'Loading...' : 'Save Employee'}*/}
-                    {/*</button>*/}
                 </div>
             </div>
             <DocumentFormModal
@@ -674,6 +667,7 @@ const EmployeeForm = ({id}: IFormProps) => {
                     }))
                 }}
             />
+
             <BankDetailModal
                 title='Employee'
                 modalOpen={bankModalOpen}

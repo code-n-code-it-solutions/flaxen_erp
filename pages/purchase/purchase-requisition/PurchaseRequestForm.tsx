@@ -16,6 +16,7 @@ import Flatpickr from 'react-flatpickr';
 import 'flatpickr/dist/flatpickr.css';
 import PRServiceModal from "@/components/specific-modal/purchase-requisition/PRServiceModal";
 import {string} from "yup";
+import {Dropdown} from "@/components/form/Dropdown";
 
 interface IFormData {
     pr_title: string;
@@ -207,17 +208,15 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
     return (
         <form className="space-y-5" onSubmit={handleSubmit}>
             <div className="flex justify-start flex-col items-start space-y-3">
-                <div className="w-full md:w-1/3">
-                    <label htmlFor="status_id">Status</label>
-                    <Select
-                        defaultValue={requisitionTypeOptions[0]}
-                        options={requisitionTypeOptions}
-                        isSearchable={true}
-                        isClearable={true}
-                        placeholder={'Select Request Type'}
-                        onChange={(e: any) => handleRequisitionTypeChange(e)}
-                    />
-                </div>
+                <Dropdown
+                    divClasses='w-full md:w-1/3'
+                    label='Status'
+                    name='status_id'
+                    options={requisitionTypeOptions}
+                    value={formData.type}
+                    onChange={(e: any) => handleRequisitionTypeChange(e)}
+                />
+
                 <div className="w-full md:w-1/3">
                     <label htmlFor="pr_code">Purchase Request Code</label>
                     <input id="pr_code" type="text" name="pr_code" placeholder="Enter Purchase Request Code"

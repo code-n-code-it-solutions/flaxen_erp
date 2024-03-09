@@ -143,6 +143,10 @@ const VendorForm = ({id}: IFormProps) => {
         if (e && e.value && typeof e !== 'undefined') {
             setFormData(prev => ({...prev, country_id: e ? e.value : 0}))
             dispatch(getStates(parseInt(e.value)))
+        } else {
+            setFormData(prev => ({...prev, country_id: 0}))
+            setStateOptions([])
+            setCityOptions([])
         }
     }
 
@@ -150,6 +154,9 @@ const VendorForm = ({id}: IFormProps) => {
         if (e && e.value && typeof e !== 'undefined') {
             setFormData(prev => ({...prev, state_id: e ? e.value : 0}))
             dispatch(getCities({countryId: formData.country_id, stateId: parseInt(e.value)}))
+        } else {
+            setFormData(prev => ({...prev, state_id: 0}))
+            setCityOptions([])
         }
     }
 
