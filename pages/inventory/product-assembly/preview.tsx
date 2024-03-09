@@ -103,7 +103,7 @@ const Preview = ({ content }: any) => {
                         <tbody>
                             {content?.product_assembly_items.map((item: any, index: any) => (
                                 <tr key={index}>
-                                    <td style={{ ...myStyle, textAlign: 'center' }}>{item.product?.id}</td>
+                                    <td style={{ ...myStyle, textAlign: 'center' }}>{index + 1}</td>
                                     <td style={{ ...myStyle, textAlign: 'center' }}>{item.product?.title}</td>
                                     <td style={{ ...myStyle, textAlign: 'center' }}>{item.unit?.name}</td>
                                     <td style={{ ...myStyle, textAlign: 'center' }}>{item.cost}</td>
