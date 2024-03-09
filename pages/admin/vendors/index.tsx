@@ -1,32 +1,44 @@
-import { useEffect, useState } from 'react';
+import {useEffect, useState} from 'react';
 import Swal from 'sweetalert2';
-import { useDispatch, useSelector } from 'react-redux';
-import { setPageTitle } from '@/store/slices/themeConfigSlice';
+import {useDispatch, useSelector} from 'react-redux';
+import {setPageTitle} from '@/store/slices/themeConfigSlice';
 import Link from 'next/link';
 import Breadcrumb from '@/components/Breadcrumb';
-import { ThunkDispatch } from 'redux-thunk';
-import { IRootState } from '@/store';
-import { AnyAction } from 'redux';
-import { setAuthToken, setContentType } from '@/configs/api.config';
+import {ThunkDispatch} from 'redux-thunk';
+import {IRootState} from '@/store';
+import {AnyAction} from 'redux';
+import {setAuthToken, setContentType} from '@/configs/api.config';
 import GenericTable from '@/components/GenericTable';
-import { deleteVendor, getVendors } from '@/store/slices/vendorSlice';
+import {deleteVendor, getVendors} from '@/store/slices/vendorSlice';
 import Image from 'next/image';
-import { BASE_URL } from '@/configs/server.config';
+import {BASE_URL} from '@/configs/server.config';
 import IconButton from '@/components/IconButton';
-import { ButtonVariant, IconType } from '@/utils/enums';
+import {ButtonVariant, IconType} from '@/utils/enums';
 import Preview from "@/pages/admin/vendors/preview";
-import {generatePDF} from "@/utils/helper";
+import {generatePDF, imagePath} from "@/utils/helper";
+import PageWrapper from "@/components/PageWrapper";
 
 const Index = () => {
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
-    const { token } = useSelector((state: IRootState) => state.user);
-    const { allVendors, loading, success } = useSelector((state: IRootState) => state.vendor);
+    const {token} = useSelector((state: IRootState) => state.user);
+    const {allVendors, loading, success} = useSelector((state: IRootState) => state.vendor);
     const [deleteLoading, setDeleteLoading] = useState(false);
     const [printLoading, setPrintLoading] = useState(false);
+    const breadcrumb = [
+        {
+            title: 'Main Dashboard',
+            href: '/main',
+        },
+        {
+            title: 'Admin Dashboard',
+            href: '/admin',
+        },
+        {
+            title: 'All Vendors',
+            href: '#',
+        },
+    ];
 
-    useEffect(() => {
-        dispatch(setPageTitle('All Vendors'));
-    });
     const [rowData, setRowData] = useState([]);
 
     const getRawItems = () => {
@@ -37,6 +49,7 @@ const Index = () => {
 
     useEffect(() => {
         getRawItems();
+        dispatch(setPageTitle('All Vendors'));
     }, []);
 
     useEffect(() => {
@@ -70,9 +83,14 @@ const Index = () => {
         if (success) {
             getRawItems();
             setDeleteLoading(false);
-            Swal.fire({ title: 'Deleted!', text: 'Your file has been deleted.', icon: 'success', customClass: 'sweet-alerts' });
+            Swal.fire({
+                title: 'Deleted!',
+                text: 'Your file has been deleted.',
+                icon: 'success',
+                customClass: 'sweet-alerts'
+            });
         } else {
-            Swal.fire({ title: 'Failed!', text: 'Something went wrong.', icon: 'error', customClass: 'sweet-alerts' });
+            Swal.fire({title: 'Failed!', text: 'Something went wrong.', icon: 'error', customClass: 'sweet-alerts'});
         }
     }, [success]);
 
@@ -143,12 +161,6 @@ const Index = () => {
                                 render: (row: any) => (
                                     <div className="flex items-center gap-3">
                                         <IconButton icon={IconType.print} color={ButtonVariant.secondary} tooltip="Print" onClick={() => generatePDF(<Preview content={row} />, setPrintLoading)} />
-                                        <IconButton
-                                    icon={IconType.view}
-                                    color={ButtonVariant.info}
-                                    tooltip='View'
-                                    link={`/admin/vendors/view/${row.id}`}
-                                />
                                         <Link href={`/inventory/products/edit/${row.id}`}>
                                             <span className="text-primary">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" className="h-5 w-5 ltr:mr-2 rtl:ml-2" viewBox="0 0 24 24" fill="none">
