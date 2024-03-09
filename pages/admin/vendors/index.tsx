@@ -95,6 +95,7 @@ const Index = () => {
     }, [success]);
 
     return (
+<<<<<<< HEAD
         <div>
             <Breadcrumb
                 items={[
@@ -202,6 +203,28 @@ const Index = () => {
                             },
                         ]}
                     />
+=======
+        <PageWrapper
+            loading={loading}
+            embedLoader={true}
+            breadCrumbItems={breadcrumb}
+        >
+            <div>
+                <div className="mb-5 flex items-center justify-between">
+                    <h5 className="text-lg font-semibold dark:text-white-light">All Vendors</h5>
+                    <Link href="/admin/vendors/create" className="btn btn-primary btn-sm m-1">
+                        <span className="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                 className="h-5 w-5 ltr:mr-2 rtl:ml-2" fill="none">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
+                                <path d="M15 12L12 12M12 12L9 12M12 12L12 9M12 12L12 15" stroke="currentColor"
+                                      strokeWidth="1.5" strokeLinecap="round"/>
+                            </svg>
+                            Add New
+                        </span>
+                    </Link>
+
+>>>>>>> ab38a1b51e3cf3fd655b7c18ad666460fc48a152
                 </div>
             </div>
         </div>
