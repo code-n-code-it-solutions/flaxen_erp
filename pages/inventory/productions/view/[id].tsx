@@ -10,7 +10,7 @@ import PageWrapper from "@/components/PageWrapper";
 import {generatePDF, getIcon} from "@/utils/helper";
 import Button from "@/components/Button";
 import {ButtonSize, ButtonType, ButtonVariant, IconType} from "@/utils/enums";
-import Preview from "@/pages/inventory/products/preview";
+import Preview from "@/pages/inventory/productions/preview";
 
 
 const View = () => {
@@ -98,39 +98,38 @@ const View = () => {
                 </div>
                 {productionDetail && (
                     <div className='flex w-full flex-col justify-center '>
-                        <div className='w-full flex justify-center '>
-                            <strong>Production</strong>
-                        </div>
-                        <div className='w-full flex justify-center '>
-                            <strong>Batch Number: </strong>
-                            <span>{productionDetail.batch_number}</span>
-
-                        </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full mt-3 ">
+                            <div className='flex flex-col md:flex-row justify-start items-center gap-3'>
+                                <strong>Batch Number: </strong>
+                                <span>{productionDetail.batch_number}</span>
+
+                            </div>
                             <div className="flex flex-col md:flex-row justify-start items-center gap-3">
                                 <strong>Number of Quantity (Kg):</strong>
                                 <span>{productionDetail?.no_of_quantity}</span>
                             </div>
+
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full mt-3 ">
                             <div className="flex flex-col md:flex-row justify-start items-center gap-3">
                                 <strong>Color Code : </strong>
                                 <span>
                                     {productionDetail?.product_assembly?.color_code?.code}
                                 </span>
                             </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full mt-3 ">
                             <div className="flex flex-col md:flex-row justify-start items-center gap-3">
                                 <strong>Formula Code:</strong>
                                 <span> {productionDetail?.product_assembly?.formula_code} </span>
                             </div>
+
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full mt-3 ">
                             <div className="flex flex-col md:flex-row justify-start items-center gap-3">
                                 <strong>Category </strong>
                                 <span>{productionDetail?.product_assembly?.category.name} </span>
                             </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2    gap-5 w-full mt-3 ">
                             <div className="flex flex-col md:flex-row justify-start items-center gap-3">
                                 <strong>Print At:</strong>
                                 <span>{(new Date()).toLocaleDateString()}</span>
@@ -166,7 +165,8 @@ const View = () => {
 
                                     {productionDetail?.production_items.map((item: any, index: any) => (
 
-                                        <tr key={index} className="border-b border-neutral-200 transition duration-300 ease-in-out hover:bg-neutral-100 dark:border-white/10 dark:hover:bg-neutral-600">
+                                        <tr key={index}
+                                            className="border-b border-neutral-200 transition duration-300 ease-in-out hover:bg-neutral-100 dark:border-white/10 dark:hover:bg-neutral-600">
                                             <td className="whitespace-nowrap px-6 py-4 font-medium">{index + 1}</td>
                                             <td className="whitespace-nowrap px-6 py-4">{item.product?.title}</td>
                                             <td className="whitespace-nowrap px-6 py-4">{item.unit?.name}</td>
