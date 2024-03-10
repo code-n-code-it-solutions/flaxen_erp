@@ -20,7 +20,7 @@ interface ServiceItemsProps {
     handleRemoveAsset: (index: number, assetIndex:number) => void;
 }
 
-export const ServiceItemListing: React.FC<ServiceItemsProps> = ({
+const ServiceItemListing: React.FC<ServiceItemsProps> = ({
                                                                     serviceItems,
                                                                     taxCategoryOptions,
                                                                     handleEditServiceItem,
@@ -197,3 +197,5 @@ export const ServiceItemListing: React.FC<ServiceItemsProps> = ({
         </table>
     );
 };
+
+export default ServiceItemListing;

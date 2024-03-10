@@ -37,7 +37,7 @@ interface RawProductItemsProps {
     type: RAW_PRODUCT_LIST_TYPE;
 }
 
-export const RawProductItemListing: FC<RawProductItemsProps> = ({
+const RawProductItemListing: FC<RawProductItemsProps> = ({
                                                                     rawProducts,
                                                                     setRawProducts,
                                                                     handleEditProductItem,
@@ -355,3 +355,5 @@ export const RawProductItemListing: FC<RawProductItemsProps> = ({
         </div>
     );
 };
+
+export default RawProductItemListing;
