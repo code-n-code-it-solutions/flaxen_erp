@@ -14,7 +14,7 @@ import PageWrapper from "@/components/PageWrapper";
 import Link from "next/link";
 import {Input} from "@/components/form/Input";
 import {Dropdown} from "@/components/form/Dropdown";
-import {RawProductItemListing} from "@/components/RawProductItemListing";
+import RawProductItemListing from "@/components/RawProductItemListing";
 import {RAW_PRODUCT_LIST_TYPE} from "@/utils/enums";
 import ColorCodeFormModal from "@/components/specific-modal/ColorCodeFormModal";
 import {setAuthToken} from "@/configs/api.config";
