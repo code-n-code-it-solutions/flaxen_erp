@@ -141,13 +141,13 @@ export const RawProductItemListing: FC<RawProductItemsProps> = ({
             <div
                 className="flex justify-between items-center flex-col md:flex-row space-y-3 md:space-y-0 mb-3">
                 <h3 className="text-lg font-semibold">Item Details</h3>
-                <button
-                    type="button"
-                    className="btn btn-primary btn-sm"
-                    onClick={() => handleAdd()}
-                >
-                    Add New Item
-                </button>
+                {/*<button*/}
+                {/*    type="button"*/}
+                {/*    className="btn btn-primary btn-sm"*/}
+                {/*    onClick={() => handleAdd()}*/}
+                {/*>*/}
+                {/*    Add New Item*/}
+                {/*</button>*/}
             </div>
             <table>
                 <thead>
@@ -340,17 +340,17 @@ export const RawProductItemListing: FC<RawProductItemsProps> = ({
                 )}
                 </tbody>
             </table>
-            {type === 'pr'
-                ? <PRRawProductModal
-                    modal={modalOpen}
-                    setModal={setModalOpen}
-                    handleAddRawProduct={(value: any) => handleAdd(value)}/>
-                : <LPORawProductModal
-                    modal={modalOpen}
-                    setModal={setModalOpen}
-                    handleAddRawProduct={(value: any) => handleAddItemRow(value)}
-                />
-            }
+            {/*{type === 'pr'*/}
+            {/*    ? <PRRawProductModal*/}
+            {/*        modal={modalOpen}*/}
+            {/*        setModal={setModalOpen}*/}
+            {/*        handleAddRawProduct={(value: any) => handleAdd(value)}/>*/}
+            {/*    : <LPORawProductModal*/}
+            {/*        modal={modalOpen}*/}
+            {/*        setModal={setModalOpen}*/}
+            {/*        handleAddRawProduct={(value: any) => handleAddItemRow(value)}*/}
+            {/*    />*/}
+            {/*}*/}
 
         </div>
     );

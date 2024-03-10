@@ -56,3 +56,7 @@ export enum IconType {
     download = 'download',
     upload = 'upload',
 }
+
+export enum ListingType {
+
+}

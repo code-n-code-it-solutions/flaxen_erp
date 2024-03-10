@@ -1,5 +1,5 @@
 import {BASE_URL} from "@/configs/server.config";
-import {IconType} from "@/utils/enums";
+import {ButtonType, IconType} from "@/utils/enums";
 import React from "react";
 import ReactDOMServer from "react-dom/server";
 
@@ -165,3 +165,17 @@ export const generatePDF = async (PreviewComponent: JSX.Element, setLoading: (va
         console.error('Error generating PDF:', error);
     }
 };
+
+
+export const transformButtonType = (type: ButtonType): "button" | "submit" | "reset" | undefined => {
+    switch (type) {
+        case ButtonType.button:
+        case ButtonType.submit:
+        case ButtonType.reset:
+            return type;
+        case ButtonType.link:
+        case ButtonType.icon:
+        default:
+            return 'button'; // Or choose a sensible default like "button" if appropriate
+    }
+}

@@ -27,7 +27,7 @@ interface IRawProduct {
     description: string;
 }
 
-interface RawProductItemsProps {
+interface IProps {
     rawProducts: any[];
     setRawProducts: Dispatch<SetStateAction<any[]>>;
     type: RAW_PRODUCT_LIST_TYPE;
@@ -55,22 +55,15 @@ const tableStructure = [
         header: ['Product', 'Desc', 'Unit', 'Qty (KG)', 'Unit Price (KG)', 'Total'],
         columns: ['raw_product_id', 'description', 'unit_id', 'quantity', 'unit_price', 'total'],
         numericColumns: ['quantity', 'unit_price', 'total']
-    },
-    // {
-    //     listingFor: RAW_PRODUCT_LIST_TYPE.FILLING,
-    //     header: ['Product', 'Desc', 'Unit', 'Unit Price (KG)', 'Qty (KG)', 'Available Qty (KG)', 'Required Qty (KG)', 'Total'],
-    //     columns: ['raw_product_id', 'description', 'unit_id', 'unit_price', 'quantity', 'availableQuantity', 'requiredQuantity', 'total']
-    // },
+    }
 ]
 
-export const RawProductItemListing: FC<RawProductItemsProps> = ({
-                                                                    rawProducts,
-                                                                    setRawProducts,
-                                                                    // handleEditProductItem,
-                                                                    // handleRemove,
-                                                                    type
-                                                                }) => {
-    console.log('from listing', rawProducts)
+export const RawProductItemListing: FC<IProps> = ({
+                                                      rawProducts,
+                                                      setRawProducts,
+                                                      type
+                                                  }) => {
+    // console.log('from listing', rawProducts)
     const [modalOpen, setModalOpen] = useState(false);
     const [productDetail, setProductDetail] = useState({});
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
@@ -82,30 +75,7 @@ export const RawProductItemListing: FC<RawProductItemsProps> = ({
     const {allRawProducts} = useSelector((state: IRootState) => state.rawProduct);
     const {taxCategories} = useSelector((state: IRootState) => state.taxCategory);
     // console.log(rawProducts)
-    const handleAddRow = () => {
-        setRawProducts((prev: any) => {
-            let maxId = 0;
-            prev.forEach((item: any) => {
-                if (item.id > maxId) {
-                    maxId = item.id;
-                }
-            });
-            return [...prev, {
-                id: maxId + 1,
-                raw_product_id: 0,
-                lpo_quantity: 0,
-                quantity: 0,
-                unit_id: 2,
-                unit_price: 0,
-                total: 0,
-                tax_category_id: '',
-                tax_rate: 0,
-                tax_amount: 0,
-                row_total: 0,
-                description: ''
-            }];
-        });
-    }
+
     const handleAdd = (value: any) => {
         setRawProducts((prev) => {
             let maxId = 0;
@@ -124,34 +94,12 @@ export const RawProductItemListing: FC<RawProductItemsProps> = ({
         setModalOpen(false);
     }
 
-    function handleEditProductItem<T extends IRawProduct, K extends keyof T>(
-        {index, field, value, maxQuantity}: {
-            index: number,
-            field: K,
-            value: T[K],
-            maxQuantity?: number,
-        }
-    ): void {
-        const updatedProducts: T[] = [...rawProducts] as T[];
-        // if (field === 'lpo_quantity') {
-        //     const numericValue = Number(value);
-        //     const clampedValue = numericValue || 0;
-        //     updatedProducts[index][field] = (maxQuantity !== undefined && clampedValue > maxQuantity)
-        //         ? maxQuantity as T[K]
-        //         : clampedValue as T[K];
-        // } else {
-        updatedProducts[index][field] = value;
-        // }
-        setRawProducts(updatedProducts);
-    }
-
     const handleRemove = (id: number) => {
         setRawProducts(rawProducts.filter((row: any, index: number) => index !== id));
     };
 
     const calculateTotals = (rawProducts: any[], type: RAW_PRODUCT_LIST_TYPE) => {
         const tableConfig = tableStructure.find(table => table.listingFor === type);
-        const numericColumns = tableConfig ? new Set(tableConfig.numericColumns) : new Set();
         const totals: Totals = {};
 
         if (tableConfig) {
