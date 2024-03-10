@@ -13,7 +13,7 @@ import PRServiceModal from "@/components/specific-modal/purchase-requisition/PRS
 import {Dropdown} from "@/components/form/Dropdown";
 import {Input} from "@/components/form/Input";
 import Button from "@/components/Button";
-import {RawProductItemListing} from "@/components/RawProductItemListing";
+import RawProductItemListing from "@/components/RawProductItemListing";
 
 interface IFormData {
     pr_title: string;
