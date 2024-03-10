@@ -53,7 +53,7 @@ const tableStructure = [
     }
 ]
 
-export const ServiceItemListing: FC<IProps> = ({
+const ServiceItemListing: FC<IProps> = ({
                                                    serviceItems,
                                                    setServiceItems,
                                                    type
@@ -289,3 +289,5 @@ export const ServiceItemListing: FC<IProps> = ({
         </div>
     );
 };
+
+export default ServiceItemListing;

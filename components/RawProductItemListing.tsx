@@ -58,7 +58,7 @@ const tableStructure = [
     }
 ]
 
-export const RawProductItemListing: FC<IProps> = ({
+const RawProductItemListing: FC<IProps> = ({
                                                       rawProducts,
                                                       setRawProducts,
                                                       type
@@ -261,3 +261,5 @@ export const RawProductItemListing: FC<IProps> = ({
         </div>
     );
 };
+
+export default RawProductItemListing;
