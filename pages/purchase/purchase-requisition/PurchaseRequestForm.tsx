@@ -54,7 +54,7 @@ interface IFormProps {
 const PurchaseRequestForm = ({id}: IFormProps) => {
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
     const {token, user} = useSelector((state: IRootState) => state.user);
-    const {loading} = useSelector((state: IRootState) => state.purchaseRequisition);
+    const {purchaseRequestDetail, loading} = useSelector((state: IRootState) => state.purchaseRequisition);
     const {code} = useSelector((state: IRootState) => state.util);
 
     const [rawProductModalOpen, setRawProductModalOpen] = useState<boolean>(false);
@@ -179,7 +179,12 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
         dispatch(clearUtilState())
         setServiceModalOpen(false)
         setRawProductModalOpen(false)
-        dispatch(generateCode(FORM_CODE_TYPE.PURCHASE_REQUISITION))
+
+        if (id) {
+            // dispatch(editPurchaseRequisition(id))
+        } else {
+            dispatch(generateCode(FORM_CODE_TYPE.PURCHASE_REQUISITION))
+        }
     }, [])
 
     useEffect(() => {

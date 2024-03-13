@@ -45,6 +45,7 @@ const ProductForm = ({id}: IFormProps) => {
     const {loading, rawProductDetail} = useSelector((state: IRootState) => state.rawProduct);
     const {token} = useSelector((state: IRootState) => state.user);
     const [image, setImage] = useState<File | null>(null);
+    const [isFormValid, setIsFormValid] = useState<boolean>(false)
     const [formData, setFormData] = useState<IFormData>({
         item_code: '',
         title: '',
@@ -78,7 +79,7 @@ const ProductForm = ({id}: IFormProps) => {
     ]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const {name, value} = e.target;
+        const {name, value, required} = e.target;
         setFormData(prevFormData => {
             // Start with the current form data.
             let updatedFormData = {...prevFormData, [name]: value};
@@ -184,6 +185,7 @@ const ProductForm = ({id}: IFormProps) => {
                     isMasked={false}
                     placeholder='Enter Item code'
                     disabled={true}
+                    required={true}
                 />
                 <Input
                     divClasses='w-full md:w-1/2'
@@ -194,6 +196,7 @@ const ProductForm = ({id}: IFormProps) => {
                     onChange={handleChange}
                     isMasked={false}
                     styles={{height: 45}}
+                    required={true}
                 />
             </div>
             <div className='flex justify-between items-center flex-col md:flex-row gap-3'>
@@ -340,13 +343,16 @@ const ProductForm = ({id}: IFormProps) => {
                     placeholder='Enter description for sales'
                 />
             </div>
-            <Button
-                type={ButtonType.submit}
-                text={loading ? 'Loading...' : id ? 'Update' : 'Create'}
-                variant={ButtonVariant.info}
-                disabled={loading}
-                classes='!mt-6'
-            />
+            {isFormValid && (
+                <Button
+                    type={ButtonType.submit}
+                    text={loading ? 'Loading...' : id ? 'Update' : 'Create'}
+                    variant={ButtonVariant.info}
+                    disabled={loading}
+                    classes='!mt-6'
+                />
+            )}
+
         </form>
     );
 };

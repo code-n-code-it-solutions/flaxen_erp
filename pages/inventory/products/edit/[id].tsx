@@ -32,7 +32,7 @@ const Edit = () => {
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
     const router = useRouter();
     const {rawProduct, loading} = useSelector((state: IRootState) => state.rawProduct);
-    dispatch(setPageTitle('Edit Raw Material'));
+
     const breadCrumbItems = [
         {
             title: 'Home',
@@ -60,6 +60,7 @@ const Edit = () => {
         if (typeof id === 'string' && id) {
             dispatch(editRawProduct(parseInt(id)))
         }
+        dispatch(setPageTitle('Edit Raw Material'));
     }, [router.query]);
 
     return (

@@ -10,12 +10,13 @@ import {setAuthToken, setContentType} from "@/configs/api.config";
 import GenericTable from "@/components/GenericTable";
 import {clearServiceState, getServices, storeService} from "@/store/slices/serviceSlice";
 import ReactDOMServer from "react-dom/server";
-import Preview from "@/pages/inventory/products/preview";
+import Preview from "@/pages/inventory/productions/preview";
 import IconButton from "@/components/IconButton";
 import {ButtonSize, ButtonType, ButtonVariant, IconType} from "@/utils/enums";
 import PageWrapper from "@/components/PageWrapper";
 import Button from "@/components/Button";
 import {generatePDF} from "@/utils/helper";
+import Alert from "@/components/Alert";
 
 const Index = () => {
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
