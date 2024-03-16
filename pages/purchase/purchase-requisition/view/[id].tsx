@@ -5,7 +5,7 @@ import { IRootState } from '@/store';
 import { AnyAction } from 'redux';
 import { useRouter } from 'next/router';
 import { setPageTitle } from '@/store/slices/themeConfigSlice';
-import { clearPurchaseRequisitionState, showDetails } from '@/store/slices/purchaseRequisitionSlice';
+import {clearPurchaseRequisitionState, showDetails} from "@/store/slices/purchaseRequisitionSlice";
 import PageWrapper from '@/components/PageWrapper';
 import { generatePDF, getIcon, imagePath } from '@/utils/helper';
 import Image from 'next/image';
@@ -170,7 +170,7 @@ const View = () => {
                                                 </tbody>
                                                 <tfoot>
                                                 <tr>
-                                                    <td colSpan={4}>
+                                                    <td colSpan={4} style={{"textAlign": "center"}}>
                                                         <strong>Total</strong>
                                                     </td>
                                                     <td>

@@ -73,11 +73,6 @@ const Create = () => {
     const hasInsufficientQuantity = () => {
         return rawProducts.some((row) => row.availableQuantity < row.requiredQuantity);
     };
-    useEffect(() => {
-        if (hasInsufficientQuantity()) {
-            setMessages("Production can't be proceeding. Please purchase the In-stock quantities.");
-        }
-    }, []);
 
     const handleAddRow = (value: any) => {
         setRawProducts((prev) => {
@@ -144,6 +139,10 @@ const Create = () => {
             }
         } else {
             alert('No of Quantity is required');
+        }
+        
+        if (hasInsufficientQuantity()) {
+            setMessages("Production can't be proceeding. Please purchase the In-stock quantities.");
         }
     };
 
