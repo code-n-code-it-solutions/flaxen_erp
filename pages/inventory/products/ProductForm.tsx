@@ -45,6 +45,21 @@ const ProductForm = ({id}: IFormProps) => {
     const {loading, rawProductDetail} = useSelector((state: IRootState) => state.rawProduct);
     const {token} = useSelector((state: IRootState) => state.user);
     const [image, setImage] = useState<File | null>(null);
+    const [isFormValid, setIsFormValid] = useState<boolean>(false)
+    const [errorMessages, setErrorMessages] = useState({
+        item_code: 'Item code is required',
+        title: 'Title is required',
+        unit_id: 'This is required',
+        sub_unit_id: '',
+        purchase_description: '',
+        value_per_unit: '',
+        valuation_method: '',
+        min_stock_level: '',
+        opening_stock: 0,
+        opening_stock_unit_balance: 0,
+        opening_stock_total_balance: 0,
+        sale_description: '',
+    })
     const [formData, setFormData] = useState<IFormData>({
         item_code: '',
         title: '',
@@ -94,6 +109,14 @@ const ProductForm = ({id}: IFormProps) => {
 
             return updatedFormData;
         });
+
+        if (required) {
+            if(!value){
+                setErrorMessages({ ...errorMessages ,[name] : "This is required" })
+            }else{
+                setErrorMessages({ ...errorMessages ,[name] : "" })    
+            }
+        } 
     };
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -169,6 +192,11 @@ const ProductForm = ({id}: IFormProps) => {
         }
     }, [units])
 
+    useEffect(() => {
+          console.log(errorMessages)        
+    }, [errorMessages])
+    
+
     return (
         <form className="space-y-5" onSubmit={handleSubmit}>
             <div className="flex justify-center items-center">
@@ -185,6 +213,7 @@ const ProductForm = ({id}: IFormProps) => {
                     placeholder='Enter Item code'
                     disabled={true}
                     required={true}
+                    // errorMessage={errorMessages?.item_code}
                 />
                 <Input
                     divClasses='w-full md:w-1/2'
@@ -196,6 +225,7 @@ const ProductForm = ({id}: IFormProps) => {
                     isMasked={false}
                     styles={{height: 45}}
                     required={true}
+                    errorMessage={errorMessages?.title}
                 />
             </div>
             <div className='flex justify-between items-center flex-col md:flex-row gap-3'>
@@ -206,18 +236,30 @@ const ProductForm = ({id}: IFormProps) => {
                     options={unitOptions}
                     value={formData.unit_id}
                     onChange={(e: any) => {
+                        // const {required,value} = e.target;
                         if (e && typeof e !== 'undefined') {
                             setFormData({
                                 ...formData,
                                 unit_id: e.value
                             })
+                            setErrorMessages({...errorMessages, unit_id: ''})
+                            // if (!value) {
+                            //     setErrorMessages({...errorMessages, unit_id: ''})
+                            // }
                         } else {
+                            
                             setFormData({
                                 ...formData,
                                 unit_id: ''
                             })
+                            // if(required) {
+                                setErrorMessages({...errorMessages, unit_id : 'Please select a Unit.'})
+                            // }
                         }
+                        
                     }}
+                    required={true}
+                    errorMessage={errorMessages?.unit_id}
                 />
 
                 <Dropdown
@@ -231,14 +273,19 @@ const ProductForm = ({id}: IFormProps) => {
                             setFormData({
                                 ...formData,
                                 sub_unit_id: e.value
+                               
                             })
+                            setErrorMessages({...errorMessages, unit_id: ''})
                         } else {
                             setFormData({
                                 ...formData,
                                 sub_unit_id: ''
                             })
+                            setErrorMessages({...errorMessages, unit_id : 'Please select a Unit.'})
                         }
                     }}
+                    required={true}
+                    errorMessage={errorMessages?.unit_id}
                 />
                 <Input
                     divClasses='w-full'
@@ -249,6 +296,8 @@ const ProductForm = ({id}: IFormProps) => {
                     onChange={handleChange}
                     isMasked={false}
                     placeholder='Enter weight per main unit'
+                    required={true}
+                    errorMessage={errorMessages?.unit_id}
                 />
             </div>
             <div className='flex justify-between items-center flex-col md:flex-row gap-3'>
@@ -261,6 +310,8 @@ const ProductForm = ({id}: IFormProps) => {
                     onChange={handleChange}
                     isMasked={false}
                     placeholder='Set min stock level'
+                    required={true}
+                    errorMessage={errorMessages?.unit_id}
                 />
 
                 <Input
@@ -272,6 +323,8 @@ const ProductForm = ({id}: IFormProps) => {
                     onChange={handleChange}
                     isMasked={false}
                     placeholder='Enter Opening Stock Count'
+                    required={true}
+                    errorMessage={errorMessages?.unit_id}
                 />
 
                 <div className="w-full flex justify-between items-center flex-col md:flex-row gap-3">
@@ -284,6 +337,8 @@ const ProductForm = ({id}: IFormProps) => {
                         onChange={handleChange}
                         isMasked={false}
                         placeholder='Enter Opening Stock Unit Balance'
+                        // required={true}
+                        // errorMessage={errorMessages?.unit_id}
                     />
                     <Input
                         divClasses='w-full'
@@ -295,6 +350,8 @@ const ProductForm = ({id}: IFormProps) => {
                         isMasked={false}
                         disabled={true}
                         placeholder='Enter Opening Stock Total Balance'
+                        // required={true}
+                        // errorMessage={errorMessages?.unit_id}
                     />
 
                 </div>
@@ -319,6 +376,8 @@ const ProductForm = ({id}: IFormProps) => {
                         })
                     }
                 }}
+                // required={true}
+                // errorMessage={errorMessages?.unit_id}
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -330,6 +389,8 @@ const ProductForm = ({id}: IFormProps) => {
                     isReactQuill={false}
                     rows={3}
                     placeholder='Enter description for purchase'
+                    // required = {true}
+                    // errorMessage={errorMessages?.unit_id}
                 />
 
                 <Textarea

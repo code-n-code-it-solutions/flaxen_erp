@@ -38,17 +38,17 @@ const Create = () => {
         dispatch(setPageTitle('Create Vendor'));
     }, []);
 
-    useEffect(() => {
-        if (vendor) {
-            dispatch(clearVendorState());
-            router.push('/admin/vendors');
-        }
-    }, [vendor]);
+    // useEffect(() => {
+    //     if (vendor) {
+    //         dispatch(clearVendorState());
+    //         router.push('/admin/vendors');
+    //     }
+    // }, [vendor]);
 
     return (
         <PageWrapper
-            loading={loading}
-            embedLoader={true}
+            loading={false}
+            embedLoader={false}
             breadCrumbItems={breadcrumb}
         >
             <div>

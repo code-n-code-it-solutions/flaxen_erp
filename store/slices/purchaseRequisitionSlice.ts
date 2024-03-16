@@ -37,6 +37,20 @@ export const getPurchaseRequisitions = createAsyncThunk(
     }
 );
 
+export const showDetails = createAsyncThunk(
+    'purchase-requisition/show',
+    async (id:number, thunkAPI) => {
+        try {
+            const response = await API.get('/purchase-requisition/'+id);
+            return response.data;
+        } catch (error:any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 export const storePurchaseRequest = createAsyncThunk(
     'purchase-requisition/store',
     async (data: any, thunkAPI) => {
@@ -93,7 +107,7 @@ export const getPurchaseRequisitionByStatuses = createAsyncThunk(
     }
 );
 
-// Slice
+// Slicee
 export const purchaseRequisitionSlice = createSlice({
     name: 'purchase-requisition',
     initialState,
@@ -163,6 +177,18 @@ export const purchaseRequisitionSlice = createSlice({
                 state.success = action.payload.success;
             })
             .addCase(getPurchaseRequisitionByStatuses.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(showDetails.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(showDetails.fulfilled, (state, action) => {
+                state.loading = false;
+                state.purchaseRequestDetail = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(showDetails.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })
