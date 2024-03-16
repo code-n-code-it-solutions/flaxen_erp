@@ -146,7 +146,7 @@ const Preview = ({content}: any) => {
                                         </tr>
                                         </thead>
                                         <tbody>
-                                        {content?.purchase_requisition_items?.map((item: any, index: number) => (
+                                        {content?.items?.map((item: any, index: number) => (
                                             <tr key={index}>
                                                 <td style={{
                                                     textAlign: 'left',

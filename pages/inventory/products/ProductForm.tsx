@@ -403,15 +403,13 @@ const ProductForm = ({id}: IFormProps) => {
                     placeholder='Enter description for sales'
                 />
             </div>
-            {isFormValid && (
-                <Button
-                    type={ButtonType.submit}
-                    text={loading ? 'Loading...' : id ? 'Update' : 'Create'}
-                    variant={ButtonVariant.info}
-                    disabled={loading}
-                    classes='!mt-6'
-                />
-            )}
+            <Button
+                type={ButtonType.submit}
+                text={loading ? 'Loading...' : id ? 'Update' : 'Create'}
+                variant={ButtonVariant.info}
+                disabled={loading}
+                classes='!mt-6'
+            />
 
         </form>
     );

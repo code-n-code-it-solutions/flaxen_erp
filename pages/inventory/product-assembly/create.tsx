@@ -10,13 +10,13 @@ import {setAuthToken} from "@/configs/api.config";
 import {getProductCategory} from "@/store/slices/categorySlice";
 import {clearProductAssemblyState, storeProductAssembly} from "@/store/slices/productAssemblySlice";
 import {getColorCodes, storeColorCode} from "@/store/slices/colorCodeSlice";
-import ColorCodeFormModal from "@/components/specific-modal/ColorCodeFormModal";
+import ColorCodeFormModal from "@/components/modals/ColorCodeFormModal";
 import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
 import {FORM_CODE_TYPE, RAW_PRODUCT_LIST_TYPE} from "@/utils/enums";
 import {Input} from "@/components/form/Input";
 import {Dropdown} from "@/components/form/Dropdown";
 import PageWrapper from "@/components/PageWrapper";
-import RawProductItemListing from "@/components/RawProductItemListing";
+import RawProductItemListing from "@/components/listing/RawProductItemListing";
 
 interface ITableRow {
     id: number;

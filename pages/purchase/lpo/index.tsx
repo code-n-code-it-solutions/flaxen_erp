@@ -126,6 +126,7 @@ const Index = () => {
                     columns={[
                         {accessor: 'lpo_number', title: 'LPO #', sortable: true},
                         {accessor: 'purchase_requisition.pr_code', title: 'Requisition Code', sortable: true},
+                        {accessor: 'type', title: 'Type', sortable: true},
                         {accessor: 'internal_document_number', title: 'ID #', sortable: true},
                         {accessor: 'phone', title: 'phone', sortable: true},
                         {

@@ -6,7 +6,7 @@ import {ThunkDispatch} from "redux-thunk";
 import {IRootState} from "@/store";
 import {AnyAction} from "redux";
 import Select from "react-select";
-import BankFormModal from "@/components/specific-modal/BankFormModal";
+import BankFormModal from "@/components/modals/BankFormModal";
 import {getBanks, storeBank} from "@/store/slices/bankSlice";
 import {getCurrencies} from "@/store/slices/currencySlice";
 import Modal from "@/components/Modal";
