@@ -11,7 +11,7 @@
         "export": "next export"
     },
     "dependencies": {
-        "@emotion/react": "^11.10.6",
+        "@emotion/react": "^11.11.4",
         "@fortawesome/fontawesome-svg-core": "^6.5.1",
         "@fortawesome/free-solid-svg-icons": "^6.5.1",
         "@fortawesome/react-fontawesome": "^0.2.0",
@@ -21,8 +21,8 @@
         "@fullcalendar/react": "^6.1.4",
         "@fullcalendar/timegrid": "^6.1.1",
         "@headlessui/react": "^1.7.8",
-        "@mantine/core": "^5.10.5",
-        "@mantine/hooks": "^5.10.5",
+        "@mantine/core": "^6.0.21",
+        "@mantine/hooks": "^6.0.21",
         "@next/font": "13.1.2",
         "@reduxjs/toolkit": "^2.1.0",
         "@tailwindcss/line-clamp": "^0.4.2",
@@ -39,7 +39,7 @@
         "formik": "^2.2.9",
         "highlight.js": "^11.7.0",
         "i18next": "^22.4.10",
-        "mantine-datatable": "^1.7.35",
+        "mantine-datatable": "^6.0.8",
         "next": "13.1.2",
         "ni18n": "^1.0.5",
         "puppeteer": "^22.0.0",

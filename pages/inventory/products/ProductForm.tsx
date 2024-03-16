@@ -45,7 +45,6 @@ const ProductForm = ({id}: IFormProps) => {
     const {loading, rawProductDetail} = useSelector((state: IRootState) => state.rawProduct);
     const {token} = useSelector((state: IRootState) => state.user);
     const [image, setImage] = useState<File | null>(null);
-    const [isFormValid, setIsFormValid] = useState<boolean>(false)
     const [formData, setFormData] = useState<IFormData>({
         item_code: '',
         title: '',
@@ -343,15 +342,13 @@ const ProductForm = ({id}: IFormProps) => {
                     placeholder='Enter description for sales'
                 />
             </div>
-            {isFormValid && (
-                <Button
-                    type={ButtonType.submit}
-                    text={loading ? 'Loading...' : id ? 'Update' : 'Create'}
-                    variant={ButtonVariant.info}
-                    disabled={loading}
-                    classes='!mt-6'
-                />
-            )}
+            <Button
+                type={ButtonType.submit}
+                text={loading ? 'Loading...' : id ? 'Update' : 'Create'}
+                variant={ButtonVariant.info}
+                disabled={loading}
+                classes='!mt-6'
+            />
 
         </form>
     );

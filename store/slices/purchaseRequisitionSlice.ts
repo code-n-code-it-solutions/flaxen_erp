@@ -25,9 +25,9 @@ const initialState: IPRState = {
 // Async thunks
 export const getPurchaseRequisitions = createAsyncThunk(
     'purchase-requisition/all',
-    async (type:string, thunkAPI) => {
+    async (_, thunkAPI) => {
         try {
-            const response = await API.get('/purchase-requisition?type='+type);
+            const response = await API.get('/purchase-requisition');
             return response.data;
         } catch (error:any) {
             const message =

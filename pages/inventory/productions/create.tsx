@@ -15,7 +15,7 @@ import {clearProductionState, storeProduction} from "@/store/slices/productionSl
 import {getRandomInt} from "@/utils/helper";
 import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
 import {FORM_CODE_TYPE, RAW_PRODUCT_LIST_TYPE} from "@/utils/enums";
-import RawProductModal from "@/components/specific-modal/raw-modal/RawProductModal";
+import RawProductModal from "@/components/modals/RawProductModal";
 
 const Select = dynamic(
     () => import('react-select'),
