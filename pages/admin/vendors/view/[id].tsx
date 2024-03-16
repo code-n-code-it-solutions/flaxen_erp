@@ -52,7 +52,7 @@ const View = () => {
     //     console.log("Vendor Detail:", vendorDetail);
     //   }
     // }, [vendorDetail])
-    
+
     return (
         <PageWrapper loading={loading} breadCrumbItems={breadCrumbItems} embedLoader={true}>
             <div>
@@ -93,61 +93,62 @@ const View = () => {
                     </div>
                 </div>
                 {vendorDetail && (
-                            <div className="h-950 px-10">
-                            <div className="flex justify-center flex-col items-center mt-10 mb-10">
-                                <h1 className="text-2xl font-bold">Vendor Details</h1>
+                    <div className="h-950 px-10">
+                        <div className="flex justify-center flex-col items-center mt-10 mb-10">
+                            <h1 className="text-2xl font-bold">Vendor Details</h1>
+                        </div>
+                        <div className="flex justify-between items-start p-10">
+                            <div className="flex flex-col gap-5">
+                                <span className="text-xs">
+                                    <strong>Registered At:</strong> {(new Date(vendorDetail.created_at)).toDateString()}
+                                </span>
+                                <span className="text-xs">
+                                    <strong>Printed At:</strong> {(new Date()).toDateString()}
+                                </span>
+                                <span className="text-xs">
+                                    <strong>Vendor Number:</strong> {vendorDetail.vendor_number}
+                                </span>
+                                <span className="text-xs">
+                                    <strong>Name:</strong> {vendorDetail.name}
+                                </span>
+                                <span className="text-xs">
+                                    <strong>Opening Balance:</strong> {vendorDetail.opening_balance}
+                                </span>
+                                <span className="text-xs">
+                                    <strong>Phone:</strong> {vendorDetail.phone}
+                                </span>
+                                <span className="text-xs">
+                                    <strong>Email:</strong> {vendorDetail.email}
+                                </span>
+                                <span className="text-xs">
+                                    <strong>Tax Reg #:</strong> {vendorDetail.tax_reg_no}
+                                </span>
+                                <span className="text-xs">
+                                    <strong>Address:</strong> {vendorDetail.address} {vendorDetail.city} {vendorDetail?.state},{vendorDetail.country},{vendorDetail.postal_code}
+                                </span>
                             </div>
-                            <div className="flex justify-between items-start p-10">
-                                <div className="flex flex-col gap-5">
-                                    <span className="text-xs">
-                                        <strong>Registered At:</strong> {(new Date(vendorDetail.created_at)).toDateString()}
-                                    </span>
-                                    <span className="text-xs">
-                                        <strong>Printed At:</strong> {(new Date()).toDateString()}
-                                    </span>
-                                    <span className="text-xs">
-                                        <strong>Vendor Number:</strong> {vendorDetail.vendor_number}
-                                    </span>
-                                    <span className="text-xs">
-                                        <strong>Name:</strong> {vendorDetail.name}
-                                    </span>
-                                    <span className="text-xs">
-                                        <strong>Opening Balance:</strong> {vendorDetail.opening_balance}
-                                    </span>
-                                    <span className="text-xs">
-                                        <strong>Phone:</strong> {vendorDetail.phone}
-                                    </span>
-                                    <span className="text-xs">
-                                        <strong>Email:</strong> {vendorDetail.email}
-                                    </span>
-                                    <span className="text-xs">
-                                        <strong>Tax Reg #:</strong> {vendorDetail.tax_reg_no}
-                                    </span>
-                                    <span className="text-xs">
-                                        <strong>Address:</strong> {vendorDetail.address} {vendorDetail.city} {vendorDetail?.state},{vendorDetail.country},{vendorDetail.postal_code}
-                                    </span>
-                                </div>
-                                <div>
-                                    <span className="text-xs absolute top-[42%] left-[34%]">
-                                        <strong>Due In Days:</strong> {vendorDetail.due_in_days}
-                                    </span>
-                                </div>
-                                <div>
-                                    <span className="text-xs absolute top-[44%] left-[34%]">
-                                        <strong>Vendor Type:</strong> {vendorDetail.vendor_type_id}
-                                    </span>
-                                </div>
-                                    <div>
-                                    <span className="text-xs absolute top-[42%] left-[52%]">
-                                        <strong>Website:</strong> {vendorDetail.website_url}
-                                    </span>
-                                    </div>
-                                <img src={imagePath(vendorDetail.thumbnail)} className="w-24 h-24" alt=""/>
+                            <div>
+                                <span className="text-xs absolute top-[42%] left-[34%]">
+                                    <strong>Due In Days:</strong> {vendorDetail.due_in_days}
+                                </span>
                             </div>
-                            <div className="mt-10">
-                                <h4 className="font-bold">Vendor Representatives:</h4>
+                            <div>
+                                <span className="text-xs absolute top-[44%] left-[34%]">
+                                    <strong>Vendor Type:</strong> {vendorDetail.vendor_type_id}
+                                </span>
                             </div>
-                            <table>
+                            <div>
+                                <span className="text-xs absolute top-[42%] left-[52%]">
+                                    <strong>Website:</strong> {vendorDetail.website_url}
+                                </span>
+                            </div>
+                            <img src={imagePath(vendorDetail.thumbnail)} className="w-24 h-24" alt="" />
+                        </div>
+                        <div className="mt-10">
+                            <h4 className="font-bold">Vendor Representatives:</h4>
+                        </div>
+
+                       <table>
                             <thead>
                                 <tr>
                                     <th>Photo</th>
@@ -157,7 +158,7 @@ const View = () => {
                                     <th>Address</th>
                                 </tr>
                             </thead>
-                                <tbody>
+                            <tbody>
                                 <tr>
                                     <td>&nbsp;</td>
                                     <td></td>
@@ -165,12 +166,12 @@ const View = () => {
                                     <td></td>
                                     <td></td>
                                 </tr>
-                                </tbody>
-                            </table>
-                            <div className="mt-10">
-                                <h4 className="font-bold">Vendor Addresses:</h4>
-                            </div>
-                            <table>
+                            </tbody>
+                        </table>
+                        <div className="mt-10">
+                            <h4 className="font-bold">Vendor Addresses:</h4>
+                        </div>
+                        <table>
                             <thead>
                                 <tr>
                                     <th>Address Type</th>
@@ -181,7 +182,7 @@ const View = () => {
                                     <th>Postal Code</th>
                                 </tr>
                             </thead>
-                                <tbody>
+                            <tbody>
                                 <tr>
                                     <td>&nbsp;</td>
                                     <td></td>
@@ -189,12 +190,12 @@ const View = () => {
                                     <td></td>
                                     <td></td>
                                 </tr>
-                                </tbody>
-                            </table>
-                            <div className="mt-10">
-                                <h4 className="font-bold">Bank Details:</h4>
-                            </div>
-                            <table>
+                            </tbody>
+                        </table>
+                        <div className="mt-10">
+                            <h4 className="font-bold">Bank Details:</h4>
+                        </div>
+                        <table>
                             <thead>
                                 <tr>
                                     <th>Bank</th>
@@ -204,7 +205,7 @@ const View = () => {
                                     <th>Currency</th>
                                 </tr>
                             </thead>
-                                <tbody>
+                            <tbody>
                                 <tr>
                                     <td>&nbsp;</td>
                                     <td></td>
@@ -212,11 +213,11 @@ const View = () => {
                                     <td></td>
                                     <td></td>
                                 </tr>
-                                </tbody>
-                            </table>
-                            
-        
-                        </div>
+                            </tbody>
+                        </table>
+
+
+                    </div>
                 )}
             </div>
         </PageWrapper>

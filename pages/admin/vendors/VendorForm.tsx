@@ -345,7 +345,7 @@ const VendorForm = ({ id }: IFormProps) => {
                 postal_code: vendorDetail.postal_code,
                 website_url: vendorDetail.website_url,
                 tax_reg_no: vendorDetail.tax_reg_no,
-                address: vendorDetail.adress,
+                address: vendorDetail.address,
                 country_id: vendorDetail.country_id,
                 state_id: vendorDetail.state_id,
                 city_id: vendorDetail.city_id,
@@ -544,6 +544,7 @@ const VendorForm = ({ id }: IFormProps) => {
                         label='Official Address'
                         type='text'
                         name='address'
+                        required={true}
                         value={formData.address}
                         onChange={handleChange}
                         placeholder="Enter address"
