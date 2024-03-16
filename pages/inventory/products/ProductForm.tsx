@@ -3,7 +3,7 @@ import ImageUploader from "@/components/form/ImageUploader";
 import {useDispatch, useSelector} from "react-redux";
 import {IRootState} from "@/store";
 import {getUnits} from "@/store/slices/unitSlice";
-import {clearRawProductState, editRawProduct, storeRawProduct, updateRawProduct} from "@/store/slices/rawProductSlice";
+import {clearRawProductState, storeRawProduct, updateRawProduct} from "@/store/slices/rawProductSlice";
 import {ThunkDispatch} from "redux-thunk";
 import {AnyAction} from "redux";
 import {setAuthToken, setContentType} from "@/configs/api.config";
@@ -13,10 +13,7 @@ import {Dropdown} from "@/components/form/Dropdown";
 import {Input} from "@/components/form/Input";
 import Textarea from "@/components/form/Textarea";
 import Button from "@/components/Button";
-import {isNull} from "lodash";
-import {BASE_URL} from "@/configs/server.config";
 import {imagePath} from "@/utils/helper";
-import {router} from "next/client";
 
 interface IFormData {
     item_code: string;
@@ -46,20 +43,7 @@ const ProductForm = ({id}: IFormProps) => {
     const {token} = useSelector((state: IRootState) => state.user);
     const [image, setImage] = useState<File | null>(null);
     const [isFormValid, setIsFormValid] = useState<boolean>(false)
-    const [errorMessages, setErrorMessages] = useState({
-        item_code: 'Item code is required',
-        title: 'Title is required',
-        unit_id: 'This is required',
-        sub_unit_id: '',
-        purchase_description: '',
-        value_per_unit: '',
-        valuation_method: '',
-        min_stock_level: '',
-        opening_stock: 0,
-        opening_stock_unit_balance: 0,
-        opening_stock_total_balance: 0,
-        sale_description: '',
-    })
+    const [errorMessages, setErrorMessages] = useState<any>({})
     const [formData, setFormData] = useState<IFormData>({
         item_code: '',
         title: '',
@@ -114,9 +98,9 @@ const ProductForm = ({id}: IFormProps) => {
             if(!value){
                 setErrorMessages({ ...errorMessages ,[name] : "This is required" })
             }else{
-                setErrorMessages({ ...errorMessages ,[name] : "" })    
+                setErrorMessages({ ...errorMessages ,[name] : "" })
             }
-        } 
+        }
     };
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -193,9 +177,9 @@ const ProductForm = ({id}: IFormProps) => {
     }, [units])
 
     useEffect(() => {
-          console.log(errorMessages)        
+          console.log(errorMessages)
     }, [errorMessages])
-    
+
 
     return (
         <form className="space-y-5" onSubmit={handleSubmit}>
@@ -225,7 +209,7 @@ const ProductForm = ({id}: IFormProps) => {
                     isMasked={false}
                     styles={{height: 45}}
                     required={true}
-                    errorMessage={errorMessages?.title}
+                    errorMessage={errorMessages.title}
                 />
             </div>
             <div className='flex justify-between items-center flex-col md:flex-row gap-3'>
@@ -247,7 +231,7 @@ const ProductForm = ({id}: IFormProps) => {
                             //     setErrorMessages({...errorMessages, unit_id: ''})
                             // }
                         } else {
-                            
+
                             setFormData({
                                 ...formData,
                                 unit_id: ''
@@ -256,7 +240,7 @@ const ProductForm = ({id}: IFormProps) => {
                                 setErrorMessages({...errorMessages, unit_id : 'Please select a Unit.'})
                             // }
                         }
-                        
+
                     }}
                     required={true}
                     errorMessage={errorMessages?.unit_id}
@@ -273,7 +257,7 @@ const ProductForm = ({id}: IFormProps) => {
                             setFormData({
                                 ...formData,
                                 sub_unit_id: e.value
-                               
+
                             })
                             setErrorMessages({...errorMessages, unit_id: ''})
                         } else {

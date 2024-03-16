@@ -10,7 +10,7 @@ import VendorAddressModal from "@/components/modals/VendorAddressModal";
 import VendorRepresentativeModal from "@/components/modals/VendorRepresentativeModal";
 import {clearLocationState, getCities, getCountries, getStates} from "@/store/slices/locationSlice";
 import {getVendorTypes, storeVendorType} from "@/store/slices/vendorTypeSlice";
-import {clearVendorState, storeVendor} from "@/store/slices/vendorSlice";
+import {clearVendorState, storeVendor, updateVendor} from "@/store/slices/vendorSlice";
 import {useRouter} from "next/router";
 import BankDetailModal from "@/components/modals/BankDetailModal";
 import {clearUtilState, generateCode} from "@/store/slices/utilSlice";

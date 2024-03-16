@@ -1,22 +1,21 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { ThunkDispatch } from 'redux-thunk';
-import { IRootState } from '@/store';
-import { AnyAction } from 'redux';
-import { useRouter } from 'next/router';
-import { setPageTitle } from '@/store/slices/themeConfigSlice';
-import { clearVendorState, showDetails } from '@/store/slices/vendorSlice';
+import React, {useEffect, useState} from 'react';
+import {useDispatch, useSelector} from 'react-redux';
+import {ThunkDispatch} from 'redux-thunk';
+import {IRootState} from '@/store';
+import {AnyAction} from 'redux';
+import {useRouter} from 'next/router';
+import {setPageTitle} from '@/store/slices/themeConfigSlice';
+import {clearVendorState, showDetails} from '@/store/slices/vendorSlice';
 import PageWrapper from '@/components/PageWrapper';
-import { generatePDF, getIcon, imagePath } from '@/utils/helper';
-import Image from 'next/image';
+import {generatePDF, getIcon, imagePath} from '@/utils/helper';
 import Button from '@/components/Button';
-import { ButtonSize, ButtonType, ButtonVariant, IconType } from '@/utils/enums';
+import {ButtonSize, ButtonType, ButtonVariant, IconType} from '@/utils/enums';
 import Preview from '@/pages/admin/vendors/preview';
 
 const View = () => {
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
     const router = useRouter();
-    const { loading, vendorDetail } = useSelector((state: IRootState) => state.vendor);
+    const {loading, vendorDetail} = useSelector((state: IRootState) => state.vendor);
     const [printLoading, setPrintLoading] = useState<boolean>(false);
     const breadCrumbItems = [
         {
@@ -38,20 +37,12 @@ const View = () => {
         dispatch(clearVendorState());
 
         const VendorId = router.query.id;
-        // console.log('Vendor ID:', VendorId);
 
         if (VendorId) {
-            // If the productId is an array (with catch-all routes), take the first element.
             const id = Array.isArray(VendorId) ? VendorId[0] : VendorId;
             dispatch(showDetails(parseInt(id)));
         }
     }, [router.query.id, dispatch]);
-
-    // useEffect(() => {
-    //   if (vendorDetail) {
-    //     console.log("Vendor Detail:", vendorDetail);
-    //   }
-    // }, [vendorDetail])
 
     return (
         <PageWrapper loading={loading} breadCrumbItems={breadCrumbItems} embedLoader={true}>
@@ -74,13 +65,15 @@ const View = () => {
                             variant={ButtonVariant.success}
                             size={ButtonSize.small}
                             disabled={printLoading}
-                            onClick={() => generatePDF(<Preview content={vendorDetail} />, setPrintLoading)}
+                            onClick={() => generatePDF(<Preview content={vendorDetail}/>, setPrintLoading)}
                         />
                         <Button
                             text={
                                 <span className="flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ltr:mr-2 rtl:ml-2" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                        <path d="M15 5L9 12L15 19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ltr:mr-2 rtl:ml-2"
+                                         width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                        <path d="M15 5L9 12L15 19" stroke="currentColor" strokeWidth="1.5"
+                                              strokeLinecap="round" strokeLinejoin="round"/>
                                     </svg>
                                     Back
                                 </span>
@@ -142,30 +135,30 @@ const View = () => {
                                     <strong>Website:</strong> {vendorDetail.website_url}
                                 </span>
                             </div>
-                            <img src={imagePath(vendorDetail.thumbnail)} className="w-24 h-24" alt="" />
+                            <img src={imagePath(vendorDetail.thumbnail)} className="w-24 h-24" alt=""/>
                         </div>
                         <div className="mt-10">
                             <h4 className="font-bold">Vendor Representatives:</h4>
                         </div>
 
-                       <table>
+                        <table>
                             <thead>
-                                <tr>
-                                    <th>Photo</th>
-                                    <th>Name</th>
-                                    <th>Phone</th>
-                                    <th>Email</th>
-                                    <th>Address</th>
-                                </tr>
+                            <tr>
+                                <th>Photo</th>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Email</th>
+                                <th>Address</th>
+                            </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>&nbsp;</td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
                             </tbody>
                         </table>
                         <div className="mt-10">
@@ -173,23 +166,23 @@ const View = () => {
                         </div>
                         <table>
                             <thead>
-                                <tr>
-                                    <th>Address Type</th>
-                                    <th>Country</th>
-                                    <th>State</th>
-                                    <th>City</th>
-                                    <th>Address</th>
-                                    <th>Postal Code</th>
-                                </tr>
+                            <tr>
+                                <th>Address Type</th>
+                                <th>Country</th>
+                                <th>State</th>
+                                <th>City</th>
+                                <th>Address</th>
+                                <th>Postal Code</th>
+                            </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>&nbsp;</td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
                             </tbody>
                         </table>
                         <div className="mt-10">
@@ -197,22 +190,22 @@ const View = () => {
                         </div>
                         <table>
                             <thead>
-                                <tr>
-                                    <th>Bank</th>
-                                    <th>Account Number</th>
-                                    <th>Account Title</th>
-                                    <th>IBAN</th>
-                                    <th>Currency</th>
-                                </tr>
+                            <tr>
+                                <th>Bank</th>
+                                <th>Account Number</th>
+                                <th>Account Title</th>
+                                <th>IBAN</th>
+                                <th>Currency</th>
+                            </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>&nbsp;</td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
                             </tbody>
                         </table>
 
