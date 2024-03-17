@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import Swal from 'sweetalert2';
 import {useDispatch, useSelector} from 'react-redux';
 import {setPageTitle} from '@/store/slices/themeConfigSlice';
@@ -14,8 +14,9 @@ import 'tippy.js/dist/tippy.css';
 import {deleteProduction, getProductions} from '@/store/slices/productionSlice';
 import IconButton from '@/components/IconButton';
 import {ButtonVariant, IconType} from '@/utils/enums';
-import {generatePDF} from '@/utils/helper';
+import {generatePDF, getIcon} from '@/utils/helper';
 import Preview from '@/pages/inventory/productions/preview';
+import {uniqBy} from "lodash";
 
 const Index = () => {
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
@@ -117,15 +118,46 @@ const Index = () => {
                         rowData={rowData}
                         loading={loading}
                         exportTitle={'all-production-' + Date.now()}
+                        showFooter={true}
                         columns={[
-                            {accessor: 'batch_number', title: 'Code', sortable: true},
-                            {accessor: 'no_of_quantity', title: 'Quantity (KG)', sortable: true},
+                            {
+                                accessor: 'batch_number',
+                                title: 'Code',
+                                sortable: true,
+                                footer: (
+                                    <div className='flex gap-2 justify-start items-center'>
+                                        <span>Productions:</span>
+                                        <span>{rowData.length}</span>
+                                    </div>
+                                )
+                            },
+                            {
+                                accessor: 'no_of_quantity',
+                                title: 'Quantity (KG)',
+                                sortable: true,
+                                footer: (
+                                    <div className='flex gap-2 justify-start items-center'>
+                                        <span className='h-3 w-3'>
+                                            {getIcon(IconType.sum)}
+                                        </span>
+                                        <span>
+                                            {rowData.reduce((acc, item:any) => acc + parseFloat(item.no_of_quantity), 0)}
+                                        </span>
+                                    </div>
+                                )
+                            },
                             {
                                 accessor: 'product_assembly.formula_name',
                                 title: 'Formula',
                                 render: (row: any) =>
                                     <span>{row.product_assembly.formula_name + ' (' + row.product_assembly.formula_code + ')'}</span>,
                                 sortable: true,
+                                footer: (
+                                    <div className='flex gap-2 justify-start items-center'>
+                                        <span>Formulas:</span>
+                                        <span>{uniqBy(rowData, (record:any) => record.product_assembly.formula_code).length}</span>
+                                    </div>
+                                )
                             },
                             {
                                 accessor: 'is_active',
@@ -133,6 +165,18 @@ const Index = () => {
                                 render: (row: any) => <span
                                     className={`badge bg-${row.is_active ? 'success' : 'danger'}`}>{row.is_active ? 'Active' : 'Inactive'}</span>,
                                 sortable: true,
+                                footer: (
+                                    <div className="flex justify-start items-center gap-3">
+                                        <div className='flex gap-2 justify-start items-center'>
+                                            <span>Completed: </span>
+                                            <span>{rowData.reduce((acc: any, item: any) => !item.is_active ? acc + 1 : 0, 0)}</span>
+                                        </div>
+                                        <div className='flex gap-2 justify-start items-center'>
+                                            <span>Pending: </span>
+                                            <span>{rowData.reduce((acc: any, item: any) => item.is_active ? acc + 1 : 0, 0)}</span>
+                                        </div>
+                                    </div>
+                                ),
                             },
                             {
                                 accessor: 'actions',

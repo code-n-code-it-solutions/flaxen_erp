@@ -1,49 +1,77 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect} from 'react';
 import {useDispatch, useSelector} from "react-redux";
 import {ThunkDispatch} from "redux-thunk";
 import {IRootState} from "@/store";
 import {AnyAction} from "redux";
 import {useRouter} from "next/router";
 import {setPageTitle} from "@/store/slices/themeConfigSlice";
-import ProductForm from "@/pages/inventory/products/ProductForm";
-import {clearRawProductState} from "@/store/slices/rawProductSlice";
+import {clearVendorState, editVendor} from "@/store/slices/vendorSlice";
 import PageWrapper from "@/components/PageWrapper";
 import {ButtonSize, ButtonType, ButtonVariant} from "@/utils/enums";
 import Button from "@/components/Button";
+import VendorForm from '../VendorForm';
 
-const Create = () => {
+interface IFormData {
+    vendor_number: string;
+    name: string;
+    vendor_type_id: number;
+    opening_balance: number,
+    phone: string,
+    email: string,
+    due_in_days: number,
+    postal_code: string,
+    website_url: string,
+    tax_reg_no: string,
+    address: string,
+    country_id: number,
+    state_id: number,
+    city_id: number,
+    image: File | null;
+    representatives: any[];
+    addresses: any[];
+    is_active: boolean;
+}
+
+const Edit = () => {
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
     const router = useRouter();
-    const {rawProduct} = useSelector((state: IRootState) => state.rawProduct);
+    const {vendor, loading} = useSelector((state: IRootState) => state.vendor);
+    dispatch(setPageTitle('Edit Vendor Details'));
     const breadCrumbItems = [
         {
             title: 'Home',
             href: '/main',
         },
         {
-            title: 'All Raw Materials',
-            href: '/inventory/products',
+            title: 'All Vendors ',
+            href: '/vendors/',
         },
         {
-            title: 'Create New',
+            title: 'Update vendor',
             href: '#',
         },
     ];
-    useEffect(() => {
-        dispatch(setPageTitle('Create Raw Material'));
-    }, []);
 
     useEffect(() => {
-        if (rawProduct) {
-            dispatch(clearRawProductState());
-            router.push('/inventory/products');
+        if (vendor) {
+            dispatch(clearVendorState());
+            router.push('/admin/vendors');
         }
-    }, [rawProduct]);
+    }, [vendor]);
+
+    useEffect(() => {
+        const {id} = router.query;
+        console.log('Vendor_id ', id);
+        if (typeof id === 'string' && id) {
+            dispatch(editVendor(parseInt(id)))
+        }
+    }, [router.query]);
 
     return (
         <PageWrapper
-            embedLoader={false}
             breadCrumbItems={breadCrumbItems}
+            embedLoader={true}
+            loading={loading}
         >
             <div>
                 <div className="mb-5 flex items-center justify-between">
@@ -59,14 +87,14 @@ const Create = () => {
                         </span>}
                         type={ButtonType.link}
                         variant={ButtonVariant.primary}
-                        link="/inventory/products"
+                        link="/admin/vendors"
                         size={ButtonSize.small}
                     />
                 </div>
-                <ProductForm/>
+                <VendorForm id={router.query.id}/>
             </div>
         </PageWrapper>
     );
 };
 
-export default Create;
+export default Edit;

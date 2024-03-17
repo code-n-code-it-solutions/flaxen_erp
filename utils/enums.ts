@@ -56,6 +56,7 @@ export enum IconType {
     download = 'download',
     upload = 'upload',
     cancel = 'cancel',
+    sum = 'sum',
 }
 
 export enum ListingType {

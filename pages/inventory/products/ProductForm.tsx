@@ -247,7 +247,7 @@ const ProductForm = ({ id }: IFormProps) => {
                     isMasked={false}
                     styles={{ height: 45 }}
                     required={true}
-                    errorMessage={errorMessages?.title}
+                    errorMessage={errorMessages.title}
                 />
             </div>
             <div className="flex flex-col items-center justify-between gap-3 md:flex-row">

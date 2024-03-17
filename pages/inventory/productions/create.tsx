@@ -3,20 +3,19 @@ import Breadcrumb from '@/components/Breadcrumb';
 // import Select from 'react-select';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import { useDispatch, useSelector } from 'react-redux';
-import { ThunkDispatch } from 'redux-thunk';
-import { IRootState } from '@/store';
-import { AnyAction } from 'redux';
-import { useRouter } from 'next/router';
-import { setPageTitle } from '@/store/slices/themeConfigSlice';
-import { setAuthToken, setContentType } from '@/configs/api.config';
-import { clearProductAssemblyState, getAssemblyItems, getProductAssemblies } from '@/store/slices/productAssemblySlice';
-import { clearProductionState, storeProduction } from '@/store/slices/productionSlice';
-import { getRandomInt } from '@/utils/helper';
-import { clearUtilState, generateCode } from '@/store/slices/utilSlice';
-import { FORM_CODE_TYPE, RAW_PRODUCT_LIST_TYPE } from '@/utils/enums';
-import RawProductModal from '@/components/specific-modal/raw-modal/RawProductModal';
-import Alert from '@/components/Alert';
+import {useDispatch, useSelector} from "react-redux";
+import {ThunkDispatch} from "redux-thunk";
+import {IRootState} from "@/store";
+import {AnyAction} from "redux";
+import {useRouter} from "next/router";
+import {setPageTitle} from "@/store/slices/themeConfigSlice";
+import {setAuthToken, setContentType} from "@/configs/api.config";
+import {clearProductAssemblyState, getAssemblyItems, getProductAssemblies} from "@/store/slices/productAssemblySlice";
+import {clearProductionState, storeProduction} from "@/store/slices/productionSlice";
+import {getRandomInt} from "@/utils/helper";
+import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
+import {FORM_CODE_TYPE, RAW_PRODUCT_LIST_TYPE} from "@/utils/enums";
+import RawProductModal from "@/components/modals/RawProductModal";
 
 const Select = dynamic(
     () => import('react-select'),

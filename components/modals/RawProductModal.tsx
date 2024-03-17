@@ -29,9 +29,12 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
     const [unitOptions, setUnitOptions] = useState<any>([]);
     const [productOptions, setProductOptions] = useState<any>([]);
+    const [taxCategoryOptions, setTaxCategoryOptions] = useState<any>([]);
+
     const {token} = useSelector((state: IRootState) => state.user);
     const {units} = useSelector((state: IRootState) => state.unit);
     const {allRawProducts} = useSelector((state: IRootState) => state.rawProduct);
+    const {taxCategories} = useSelector((state: IRootState) => state.taxCategory);
 
     const handleChange = (name: string, value: any) => {
         if (name === 'raw_product_id') {
@@ -43,13 +46,41 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                     [name]: value,
                     unit_id: selectedProduct.sub_unit_id,
                     unit_price: parseFloat(selectedProduct.opening_stock_unit_balance),
-                    total: isNaN(formData.quantity) ? 0 : parseFloat(selectedProduct.opening_stock_unit_balance) * formData.quantity
-                });}
+                    sub_total: isNaN(formData.quantity) ? 0 : parseFloat(selectedProduct.opening_stock_unit_balance) * formData.quantity
+                });
+            }
         } else if (name === 'quantity') {
+            if(isNaN(value)) {
+                value = 0;
+            }
             setFormData({
                 ...formData,
                 [name]: value,
-                total: isNaN(formData.unit_price) ? 0 : formData.unit_price * value
+                sub_total: isNaN(formData.unit_price) ? 0 : formData.unit_price * value
+            });
+        } else if(name==='tax_category_id') {
+            if(isNaN(value)) {
+                value = 0;
+            }
+            let selectedTaxCategory = taxCategories.find((taxCategory: any) => taxCategory.id === value);
+            if (selectedTaxCategory) {
+                setFormData({
+                    ...formData,
+                    [name]: value,
+                    tax_rate: parseFloat(selectedTaxCategory.rate),
+                    tax_amount: (parseFloat(selectedTaxCategory.rate) * formData.sub_total) / 100,
+                    grand_total: formData.sub_total + ((parseFloat(selectedTaxCategory.rate) * formData.sub_total) / 100)
+                });
+            }
+        } else if(name==='tax_rate') {
+            if(isNaN(value)) {
+                value = 0;
+            }
+            setFormData({
+                ...formData,
+                [name]: value,
+                tax_amount: (formData.sub_total * value) / 100,
+                grand_total: formData.sub_total + ((formData.sub_total * value) / 100)
             });
         } else {
             setFormData({...formData, [name]: value});
@@ -90,6 +121,19 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
             setProductOptions([{value: '', label: 'Select Raw Product'}, ...rawProductOptions]);
         }
     }, [allRawProducts]);
+
+    useEffect(() => {
+        if (taxCategories) {
+            let taxCategoryOptions = taxCategories.map((taxCategory: any) => {
+                return {
+                    value: taxCategory.id,
+                    label: taxCategory.name,
+                    taxCategory
+                };
+            })
+            setTaxCategoryOptions([{value: '', label: 'Select Tax Category'}, ...taxCategoryOptions]);
+        }
+    }, [taxCategories]);
 
     useEffect(() => {
         console.log(formData)
@@ -141,7 +185,7 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                 onChange={(e) => handleChange('quantity', parseFloat(e.target.value))}
                 isMasked={false}
             />
-            {(listFor === RAW_PRODUCT_LIST_TYPE.PRODUCT_ASSEMBLY || listFor === RAW_PRODUCT_LIST_TYPE.PRODUCTION || listFor===RAW_PRODUCT_LIST_TYPE.PURCHASE_REQUISITION) && (
+            {(listFor === RAW_PRODUCT_LIST_TYPE.PRODUCT_ASSEMBLY || listFor === RAW_PRODUCT_LIST_TYPE.PRODUCTION || listFor === RAW_PRODUCT_LIST_TYPE.PURCHASE_REQUISITION) && (
                 <>
                     <Input
                         label='Unit Cost'
@@ -153,24 +197,64 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                     />
 
                     <Input
-                        label='Total'
+                        label='Sub Total'
                         type='number'
-                        name='total'
-                        value={formData.total?.toFixed(2)}
+                        name='sub_total'
+                        value={formData.sub_total?.toFixed(2)}
                         disabled={true}
-                        onChange={(e) => handleChange('total', parseFloat(e.target.value))}
+                        onChange={(e) => handleChange('sub_total', parseFloat(e.target.value))}
                         isMasked={false}
-                    />
-
-                    <Textarea
-                        label='Description'
-                        name='description'
-                        value={formData.description}
-                        isReactQuill={false}
-                        onChange={(e) => handleChange('description', e.target.value)}
                     />
                 </>
             )}
+            {listFor === RAW_PRODUCT_LIST_TYPE.LOCAL_PURCHASE_ORDER && (
+                <>
+                    <Dropdown
+                        divClasses='w-full'
+                        label='Tax Category'
+                        name='tax_category_id'
+                        options={taxCategoryOptions}
+                        required={true}
+                        value={formData.tax_category_id}
+                        onChange={(e) => handleChange('tax_category_id', e && typeof e !== 'undefined' ? e.value : 0)}
+                    />
+                    <Input
+                        label='Tax Rate'
+                        type='number'
+                        name='tax_rate'
+                        value={formData.tax_rate}
+                        onChange={(e) => handleChange('tax_rate', parseFloat(e.target.value))}
+                        isMasked={false}
+                    />
+                    <Input
+                        label='Tax Amount'
+                        type='number'
+                        name='tax_amount'
+                        disabled={true}
+                        value={formData.tax_amount?.toFixed(2)}
+                        onChange={(e) => handleChange('tax_amount', parseFloat(e.target.value))}
+                        isMasked={false}
+                    />
+
+                    <Input
+                        label='Grand Total'
+                        type='number'
+                        name='grand_total'
+                        disabled={true}
+                        value={formData.grand_total?.toFixed(2)}
+                        onChange={(e) => handleChange('grand_total', parseFloat(e.target.value))}
+                        isMasked={false}
+                    />
+                </>
+
+            )}
+            <Textarea
+                label='Description'
+                name='description'
+                value={formData.description}
+                isReactQuill={false}
+                onChange={(e) => handleChange('description', e.target.value)}
+            />
 
         </Modal>
     );

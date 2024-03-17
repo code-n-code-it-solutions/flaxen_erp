@@ -6,7 +6,7 @@ import {ButtonType, ButtonVariant, FORM_CODE_TYPE, IconType, RAW_PRODUCT_LIST_TY
 import {ThunkDispatch} from "redux-thunk";
 import {AnyAction} from "redux";
 import {getAssets, storeAssets} from "@/store/slices/assetSlice";
-import AssetFormModal from "@/components/specific-modal/AssetFormModal";
+import AssetFormModal from "@/components/modals/AssetFormModal";
 import Modal from "@/components/Modal";
 import {getTaxCategories} from "@/store/slices/taxCategorySlice";
 import {Input} from "@/components/form/Input";
@@ -33,32 +33,49 @@ const ServiceModal = ({modalOpen, setModalOpen, handleSubmit, detail, listFor}: 
     const {code} = useSelector((state: IRootState) => state.util);
     const {assets, asset, loading, success} = useSelector((state: IRootState) => state.asset);
     const {taxCategories} = useSelector((state: IRootState) => state.taxCategory);
+
     const handleAssetSubmit = (val: any) => {
         dispatch(storeAssets(val));
     }
 
     const handleChange = (name: string, value: any) => {
         setFormData((prev: any) => ({...prev, [name]: value}));
+        if (name == 'asset_id') {
+            setFormData((prev: any) => ({
+                ...prev,
+                cost: 0,
+                tax_category_id: 0,
+                tax_rate: 0,
+                tax_amount: 0,
+                grand_total: 0
+            }));
+        } else if (name === 'cost') {
+            setFormData((prev: any) => ({
+                ...prev,
+                tax_rate: 0,
+                tax_amount: 0,
+                grand_total: value
+            }));
+        } else if (name == 'tax_rate') {
+            setFormData((prev: any) => ({
+                ...prev,
+                tax_amount: (formData.cost * value) / 100,
+                grand_total: formData.cost + ((formData.cost * value) / 100)
+            }));
+        }
     }
 
     useEffect(() => {
         if (modalOpen) {
             setFormData(detail ? detail : {});
             setAssetModalOpen(false)
-            dispatch(generateCode(FORM_CODE_TYPE.SERVICE));
+            // dispatch(generateCode(FORM_CODE_TYPE.SERVICE));
             dispatch(getAssets());
             if (RAW_PRODUCT_LIST_TYPE.LOCAL_PURCHASE_ORDER) {
                 dispatch(getTaxCategories())
             }
         }
     }, [modalOpen]);
-
-    useEffect(() => {
-        setFormData((prev: any) => ({
-            ...prev,
-            service_code: code[FORM_CODE_TYPE?.SERVICE]
-        }));
-    }, [code]);
 
     useEffect(() => {
         if (assets) {
@@ -141,68 +158,75 @@ const ServiceModal = ({modalOpen, setModalOpen, handleSubmit, detail, listFor}: 
 
             <Input
                 divClasses='w-full'
-                label='Service Code'
-                type='text'
-                name='service_code'
-                value={formData.service_code}
-                onChange={(e) => handleChange(e.target.name, e.target.value)}
-                isMasked={false}
-                disabled={true}
-                placeholder='Service Code'
-            />
-
-            <Input
-                divClasses='w-full'
                 label='Service Name'
                 type='text'
-                name='name'
-                value={formData.service_code}
+                name='service_name'
+                value={formData.service_name}
                 onChange={(e) => handleChange(e.target.name, e.target.value)}
                 isMasked={false}
                 placeholder='Enter service name'
             />
 
-            <Input
-                divClasses='w-full'
-                label='Estimated Cost'
-                type='text'
-                name='estimated_cost'
-                value={formData.estimated_cost}
-                onChange={(e) => handleChange(e.target.name, e.target.value)}
-                isMasked={false}
-                placeholder='Estimated Cost'
-            />
-
-            {(listFor === RAW_PRODUCT_LIST_TYPE.PRODUCT_ASSEMBLY || listFor === RAW_PRODUCT_LIST_TYPE.PRODUCTION || listFor === RAW_PRODUCT_LIST_TYPE.PURCHASE_REQUISITION) && (
+            {listFor === RAW_PRODUCT_LIST_TYPE.LOCAL_PURCHASE_ORDER && (
                 <>
                     <Input
-                        label='Unit Cost'
+                        label='Cost'
                         type='number'
-                        name='unit_price'
+                        name='cost'
                         value={formData.unit_price}
-                        onChange={(e) => handleChange('unit_price', parseFloat(e.target.value))}
+                        onChange={(e) => handleChange('cost', parseFloat(e.target.value))}
                         isMasked={false}
                     />
-
+                    <Dropdown
+                        divClasses='w-full'
+                        label='Tax Category'
+                        name='tax_category_id'
+                        options={taxCategoryOptions}
+                        value={formData.tax_category_id}
+                        onChange={(e) => {
+                            if (e && typeof e !== 'undefined') {
+                                handleChange('tax_category_id', e.value)
+                            } else {
+                                handleChange('tax_category_id', '')
+                            }
+                        }}
+                    />
+                    <Input
+                        label='Tax Rate (%)'
+                        type='number'
+                        name='tax_rate'
+                        value={formData.tax_rate}
+                        onChange={(e) => handleChange('tax_rate', parseFloat(e.target.value))}
+                        isMasked={false}
+                    />
+                    <Input
+                        label='Tax Amount'
+                        type='number'
+                        name='tax_amount'
+                        value={formData.tax_amount}
+                        onChange={(e) => handleChange('tax_amount', parseFloat(e.target.value))}
+                        isMasked={false}
+                        disabled={true}
+                    />
                     <Input
                         label='Total'
                         type='number'
-                        name='total'
-                        value={formData.total?.toFixed(2)}
-                        disabled={true}
-                        onChange={(e) => handleChange('total', parseFloat(e.target.value))}
+                        name='grand_total'
+                        value={formData.grand_total}
+                        onChange={(e) => handleChange('grand_total', parseFloat(e.target.value))}
                         isMasked={false}
+                        disabled={true}
                     />
 
-                    <Textarea
-                        label='Description'
-                        name='description'
-                        value={formData.description}
-                        isReactQuill={false}
-                        onChange={(e) => handleChange('description', e.target.value)}
-                    />
                 </>
             )}
+            <Textarea
+                label='Description'
+                name='description'
+                value={formData.description}
+                isReactQuill={false}
+                onChange={(e) => handleChange('description', e.target.value)}
+            />
             <AssetFormModal
                 modalOpen={assetModalOpen}
                 setModalOpen={setAssetModalOpen}
