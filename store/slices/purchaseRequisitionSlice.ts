@@ -92,6 +92,34 @@ export const getPurchaseRequisitionByStatuses = createAsyncThunk(
         }
     }
 );
+export const editPurchaseRequisition = createAsyncThunk(
+    'purchaseRquisition/edit',
+    async (id:number, thunkAPI) => {
+        try {
+            const response = await API.get('/purchase-requisition/edit/'+id);
+            console.log(response)
+            return response.data;
+        } catch (error:any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to edit';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+export const updatePurchaseRequisition = createAsyncThunk(
+    'purchaseRequisition/update',
+    async (data:any, thunkAPI) => {
+        try {
+            const {id, purchaseRequisitionData} = data
+            const response = await API.post('/purchase-requisition/update/'+id, purchaseRequisitionData);
+            return response.data;
+        } catch (error:any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to login';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
 
 // Slice
 export const purchaseRequisitionSlice = createSlice({
@@ -166,6 +194,31 @@ export const purchaseRequisitionSlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message;
             })
+            .addCase(editPurchaseRequisition.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(editPurchaseRequisition.fulfilled, (state, action) => {
+                state.loading = false;
+                state.purchaseRequestDetail = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(editPurchaseRequisition.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(updatePurchaseRequisition.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(updatePurchaseRequisition.fulfilled, (state, action) => {
+                state.loading = false;
+                state.purchaseRequest = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(updatePurchaseRequisition.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            
     },
 });
 export const { clearPurchaseRequisitionState } = purchaseRequisitionSlice.actions;
