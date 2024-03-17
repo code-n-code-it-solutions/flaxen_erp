@@ -1,7 +1,7 @@
-import React, {FC} from 'react';
+import React, { FC } from 'react';
 import dynamic from "next/dynamic";
 import 'react-quill/dist/quill.snow.css';
-const ReactQuill = dynamic(import('react-quill'), {ssr: false});
+const ReactQuill = dynamic(import('react-quill'), { ssr: false });
 
 interface IProps {
     divClasses?: string;
@@ -15,25 +15,27 @@ interface IProps {
     onChange: (e: any) => void;
     errorMessage?: string;
     isReactQuill: boolean;
+    required:  boolean;
 }
 
 const Textarea: FC<IProps> = ({
-                                  divClasses,
-                                  name,
-                                  label,
-                                  value,
-                                  cols,
-                                  rows,
-                                  onChange,
-                                  placeholder,
-                                  otherOptions,
-                                  errorMessage,
-                                  isReactQuill
-                              }) => {
+    divClasses,
+    name,
+    label,
+    value,
+    cols,
+    rows,
+    onChange,
+    placeholder,
+    otherOptions,
+    errorMessage,
+    isReactQuill,
+    required,
+}) => {
     return (
         <div className={divClasses}>
             <label htmlFor={name} className="form-label flex">
-                {label} {otherOptions?.required && <span className="text-sm text-red-500">*</span>}
+                {label} {required && <span className="text-sm text-red-500">*</span>}
             </label>
             {isReactQuill
                 ? <ReactQuill
@@ -53,6 +55,7 @@ const Textarea: FC<IProps> = ({
                     defaultValue={value}
                     {...otherOptions}
                     onChange={onChange}
+                    required={required}
                 ></textarea>}
 
             {errorMessage && <p className="text-sm text-red-500">{errorMessage}</p>}
