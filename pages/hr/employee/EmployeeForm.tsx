@@ -76,11 +76,12 @@ const EmployeeForm = ({id}: IFormProps) => {
     const department = useSelector((state: IRootState) => state.department);
     const employee = useSelector((state: IRootState) => state.employee);
     const {code} = useSelector((state: IRootState) => state.util);
-
+    const [errors, setErrors] = useState<Record<string, string>>({});
     const [bankModalOpen, setBankModalOpen] = useState<boolean>(false);
     const [image, setImage] = useState<File | null>(null);
     const [employeeBankAccounts, setEmployeeBankAccounts] = useState<IBankAccount[]>([]);
     const [employeeDocuments, setEmployeeDocuments] = useState<IDocuments[]>([]);
+
     const [formData, setFormData] = useState<IFormData>({
         employee_code: '',
         name: '',
@@ -310,9 +311,11 @@ const EmployeeForm = ({id}: IFormProps) => {
             dispatch(clearDepartmentState())
         }
     }, [department.department]);
+   
+
 
     return (
-        <form className="space-y-5" onSubmit={(e) => handleSubmit(e)}>
+        <form className="space-y-5"  onSubmit={(e) => handleSubmit(e)}>
             <div className="flex justify-center items-center">
                 <ImageUploader image={image} setImage={setImage} existingImage={imagePreview}/>
             </div>
