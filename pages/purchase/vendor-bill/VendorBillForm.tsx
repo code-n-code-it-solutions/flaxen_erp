@@ -1,15 +1,19 @@
 "use client";
-import React, {useEffect, useState} from 'react';
-import {setAuthToken, setContentType} from "@/configs/api.config";
-import {useDispatch, useSelector} from "react-redux";
-import {ThunkDispatch} from "redux-thunk";
-import {IRootState} from "@/store";
-import {AnyAction} from "redux";
+import React, { useEffect, useState } from 'react';
+import { setAuthToken, setContentType } from "@/configs/api.config";
+import { useDispatch, useSelector } from "react-redux";
+import { ThunkDispatch } from "redux-thunk";
+import { IRootState } from "@/store";
+import { AnyAction } from "redux";
 import Select from "react-select";
-import {getGRN} from "@/store/slices/goodReceiveNoteSlice";
-import {clearVendorBillState, storeVendorBill} from "@/store/slices/vendorBillSlice";
-import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
-import {FORM_CODE_TYPE} from "@/utils/enums";
+import { getGRN } from "@/store/slices/goodReceiveNoteSlice";
+import { clearVendorBillState, storeVendorBill } from "@/store/slices/vendorBillSlice";
+import { clearUtilState, generateCode } from "@/store/slices/utilSlice";
+import { ButtonSize, ButtonType, ButtonVariant } from "@/utils/enums";
+import { FORM_CODE_TYPE } from "@/utils/enums";
+import { Input } from '@/components/form/Input';
+import { Dropdown } from '@/components/form/Dropdown';
+import Button from '@/components/Button';
 
 interface IFormData {
     purchase_requisition_id: number;
@@ -46,12 +50,12 @@ interface IFormProps {
     id?: any
 }
 
-const VendorBillForm = ({id}: IFormProps) => {
+const VendorBillForm = ({ id }: IFormProps) => {
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
-    const {code} = useSelector((state: IRootState) => state.util);
-    const {token, user} = useSelector((state: IRootState) => state.user);
-    const {loading} = useSelector((state: IRootState) => state.goodReceiveNote);
-    const {allGRNs} = useSelector((state: IRootState) => state.goodReceiveNote);
+    const { code } = useSelector((state: IRootState) => state.util);
+    const { token, user } = useSelector((state: IRootState) => state.user);
+    const { loading } = useSelector((state: IRootState) => state.goodReceiveNote);
+    const { allGRNs } = useSelector((state: IRootState) => state.goodReceiveNote);
     const [rawProducts, setRawProducts] = useState<IRawProduct[]>([]);
     const [formData, setFormData] = useState<IFormData>({
         purchase_requisition_id: 0,
@@ -184,80 +188,83 @@ const VendorBillForm = ({id}: IFormProps) => {
     return (
         <form className="space-y-5" onSubmit={(e) => handleSubmit(e)}>
             <div className="flex justify-start flex-col items-start space-y-3">
-                <div className="w-full md:w-1/2">
-                    <label htmlFor="purchase_requisition_id">Good Receive Note</label>
-                    <Select
-                        defaultValue={GRNOptions[0]}
-                        options={GRNOptions}
-                        isSearchable={true}
-                        isClearable={true}
-                        placeholder={'Select Good Receive Notes'}
-                        onChange={(e: any) => handleGRNChange(e)}
-                    />
-                </div>
-                <div className="w-full md:w-1/2">
-                    <label htmlFor="bill_number">Vendor Bill Number</label>
-                    <input
-                        type="text"
-                        className="form-input"
-                        placeholder="Vendor Bill Number"
-                        name="bill_number"
-                        value={formData.bill_number}
-                        disabled={true}
-                        onChange={(e: any) => setFormData(
-                            prev => ({
-                                ...prev,
-                                bill_number: e.target.value
-                            })
-                        )}
-                    />
-                </div>
+              
+                <Dropdown
+                    divClasses='w-full md:w-1/2'
+                    label='Good Receive Note'
+                    name=''
+                    options={GRNOptions}
+                    value={''}
+                    onChange={(e: any) => handleGRNChange(e)}
+                />
+               
+                <Input
+                    divClasses='w-full md:w-1/2'
+                    label='Vendor Bill Number'
+                    type='text'
+                    name='bill_number'
+                    value=''
+                    onChange={(e: any) => setFormData(
+                        prev => ({
+                            ...prev,
+                            bill_number: e.target.value
+                        })
+                    )}
+                    placeholder="Vendor Bill Number"
+                    isMasked={false}
+                    disabled={true}
+                />
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 w-full">
-                    <div className="w-full">
-                        <label htmlFor="bill_number">Bill Amount</label>
-                        <input
-                            type="number"
-                            className="form-input"
-                            placeholder="Vendor Bill Number"
-                            name="bill_number"
-                            value={billAmount}
-                            disabled={true}
-                            onChange={(e: any) => setBillAmount(parseFloat(e.target.value))}
-                        />
-                    </div>
-                    <div className="w-full">
-                        <label htmlFor="paid_amount">Bill Paid Amount</label>
-                        <input
-                            type="number"
-                            className="form-input"
-                            placeholder="Paid Amount"
-                            name="paid_amount"
-                            value={formData.paid_amount}
-                            onChange={(e: any) => handlePaidAmountChange(e)}
-                        />
-                    </div>
-                    <div className="w-full">
-                        <label htmlFor="bill_number">Balance Amount</label>
-                        <input
-                            type="number"
-                            className="form-input"
-                            placeholder="Balance Amount"
-                            name="balance"
-                            disabled={true}
-                            value={formData.balance}
-                            onChange={(e: any) =>{
-                                setFormData(prev => ({
-                                    ...prev,
-                                    balance: billAmount - e.target.value
-                                }))
-                            }}
-                        />
-                    </div>
+                   
+                    <Input
+                        divClasses='w-full '
+                        label='Bill Amount'
+                        type='number'
+                        name='bill_amount'
+                        value=''
+                        onChange={(e: any) => setBillAmount(parseFloat(e.target.value))}
+                        placeholder="Bill Amount"
+                        isMasked={false}
+                        disabled={true}
+                    />
+
+                   
+                    <Input
+                        divClasses='w-full '
+                        label='Bill Paid Amount'
+                        type='number'
+                        name='paid_amount'
+                        value=''
+                        onChange={(e: any) => setBillAmount(parseFloat(e.target.value))}
+                        placeholder="Piad Amount"
+                        isMasked={false}
+                        disabled={true}
+                    />
+
+                   
+
+                    <Input
+                        divClasses='w-full '
+                        label='Balance Amount'
+                        type='number'
+                        name='balance'
+                        value=''
+                        onChange={(e: any) => {
+                            setFormData(prev => ({
+                                ...prev,
+                                balance: billAmount - e.target.value
+                            }))
+                        }}
+                        placeholder="Balance Amount"
+                        isMasked={false}
+                        disabled={true}
+                    />
+
                 </div>
                 <div hidden={!showDetails} className="w-full space-y-3">
                     <div className="border rounded p-5 w-full">
                         <h3 className="text-lg font-semibold">Good Receive Note Details</h3>
-                        <hr className="my-3"/>
+                        <hr className="my-3" />
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full my-5">
                             <div className="w-full">
                                 <strong>Requisition Number: </strong>
@@ -290,38 +297,38 @@ const VendorBillForm = ({id}: IFormProps) => {
                                 </span>
                             </div>
                         </div>
-                        <hr className="my-3"/>
+                        <hr className="my-3" />
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div className="table-responsive">
                                 <h4 className="font-bold text-lg">Vendor Details</h4>
                                 <table>
                                     <thead>
-                                    <tr>
-                                        <th>Vendor Number</th>
-                                        <th>Vendor Name</th>
-                                        <th>Billed From</th>
-                                        <th>Shift From</th>
-                                    </tr>
+                                        <tr>
+                                            <th>Vendor Number</th>
+                                            <th>Vendor Name</th>
+                                            <th>Billed From</th>
+                                            <th>Shift From</th>
+                                        </tr>
                                     </thead>
                                     <tbody>
-                                    <tr>
-                                        <td>{grnDetails.local_purchase_order?.vendor?.vendor_number}</td>
-                                        <td>{grnDetails.local_purchase_order?.vendor?.name}</td>
-                                        <td>
-                                            {grnDetails.local_purchase_order?.vendor?.addresses?.map((address: any, index: number) => {
-                                                if (address.type === 'billing') {
-                                                    return address.address + ', ' + address.city?.name + ', ' + address.state?.name + ', ' + address.country?.name
-                                                }
-                                            })}
-                                        </td>
-                                        <td>
-                                            {grnDetails.local_purchase_order?.vendor?.addresses?.map((address: any, index: number) => {
-                                                if (address.type === 'shifting') {
-                                                    return address.address + ', ' + address.city?.name + ', ' + address.state?.name + ', ' + address.country?.name
-                                                }
-                                            })}
-                                        </td>
-                                    </tr>
+                                        <tr>
+                                            <td>{grnDetails.local_purchase_order?.vendor?.vendor_number}</td>
+                                            <td>{grnDetails.local_purchase_order?.vendor?.name}</td>
+                                            <td>
+                                                {grnDetails.local_purchase_order?.vendor?.addresses?.map((address: any, index: number) => {
+                                                    if (address.type === 'billing') {
+                                                        return address.address + ', ' + address.city?.name + ', ' + address.state?.name + ', ' + address.country?.name
+                                                    }
+                                                })}
+                                            </td>
+                                            <td>
+                                                {grnDetails.local_purchase_order?.vendor?.addresses?.map((address: any, index: number) => {
+                                                    if (address.type === 'shifting') {
+                                                        return address.address + ', ' + address.city?.name + ', ' + address.state?.name + ', ' + address.country?.name
+                                                    }
+                                                })}
+                                            </td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -329,22 +336,22 @@ const VendorBillForm = ({id}: IFormProps) => {
                                 <h4 className="font-bold text-lg">Representative Details</h4>
                                 <table>
                                     <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Phone</th>
-                                        <th>Email</th>
-                                        <th>Address</th>
-                                    </tr>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Phone</th>
+                                            <th>Email</th>
+                                            <th>Address</th>
+                                        </tr>
                                     </thead>
                                     <tbody>
-                                    <tr>
-                                        <td>{grnDetails.local_purchase_order?.vendor_representative?.name}</td>
-                                        <td>{grnDetails.local_purchase_order?.vendor_representative?.phone}</td>
-                                        <td>{grnDetails.local_purchase_order?.vendor_representative?.email}</td>
-                                        <td>
-                                            {grnDetails.local_purchase_order?.vendor_representative?.address + ', ' + grnDetails.local_purchase_order?.vendor_representative?.city?.name + ', ' + grnDetails.local_purchase_order?.vendor_representative?.state?.name + ', ' + grnDetails.local_purchase_order?.vendor_representative?.country?.name}
-                                        </td>
-                                    </tr>
+                                        <tr>
+                                            <td>{grnDetails.local_purchase_order?.vendor_representative?.name}</td>
+                                            <td>{grnDetails.local_purchase_order?.vendor_representative?.phone}</td>
+                                            <td>{grnDetails.local_purchase_order?.vendor_representative?.email}</td>
+                                            <td>
+                                                {grnDetails.local_purchase_order?.vendor_representative?.address + ', ' + grnDetails.local_purchase_order?.vendor_representative?.city?.name + ', ' + grnDetails.local_purchase_order?.vendor_representative?.state?.name + ', ' + grnDetails.local_purchase_order?.vendor_representative?.country?.name}
+                                            </td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -359,54 +366,54 @@ const VendorBillForm = ({id}: IFormProps) => {
                             </div>
                             <table>
                                 <thead>
-                                <tr>
-                                    <th>Raw Product</th>
-                                    <th>Description</th>
-                                    <th>Unit</th>
-                                    <th>Quantity</th>
-                                    <th>Received Quantity</th>
-                                    <th>Unit Price</th>
-                                    <th>Total</th>
-                                    <th>Tax Category</th>
-                                    <th>Tax Rate(%)</th>
-                                    <th>Tax Amount</th>
-                                    <th>Row Total</th>
-                                    {/*<th>Action</th>*/}
-                                </tr>
+                                    <tr>
+                                        <th>Raw Product</th>
+                                        <th>Description</th>
+                                        <th>Unit</th>
+                                        <th>Quantity</th>
+                                        <th>Received Quantity</th>
+                                        <th>Unit Price</th>
+                                        <th>Total</th>
+                                        <th>Tax Category</th>
+                                        <th>Tax Rate(%)</th>
+                                        <th>Tax Amount</th>
+                                        <th>Row Total</th>
+                                        {/*<th>Action</th>*/}
+                                    </tr>
                                 </thead>
                                 <tbody>
-                                {rawProducts.map((product, index) => (
-                                    <tr key={index}>
-                                        <td>{product.raw_product_title}</td>
-                                        <td>{product.description}</td>
-                                        <td>{product.unit_title}</td>
-                                        <td>{product.quantity}</td>
-                                        <td>{product.received_quantity}</td>
-                                        <td>{product.unit_price}</td>
-                                        <td>{product.total}</td>
-                                        <td>{product.tax_category_name}</td>
-                                        <td>{product.tax_rate}</td>
-                                        <td>{product.tax_amount}</td>
-                                        <td>{product.row_total}</td>
-                                    </tr>
-                                ))}
-                                {rawProducts.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={11} className="text-center">No Item Added</td>
-                                    </tr>
-                                ) : (
-                                    <tr>
-                                        <td colSpan={3} className="font-bold text-center">Total</td>
-                                        <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.quantity, 0)}</td>
-                                        <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.received_quantity, 0)}</td>
-                                        <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.unit_price, 0)}</td>
-                                        <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.total, 0)}</td>
-                                        <td></td>
-                                        <td></td>
-                                        <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.tax_amount, 0)}</td>
-                                        <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.row_total, 0)}</td>
-                                    </tr>
-                                )}
+                                    {rawProducts.map((product, index) => (
+                                        <tr key={index}>
+                                            <td>{product.raw_product_title}</td>
+                                            <td>{product.description}</td>
+                                            <td>{product.unit_title}</td>
+                                            <td>{product.quantity}</td>
+                                            <td>{product.received_quantity}</td>
+                                            <td>{product.unit_price}</td>
+                                            <td>{product.total}</td>
+                                            <td>{product.tax_category_name}</td>
+                                            <td>{product.tax_rate}</td>
+                                            <td>{product.tax_amount}</td>
+                                            <td>{product.row_total}</td>
+                                        </tr>
+                                    ))}
+                                    {rawProducts.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={11} className="text-center">No Item Added</td>
+                                        </tr>
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={3} className="font-bold text-center">Total</td>
+                                            <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.quantity, 0)}</td>
+                                            <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.received_quantity, 0)}</td>
+                                            <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.unit_price, 0)}</td>
+                                            <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.total, 0)}</td>
+                                            <td></td>
+                                            <td></td>
+                                            <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.tax_amount, 0)}</td>
+                                            <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.row_total, 0)}</td>
+                                        </tr>
+                                    )}
                                 </tbody>
                             </table>
                         </div>
@@ -414,20 +421,24 @@ const VendorBillForm = ({id}: IFormProps) => {
                 </div>
 
                 <div className="w-full flex justify-center items-center flex-col md:flex-row gap-3">
-                    <button
-                        type="submit"
-                        className="btn btn-primary"
+                  
+                    <Button
+                        text={loading ? 'Loading...' : 'Save Vendor Bill'}
+                        variant={ButtonVariant.primary}
                         disabled={loading}
-                    >
-                        {loading ? 'Loading...' : 'Save Vendor Bill'}
-                    </button>
-                    <button
-                        type="button"
+                        size={ButtonSize.medium}
+                    // onClick={() => setVendorAddressModal(true)}
+
+                    />
+                   
+                    <Button
+                        text='Clear'
+                        variant={ButtonVariant.info}
+                        size={ButtonSize.medium}
                         onClick={() => window?.location?.reload()}
-                        className="btn btn-info"
-                    >
-                        Clear
-                    </button>
+
+                    />
+
                 </div>
             </div>
         </form>

@@ -74,25 +74,42 @@ const Index = () => {
             if (result.value) {
                 dispatch(deleteVendor(id));
                 setDeleteLoading(true);
+                if (success) {
+                    getRawItems();
+                    setDeleteLoading(false);
+                    Swal.fire({
+                        title: 'Deleted!',
+                        text: 'Your file has been deleted.',
+                        icon: 'success',
+                        customClass: 'sweet-alerts'
+                    }).then(()=>{
+                        dispatch(getVendors());
+                    });
+                } else {
+                    Swal.fire({title: 'Failed!', text: 'Something went wrong.', icon: 'error', customClass: 'sweet-alerts'});
+                }
+                // dispatch(getVendors());
             }
         });
     };
 
-    useEffect(() => {
-        if (!deleteLoading) return;
-        if (success) {
-            getRawItems();
-            setDeleteLoading(false);
-            Swal.fire({
-                title: 'Deleted!',
-                text: 'Your file has been deleted.',
-                icon: 'success',
-                customClass: 'sweet-alerts'
-            });
-        } else {
-            Swal.fire({title: 'Failed!', text: 'Something went wrong.', icon: 'error', customClass: 'sweet-alerts'});
-        }
-    }, [success]);
+    // useEffect(() => {
+    //     if (!deleteLoading) return;
+    //     if (success) {
+    //         getRawItems();
+    //         setDeleteLoading(false);
+    //         Swal.fire({
+    //             title: 'Deleted!',
+    //             text: 'Your file has been deleted.',
+    //             icon: 'success',
+    //             customClass: 'sweet-alerts'
+    //         }).then(()=>{
+    //             dispatch(getVendors());
+    //         });
+    //     } else {
+    //         Swal.fire({title: 'Failed!', text: 'Something went wrong.', icon: 'error', customClass: 'sweet-alerts'});
+    //     }
+    // }, [success]);
 
     return (
         <PageWrapper

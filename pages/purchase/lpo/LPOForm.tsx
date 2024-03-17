@@ -11,7 +11,7 @@ import {
 } from "@/store/slices/purchaseRequisitionSlice";
 import {clearVendorState, getRepresentatives, getVendors} from "@/store/slices/vendorSlice";
 import {getCurrencies} from "@/store/slices/currencySlice";
-import VehicleFormModal from "@/components/specific-modal/VehicleFormModal";
+import VehicleFormModal from "@/components/modals/VehicleFormModal";
 import {clearVehicleState, getVehicles, storeVehicle} from "@/store/slices/vehicleSlice";
 import Image from "next/image";
 import {getEmployees} from "@/store/slices/employeeSlice";
@@ -19,9 +19,8 @@ import {storeLPO} from "@/store/slices/localPurchaseOrderSlice";
 import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
 import {ButtonType, ButtonVariant, FORM_CODE_TYPE, IconType, RAW_PRODUCT_LIST_TYPE} from "@/utils/enums";
 import {getTaxCategories} from "@/store/slices/taxCategorySlice";
-import ServiceItemListing from "@/components/ServiceItemListing";
-import RawProductItemListing from "@/components/RawProductItemListing";
-import MiscellaneousItemListing from "@/pages/purchase/components/MiscellaneousItemListing";
+import ServiceItemListing from "@/components/listing/ServiceItemListing";
+import RawProductItemListing from "@/components/listing/RawProductItemListing";
 import {Dropdown} from "@/components/form/Dropdown";
 import {Input} from "@/components/form/Input";
 import Button from "@/components/Button";
@@ -411,39 +410,34 @@ const LPOForm = ({id}: IFormProps) => {
 
             if (e.value !== 0) {
                 if (formData.type === 'Material') {
-                    if (e.request.purchase_requisition_items?.length > 0) {
+                    if (e.request.items?.length > 0) {
                         setRawProducts(prevState => (
-                            e.request.purchase_requisition_items.map((item: any) => ({
+                            e.request.items.map((item: any) => ({
                                 raw_product_id: item.raw_product_id,
                                 quantity: parseInt(item.quantity),
-                                lpo_quantity: parseInt(item.quantity),
                                 unit_id: item.unit_id,
                                 unit_price: parseFloat(item.unit_price),
-                                total: parseFloat(item.unit_price) * parseInt(item.quantity),
+                                sub_total: parseFloat(item.unit_price) * parseInt(item.quantity),
                                 description: item.description || '',
                                 tax_category_id: 0,
                                 tax_rate: 0,
                                 tax_amount: 0,
-                                row_total: item.unit_price * item.quantity
+                                grand_total: item.unit_price * item.quantity
                             }))
                         ))
                     }
                 } else if (formData.type === 'Service') {
-                    if (e.request.purchase_requisition_services?.length > 0) {
+                    if (e.request.items?.length > 0) {
                         setServiceItems(prevState => (
-                            e.request.purchase_requisition_services.map((item: any) => ({
-                                name: item.service_name,
-                                assets: item.asset_ids,
-                                asset_ids: item.asset_ids.map((asset: any) => asset.id).join(','),
-                                quantity: parseInt(item.quantity),
-                                lpo_quantity: parseInt(item.quantity),
-                                unit_cost: 0,
-                                total: 0,
+                            e.request.items.map((item: any) => ({
+                                asset_id: item.asset_id,
+                                service_name: item.service_name,
                                 description: item.description || '',
-                                tax_category_id: 0,
-                                tax_rate: 0,
-                                tax_amount: 0,
-                                row_total: 0
+                                cost: isNaN(parseFloat(item.cost)) ? 0 : parseFloat(item.cost),
+                                tax_category_id: item.tax_category_id,
+                                tax_rate: isNaN(parseFloat(item.tax_rate)) ? 0 : parseFloat(item.tax_rate),
+                                tax_amount: isNaN(parseFloat(item.tax_amount)) ? 0 : parseFloat(item.tax_amount),
+                                grand_total: isNaN(parseFloat(item.grand_total)) ? 0 : parseFloat(item.grand_total)
                             }))
                         ))
                     }
@@ -648,6 +642,7 @@ const LPOForm = ({id}: IFormProps) => {
                     value={formData.type}
                     onChange={(e: any) => handleLpoTypeChange(e)}
                 />
+
                 <Dropdown
                     divClasses='w-full md:w-1/2'
                     label='Purchase Requisition'
@@ -925,28 +920,6 @@ const LPOForm = ({id}: IFormProps) => {
                 {/*<div className="table-responsive w-full">*/}
                 {showItemDetail.show && (
                     <>
-                        {/*<div*/}
-                        {/*    className="flex justify-between items-center flex-col md:flex-row space-y-3 md:space-y-0 mb-3">*/}
-                        {/*    <h3 className="text-lg font-semibold">Item Details</h3>*/}
-                        {/*    <button*/}
-                        {/*        type="button"*/}
-                        {/*        className="btn btn-primary btn-sm"*/}
-                        {/*        onClick={() => {*/}
-                        {/*            if (showItemDetail.type === 'Material') {*/}
-                        {/*                setItemDetail({})*/}
-                        {/*                setRawProductModalOpen(true)*/}
-                        {/*            } else if (showItemDetail.type === 'Service') {*/}
-                        {/*                setItemDetail({})*/}
-                        {/*                setServiceModalOpen(true)*/}
-                        {/*            } else if (showItemDetail.type === 'Miscellaneous') {*/}
-                        {/*                setItemDetail({})*/}
-                        {/*                setMiscellaneousModalOpen(true)*/}
-                        {/*            }*/}
-                        {/*        }}*/}
-                        {/*    >*/}
-                        {/*        Add New Item*/}
-                        {/*    </button>*/}
-                        {/*</div>*/}
                         {showItemDetail.type === 'Material'
                             ? (
                                 <RawProductItemListing
@@ -955,20 +928,14 @@ const LPOForm = ({id}: IFormProps) => {
                                     setRawProducts={setRawProducts}
                                 />
                             )
-                            : showItemDetail.type === 'Service' ? (
-                                <ServiceItemListing
-                                    serviceItems={serviceItems}
-                                    setServiceItems={setServiceItems}
-                                    type={RAW_PRODUCT_LIST_TYPE.LOCAL_PURCHASE_ORDER}
-                                />
-                            ) : (
-                                <MiscellaneousItemListing
-                                    miscellaneousItems={miscellaneousItems}
-                                    taxCategoryOptions={taxCategoryOptions}
-                                    handleRemoveItem={(index) => handleRemoveItem(index, 'Miscellaneous')}
-                                    handleEditMiscellaneousItem={handleEditMiscellaneousItem}
-                                />
-                            )}
+                            : showItemDetail.type === 'Service'
+                                ? (
+                                    <ServiceItemListing
+                                        serviceItems={serviceItems}
+                                        setServiceItems={setServiceItems}
+                                        type={RAW_PRODUCT_LIST_TYPE.LOCAL_PURCHASE_ORDER}
+                                    />
+                                ) : <></>}
                     </>
                 )}
             </div>

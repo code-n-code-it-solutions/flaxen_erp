@@ -8,8 +8,10 @@ import {setAuthToken} from "@/configs/api.config";
 import {getUnits} from "@/store/slices/unitSlice";
 import {getTaxCategories} from "@/store/slices/taxCategorySlice";
 import {ButtonVariant, IconType, RAW_PRODUCT_LIST_TYPE} from "@/utils/enums";
-import RawProductModal from "@/components/specific-modal/raw-modal/RawProductModal";
+import RawProductModal from "@/components/modals/RawProductModal";
 import IconButton from "@/components/IconButton";
+import GenericTable from "@/components/GenericTable";
+import {getIcon} from "@/utils/helper";
 
 interface IRawProduct {
     type: string | 'add';
@@ -55,15 +57,20 @@ const tableStructure = [
         header: ['Product', 'Desc', 'Unit', 'Qty (KG)', 'Unit Price (KG)', 'Total'],
         columns: ['raw_product_id', 'description', 'unit_id', 'quantity', 'unit_price', 'total'],
         numericColumns: ['quantity', 'unit_price', 'total']
+    },
+    {
+        listingFor: RAW_PRODUCT_LIST_TYPE.LOCAL_PURCHASE_ORDER,
+        header: ['Product', 'Desc', 'Unit', 'Qty (KG)', 'Unit Price (KG)', 'Sub Total', 'Tax Category', 'Tax Rate', 'Tax Amount', 'Total'],
+        columns: ['raw_product_id', 'description', 'unit_id', 'quantity', 'unit_price', 'sub_total', 'tax_category_id', 'tax_rate', 'tax_amount', 'grand_total'],
+        numericColumns: ['quantity', 'unit_price', 'sub_total', 'tax_rate', 'tax_amount', 'grand_total']
     }
 ]
 
 const RawProductItemListing: FC<IProps> = ({
-                                                      rawProducts,
-                                                      setRawProducts,
-                                                      type
-                                                  }) => {
-    // console.log('from listing', rawProducts)
+                                               rawProducts,
+                                               setRawProducts,
+                                               type
+                                           }) => {
     const [modalOpen, setModalOpen] = useState(false);
     const [productDetail, setProductDetail] = useState({});
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
@@ -74,7 +81,6 @@ const RawProductItemListing: FC<IProps> = ({
     const {units} = useSelector((state: IRootState) => state.unit);
     const {allRawProducts} = useSelector((state: IRootState) => state.rawProduct);
     const {taxCategories} = useSelector((state: IRootState) => state.taxCategory);
-    // console.log(rawProducts)
 
     const handleAdd = (value: any) => {
         setRawProducts((prev) => {
@@ -98,27 +104,6 @@ const RawProductItemListing: FC<IProps> = ({
         setRawProducts(rawProducts.filter((row: any, index: number) => index !== id));
     };
 
-    const calculateTotals = (rawProducts: any[], type: RAW_PRODUCT_LIST_TYPE) => {
-        const tableConfig = tableStructure.find(table => table.listingFor === type);
-        const totals: Totals = {};
-
-        if (tableConfig) {
-            tableConfig.numericColumns.forEach(column => {
-                totals[column] = 0;
-            });
-
-            rawProducts?.forEach((product) => {
-                tableConfig.numericColumns.forEach(column => {
-                    const value = product[column];
-                    totals[column] += value;
-                });
-            });
-        }
-        console.log('totals', totals)
-        return totals;
-    };
-
-    const columnTotals = calculateTotals(rawProducts, type);
 
     useEffect(() => {
         setAuthToken(token)
@@ -155,10 +140,67 @@ const RawProductItemListing: FC<IProps> = ({
                     unit_price: rawProduct.opening_stock_unit_balance
                 };
             })
-            console.log('rawProductOptions', rawProductOptions)
+            // console.log('rawProductOptions', rawProductOptions)
             setProductOptions([{value: '', label: 'Select Raw Product'}, ...rawProductOptions]);
         }
     }, [allRawProducts]);
+
+    const calculateTotals = (type: RAW_PRODUCT_LIST_TYPE) => {
+        const tableConfig = tableStructure.find(table => table.listingFor === type);
+        const totals: Totals = {};
+
+        if (tableConfig) {
+            tableConfig.numericColumns.forEach((column: string) => {
+                totals[column] = 0;
+            });
+
+            rawProducts?.forEach((item) => {
+                tableConfig.numericColumns.forEach((column: string) => {
+                    const value = item[column];
+                    totals[column] += value;
+                });
+            });
+        }
+        // console.log('totals', totals)
+        return totals;
+    };
+
+    const columnTotals = calculateTotals(type);
+
+    const tableColumns = () => {
+        let columns = tableStructure
+            .filter(table => table.listingFor === type) // Step 1: Filter
+            .flatMap(table => table.columns.map((column, index) => ({ // Step 2: Map and flatten
+                accessor: column,
+                title: table.header[index],
+                sortable: true,
+                render: (row: any) => (
+                    table.numericColumns.includes(column)
+                        ? <>{row[column].toFixed(2)}</>
+                        : column === 'raw_product_id'
+                            ? <>{productOptions.filter((item: any) => item.value === row[column])[0]?.label}</>
+                            : column === 'unit_id'
+                                ? <>{unitOptions.filter((item: any) => item.value === row[column])[0]?.label}</>
+                                : column === 'tax_category_id'
+                                    ? <>{taxCategoryOptions.filter((item: any) => item.value === row[column])[0]?.label}</>
+                                    : <>{row[column]}</>
+                ),
+            })));
+        if (rawProducts.length > 0) {
+            columns.flatMap((column: any) => {
+                if (tableStructure.find(table => table.listingFor === type)?.numericColumns.includes(column.accessor)) {
+                    column.footer = (
+                        <div className="flex gap-2 items-center">
+                            <span className="h-3 w-3">{getIcon(IconType.sum)}</span>
+                            <span>{columnTotals[column.accessor].toFixed(2)}</span>
+                        </div>
+                    )
+                }
+
+            })
+        }
+        return columns
+    };
 
     return (
         <div className="table-responsive w-full">
@@ -176,50 +218,24 @@ const RawProductItemListing: FC<IProps> = ({
                     Add New Item
                 </button>
             </div>
-            <table>
-                <thead>
-                <tr>
-                    {tableStructure.map(table => {
-                        if (table.listingFor === type) {
-                            return table.header.map((head: string, index: number) => (
-                                <th key={index}>{head}</th>
-                            ))
-                        }
-                    })}
-                    <th>Action</th>
-                </tr>
-                </thead>
-                <tbody>
-                {rawProducts?.map((product, index: number) => (
-                    <tr key={index}>
-                        {tableStructure.map(table => {
-                            if (table.listingFor === type) {
-                                return table.columns.map((column: string, index: number) => (
-                                    column === 'raw_product_id'
-                                        ? <td key={index}>
-                                            {productOptions.filter((item: any) => item.value === product[column])[0]?.label}
-                                        </td>
-                                        : column === 'unit_id'
-                                            ? <td key={index}>
-                                                {unitOptions.filter((item: any) => item.value === product[column])[0]?.label}
-                                            </td>
-                                            : column === 'tax_category_id'
-                                                ? <td key={index}>
-                                                    {taxCategoryOptions.filter((item: any) => item.value === product[column])[0]?.label}
-                                                </td>
-                                                : <td key={index}>
-                                                    {typeof product[column] === 'number' ? product[column].toFixed(2) : product[column]}
-                                                </td>
-                                ))
-                            }
-                        })}
-                        <td>
+            <GenericTable
+                isAdvanced={false}
+                colName={tableStructure.filter(table => table.listingFor === type).flatMap(table => table.columns)}
+                rowData={rawProducts}
+                header={tableStructure.filter(table => table.listingFor === type).flatMap(table => table.header)}
+                columns={[
+                    ...tableColumns(),
+                    {
+                        accessor: 'action',
+                        title: 'Actions',
+                        sortable: false,
+                        render: (row: any, index: number) => (
                             <div className="flex justify-center items-center gap-1">
                                 <IconButton
                                     icon={IconType.edit}
                                     color={ButtonVariant.primary}
                                     onClick={() => {
-                                        setProductDetail(product)
+                                        setProductDetail(row)
                                         setModalOpen(true)
                                     }}
                                     tooltip="Edit"
@@ -231,26 +247,12 @@ const RawProductItemListing: FC<IProps> = ({
                                     tooltip="Remove"
                                 />
                             </div>
-
-
-                        </td>
-                    </tr>
-                ))}
-                </tbody>
-                {rawProducts?.length > 0 && (
-                    <tfoot>
-                    <tr>
-                        {tableStructure.find(table => table.listingFor === type)?.columns.map((column, index) => (
-                            tableStructure.find(table => table.listingFor === type)?.numericColumns.includes(column)
-                                ?
-                                <td key={index}>{isNaN(columnTotals[column]) ? 0.00 : columnTotals[column].toFixed(2)}</td>
-                                : <td key={index}></td>
-                        ))}
-                        <td></td>
-                    </tr>
-                    </tfoot>
-                )}
-            </table>
+                        )
+                    }
+                ]}
+                loading={false}
+                exportTitle={'Raw Product List'}
+            />
             <RawProductModal
                 modalOpen={modalOpen}
                 setModalOpen={setModalOpen}

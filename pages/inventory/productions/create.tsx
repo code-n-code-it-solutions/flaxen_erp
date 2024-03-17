@@ -1,7 +1,7 @@
-import React, {useEffect, useState} from 'react';
-import Breadcrumb from "@/components/Breadcrumb";
+import React, { useEffect, useState } from 'react';
+import Breadcrumb from '@/components/Breadcrumb';
 // import Select from 'react-select';
-import Link from "next/link";
+import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import {useDispatch, useSelector} from "react-redux";
 import {ThunkDispatch} from "redux-thunk";
@@ -15,11 +15,11 @@ import {clearProductionState, storeProduction} from "@/store/slices/productionSl
 import {getRandomInt} from "@/utils/helper";
 import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
 import {FORM_CODE_TYPE, RAW_PRODUCT_LIST_TYPE} from "@/utils/enums";
-import RawProductModal from "@/components/specific-modal/raw-modal/RawProductModal";
+import RawProductModal from "@/components/modals/RawProductModal";
 
 const Select = dynamic(
     () => import('react-select'),
-    {ssr: false} // This will load the component only on the client-side
+    { ssr: false } // This will load the component only on the client-side
 );
 
 interface ITableRow {
@@ -43,20 +43,20 @@ interface IFormData {
 }
 
 interface IRawProduct {
-    raw_product_id: number
-    unit_id: number
-    quantity: number
-    cost: number
-    total: number
+    raw_product_id: number;
+    unit_id: number;
+    quantity: number;
+    cost: number;
+    total: number;
 }
 
 const Create = () => {
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
     const router = useRouter();
-    const {token} = useSelector((state: IRootState) => state.user);
-    const {code} = useSelector((state: IRootState) => state.util);
-    const {allProductAssemblies, assemblyItems} = useSelector((state: IRootState) => state.productAssembly);
-    const {production, success} = useSelector((state: IRootState) => state.production);
+    const { token } = useSelector((state: IRootState) => state.user);
+    const { code } = useSelector((state: IRootState) => state.util);
+    const { allProductAssemblies, assemblyItems } = useSelector((state: IRootState) => state.productAssembly);
+    const { production, success } = useSelector((state: IRootState) => state.production);
 
     const [batchNumber, setBatchNumber] = useState('');
     const [noOfQuantity, setNoOfQuantity] = useState(0);
@@ -67,12 +67,17 @@ const Create = () => {
     const [productAssemblyOptions, setProductAssemblyOptions] = useState<any>([]);
     const [totalQuantity, setTotalQuantity] = useState(0);
     const [totalRequiredQuantity, setRequiredQuantity] = useState(0);
+    const [messages, setMessages] = useState("Production can't be proceeding. Please purchase the In-stock quantities.");
 
-    const handleAddRow = (value:any) => {
+    const hasInsufficientQuantity = () => {
+        return rawProducts.some((row) => row.availableQuantity < row.requiredQuantity);
+    };
+
+    const handleAddRow = (value: any) => {
         setRawProducts((prev) => {
-            const existingRow = prev.find(row => row.id === value.id);
+            const existingRow = prev.find((row) => row.id === value.id);
             if (existingRow) {
-                return prev.map(row => row.id === value.id ? value : row);
+                return prev.map((row) => (row.id === value.id ? value : row));
             } else {
                 return [...prev, value];
             }
@@ -82,16 +87,16 @@ const Create = () => {
     };
 
     const handleRemoveRow = (id: number) => {
-        setRawProducts(rawProducts.filter(row => row.id !== id));
+        setRawProducts(rawProducts.filter((row) => row.id !== id));
     };
 
     const handleRowEdit = (id: number) => {
-        let row = rawProducts.find(row => row.id === id);
+        let row = rawProducts.find((row) => row.id === id);
         if (row) {
             setModalFormData(row);
             setModal(true);
         }
-    }
+    };
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -104,8 +109,8 @@ const Create = () => {
                 unit_cost: row.unit_cost,
                 available_quantity: row.availableQuantity,
                 required_quantity: row.requiredQuantity,
-                total_cost: row.totalCost
-            }
+                total_cost: row.totalCost,
+            };
         });
 
         const formData: IFormData = {
@@ -114,8 +119,8 @@ const Create = () => {
             product_assembly_id: parseInt(productAssemblyId),
             production_items: rawProductsData,
         };
-        setAuthToken(token)
-        setContentType('application/json')
+        setAuthToken(token);
+        setContentType('application/json');
         dispatch(clearProductAssemblyState());
         dispatch(storeProduction(formData));
     };
@@ -124,7 +129,7 @@ const Create = () => {
         if (noOfQuantity > 0) {
             if (e && typeof e !== 'undefined') {
                 setProductAssemblyId(e ? e.value : '');
-                setAuthToken(token)
+                setAuthToken(token);
                 dispatch(clearProductAssemblyState());
                 dispatch(getAssemblyItems(e.value));
             } else {
@@ -134,17 +139,21 @@ const Create = () => {
         } else {
             alert('No of Quantity is required');
         }
-    }
+        
+        if (hasInsufficientQuantity()) {
+            setMessages("Production can't be proceeding. Please purchase the In-stock quantities.");
+        }
+    };
 
     useEffect(() => {
-        setAuthToken(token)
+        setAuthToken(token);
         dispatch(setPageTitle('Create Productions'));
         dispatch(getProductAssemblies());
         // dispatch(clearRawProduct());
         // if (id) {
         //     dispatch(editRawProduct(id));
         // }
-        setModal(false)
+        setModal(false);
     }, []);
 
     useEffect(() => {
@@ -154,7 +163,6 @@ const Create = () => {
         }
     }, [production, success]);
 
-
     useEffect(() => {
         if (allProductAssemblies) {
             let formulaOptions = allProductAssemblies.map((assembly: any) => {
@@ -162,8 +170,8 @@ const Create = () => {
                     value: assembly.id,
                     label: assembly.formula_name + ' (' + assembly.formula_code + ')',
                 };
-            })
-            setProductAssemblyOptions([{value: '', label: 'Select Formula'}, ...formulaOptions]);
+            });
+            setProductAssemblyOptions([{ value: '', label: 'Select Formula' }, ...formulaOptions]);
         }
     }, [allProductAssemblies]);
 
@@ -182,7 +190,7 @@ const Create = () => {
                     requiredQuantity: item.quantity * noOfQuantity,
                     totalCost: item.product.opening_stock_unit_balance * item.quantity * noOfQuantity,
                 };
-            })
+            });
             setRawProducts(rawProducts);
         }
     }, [assemblyItems]);
@@ -200,38 +208,46 @@ const Create = () => {
 
     return (
         <div>
-            <Breadcrumb items={[
-                {
-                    title: 'Home',
-                    href: '/main',
-                },
-                {
-                    title: 'All Productions',
-                    href: '/inventory/productions',
-                },
-                {
-                    title: 'Create New',
-                    href: '#',
-                },
-            ]}/>
+            <Breadcrumb
+                items={[
+                    {
+                        title: 'Home',
+                        href: '/main',
+                    },
+                    {
+                        title: 'All Productions',
+                        href: '/inventory/productions',
+                    },
+                    {
+                        title: 'Create New',
+                        href: '#',
+                    },
+                ]}
+            />
+            <div className='mt-5'>
+                {hasInsufficientQuantity() && 
+                <Alert 
+                alertType="error" 
+                message={messages} 
+                setMessages={setMessages} 
+                />}
+            </div>
+
             <div className="pt-5">
                 <div className="panel">
                     <div className="mb-5 flex items-center justify-between">
                         <h5 className="text-lg font-semibold dark:text-white-light">Enter Details of Productions</h5>
-                        <Link href="/inventory/productions"
-                              className="btn btn-primary btn-sm m-1">
+                        <Link href="/inventory/productions" className="btn btn-primary btn-sm m-1">
                             <span className="flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ltr:mr-2 rtl:ml-2" width="24"
-                                     height="24" viewBox="0 0 24 24" fill="none">
-                                    <path d="M15 5L9 12L15 19" stroke="currentColor" strokeWidth="1.5"
-                                          strokeLinecap="round" strokeLinejoin="round"/>
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ltr:mr-2 rtl:ml-2" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                    <path d="M15 5L9 12L15 19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                 </svg>
                                 Back
                             </span>
                         </Link>
                     </div>
                     <form className="space-y-5" onSubmit={handleSubmit}>
-                        <div className="flex justify-start flex-col items-start space-y-3 w-full md:w-1/2">
+                        <div className="flex w-full flex-col items-start justify-start space-y-3 md:w-1/2">
                             <div className="w-full">
                                 <label htmlFor="production_name">Batch Number</label>
                                 <input
@@ -254,7 +270,8 @@ const Create = () => {
                                     placeholder="Enter No of Quantity"
                                     value={noOfQuantity}
                                     onChange={(e) => setNoOfQuantity(parseInt(e.target.value) || 0)}
-                                    className="form-input"/>
+                                    className="form-input"
+                                />
                             </div>
                             <div className="w-full">
                                 <label htmlFor="product_assembly_id">Formulas</label>
@@ -277,50 +294,56 @@ const Create = () => {
                             {/*</div>*/}
                             <table>
                                 <thead>
-                                <tr>
-                                    <th>Product</th>
-                                    <th>Unit</th>
-                                    <th>Unit Price (KG)</th>
-                                    <th>Qty</th>
-                                    <th>Available QTY (KG)</th>
-                                    <th>Required QTY (KG)</th>
-                                    <th>Cost</th>
-                                    <th>Action</th>
-                                </tr>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Unit</th>
+                                        <th>Unit Price (KG)</th>
+                                        <th>Qty</th>
+                                        <th>Available QTY (KG)</th>
+                                        <th>Required QTY (KG)</th>
+                                        <th>Cost</th>
+                                        <th>Action</th>
+                                    </tr>
                                 </thead>
                                 <tbody>
-                                {rawProducts.map((row: ITableRow) => (
-                                    <tr key={row.id}>
-                                        <td>{row.raw_product_title}</td>
-                                        <td>{row.unit_title}</td>
-                                        <td>{row.unit_cost.toFixed(2)}</td>
-                                        <td>{row.quantity}</td>
-                                        <td>{row.availableQuantity.toFixed(2)}</td>
-                                        <td>{row.requiredQuantity.toFixed(5)}</td>
-                                        <td>{row.totalCost.toFixed(2)}</td>
-                                    </tr>
-                                ))}
-                                {rawProducts.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={8} className="text-center">No Item Added</td>
-                                    </tr>
-                                ) : (
-                                    <tr>
-                                        <td colSpan={2} className="font-bold text-center">Total</td>
-                                        <td className="text-left font-bold">{rawProducts.reduce((acc:number, item) => acc + item.unit_cost, 0)}</td>
-                                        <td className="text-left font-bold">{rawProducts.reduce((acc:number, item) => acc + item.quantity, 0).toFixed(2)}</td>
-                                        <td className="text-left font-bold">{rawProducts.reduce((acc:number, item) => acc + item.availableQuantity, 0)}</td>
-                                        <td className="text-left font-bold">{rawProducts.reduce((acc:number, item) => acc + item.requiredQuantity, 0)}</td>
-                                        <td className="text-left font-bold">{rawProducts.reduce((acc:number, item) => acc + item.totalCost, 0).toFixed(2)}</td>
-                                    </tr>
-                                )}
+                                    {rawProducts.map((row: ITableRow) => (
+                                        <tr key={row.id}>
+                                            <td>{row.raw_product_title}</td>
+                                            <td>{row.unit_title}</td>
+                                            <td>{row.unit_cost.toFixed(2)}</td>
+                                            <td>{row.quantity}</td>
+                                            <td>{row.availableQuantity.toFixed(2)}</td>
+                                            <td>{row.requiredQuantity.toFixed(5)}</td>
+                                            <td>{row.totalCost.toFixed(2)}</td>
+                                        </tr>
+                                    ))}
+                                    {rawProducts.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={8} className="text-center">
+                                                No Item Added
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={2} className="text-center font-bold">
+                                                Total
+                                            </td>
+                                            <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.unit_cost, 0)}</td>
+                                            <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.quantity, 0).toFixed(2)}</td>
+                                            <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.availableQuantity, 0)}</td>
+                                            <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.requiredQuantity, 0)}</td>
+                                            <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.totalCost, 0).toFixed(2)}</td>
+                                        </tr>
+                                    )}
                                 </tbody>
                             </table>
                         </div>
 
-                        <button type="submit" className="btn btn-primary !mt-6">
-                            Submit
-                        </button>
+                        {!hasInsufficientQuantity() && (
+                            <button type="submit" className="btn btn-primary !mt-6">
+                                Submit
+                            </button>
+                        )}
                     </form>
                 </div>
             </div>

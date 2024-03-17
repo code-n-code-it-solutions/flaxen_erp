@@ -25,9 +25,23 @@ const initialState: IPRState = {
 // Async thunks
 export const getPurchaseRequisitions = createAsyncThunk(
     'purchase-requisition/all',
-    async (type:string, thunkAPI) => {
+    async (_, thunkAPI) => {
         try {
-            const response = await API.get('/purchase-requisition?type='+type);
+            const response = await API.get('/purchase-requisition');
+            return response.data;
+        } catch (error:any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const showDetails = createAsyncThunk(
+    'purchase-requisition/show',
+    async (id:number, thunkAPI) => {
+        try {
+            const response = await API.get('/purchase-requisition/'+id);
             return response.data;
         } catch (error:any) {
             const message =
@@ -121,7 +135,7 @@ export const updatePurchaseRequisition = createAsyncThunk(
     }
 );
 
-// Slice
+// Slicee
 export const purchaseRequisitionSlice = createSlice({
     name: 'purchase-requisition',
     initialState,
@@ -201,6 +215,18 @@ export const purchaseRequisitionSlice = createSlice({
                 state.loading = false;
                 state.purchaseRequestDetail = action.payload.data;
                 state.success = action.payload.success;
+            })
+            .addCase(showDetails.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(showDetails.fulfilled, (state, action) => {
+                state.loading = false;
+                state.purchaseRequestDetail = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(showDetails.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
             })
             .addCase(editPurchaseRequisition.rejected, (state, action) => {
                 state.loading = false;
