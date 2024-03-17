@@ -10,7 +10,7 @@ interface IProps {
     styles?: any;
     required?: boolean;
     otherOptions?: Record<string, any>;
-    onChange: (e: any) => void;
+    onChange: (e: any,required: any) => void;
     errorMessage?: string;
 }
 
