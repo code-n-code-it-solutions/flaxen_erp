@@ -142,7 +142,7 @@ const VendorForm = ({ id }: IFormProps) => {
             return { ...prevFormData, [name]: value };
         });
     };
-
+    const [error, setError] = useState('');
     const handleCountryChange = (e: any) => {
         if (e && e.value && typeof e !== 'undefined') {
             setFormData(prev => ({ ...prev, country_id: e ? e.value : 0 }))
@@ -189,6 +189,24 @@ const VendorForm = ({ id }: IFormProps) => {
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+         // Validation checks
+    if (!formData.vendor_number || !formData.name || !formData.vendor_type_id || !formData.opening_balance || !formData.phone || !formData.email || !formData.due_in_days || !formData.tax_reg_no) {
+        setError('All fields are required.');
+        return;
+      }
+  
+      if (formData.representatives.length === 0) {
+        setError('At least one representative must be added.');
+        return;
+      }
+  
+      if (formData.addresses.length === 0) {
+        setError('At least one address must be added.');
+        return;
+      }
+  
+      // If all validations pass, submit the form
+        setError('');
         setFormData(prev => ({ ...prev, image: image }))
         setAuthToken(token)
         setContentType('multipart/form-data')
