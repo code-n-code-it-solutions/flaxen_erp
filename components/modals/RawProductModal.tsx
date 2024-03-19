@@ -12,6 +12,7 @@ import {clearUtilState} from "@/store/slices/utilSlice";
 import {Dropdown} from "@/components/form/Dropdown";
 import {Input} from "@/components/form/Input";
 import Textarea from "@/components/form/Textarea";
+import Alert from '@/components/Alert'
 
 
 interface IProps {
@@ -35,8 +36,17 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
     const {units} = useSelector((state: IRootState) => state.unit);
     const {allRawProducts} = useSelector((state: IRootState) => state.rawProduct);
     const {taxCategories} = useSelector((state: IRootState) => state.taxCategory);
+    const [errorMessages, setErrorMessages] = useState({
+        raw_product_id: "This field is required",
+        quantity: "This field is required",
+        unit_id: "",
+        unit_price: "",
+        description: "This field is required"
+    })
+    const [isFormValid, setIsFormValid] = useState<boolean>(false);
+    const [validationMessage, setValidationMessage] = useState("");
 
-    const handleChange = (name: string, value: any) => {
+    const handleChange = (name: string, value: any,required: boolean) => {
         if (name === 'raw_product_id') {
             let selectedProduct = allRawProducts.find((product: any) => product.id === value);
             // console.log(selectedProduct)
@@ -49,6 +59,7 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                     sub_total: isNaN(formData.quantity) ? 0 : parseFloat(selectedProduct.opening_stock_unit_balance) * formData.quantity
                 });
             }
+            
         } else if (name === 'quantity') {
             if(isNaN(value)) {
                 value = 0;
@@ -85,7 +96,23 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
         } else {
             setFormData({...formData, [name]: value});
         }
+        if(required){
+            if(!value){
+                setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
+            } else {
+                setErrorMessages({ ...errorMessages, [name]: '' });
+            }
+        }   
     }
+    useEffect(() => {
+        const isValid = Object.values(errorMessages).some(message => message !== '');
+        setIsFormValid(!isValid);
+        // console.log('Error Messages:', errorMessages);
+        // console.log('isFormValid:', !isValid);
+        if(isValid){
+            setValidationMessage("Please fill all the required fields.");
+        }
+    }, [errorMessages]);
 
     useEffect(() => {
         setAuthToken(token)
@@ -150,13 +177,20 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                             onClick={() => setModalOpen(false)}>
                         Discard
                     </button>
-                    <button type="button" className="btn btn-primary ltr:ml-4 rtl:mr-4"
+                    {isFormValid && <button type="button" className="btn btn-primary ltr:ml-4 rtl:mr-4"
                             onClick={() => handleSubmit(formData)}>
                         {Object.keys(detail).length > 0 ? 'Update' : 'Add'}
-                    </button>
+                    </button>}
                 </div>
             }
         >
+            {!isFormValid  && validationMessage &&
+               <Alert 
+               alertType="error" 
+               message={validationMessage} 
+               setMessages={setValidationMessage} 
+           />}
+
             <Dropdown
                 divClasses='w-full'
                 label='Raw Product'
@@ -164,7 +198,8 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                 options={productOptions}
                 required={true}
                 value={formData.raw_product_id}
-                onChange={(e) => handleChange('raw_product_id', e && typeof e !== 'undefined' ? e.value : 0)}
+                onChange={(e: any, required: boolean) => handleChange('raw_product_id', e && typeof e !== 'undefined' ? e.value : '', true)}
+                errorMessage={errorMessages.raw_product_id}
             />
 
             <Dropdown
@@ -174,15 +209,18 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                 options={unitOptions}
                 required={true}
                 value={formData.unit_id}
-                onChange={(e) => handleChange('unit_id', e && typeof e !== 'undefined' ? e.value : 0)}
+                onChange={(e:any,required:boolean) => handleChange('unit_id', e && typeof e !== 'undefined' ? e.value : "", true)}
+                errorMessage={errorMessages.unit_id}
             />
 
             <Input
                 label='Quantity'
                 type='number'
                 name='quantity'
+                required={true}
                 value={formData.quantity}
-                onChange={(e) => handleChange('quantity', parseFloat(e.target.value))}
+                onChange={(e:any,required:boolean) => handleChange('quantity', parseFloat(e.target.value),true)}
+                errorMessage={errorMessages.quantity}
                 isMasked={false}
             />
             {(listFor === RAW_PRODUCT_LIST_TYPE.PRODUCT_ASSEMBLY || listFor === RAW_PRODUCT_LIST_TYPE.PRODUCTION || listFor === RAW_PRODUCT_LIST_TYPE.PURCHASE_REQUISITION) && (
@@ -192,8 +230,10 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                         type='number'
                         name='unit_price'
                         value={formData.unit_price}
-                        onChange={(e) => handleChange('unit_price', parseFloat(e.target.value))}
+                        onChange={(e:any,required:boolean) => handleChange('unit_price', parseFloat(e.target.value),true)}
                         isMasked={false}
+                        errorMessage={errorMessages.unit_price}
+                        required={true}
                     />
 
                     <Input
@@ -202,7 +242,8 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                         name='sub_total'
                         value={formData.sub_total?.toFixed(2)}
                         disabled={true}
-                        onChange={(e) => handleChange('sub_total', parseFloat(e.target.value))}
+                        required= {true}
+                        onChange={(e) => handleChange('sub_total', parseFloat(e.target.value),false)}
                         isMasked={false}
                     />
                 </>
@@ -216,14 +257,14 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                         options={taxCategoryOptions}
                         required={true}
                         value={formData.tax_category_id}
-                        onChange={(e) => handleChange('tax_category_id', e && typeof e !== 'undefined' ? e.value : 0)}
+                        onChange={(e:any,required) => handleChange('tax_category_id', e && typeof e !== 'undefined' ? e.value : 0,true)}
                     />
                     <Input
                         label='Tax Rate'
                         type='number'
                         name='tax_rate'
                         value={formData.tax_rate}
-                        onChange={(e) => handleChange('tax_rate', parseFloat(e.target.value))}
+                        onChange={(e:any,required:boolean) => handleChange('tax_rate', parseFloat(e.target.value),true)}
                         isMasked={false}
                     />
                     <Input
@@ -232,7 +273,7 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                         name='tax_amount'
                         disabled={true}
                         value={formData.tax_amount?.toFixed(2)}
-                        onChange={(e) => handleChange('tax_amount', parseFloat(e.target.value))}
+                        onChange={(e:any,required:boolean) => handleChange('tax_amount', parseFloat(e.target.value),true)}
                         isMasked={false}
                     />
 
@@ -242,7 +283,7 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                         name='grand_total'
                         disabled={true}
                         value={formData.grand_total?.toFixed(2)}
-                        onChange={(e) => handleChange('grand_total', parseFloat(e.target.value))}
+                        onChange={(e:any,required:boolean) => handleChange('grand_total', parseFloat(e.target.value),true)}
                         isMasked={false}
                     />
                 </>
@@ -253,7 +294,10 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                 name='description'
                 value={formData.description}
                 isReactQuill={false}
-                onChange={(e) => handleChange('description', e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('description', e.target.value, true)}
+                required= {true}
+                errorMessage={errorMessages.description}
+
             />
 
         </Modal>

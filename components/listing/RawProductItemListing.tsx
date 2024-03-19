@@ -12,6 +12,7 @@ import RawProductModal from "@/components/modals/RawProductModal";
 import IconButton from "@/components/IconButton";
 import GenericTable from "@/components/GenericTable";
 import {getIcon} from "@/utils/helper";
+import Alert from '../Alert';
 
 interface IRawProduct {
     type: string | 'add';
@@ -33,6 +34,7 @@ interface IProps {
     rawProducts: any[];
     setRawProducts: Dispatch<SetStateAction<any[]>>;
     type: RAW_PRODUCT_LIST_TYPE;
+    // required: boolean;
 }
 
 interface Totals {
@@ -69,7 +71,8 @@ const tableStructure = [
 const RawProductItemListing: FC<IProps> = ({
                                                rawProducts,
                                                setRawProducts,
-                                               type
+                                               type,
+                                            //    required
                                            }) => {
     const [modalOpen, setModalOpen] = useState(false);
     const [productDetail, setProductDetail] = useState({});
@@ -81,6 +84,11 @@ const RawProductItemListing: FC<IProps> = ({
     const {units} = useSelector((state: IRootState) => state.unit);
     const {allRawProducts} = useSelector((state: IRootState) => state.rawProduct);
     const {taxCategories} = useSelector((state: IRootState) => state.taxCategory);
+    // const [Message, setMessage] = useState("");
+    // useEffect(() => {
+    //     setMessage("Raw products must have atleast one item in the table")
+    // }, [])
+    
 
     const handleAdd = (value: any) => {
         setRawProducts((prev) => {
@@ -176,7 +184,7 @@ const RawProductItemListing: FC<IProps> = ({
                 sortable: true,
                 render: (row: any) => (
                     table.numericColumns.includes(column)
-                        ? <>{row[column].toFixed(2)}</>
+                        ? <>{row[column]}</>
                         : column === 'raw_product_id'
                             ? <>{productOptions.filter((item: any) => item.value === row[column])[0]?.label}</>
                             : column === 'unit_id'
@@ -204,6 +212,14 @@ const RawProductItemListing: FC<IProps> = ({
 
     return (
         <div className="table-responsive w-full">
+            {/* <div className='mb-5'>
+               <Alert
+                  alertType="error" 
+                  message={Message} 
+                  setMessages={setMessage}
+                />
+            </div> */}
+            
             <div
                 className="flex justify-between items-center flex-col md:flex-row space-y-3 md:space-y-0 mb-3">
                 <h3 className="text-lg font-semibold">Item Details</h3>
