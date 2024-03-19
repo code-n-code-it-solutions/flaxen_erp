@@ -19,7 +19,7 @@ interface MiscellaneousItemsProps {
     handleRemoveItem: (index: number) => void;
 }
 
-export const MiscellaneousItemListing: React.FC<MiscellaneousItemsProps> = ({
+const MiscellaneousItemListing: React.FC<MiscellaneousItemsProps> = ({
                                                                           miscellaneousItems,
                                                                           taxCategoryOptions,
                                                                           handleEditMiscellaneousItem,
@@ -79,3 +79,5 @@ export const MiscellaneousItemListing: React.FC<MiscellaneousItemsProps> = ({
         </table>
     );
 };
+
+export default MiscellaneousItemListing;

@@ -10,13 +10,11 @@ import {AnyAction} from "redux";
 import {useRouter} from "next/router";
 import {setPageTitle} from "@/store/slices/themeConfigSlice";
 import {setAuthToken, setContentType} from "@/configs/api.config";
-import FormulaRawProductForm from "@/components/specific-modal/FormulaRawProductForm";
-import {
-    clearProductAssemblyState, getAssemblyItems,
-    getProductAssemblies
-} from "@/store/slices/productAssemblySlice";
-import {clearProductionState, storeProduction} from "@/store/slices/productionSlice";
+import {clearProductAssemblyState, getAssemblyItems, getProductAssemblies} from "@/store/slices/productAssemblySlice";
+import {clearProductionState} from "@/store/slices/productionSlice";
 import {getRandomInt} from "@/utils/helper";
+import RawProductModal from "@/components/modals/RawProductModal";
+import {RAW_PRODUCT_LIST_TYPE} from "@/utils/enums";
 
 const Select = dynamic(
     () => import('react-select'),
@@ -306,11 +304,12 @@ const Create = () => {
                             Submit
                         </button>
                     </form>
-                    <FormulaRawProductForm
-                        modal={modal}
-                        setModal={setModal}
-                        modalFormData={modalFormData}
-                        handleAddRawProduct={(value: any) => handleAddRow(value)}
+                    <RawProductModal
+                        listFor={RAW_PRODUCT_LIST_TYPE.FILLING}
+                        modalOpen={modal}
+                        setModalOpen={setModal}
+                        detail={modalFormData}
+                        handleSubmit={(value: any) => handleAddRow(value)}
                     />
                 </div>
             </div>

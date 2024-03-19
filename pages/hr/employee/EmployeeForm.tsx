@@ -7,13 +7,13 @@ import {IRootState} from "@/store";
 import {AnyAction} from "redux";
 import {clearLocationState, getCities, getCountries, getStates} from "@/store/slices/locationSlice";
 import {useRouter} from "next/router";
-import BankDetailModal from "@/components/specific-modal/BankDetailModal";
+import BankDetailModal from "@/components/modals/BankDetailModal";
 import {clearEmployeeState, storeEmployee} from "@/store/slices/employeeSlice";
 import {clearDesignationState, getDesignationByDepartmentID, storeDesignation} from "@/store/slices/designationSlice";
 import {clearDepartmentState, getDepartments, storeDepartment} from "@/store/slices/departmentSlice";
-import DepartmentFormModal from "@/components/specific-modal/DepartmentFormModal";
-import DesignationFormModal from "@/components/specific-modal/DesignationFormModal";
-import DocumentFormModal from "@/components/specific-modal/DocumentFormModal";
+import DepartmentFormModal from "@/components/modals/DepartmentFormModal";
+import DesignationFormModal from "@/components/modals/DesignationFormModal";
+import DocumentFormModal from "@/components/modals/DocumentFormModal";
 import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
 import {ButtonSize, ButtonType, ButtonVariant, FORM_CODE_TYPE, IconType} from "@/utils/enums";
 import {MaskConfig} from "@/configs/mask.config";
@@ -76,11 +76,12 @@ const EmployeeForm = ({id}: IFormProps) => {
     const department = useSelector((state: IRootState) => state.department);
     const employee = useSelector((state: IRootState) => state.employee);
     const {code} = useSelector((state: IRootState) => state.util);
-
+    const [errors, setErrors] = useState<Record<string, string>>({});
     const [bankModalOpen, setBankModalOpen] = useState<boolean>(false);
     const [image, setImage] = useState<File | null>(null);
     const [employeeBankAccounts, setEmployeeBankAccounts] = useState<IBankAccount[]>([]);
     const [employeeDocuments, setEmployeeDocuments] = useState<IDocuments[]>([]);
+
     const [formData, setFormData] = useState<IFormData>({
         employee_code: '',
         name: '',
@@ -310,9 +311,11 @@ const EmployeeForm = ({id}: IFormProps) => {
             dispatch(clearDepartmentState())
         }
     }, [department.department]);
+   
+
 
     return (
-        <form className="space-y-5" onSubmit={(e) => handleSubmit(e)}>
+        <form className="space-y-5"  onSubmit={(e) => handleSubmit(e)}>
             <div className="flex justify-center items-center">
                 <ImageUploader image={image} setImage={setImage} existingImage={imagePreview}/>
             </div>
@@ -631,13 +634,6 @@ const EmployeeForm = ({id}: IFormProps) => {
                         variant={ButtonVariant.primary}
                         type={ButtonType.submit}
                     />
-                    {/*<button*/}
-                    {/*    type="submit"*/}
-                    {/*    className="btn btn-primary"*/}
-                    {/*    // disabled={employee.loading}*/}
-                    {/*>*/}
-                    {/*    {employee.loading ? 'Loading...' : 'Save Employee'}*/}
-                    {/*</button>*/}
                 </div>
             </div>
             <DocumentFormModal
@@ -674,6 +670,7 @@ const EmployeeForm = ({id}: IFormProps) => {
                     }))
                 }}
             />
+
             <BankDetailModal
                 title='Employee'
                 modalOpen={bankModalOpen}

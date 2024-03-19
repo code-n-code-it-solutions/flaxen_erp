@@ -5,33 +5,27 @@ import {useDispatch, useSelector} from "react-redux";
 import {ThunkDispatch} from "redux-thunk";
 import {IRootState} from "@/store";
 import {AnyAction} from "redux";
-import Select from "react-select";
-import 'react-quill/dist/quill.snow.css';
-import dynamic from 'next/dynamic';
-
-const ReactQuill = dynamic(import('react-quill'), {ssr: false});
 import {
-    clearPurchaseRequisitionState, getPurchaseRequisitionByStatuses,
+    clearPurchaseRequisitionState,
+    getPurchaseRequisitionByStatuses,
 } from "@/store/slices/purchaseRequisitionSlice";
 import {clearVendorState, getRepresentatives, getVendors} from "@/store/slices/vendorSlice";
-import Link from "next/link";
 import {getCurrencies} from "@/store/slices/currencySlice";
-import VehicleFormModal from "@/components/specific-modal/VehicleFormModal";
+import VehicleFormModal from "@/components/modals/VehicleFormModal";
 import {clearVehicleState, getVehicles, storeVehicle} from "@/store/slices/vehicleSlice";
-import LPORawProductModal from "@/components/specific-modal/local-purchase-order/LPORawProductModal";
 import Image from "next/image";
-import {BASE_URL} from "@/configs/server.config";
 import {getEmployees} from "@/store/slices/employeeSlice";
 import {storeLPO} from "@/store/slices/localPurchaseOrderSlice";
 import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
-import {FORM_CODE_TYPE} from "@/utils/enums";
-import {string} from "yup";
-import {router} from "next/client";
+import {ButtonType, ButtonVariant, FORM_CODE_TYPE, IconType, RAW_PRODUCT_LIST_TYPE} from "@/utils/enums";
 import {getTaxCategories} from "@/store/slices/taxCategorySlice";
-import LPOServiceModal from "@/components/specific-modal/local-purchase-order/LPOServiceModal";
-import {ServiceItemListing} from "@/pages/purchase/components/ServiceItemListing";
-import {RawProductItemListing} from "@/pages/purchase/components/RawProductItemListing";
-import {MiscellaneousItemListing} from "@/pages/purchase/components/MiscellaneousItemListing";
+import ServiceItemListing from "@/components/listing/ServiceItemListing";
+import RawProductItemListing from "@/components/listing/RawProductItemListing";
+import {Dropdown} from "@/components/form/Dropdown";
+import {Input} from "@/components/form/Input";
+import Button from "@/components/Button";
+import {getIcon, imagePath} from "@/utils/helper";
+import Textarea from "@/components/form/Textarea";
 
 interface IFormData {
     purchase_requisition_id: number;
@@ -191,61 +185,6 @@ const LPOForm = ({id}: IFormProps) => {
             }
         }
     };
-
-    // const handleAddItemRow = (value: any, type: string) => {
-    //
-    //     if (type === 'Material') {
-    //
-    //         setRawProducts((prev) => {
-    //             let maxId = 0;
-    //             prev.forEach(item => {
-    //                 if (item.id > maxId) {
-    //                     maxId = item.id;
-    //                 }
-    //             });
-    //             // if (value.type === 'add') {
-    //             //     const newValue = {...value, id: maxId + 1};
-    //             //     return [...prev, newValue];
-    //             // } else {
-    //             const existingRow = prev.find(row => row.raw_product_title === value.raw_product_title);
-    //             if (existingRow) {
-    //                 console.log('existing row', existingRow)
-    //                 return prev.map(row => row.raw_product_title === value.raw_product_title ? value : row);
-    //             } else {
-    //                 const newValue = {...value, id: maxId + 1};
-    //                 console.log('new row', newValue)
-    //                 return [...prev, newValue];
-    //             }
-    //             // }
-    //         });
-    //         setItemDetail({});
-    //         setRawProductModalOpen(false);
-    //     } else if (type === 'Service') {
-    //         setMiscellaneousItems((prev) => [...prev, value]);
-    //         setServiceModalOpen(false)
-    //     }
-    // }
-
-    function handleEditProductItem<T extends IRawProduct, K extends keyof T>(
-        {index, field, value, maxQuantity}: {
-            index: number,
-            field: K,
-            value: T[K],
-            maxQuantity?: number,
-        }
-    ): void {
-        const updatedProducts: T[] = [...rawProducts] as T[];
-        if (field === 'lpo_quantity') {
-            const numericValue = Number(value);
-            const clampedValue = numericValue || 0;
-            updatedProducts[index][field] = (maxQuantity !== undefined && clampedValue > maxQuantity)
-                ? maxQuantity as T[K]
-                : clampedValue as T[K];
-        } else {
-            updatedProducts[index][field] = value;
-        }
-        setRawProducts(updatedProducts);
-    }
 
     function handleEditServiceItem<T extends IServiceItem, K extends keyof T>(
         {index, field, value, maxQuantity}: {
@@ -413,6 +352,10 @@ const LPOForm = ({id}: IFormProps) => {
         } else {
             setShowVendorDetail(false)
             setVendorDetail({})
+            setFormData(prev => ({
+                ...prev,
+                vendor_id: 0
+            }))
         }
 
     }
@@ -431,6 +374,10 @@ const LPOForm = ({id}: IFormProps) => {
             setRepresentativeDetail({})
             setShowRepresentativeDetail(false)
             dispatch(clearVendorState())
+            setFormData(prev => ({
+                ...prev,
+                vendor_representative_id: ''
+            }))
         }
     }
 
@@ -445,6 +392,10 @@ const LPOForm = ({id}: IFormProps) => {
         } else {
             setVehicleDetail({})
             setShowVehicleDetail(false)
+            setFormData(prev => ({
+                ...prev,
+                vehicle_id: 0
+            }))
         }
     }
 
@@ -459,39 +410,34 @@ const LPOForm = ({id}: IFormProps) => {
 
             if (e.value !== 0) {
                 if (formData.type === 'Material') {
-                    if (e.request.purchase_requisition_items?.length > 0) {
+                    if (e.request.items?.length > 0) {
                         setRawProducts(prevState => (
-                            e.request.purchase_requisition_items.map((item: any) => ({
+                            e.request.items.map((item: any) => ({
                                 raw_product_id: item.raw_product_id,
                                 quantity: parseInt(item.quantity),
-                                lpo_quantity: parseInt(item.quantity),
                                 unit_id: item.unit_id,
                                 unit_price: parseFloat(item.unit_price),
-                                total: parseFloat(item.unit_price) * parseInt(item.quantity),
+                                sub_total: parseFloat(item.unit_price) * parseInt(item.quantity),
                                 description: item.description || '',
                                 tax_category_id: 0,
                                 tax_rate: 0,
                                 tax_amount: 0,
-                                row_total: item.unit_price * item.quantity
+                                grand_total: item.unit_price * item.quantity
                             }))
                         ))
                     }
                 } else if (formData.type === 'Service') {
-                    if (e.request.purchase_requisition_services?.length > 0) {
+                    if (e.request.items?.length > 0) {
                         setServiceItems(prevState => (
-                            e.request.purchase_requisition_services.map((item: any) => ({
-                                name: item.service_name,
-                                assets: item.asset_ids,
-                                asset_ids: item.asset_ids.map((asset: any) => asset.id).join(','),
-                                quantity: parseInt(item.quantity),
-                                lpo_quantity: parseInt(item.quantity),
-                                unit_cost: 0,
-                                total: 0,
+                            e.request.items.map((item: any) => ({
+                                asset_id: item.asset_id,
+                                service_name: item.service_name,
                                 description: item.description || '',
-                                tax_category_id: 0,
-                                tax_rate: 0,
-                                tax_amount: 0,
-                                row_total: 0
+                                cost: isNaN(parseFloat(item.cost)) ? 0 : parseFloat(item.cost),
+                                tax_category_id: item.tax_category_id,
+                                tax_rate: isNaN(parseFloat(item.tax_rate)) ? 0 : parseFloat(item.tax_rate),
+                                tax_amount: isNaN(parseFloat(item.tax_amount)) ? 0 : parseFloat(item.tax_amount),
+                                grand_total: isNaN(parseFloat(item.grand_total)) ? 0 : parseFloat(item.grand_total)
                             }))
                         ))
                     }
@@ -688,135 +634,156 @@ const LPOForm = ({id}: IFormProps) => {
     return (
         <form className="space-y-5" onSubmit={(e) => handleSubmit(e)}>
             <div className="flex justify-start flex-col items-start space-y-3">
-                <div className="w-full md:w-1/2">
-                    <label htmlFor="type">Type</label>
-                    <Select
-                        defaultValue={lpoTypeOptions[0]}
-                        options={lpoTypeOptions}
-                        isSearchable={true}
-                        isClearable={true}
-                        placeholder={'Select LPO Type'}
-                        onChange={(e: any) => handleLpoTypeChange(e)}
-                    />
-                </div>
-                <div className="w-full md:w-1/2">
-                    <label htmlFor="purchase_requisition_id">Purchase Requisition</label>
-                    <Select
-                        defaultValue={purchaseRequestOptions[0]}
-                        value={selectedPurchaseRequisition}
-                        options={purchaseRequestOptions}
-                        isSearchable={true}
-                        isClearable={true}
-                        placeholder={'Select Request'}
-                        onChange={(e: any) => handlePurchaseRequisitionChange(e)}
-                    />
-                </div>
+                <Dropdown
+                    divClasses='w-full md:w-1/2'
+                    label='Type'
+                    name='type'
+                    options={lpoTypeOptions}
+                    value={formData.type}
+                    onChange={(e: any) => handleLpoTypeChange(e)}
+                />
+
+                <Dropdown
+                    divClasses='w-full md:w-1/2'
+                    label='Purchase Requisition'
+                    name='purchase_requisition_id'
+                    options={purchaseRequestOptions}
+                    value={formData.purchase_requisition_id}
+                    onChange={(e: any) => handlePurchaseRequisitionChange(e)}
+                />
+
                 <div className="border rounded p-5 w-full">
                     <h3 className="text-lg font-semibold">Basic Details</h3>
                     <hr className="my-3"/>
                     <div className="grid grid-cols-1 md:grid-cols-1 gap-4 w-full my-5">
                         <div className="w-full space-y-3">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-                                <div className="w-full">
-                                    <label htmlFor="lpo_number">LPO Number</label>
-                                    <input id="lpo_number" type="text" name="lpo_number" placeholder="Enter LPO number"
-                                           value={formData.lpo_number} onChange={handleChange} disabled={true}
-                                           className="form-input"/>
-                                </div>
-                                <div className="w-full" hidden={formData.purchase_requisition_id !== 0}>
-                                    <label htmlFor="internal_document_number">Internal Document Number</label>
-                                    <input id="internal_document_number" type="text" name="internal_document_number"
-                                           placeholder="Enter Internal Document Number"
-                                           disabled={true}
-                                           value={formData.internal_document_number} onChange={handleChange}
-                                           className="form-input"/>
-                                </div>
+                                <Input
+                                    divClasses='w-full'
+                                    label='LPO Number'
+                                    type='text'
+                                    name='lpo_number'
+                                    value={formData.lpo_number}
+                                    onChange={handleChange}
+                                    isMasked={false}
+                                    placeholder='Enter LPO Number'
+                                    disabled={true}
+                                />
+
+                                <Input
+                                    divClasses={`w-full ${formData.purchase_requisition_id !== 0 ? 'hide' : ''}`}
+                                    label='Internal Document Number'
+                                    type='text'
+                                    name='internal_document_number'
+                                    value={formData.internal_document_number}
+                                    onChange={handleChange}
+                                    placeholder="Enter Internal Document Number"
+                                    isMasked={false}
+                                />
                             </div>
-                            <div className="w-full">
-                                <label htmlFor="status_id">Status</label>
-                                <Select
-                                    defaultValue={requisitionStatusOptions[0]}
-                                    options={requisitionStatusOptions}
-                                    isSearchable={true}
-                                    isClearable={true}
-                                    placeholder={'Select Status'}
-                                    onChange={(e: any) => setFormData(prev => ({
-                                        ...prev,
-                                        status: e && typeof e !== 'undefined' ? e.value : ''
-                                    }))}
+                            <Dropdown
+                                divClasses='w-full'
+                                label='Status'
+                                name='status_id'
+                                options={requisitionStatusOptions}
+                                value={formData.purchase_requisition_id}
+                                onChange={(e: any) => {
+                                    if (e && typeof e !== 'undefined') {
+                                        setFormData(prev => ({
+                                            ...prev,
+                                            status: e.value
+                                        }))
+                                    } else {
+                                        setFormData(prev => ({
+                                            ...prev,
+                                            status: ''
+                                        }))
+                                    }
+                                }}
+                            />
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+                                <Input
+                                    divClasses='w-full'
+                                    label='Delivery Due Days'
+                                    type='number'
+                                    name='delivery_due_in_days'
+                                    value={formData.delivery_due_in_days.toString()}
+                                    onChange={handleChange}
+                                    isMasked={false}
+                                    placeholder="Delivery Due Days"
+                                />
+
+                                <Input
+                                    divClasses='w-full'
+                                    label='Delivery Due Date'
+                                    type='text'
+                                    name='delivery_due_date'
+                                    value={formData.delivery_due_date}
+                                    onChange={handleChange}
+                                    isMasked={false}
+                                    placeholder="Delivery Due Date"
+                                    disabled={true}
                                 />
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-                                <div className="w-full">
-                                    <label htmlFor="delivery_due_in_days">Delivery Due Days</label>
-                                    <input id="delivery_due_in_days" type="text" name="delivery_due_in_days"
-                                           placeholder="Delivery Due Days"
-                                           value={formData.delivery_due_in_days} onChange={handleChange}
-                                           className="form-input"/>
-                                </div>
-                                <div className="w-full">
-                                    <label htmlFor="delivery_due_date">Delivery Due Date</label>
-                                    <input id="delivery_due_date" type="text" name="delivery_due_date"
-                                           placeholder="Delivery Due Date"
-                                           disabled={true}
-                                           value={formData.delivery_due_date} onChange={handleChange}
-                                           className="form-input"/>
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-                                <div className="w-full">
-                                    <label htmlFor="payment_terms_in_days">Payment Terms (Days)</label>
-                                    <input id="payment_terms_in_days" type="text" name="payment_terms_in_days"
-                                           placeholder="Payment Terms (Days)"
-                                           value={formData.payment_terms_in_days} onChange={handleChange}
-                                           className="form-input"/>
-                                </div>
-                                <div className="w-full">
-                                    <label htmlFor="currency_id">Currency</label>
-                                    <Select
-                                        defaultValue={currencyOptions[0]}
-                                        options={currencyOptions}
-                                        isSearchable={true}
-                                        isClearable={true}
-                                        placeholder={'Select Currency'}
-                                        onChange={(e: any) => setFormData(prev => ({
-                                            ...prev,
-                                            currency_id: e && typeof e !== 'undefined' ? e.value : 0
-                                        }))}
-                                    />
-                                </div>
+                                <Input
+                                    divClasses='w-full'
+                                    label='Payment Terms (Days)'
+                                    type='number'
+                                    name='payment_terms_in_days'
+                                    value={formData.payment_terms_in_days.toString()}
+                                    onChange={handleChange}
+                                    isMasked={false}
+                                    placeholder="Payment Terms (Days)"
+                                />
+
+                                <Dropdown
+                                    divClasses='w-full'
+                                    label='Status'
+                                    name='currency_id'
+                                    options={currencyOptions}
+                                    value={formData.currency_id}
+                                    onChange={(e: any) => {
+                                        if (e && typeof e !== 'undefined') {
+                                            setFormData(prev => ({
+                                                ...prev,
+                                                currency_id: e.value
+                                            }))
+                                        } else {
+                                            setFormData(prev => ({
+                                                ...prev,
+                                                currency_id: 0
+                                            }))
+                                        }
+                                    }}
+                                />
+
                             </div>
                         </div>
                         <div className="w-full space-y-3"
                              hidden={showItemDetail.type !== 'Material' && showItemDetail.type !== ''}>
                             <div className="w-full flex justify-between items-end gap-3">
-                                <div className="w-full">
-                                    <label htmlFor="vehicle_id">Shipped Via (Vehicle)</label>
-                                    <Select
-                                        defaultValue={vehicleOptions[0]}
-                                        options={vehicleOptions}
-                                        isSearchable={true}
-                                        isClearable={true}
-                                        placeholder={'Select Vehicle'}
-                                        onChange={(e: any) => handleVehicleChange(e)}
-                                    />
-                                </div>
-                                <button className="btn btn-primary btn-sm flex justify-center items-center"
-                                        onClick={() => setVehicleModalOpen(true)}>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                         className="h-5 w-5 ltr:mr-2 rtl:ml-2"
-                                         fill="none">
-                                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
-                                        <path d="M15 12L12 12M12 12L9 12M12 12L12 9M12 12L12 15" stroke="currentColor"
-                                              strokeWidth="1.5" strokeLinecap="round"/>
-                                    </svg>
-                                </button>
+                                <Dropdown
+                                    divClasses='w-full'
+                                    label='Shipped Via (Vehicle)'
+                                    name='purchase_requisition_id'
+                                    options={vehicleOptions}
+                                    value={formData.vehicle_id}
+                                    onChange={(e: any) => handleVehicleChange(e)}
+                                />
+                                <Button
+                                    type={ButtonType.button}
+                                    text={getIcon(IconType.add)}
+                                    variant={ButtonVariant.primary}
+                                    onClick={() => setVehicleModalOpen(true)}
+                                />
                             </div>
 
                             <div className="w-full" hidden={!showVehicleDetail}>
                                 <h4 className="font-bold text-lg">Vehicle Details</h4>
                                 <div className="flex flex-col gap-3 justify-center items-center">
-                                    <Image src={BASE_URL + '/' + vehicleDetail.thumbnail?.path} alt="Vehicle Image"
+                                    <Image src={imagePath(vehicleDetail.thumbnail)} alt="Vehicle Image"
                                            height={100} width={100}/>
                                     <table>
                                         <thead>
@@ -847,34 +814,30 @@ const LPOForm = ({id}: IFormProps) => {
                 <div className="border rounded p-5 w-full">
                     <div className="flex flex-col md:flex-row justify-between items-center">
                         <h3 className="text-lg font-semibold">Vendor Details</h3>
-                        <Link href="/admin/vendors/create"
-                              className="btn btn-primary btn-sm m-1">
-                            <span className="flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                     className="h-5 w-5 ltr:mr-2 rtl:ml-2"
-                                     fill="none">
-                                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
-                                    <path d="M15 12L12 12M12 12L9 12M12 12L12 9M12 12L12 15" stroke="currentColor"
-                                          strokeWidth="1.5" strokeLinecap="round"/>
-                                </svg>
-                                Create Vendor
-                            </span>
-                        </Link>
+                        <Button
+                            type={ButtonType.link}
+                            text={
+                                <span className="flex items-center">
+                                    {getIcon(IconType.add)}
+                                    Create Vendor
+                                </span>
+                            }
+                            variant={ButtonVariant.primary}
+                            link="/admin/vendors/create"
+                        />
                     </div>
                     <hr className="my-3"/>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full my-5 ">
                         <div className="w-full space-y-3">
-                            <div className="w-full">
-                                <label htmlFor="vendor_id">Vendor</label>
-                                <Select
-                                    defaultValue={vendorOptions[0]}
-                                    options={vendorOptions}
-                                    isSearchable={true}
-                                    isClearable={true}
-                                    placeholder={'Select Vendor'}
-                                    onChange={(e: any) => handleVendorChange(e)}
-                                />
-                            </div>
+                            <Dropdown
+                                divClasses='w-full'
+                                label='Vendor'
+                                name='vendor_id'
+                                options={vendorOptions}
+                                value={formData.vendor_id}
+                                onChange={(e: any) => handleVendorChange(e)}
+                            />
+
                             <div className="w-full" hidden={!showVendorDetail}>
                                 <h4 className="font-bold text-lg">Vendor Details</h4>
                                 <table>
@@ -910,17 +873,15 @@ const LPOForm = ({id}: IFormProps) => {
                             </div>
                         </div>
                         <div className="w-full space-y-3">
-                            <div className="w-full">
-                                <label htmlFor="vendor_representatative_id">Vendor Representative</label>
-                                <Select
-                                    defaultValue={vendorRepresentativeOptions[0]}
-                                    options={vendorRepresentativeOptions}
-                                    isSearchable={true}
-                                    isClearable={true}
-                                    placeholder={'Select Representative'}
-                                    onChange={(e: any) => handleRepresentativeChange(e)}
-                                />
-                            </div>
+                            <Dropdown
+                                divClasses='w-full'
+                                label='Vendor Representative'
+                                name='vendor_representatative_id'
+                                options={vendorRepresentativeOptions}
+                                value={formData.vendor_representative_id}
+                                onChange={(e: any) => handleRepresentativeChange(e)}
+                            />
+
                             <div className="w-full" hidden={!showRepresentativeDetail}>
                                 <h4 className="font-bold text-lg">Representative Details</h4>
                                 <table>
@@ -947,85 +908,54 @@ const LPOForm = ({id}: IFormProps) => {
                         </div>
                     </div>
                 </div>
-                <div className="w-full">
-                    <h4 className="font-bold text-lg">Terms & Conditions</h4>
-                    <ReactQuill
-                        theme="snow"
-                        value={formData.terms_conditions}
-                        onChange={(e) => setFormData((prev: any) => ({...prev, terms_conditions: e}))}
-                    />
-                </div>
+                <Textarea
+                    divClasses='w-full'
+                    label='Terms & Conditions'
+                    name='terms_conditions'
+                    value={formData.terms_conditions}
+                    onChange={(e) => setFormData((prev: any) => ({...prev, terms_conditions: e}))}
+                    isReactQuill={true}
+                />
 
                 {/*<div className="table-responsive w-full">*/}
-                    {showItemDetail.show && (
-                        <>
-                            {/*<div*/}
-                            {/*    className="flex justify-between items-center flex-col md:flex-row space-y-3 md:space-y-0 mb-3">*/}
-                            {/*    <h3 className="text-lg font-semibold">Item Details</h3>*/}
-                            {/*    <button*/}
-                            {/*        type="button"*/}
-                            {/*        className="btn btn-primary btn-sm"*/}
-                            {/*        onClick={() => {*/}
-                            {/*            if (showItemDetail.type === 'Material') {*/}
-                            {/*                setItemDetail({})*/}
-                            {/*                setRawProductModalOpen(true)*/}
-                            {/*            } else if (showItemDetail.type === 'Service') {*/}
-                            {/*                setItemDetail({})*/}
-                            {/*                setServiceModalOpen(true)*/}
-                            {/*            } else if (showItemDetail.type === 'Miscellaneous') {*/}
-                            {/*                setItemDetail({})*/}
-                            {/*                setMiscellaneousModalOpen(true)*/}
-                            {/*            }*/}
-                            {/*        }}*/}
-                            {/*    >*/}
-                            {/*        Add New Item*/}
-                            {/*    </button>*/}
-                            {/*</div>*/}
-                            {showItemDetail.type === 'Material' ? (
-                                    <RawProductItemListing
-                                        rawProducts={rawProducts}
-                                        type='lpo'
-                                        setRawProducts={setRawProducts}
-                                        handleEditProductItem={handleEditProductItem}
-                                        handleRemoveItem={(index) => handleRemoveItem(index, 'Material')}
-                                    />
-                                )
-                                : showItemDetail.type === 'Service' ? (
+                {showItemDetail.show && (
+                    <>
+                        {showItemDetail.type === 'Material'
+                            ? (
+                                <RawProductItemListing
+                                    rawProducts={rawProducts}
+                                    type={RAW_PRODUCT_LIST_TYPE.LOCAL_PURCHASE_ORDER}
+                                    setRawProducts={setRawProducts}
+                                />
+                            )
+                            : showItemDetail.type === 'Service'
+                                ? (
                                     <ServiceItemListing
                                         serviceItems={serviceItems}
-                                        taxCategoryOptions={taxCategoryOptions}
-                                        handleEditServiceItem={handleEditServiceItem}
-                                        handleRemoveItem={(index) => handleRemoveItem(index, 'Service')}
-                                        handleRemoveAsset={handleRemoveAsset}
+                                        setServiceItems={setServiceItems}
+                                        type={RAW_PRODUCT_LIST_TYPE.LOCAL_PURCHASE_ORDER}
                                     />
-                                ) : (
-                                    <MiscellaneousItemListing
-                                        miscellaneousItems={miscellaneousItems}
-                                        taxCategoryOptions={taxCategoryOptions}
-                                        handleRemoveItem={(index) => handleRemoveItem(index, 'Miscellaneous')}
-                                        handleEditMiscellaneousItem={handleEditMiscellaneousItem}
-                                    />
-                                )}
-                        </>
-                    )}
-                </div>
+                                ) : <></>}
+                    </>
+                )}
+            </div>
 
-                <div className="w-full flex justify-center items-center flex-col md:flex-row gap-3">
-                    <button
-                        type="submit"
-                        className="btn btn-primary"
-                        disabled={loading}
-                    >
-                        {loading ? 'Loading...' : 'Save LPO'}
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => window?.location?.reload()}
-                        className="btn btn-info"
-                    >
-                        Clear
-                    </button>
-                </div>
+            <div className="w-full flex justify-center items-center flex-col md:flex-row gap-3">
+                <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={loading}
+                >
+                    {loading ? 'Loading...' : 'Save LPO'}
+                </button>
+                <button
+                    type="button"
+                    onClick={() => window?.location?.reload()}
+                    className="btn btn-info"
+                >
+                    Clear
+                </button>
+            </div>
             {/*</div>*/}
             <VehicleFormModal
                 modalOpen={vehicleModalOpen}

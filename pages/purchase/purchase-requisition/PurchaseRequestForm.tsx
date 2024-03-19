@@ -4,18 +4,16 @@ import {useDispatch, useSelector} from "react-redux";
 import {ThunkDispatch} from "redux-thunk";
 import {IRootState} from "@/store";
 import {AnyAction} from "redux";
-import Select from "react-select";
-import {
-    clearPurchaseRequisitionState,
-    storePurchaseRequest
-} from "@/store/slices/purchaseRequisitionSlice";
+import {clearPurchaseRequisitionState, storePurchaseRequest, updatePurchaseRequisition} from "@/store/slices/purchaseRequisitionSlice";
 import PRRawProductModal from "@/components/specific-modal/purchase-requisition/PRRawProductModal";
 import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
-import {FORM_CODE_TYPE} from "@/utils/enums";
-import Flatpickr from 'react-flatpickr';
+import {ButtonType, ButtonVariant, FORM_CODE_TYPE, RAW_PRODUCT_LIST_TYPE} from "@/utils/enums";
 import 'flatpickr/dist/flatpickr.css';
-import PRServiceModal from "@/components/specific-modal/purchase-requisition/PRServiceModal";
-import {string} from "yup";
+import {Dropdown} from "@/components/form/Dropdown";
+import {Input} from "@/components/form/Input";
+import Button from "@/components/Button";
+import RawProductItemListing from "@/components/listing/RawProductItemListing";
+import ServiceItemListing from "@/components/listing/ServiceItemListing";
 
 interface IFormData {
     pr_title: string;
@@ -43,9 +41,7 @@ interface IRawProduct {
 
 interface IServiceItems {
     name: string;
-    asset_names: string;
-    asset_ids: string;
-    quantity: number;
+    asset_id: string;
     description: string;
 }
 
@@ -56,11 +52,9 @@ interface IFormProps {
 const PurchaseRequestForm = ({id}: IFormProps) => {
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
     const {token, user} = useSelector((state: IRootState) => state.user);
-    const {loading} = useSelector((state: IRootState) => state.purchaseRequisition);
+    const {purchaseRequestDetail, loading} = useSelector((state: IRootState) => state.purchaseRequisition);
     const {code} = useSelector((state: IRootState) => state.util);
 
-    const [rawProductModalOpen, setRawProductModalOpen] = useState<boolean>(false);
-    const [serviceModalOpen, setServiceModalOpen] = useState<boolean>(false);
     const [showItemDetail, setShowItemDetail] = useState<any>({
         show: false,
         type: null
@@ -91,23 +85,11 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
         {value: 'Service', label: 'Service'},
     ]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const {name, value} = e.target;
+    const handleChange = (name: string, value: any) => {
         setFormData(prevFormData => {
             return {...prevFormData, [name]: value};
         });
     };
-
-
-    const handleAddItemRow = (value: any, type: string) => {
-        if (type === 'Material') {
-            setRawProducts(prev => ([...prev, value]));
-            setRawProductModalOpen(false);
-        } else {
-            setServiceItems(prev => ([...prev, value]));
-            setServiceModalOpen(false);
-        }
-    }
 
     const handleRemoveItem = (index: number, type: string) => {
         if (type === 'Material') {
@@ -126,22 +108,10 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
                 ...prev,
                 type: e.value
             }))
-            if (e.value === 'Material') {
-                setShowItemDetail({
-                    show: true,
-                    type: 'Material'
-                })
-            } else if (e.value === 'Service') {
-                setShowItemDetail({
-                    show: true,
-                    type: 'Service'
-                })
-            } else {
-                setShowItemDetail({
-                    show: false,
-                    type: null
-                })
-            }
+            setShowItemDetail({
+                show: true,
+                type: e.value
+            })
         } else {
             setShowItemDetail({
                 show: false,
@@ -158,12 +128,14 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
         e.preventDefault();
         setAuthToken(token)
         setContentType('multipart/form-data')
-        setFormData(prev => ({
-            ...prev,
+            dispatch(generateCode(FORM_CODE_TYPE.PURCHASE_REQUISITION))
+        let finalData = {
+            ...formData,
             user_id: user.id,
+            pr_code: formData.pr_code, // Assuming pr_code is a string
             department_id: user.employee?.department_id,
             designation_id: user.employee?.designation_id,
-            items: prev.type === 'Material'
+            items: formData.type === 'Material'
                 ? rawProducts.map((product: any) => {
                     return {
                         raw_product_id: product.raw_product_id,
@@ -171,17 +143,25 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
                         quantity: product.quantity,
                         unit_price: product.unit_price,
                         total_price: product.total,
-                        description: product.description
+                        description: product.description ? product.description : ''
                     }
                 })
-                : prev.type === 'Service'
-                    ? serviceItems
+                : formData.type === 'Service'
+                    ? serviceItems.map((service: any) => {
+                        return {
+                            name: service.name,
+                            asset_id: service.asset_id,
+                            description: service.description ? service.description : ''
+                        }
+                    })
                     : []
-        }))
+        }
+        console.log(finalData);
         if (id) {
-            // dispatch(updateRawProduct(id, formData));
+             dispatch(updatePurchaseRequisition({id, purchaseRequestData:finalData}));
         } else {
-            dispatch(storePurchaseRequest(formData));
+            // console.log(finalData)
+            dispatch(storePurchaseRequest(finalData));
         }
     };
 
@@ -190,203 +170,157 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
         setAuthToken(token)
         setContentType('application/json')
         dispatch(clearUtilState())
-        setServiceModalOpen(false)
-        setRawProductModalOpen(false)
-        dispatch(generateCode(FORM_CODE_TYPE.PURCHASE_REQUISITION))
+
+        if (id) {
+            // dispatch(editPurchaseRequisition(id))
+        } else {
+            dispatch(generateCode(FORM_CODE_TYPE.PURCHASE_REQUISITION))
+        }
     }, [])
 
     useEffect(() => {
-        if (code) {
-            setFormData(prev => ({
-                ...prev,
-                pr_code: code[FORM_CODE_TYPE.PURCHASE_REQUISITION]
-            }))
+        // Check if purchaseRequestDetail exists and is not empty
+        if (purchaseRequestDetail && Object.keys(purchaseRequestDetail).length !== 0) {
+            const {
+                pr_title,
+                pr_code,
+                description,
+                user_id,
+                type,
+                department_id,
+                designation_id,
+                requisition_date,
+                status,
+                items
+            } = purchaseRequestDetail;
+    
+            // Set the form data with the fetched requisition details
+            setFormData({
+                pr_title,
+                pr_code,
+                description,
+                user_id,
+                type,
+                department_id,
+                designation_id,
+                requisition_date,
+                status,
+                items
+            });
+    
+            // Check if the requisition type is Material or Service and set corresponding state
+            if (type === 'Material') {
+                setRawProducts(items); // Set rawProducts state with fetched items
+                setShowItemDetail({
+                    show: true,
+                    type: 'Material'
+                });
+            } else if (type === 'Service') {
+                setServiceItems(items); // Set serviceItems state with fetched items
+                setShowItemDetail({
+                    show: true,
+                    type: 'Service'
+                });
+            }
         }
-    }, [code])
+    }, [purchaseRequestDetail]); // Trigger useEffect when purchaseRequestDetail changes
+    
 
     return (
         <form className="space-y-5" onSubmit={handleSubmit}>
             <div className="flex justify-start flex-col items-start space-y-3">
-                <div className="w-full md:w-1/3">
-                    <label htmlFor="status_id">Status</label>
-                    <Select
-                        defaultValue={requisitionTypeOptions[0]}
-                        options={requisitionTypeOptions}
-                        isSearchable={true}
-                        isClearable={true}
-                        placeholder={'Select Request Type'}
-                        onChange={(e: any) => handleRequisitionTypeChange(e)}
-                    />
-                </div>
-                <div className="w-full md:w-1/3">
-                    <label htmlFor="pr_code">Purchase Request Code</label>
-                    <input id="pr_code" type="text" name="pr_code" placeholder="Enter Purchase Request Code"
-                           value={formData.pr_code} onChange={handleChange} disabled={true}
-                           className="form-input"/>
-                </div>
-                <div className="w-full md:w-1/3">
-                    <label htmlFor="requisition_date">Requisition Date</label>
-                    <Flatpickr
-                        value={formData.requisition_date}
-                        placeholder={'Select Date'}
-                        options={{
-                            dateFormat: 'Y-m-d'
-                        }}
-                        className="form-input"
-                        onChange={(date) => setFormData(prev => ({
-                            ...prev,
-                            requisition_date: date[0].toLocaleDateString()
-                        }))}
-                    />
-                    {/*<input id="requisition_date" type="date" name="requisition_date"*/}
-                    {/*       placeholder="Enter Purchase Request Date"*/}
-                    {/*       value={formData.requisition_date} onChange={handleChange}*/}
-                    {/*       className="form-input"/>*/}
-                </div>
-                <div className="w-full md:w-1/3">
-                    <label htmlFor="status_id">Status</label>
-                    <Select
-                        defaultValue={requisitionStatusOptions[0]}
-                        options={requisitionStatusOptions}
-                        isSearchable={true}
-                        isClearable={true}
-                        placeholder={'Select Status'}
-                        onChange={(e: any) => setFormData(prev => ({
-                            ...prev,
-                            status: e && typeof e !== 'undefined' ? e.value : ''
-                        }))}
-                    />
-                </div>
+                <Dropdown
+                    divClasses='w-full md:w-1/3'
+                    label='Requistion Type'
+                    name='type'
+                    options={requisitionTypeOptions}
+                    value={formData.type}
+                    onChange={(e: any) => handleRequisitionTypeChange(e)}
+                />
+                <Input
+                    divClasses='w-full md:w-1/3'
+                    label='Purchase Request Code'
+                    type='text'
+                    name='pr_code'
+                    placeholder="Enter Purchase Request Code"
+                    value={formData.pr_code}
+                    onChange={(e: any) => handleChange(e.target.name, e.target.value)}
+                    disabled={true}
+                    isMasked={false}
+                />
 
-                <div className="w-full md:w-1/2">
-                    <label htmlFor="pr_title">Purchase Request Name (Optional)</label>
-                    <input id="pr_title" type="text" name="pr_title" placeholder="Enter Purchase Request Name"
-                           value={formData.pr_title} onChange={handleChange}
-                           className="form-input" style={{height: 45}}/>
-                </div>
+                <Input
+                    divClasses='w-full md:w-1/3'
+                    label='Requisition Date'
+                    type='date'
+                    name='requisition_date'
+                    placeholder="Select Date"
+                    value={formData.pr_code}
+                    onChange={(e: any) => handleChange('requisition_date', e[0].toLocaleDateString())}
+                    isMasked={false}
+                />
+
+                <Dropdown
+                    divClasses='w-full md:w-1/3'
+                    label='Status'
+                    name='status_id'
+                    options={requisitionStatusOptions}
+                    value={formData.type}
+                    onChange={(e: any) => {
+                        if (e && typeof e !== 'undefined') {
+                            setFormData(prev => ({
+                                ...prev,
+                                status: e.value
+                            }))
+                        } else {
+                            setFormData(prev => ({
+                                ...prev,
+                                status: ''
+                            }))
+                        }
+                    }}
+                />
+
+                <Input
+                    divClasses='w-full md:w-1/2'
+                    label='Purchase Request Name (Optional)'
+                    type='text'
+                    name='pr_title'
+                    placeholder="Enter Purchase Request Name"
+                    value={formData.pr_title}
+                    onChange={(e: any) => handleChange(e.target.name, e.target.value)}
+                    isMasked={false}
+                    styles={{height: 45}}
+                />
 
                 <div className="table-responsive w-full">
+                    {showItemDetail.show && showItemDetail.type === 'Material' && (
+                        <RawProductItemListing
+                            rawProducts={rawProducts}
+                            setRawProducts={setRawProducts}
+                            type={RAW_PRODUCT_LIST_TYPE.PURCHASE_REQUISITION}
+                        />
+                    )}
 
-                    {showItemDetail.show && (
-                        <>
-                            <div
-                                className="flex justify-between items-center flex-col md:flex-row space-y-3 md:space-y-0 mb-3">
-                                <h3 className="text-lg font-semibold">Item Details</h3>
-                                <button
-                                    type="button"
-                                    className="btn btn-primary btn-sm"
-                                    onClick={() => showItemDetail.type === 'Material' ? setRawProductModalOpen(true) : setServiceModalOpen(true)}
-                                >
-                                    Add New Item
-                                </button>
-                            </div>
-                            {showItemDetail.type === 'Material'
-                                ? (
-                                    <table>
-                                        <thead>
-                                        <tr>
-                                            <th>Raw Product</th>
-                                            <th>Description</th>
-                                            <th>Unit</th>
-                                            <th>Quantity</th>
-                                            <th>Unit Price</th>
-                                            <th>Total</th>
-                                            <th>Action</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        {rawProducts.map((product, index) => (
-                                            <tr key={index}>
-                                                <td>{product.raw_product_title}</td>
-                                                <td>{product.description}</td>
-                                                <td>{product.unit_title}</td>
-                                                <td>{product.quantity}</td>
-                                                <td>{product.unit_price}</td>
-                                                <td>{product.total}</td>
-                                                <td>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleRemoveItem(index, 'Material')}
-                                                        className="btn btn-outline-danger btn-sm"
-                                                    >
-                                                        Delete
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                        {rawProducts.length === 0 ? (
-                                            <tr>
-                                                <td colSpan={7} className="text-center">No Data Found</td>
-                                            </tr>
-                                        ) : (
-                                            <tr>
-                                                <td colSpan={3} className="text-right font-semibold">Total</td>
-                                                <td>{rawProducts.reduce((acc, curr) => acc + curr.quantity, 0)}</td>
-                                                <td>{rawProducts.reduce((acc, curr) => acc + curr.unit_price, 0)}</td>
-                                                <td>{rawProducts.reduce((acc, curr) => acc + curr.total, 0)}</td>
-                                            </tr>
-                                        )}
-                                        </tbody>
-                                    </table>
-                                )
-                                : (
-                                    <table>
-                                        <thead>
-                                        <tr>
-                                            <th>Asset</th>
-                                            <th>Service</th>
-                                            <th>Description</th>
-                                            <th>Quantity</th>
-                                            <th>Action</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        {serviceItems.map((service, index) => (
-                                            <tr key={index}>
-                                                <td>{service.asset_names}</td>
-                                                <td>{service.name}</td>
-                                                <td>{service.description}</td>
-                                                <td>{service.quantity}</td>
-                                                <td>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleRemoveItem(index, 'Service')}
-                                                        className="btn btn-outline-danger btn-sm"
-                                                    >
-                                                        Delete
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                        </tbody>
-                                    </table>
-                                )
-                            }
-                        </>
+                    {showItemDetail.show && showItemDetail.type === 'Service' && (
+                        <ServiceItemListing
+                            serviceItems={serviceItems}
+                            setServiceItems={setServiceItems}
+                            type={RAW_PRODUCT_LIST_TYPE.PURCHASE_REQUISITION}
+                        />
                     )}
 
                 </div>
 
                 <div className="w-full">
-                    <button
-                        type="submit"
-                        className="btn btn-primary"
+                    <Button
+                        type={ButtonType.submit}
+                        text={loading ? 'Loading...' : id ? 'Update Purchase Request' : 'Save Purchase Request'}
+                        variant={ButtonVariant.primary}
                         disabled={loading}
-                    >
-                        {loading ? 'Loading...' : 'Save Purchase Request'}
-                    </button>
+                    />
                 </div>
             </div>
-            <PRRawProductModal
-                modal={rawProductModalOpen}
-                setModal={setRawProductModalOpen}
-                handleAddRawProduct={(value: any) => handleAddItemRow(value, 'Material')}
-            />
-            <PRServiceModal
-                modalOpen={serviceModalOpen}
-                setModalOpen={setServiceModalOpen}
-                handleSubmit={(val) => handleAddItemRow(val, 'Service')}
-            />
         </form>
     );
 };

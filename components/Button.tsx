@@ -1,6 +1,7 @@
 import React, {FC} from 'react';
 import {ButtonSize, ButtonType, ButtonVariant} from "@/utils/enums";
 import Link from "next/link";
+import {transformButtonType} from "@/utils/helper";
 
 // Enums remain unchanged
 
@@ -27,7 +28,6 @@ const Button: FC<IProps> = ({
                                 disabled
                             }) => {
     if (type === ButtonType.link && link) {
-        console.log('link')
         return (
             <Link href={link} className={`btn btn-${variant} ${size ? 'btn-' + size : ''} ${classes}`}>
                 {text}
@@ -36,7 +36,7 @@ const Button: FC<IProps> = ({
     } else { // Otherwise, render a `button` element
         return (
             <button
-                type={type}
+                type={transformButtonType(type)}
                 onClick={onClick}
                 disabled={disabled}
                 className={`btn btn-${variant} ${size ? 'btn-' + size : ''} ${classes}`}

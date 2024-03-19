@@ -55,4 +55,10 @@ export enum IconType {
     add = 'add',
     download = 'download',
     upload = 'upload',
+    cancel = 'cancel',
+    sum = 'sum',
+}
+
+export enum ListingType {
+
 }

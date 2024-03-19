@@ -1,5 +1,5 @@
 import {BASE_URL} from "@/configs/server.config";
-import {IconType} from "@/utils/enums";
+import {ButtonType, IconType} from "@/utils/enums";
 import React from "react";
 import ReactDOMServer from "react-dom/server";
 
@@ -124,10 +124,34 @@ export const getIcon = (icon: IconType, width?: number, height?: number, classes
                 <path
                     d="M3 15C3 17.8284 3 19.2426 3.87868 20.1213C4.75736 21 6.17157 21 9 21H15C17.8284 21 19.2426 21 20.1213 20.1213C21 19.2426 21 17.8284 21 15"
                     stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M12 16V3M12 3L16 7.375M12 3L8 7.375" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"
+                <path d="M12 16V3M12 3L16 7.375M12 3L8 7.375" stroke="currentColor" strokeWidth="1.5"
+                      strokeLinecap="round"
                       strokeLinejoin="round"/>
             </svg>
-
+        case IconType.cancel:
+            return <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            >
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        case IconType.sum:
+            return <svg xmlns="http://www.w3.org/2000/svg" version="1.1"
+                        id="Layer_1" x="0px" y="0px" viewBox="0 0 116.32 122.88">
+                <g>
+                    <path
+                        stroke="currentColor"
+                        d="M102.67,23.25v-9.59H24.32l42.55,42.77c2.65,2.67,2.64,6.98-0.03,9.63l-43.5,43.17h79.32V99.9h13.65v16.15 c0,3.77-3.06,6.83-6.83,6.83H6.81v-0.02c-1.75,0-3.5-0.67-4.83-2.01c-2.65-2.67-2.64-6.98,0.03-9.63L52.42,61.2L3.47,11.99 C2.02,10.74,1.1,8.89,1.1,6.83C1.1,3.06,4.16,0,7.93,0H109.5c3.77,0,6.83,3.06,6.83,6.83v16.42H102.67L102.67,23.25z"/>
+                </g>
+            </svg>
         default:
             return <></>
     }
@@ -165,3 +189,25 @@ export const generatePDF = async (PreviewComponent: JSX.Element, setLoading: (va
         console.error('Error generating PDF:', error);
     }
 };
+
+
+export const transformButtonType = (type: ButtonType): "button" | "submit" | "reset" | undefined => {
+    switch (type) {
+        case ButtonType.button:
+        case ButtonType.submit:
+        case ButtonType.reset:
+            return type;
+        case ButtonType.link:
+        case ButtonType.icon:
+        default:
+            return 'button'; // Or choose a sensible default like "button" if appropriate
+    }
+}
+
+export const toSentenceCase = (str: string) => {
+    if (str && str.length > 0) {
+        return str[0].toUpperCase() + str.substring(1).toLowerCase();
+    } else {
+        return '';
+    }
+}

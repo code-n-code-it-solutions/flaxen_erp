@@ -10,6 +10,8 @@ import {getLPOByStatuses, storeLPO} from "@/store/slices/localPurchaseOrderSlice
 import {clearGoodReceiveNoteState, storeGRN} from "@/store/slices/goodReceiveNoteSlice";
 import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
 import {FORM_CODE_TYPE} from "@/utils/enums";
+import {Dropdown} from "@/components/form/Dropdown";
+import {Input} from "@/components/form/Input";
 
 interface IFormData {
     purchase_requisition_id: number;
@@ -187,47 +189,51 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
     return (
         <form className="space-y-5" onSubmit={(e) => handleSubmit(e)}>
             <div className="flex justify-start flex-col items-start space-y-3">
-                <div className="w-full md:w-1/2">
-                    <label htmlFor="purchase_requisition_id">LPO</label>
-                    <Select
-                        defaultValue={localPurchaseOrderOptions[0]}
-                        options={localPurchaseOrderOptions}
-                        isSearchable={true}
-                        isClearable={true}
-                        placeholder={'Select LPO'}
-                        onChange={(e: any) => handleLPOChange(e)}
-                    />
-                </div>
-                <div className="w-full md:w-1/2">
-                    <label htmlFor="status">Status</label>
-                    <Select
-                        defaultValue={statusOptions[0]}
-                        options={statusOptions}
-                        isSearchable={true}
-                        isClearable={true}
-                        placeholder={'Select Status'}
-                        onChange={(e: any) => setFormData(prev => ({
-                            ...prev,
-                            status: e && typeof e !== 'undefined' ? e.value : ''
-                        }))}
-                    />
-                </div>
-                <div className="w-full md:w-1/2">
-                    <label htmlFor="grn_number">Good Receive Note Number</label>
-                    <input
-                        type="text"
-                        className="form-input"
-                        placeholder="Good Receive Note Number"
-                        disabled={true}
-                        value={formData.grn_number}
-                        onChange={(e: any) =>
+                <Dropdown
+                    divClasses='w-full md:w-1/2'
+                    label='LPO'
+                    name='purchase_requisition_id'
+                    options={localPurchaseOrderOptions}
+                    value={formData.local_purchase_order_id}
+                    onChange={(e: any) => handleLPOChange(e)}
+                />
+
+                <Dropdown
+                    divClasses='w-full md:w-1/2'
+                    label='Status'
+                    name='status'
+                    options={statusOptions}
+                    value={formData.status}
+                    onChange={(e: any) => {
+                        if (e && typeof e !== 'undefined') {
                             setFormData(prev => ({
                                 ...prev,
-                                grn_number: e.target.value
+                                status: e.value
+                            }))
+                        } else {
+                            setFormData(prev => ({
+                                ...prev,
+                                status: ''
                             }))
                         }
-                    />
-                </div>
+                    }}
+                />
+
+                <Input
+                    label='Good Receive Note Number'
+                    type='text'
+                    name='grn_number'
+                    value={formData.grn_number}
+                    onChange={(e: any) =>
+                        setFormData(prev => ({
+                            ...prev,
+                            grn_number: e.target.value
+                        }))
+                    }
+                    isMasked={false}
+                    disabled={true}
+                />
+
                 <div hidden={showDetails} className="w-full space-y-3">
                     <div className="border rounded p-5 w-full">
                         <h3 className="text-lg font-semibold">LPO Details</h3>

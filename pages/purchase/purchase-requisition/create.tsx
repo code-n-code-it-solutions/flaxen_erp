@@ -64,7 +64,7 @@ const Create = () => {
                             </span>
                         </Link>
                     </div>
-                    <PurchaseRequestForm/>
+                    <PurchaseRequestForm id={router.query.id}/>
                 </div>
             </div>
         </div>

@@ -35,6 +35,35 @@ export const getProductCategory = createAsyncThunk(
     }
 );
 
+export const storeProductCategory = createAsyncThunk(
+    'productCategory/store',
+    async (data:any, thunkAPI) => {
+        try {
+            const response = await API.post('/product-categories', data);
+            return response.data;
+        } catch (error:any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to store';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const updateProductCategory = createAsyncThunk(
+    'productCategory/update',
+    async (categoryData:any, thunkAPI) => {
+        try {
+            const {id, data} = categoryData
+            const response = await API.post('/product-categories/update/'+id, data);
+            return response.data;
+        } catch (error:any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to update';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 // Slice
 export const productCategorySlice = createSlice({
     name: 'productCategory',
@@ -57,6 +86,30 @@ export const productCategorySlice = createSlice({
                 state.allProductCategory = action.payload.data;
             })
             .addCase(getProductCategory.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(storeProductCategory.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(storeProductCategory.fulfilled, (state, action) => {
+                state.loading = false;
+                state.productCategory = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(storeProductCategory.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(updateProductCategory.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(updateProductCategory.fulfilled, (state, action) => {
+                state.loading = false;
+                state.productCategory = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(updateProductCategory.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })
