@@ -39,7 +39,7 @@ const Index = () => {
     const getRowItems = () => {
         setAuthToken(token)
         setContentType('application/json')
-        dispatch(getRawProducts())
+        dispatch(getRawProducts([]))
     }
 
     useEffect(() => {
