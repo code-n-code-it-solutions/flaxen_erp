@@ -59,19 +59,31 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                         ...formData,
                         [name]: value,
                         unit_id: selectedProduct.sub_unit_id,
+                        quantity: 1,
                         unit_price: parseFloat(selectedProduct.opening_stock_unit_balance),
                         sub_total: isNaN(formData.quantity) ? 0 : parseFloat(selectedProduct.opening_stock_unit_balance) * formData.quantity
                     });
                 }
             }
         } else if (name === 'quantity') {
-            if (isNaN(value)) {
-                value = 0;
-            }
+            // if (isNaN(value)) {
+            //     value = 0;
+            // }
+
             setFormData({
                 ...formData,
                 [name]: value,
                 sub_total: isNaN(formData.unit_price) ? 0 : formData.unit_price * value
+            });
+        } else if (name === 'unit_price') {
+            if (isNaN(value)) {
+                value = 0;
+            }
+            console.log(formData, value, formData.quantity)
+            setFormData({
+                ...formData,
+                [name]: value,
+                sub_total: isNaN(formData.quantity) ? 0 : formData.quantity * value
             });
         } else if (name === 'tax_category_id') {
             if (isNaN(value)) {

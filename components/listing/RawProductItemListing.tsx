@@ -204,11 +204,12 @@ const RawProductItemListing: FC<IProps> = ({
             })));
         if (rawProducts.length > 0) {
             columns.flatMap((column: any) => {
+                // console.log(column)
                 if (tableStructure.find(table => table.listingFor === type)?.numericColumns.includes(column.accessor)) {
                     column.footer = (
                         <div className="flex gap-2 items-center">
                             <span className="h-3 w-3">{getIcon(IconType.sum)}</span>
-                            <span>{columnTotals[column.accessor].toFixed(2)}</span>
+                            {/*<span>{columnTotals[column.accessor].toFixed(2)}</span>*/}
                         </div>
                     )
                 }

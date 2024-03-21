@@ -239,7 +239,7 @@ const Preview = ({content}: any) => {
                                                 paddingTop: '2px',
                                                 paddingBottom: '2px'
                                             }}>
-                                                {content?.purchase_requisition_items?.reduce((acc: any, item: any) => acc + parseFloat(item.total_price), 0)}
+                                                {content?.purchase_requisition_items?.reduce((acc: any, item: any) => acc + parseFloat(item.unit_price) * parseFloat(item.quantity), 0)}
                                             </td>
                                         </tr>
                                         </tfoot>
