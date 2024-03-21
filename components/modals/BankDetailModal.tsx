@@ -10,6 +10,9 @@ import BankFormModal from "@/components/modals/BankFormModal";
 import {getBanks, storeBank} from "@/store/slices/bankSlice";
 import {getCurrencies} from "@/store/slices/currencySlice";
 import Modal from "@/components/Modal";
+import {Input} from '@/components/form/Input'
+import { Dropdown } from '../form/Dropdown';
+import Alert from '@/components/Alert';
 
 interface IProps {
     modalOpen: boolean;
@@ -24,8 +27,18 @@ const BankDetailModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData, 
     const {token} = useSelector((state: IRootState) => state.user);
     const {banks, bank, success} = useSelector((state: IRootState) => state.bank);
     const {currencies} = useSelector((state: IRootState) => state.currency);
+    const [currencyId, setCurrencyId] = useState('');
 
     const [bankFormModal, setBankFormModal] = useState<boolean>(false);
+    const [errorMessages, setErrorMessages] = useState({
+        iban: "This field is required",
+        account_number:"This field is required",
+        account_name: "This field is required",
+        currency_id: "This field is required",
+        bank_id: "This field is required",
+    })
+    const [isFormValid, setIsFormValid] = useState<boolean>(false);
+    const [validationMessage, setValidationMessage] = useState("");
     const [formData, setFormData] = useState<any>({
         bank_id: 0,
         bank_name: '',
@@ -101,6 +114,33 @@ const BankDetailModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData, 
         }
     }, [bank, success]);
 
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { value,required,name } = e.target;
+        const UpFormData = {
+            ...formData,
+            [name]: value,
+        };
+        setFormData(UpFormData);
+
+        if (required) {
+            if (!value) {
+                setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
+            } else {
+                setErrorMessages({ ...errorMessages, [name]: '' });
+            }
+        }
+    };
+
+    useEffect(() => {
+        const isValid = Object.values(errorMessages).some(message => message !== '');
+        setIsFormValid(!isValid);
+        // console.log('Error Messages:', errorMessages);
+        // console.log('isFormValid:', !isValid);
+        if(isValid){
+            setValidationMessage("Please fill the required field.");
+        }
+    }, [errorMessages]);
+
     return (
         <Modal
             show={modalOpen}
@@ -112,27 +152,52 @@ const BankDetailModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData, 
                             onClick={() => setModalOpen(false)}>
                         Discard
                     </button>
-                    <button type="button" className="btn btn-primary ltr:ml-4 rtl:mr-4"
+                    {isFormValid && <button type="button" className="btn btn-primary ltr:ml-4 rtl:mr-4"
                             onClick={() => handleSubmit(formData)}>
                         {modalFormData ? 'Update' : 'Add'}
-                    </button>
+                    </button>}
                 </div>
             }
         >
+            {!isFormValid  && validationMessage &&
+               <Alert 
+               alertType="error" 
+               message={validationMessage} 
+               setMessages={setValidationMessage} 
+           />}
+
             <div className="w-full flex justify-center items-center gap-3">
                 <div className="w-full">
-                    <label htmlFor="bank_id">Bank</label>
-                    <Select
-                        defaultValue={bankOptions[0]}
+                    {/* <label htmlFor="bank_id">Bank</label> */}
+                    <Dropdown
+                        label='Bank'
                         options={bankOptions}
-                        isSearchable={true}
-                        isClearable={true}
-                        placeholder={'Select Bank'}
-                        onChange={(e: any) => setFormData((prev: any) => ({
-                            ...prev,
-                            bank_id: e && typeof e !== 'undefined' ? e.value : 0,
-                            bank_name: e && typeof e !== 'undefined' ? e.label : ''
-                        }))}
+                        name='currency_id'
+                        value={formData.bank_id}
+                        onChange={(e: any,required:any) => {
+                            if (e && typeof e !== 'undefined') {
+                                // const { value, label, required, name } = e;
+                                setFormData((prev: any) => ({
+                                    ...prev,
+                                    bank_id: e.value || 0,
+                                    bank_name: e.label || 0
+                                }));
+                                if (required) {
+                                    setErrorMessages({ ...errorMessages, bank_id: '' });
+                                }
+                            } else {
+                                setFormData((prev: any) => ({
+                                    ...prev,
+                                    bank_id: ''
+                                }));
+                                if (required) {
+                                    setErrorMessages({ ...errorMessages, bank_id: 'This field is required.' });
+                                }
+                            }
+                        }}
+                        
+                        required={true}
+                        errorMessage={errorMessages.bank_id}
                     />
                 </div>
 
@@ -151,67 +216,81 @@ const BankDetailModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData, 
             </div>
 
             <div className="w-full">
-                <label htmlFor="currency_id">Currency</label>
-                <Select
-                    defaultValue={currencyOptions[0]}
-                    options={currencyOptions}
-                    isSearchable={true}
-                    isClearable={true}
-                    placeholder={'Select Currency'}
-                    onChange={(e: any) => setFormData((prev: any) => ({
-                        ...prev,
-                        currency_id: e && typeof e !== 'undefined' ? e.value : 0,
-                        currency_name: e && typeof e !== 'undefined' ? e.name : '',
-                        currency_code: e && typeof e !== 'undefined' ? e.label : ''
-                    }))}
-                />
+                {/* <label htmlFor="currency_id">Currency</label> */}
+                <Dropdown
+                label='Currency'
+                name='currency_id'
+                value={formData.currency_id}
+                options={currencyOptions}
+                onChange={(e: any, required: any) => {
+                    if (e && typeof e !== 'undefined') {
+                        setFormData((prev: any) => ({
+                            ...prev,
+                            currency_id: e.value || 0,
+                            currency_name: e.label || 0
+                        }));
+                        if (required) {
+                            setErrorMessages({ ...errorMessages, currency_id: '' });
+                        }
+                    } else {
+                        setFormData((prev: any) => ({
+                            ...prev,
+                            currency_id: ''
+                        }));
+                        if (required) {
+                            setErrorMessages({ ...errorMessages, currency_id: 'This field is required.' });
+                        }
+                    }
+                }}
+                required={true}
+                errorMessage={errorMessages.currency_id}
+/>
+
             </div>
 
             <div className="w-full">
-                <label htmlFor="account_name">Account Title</label>
-                <input
+                {/* <label htmlFor="account_name">Account Title</label> */}
+                <Input
+                    label='Account Title'
                     type="text"
                     name="account_name"
-                    id="account_name"
-                    className="form-input"
                     placeholder='Enter Account Title'
                     value={formData.account_name}
-                    onChange={e => setFormData((prev: any) => ({
-                        ...prev,
-                        account_name: e.target.value
-                    }))}
+                    onChange={handleChange}
+                    isMasked={false}
+                    required={true}
+                    errorMessage={errorMessages.account_name}
                 />
             </div>
 
             <div className="w-full">
-                <label htmlFor="account_number">Account No</label>
-                <input
+                {/* <label htmlFor="account_number">Account No</label> */}
+                <Input
+                    label='Account No'
                     type="text"
                     name="account_number"
-                    id="account_number"
-                    className="form-input"
                     placeholder='Enter Account Number'
                     value={formData.account_number}
-                    onChange={e => setFormData((prev: any) => ({
-                        ...prev,
-                        account_number: e.target.value
-                    }))}
+                    onChange={handleChange}
+                    isMasked={false}
+                    required={true}
+                    errorMessage={errorMessages.account_number}
+
                 />
             </div>
 
             <div className="w-full">
-                <label htmlFor="iban">IBAN</label>
-                <input
+                {/* <label htmlFor="iban">IBAN</label> */}
+                <Input
+                    label= 'IBAN'
                     type="text"
                     name="iban"
-                    id="iban"
-                    className="form-input"
                     placeholder='Enter IBAN Number'
                     value={formData.iban}
-                    onChange={e => setFormData((prev: any) => ({
-                        ...prev,
-                        iban: e.target.value
-                    }))}
+                    onChange={handleChange}
+                    isMasked={false}
+                    required={true}
+                    errorMessage={errorMessages.iban}
                 />
             </div>
             <BankFormModal

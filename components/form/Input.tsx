@@ -45,20 +45,21 @@ export const Input: FC<IProps> = ({
 
             {isMasked
                 ? <MaskedInput
-                    id={name}
-                    type={type}
-                    placeholder={placeholder}
-                    className="form-input"
-                    guide={true}
-                    name={name}
-                    value={value}
-                    onChange={(e) => onChange(e, required)} // Pass the 'required' parameter
-                    mask={maskPattern ? maskPattern : []}
-                    disabled={disabled}
-                    required={required}
-                    readOnly={readonly}
-                    style={styles}
-                />
+                id={name}
+                type={type}
+                placeholder={placeholder}
+                className="form-input"
+                guide={true}
+                name={name}
+                value={value}
+                onChange={(e) => onChange(e, required)}
+                mask={maskPattern ? maskPattern : []}
+                disabled={disabled}
+                required={required}
+                readOnly={readonly}
+                style={styles}
+                // errorMessage={errorMessage}
+            />
                 : type === 'date'
                     ? <Flatpickr
                         value={value}
