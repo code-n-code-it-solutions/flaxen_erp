@@ -4,7 +4,8 @@ import {useDispatch, useSelector} from "react-redux";
 import {ThunkDispatch} from "redux-thunk";
 import {IRootState} from "@/store";
 import {AnyAction} from "redux";
-import {clearPurchaseRequisitionState, storePurchaseRequest} from "@/store/slices/purchaseRequisitionSlice";
+import {clearPurchaseRequisitionState, storePurchaseRequest, updatePurchaseRequisition} from "@/store/slices/purchaseRequisitionSlice";
+import PRRawProductModal from "@/components/specific-modal/purchase-requisition/PRRawProductModal";
 import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
 import {ButtonType, ButtonVariant, FORM_CODE_TYPE, RAW_PRODUCT_LIST_TYPE} from "@/utils/enums";
 import 'flatpickr/dist/flatpickr.css';
@@ -127,10 +128,11 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
         e.preventDefault();
         setAuthToken(token)
         setContentType('multipart/form-data')
+            dispatch(generateCode(FORM_CODE_TYPE.PURCHASE_REQUISITION))
         let finalData = {
             ...formData,
             user_id: user.id,
-            pr_code: code[FORM_CODE_TYPE.PURCHASE_REQUISITION],
+            pr_code: formData.pr_code, // Assuming pr_code is a string
             department_id: user.employee?.department_id,
             designation_id: user.employee?.designation_id,
             items: formData.type === 'Material'
@@ -154,10 +156,11 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
                     })
                     : []
         }
+        console.log(finalData);
         if (id) {
-            // dispatch(updateRawProduct(id, formData));
+             dispatch(updatePurchaseRequisition({id, purchaseRequestData:finalData}));
         } else {
-            console.log(finalData, code[FORM_CODE_TYPE.PURCHASE_REQUISITION])
+            // console.log(finalData)
             dispatch(storePurchaseRequest(finalData));
         }
     };
@@ -176,13 +179,52 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
     }, [])
 
     useEffect(() => {
-        if (code) {
-            setFormData(prev => ({
-                ...prev,
-                pr_code: code[FORM_CODE_TYPE.PURCHASE_REQUISITION]
-            }))
+        // Check if purchaseRequestDetail exists and is not empty
+        if (purchaseRequestDetail && Object.keys(purchaseRequestDetail).length !== 0) {
+            const {
+                pr_title,
+                pr_code,
+                description,
+                user_id,
+                type,
+                department_id,
+                designation_id,
+                requisition_date,
+                status,
+                items
+            } = purchaseRequestDetail;
+    
+            // Set the form data with the fetched requisition details
+            setFormData({
+                pr_title,
+                pr_code,
+                description,
+                user_id,
+                type,
+                department_id,
+                designation_id,
+                requisition_date,
+                status,
+                items
+            });
+    
+            // Check if the requisition type is Material or Service and set corresponding state
+            if (type === 'Material') {
+                setRawProducts(items); // Set rawProducts state with fetched items
+                setShowItemDetail({
+                    show: true,
+                    type: 'Material'
+                });
+            } else if (type === 'Service') {
+                setServiceItems(items); // Set serviceItems state with fetched items
+                setShowItemDetail({
+                    show: true,
+                    type: 'Service'
+                });
+            }
         }
-    }, [code])
+    }, [purchaseRequestDetail]); // Trigger useEffect when purchaseRequestDetail changes
+    
 
     return (
         <form className="space-y-5" onSubmit={handleSubmit}>

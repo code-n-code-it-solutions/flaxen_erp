@@ -21,6 +21,8 @@ import Button from "@/components/Button";
 import { Input } from "@/components/form/Input";
 import { getUnits } from '@/store/slices/unitSlice';
 import { imagePath } from "@/utils/helper";
+import Alert from '@/components/Alert';
+
 interface IFormData {
     vendor_number: string;
     name: string;
@@ -129,6 +131,29 @@ const VendorForm = ({ id }: IFormProps) => {
         bank_accounts: []
     });
     const [imagePreview, setImagePreview] = useState('');
+    const [isFormValid, setIsFormValid] = useState<boolean>(false);
+    const [validationMessage, setValidationMessage] = useState("");
+    const [VAddressMessage, setVAddressMessage] = useState('');
+    const [VRepresentativeMessage, setVRepresentativeMessage] = useState('');
+    const [errorMessages, setErrorMessages] = useState({
+        // vendor_number: 'This field is required',
+        name: 'This field is required',
+        vendor_type_id: 'This field is required',
+        opening_balance: 'This field is required',
+        phone: 'This field is required',
+        email: 'This field is required',
+        due_in_days: 'This field is required',
+        website_url: 'This field is required',
+        tax_reg_no: 'This field is required',
+        // country_id: 'This field is required',
+        // state_id: 'This field is required',
+        // city_id: 'This field is required',
+        postal_code: 'This field is required',
+        address: 'This field is required',
+        // city_id: 'This field is required',
+        // postal_code: 'This field is required', 
+    });
+
 
 
     const [vendorTypeOptions, setVendorTypeOptions] = useState([]);
@@ -137,13 +162,32 @@ const VendorForm = ({ id }: IFormProps) => {
     const [cityOptions, setCityOptions] = useState([]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
+        const { name, value,required } = e.target;
         setFormData(prevFormData => {
             return { ...prevFormData, [name]: value };
         });
+        if (required) {
+            if (!value) {
+                setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
+            } else {
+                setErrorMessages({ ...errorMessages, [name]: '' });
+            }
+        }
+        if (name === 'opening_balance' || name === 'due_in_days') {
+            if (value === '0') {
+                setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
+            }
+        }
+        if (name === 'phone') {
+            if (value === '(+971) __-__-____') {
+                setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
+            }
+        }
+        
     };
-
+    const [error, setError] = useState('');
     const handleCountryChange = (e: any) => {
+        const { name, value,required } = e.target;
         if (e && e.value && typeof e !== 'undefined') {
             setFormData(prev => ({ ...prev, country_id: e ? e.value : 0 }))
             dispatch(getStates(parseInt(e.value)))
@@ -152,9 +196,17 @@ const VendorForm = ({ id }: IFormProps) => {
             setStateOptions([])
             setCityOptions([])
         }
+        // if (required) {
+        //     if (!value) {
+        //         setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
+        //     } else {
+        //         setErrorMessages({ ...errorMessages, [name]: '' });
+        //     }
+        // }
     }
 
     const handleStateChange = (e: any) => {
+        const { name, value,required } = e.target;
         if (e && e.value && typeof e !== 'undefined') {
             setFormData(prev => ({ ...prev, state_id: e ? e.value : 0 }))
             dispatch(getCities({ countryId: formData.country_id, stateId: parseInt(e.value) }))
@@ -162,7 +214,34 @@ const VendorForm = ({ id }: IFormProps) => {
             setFormData(prev => ({ ...prev, state_id: 0 }))
             setCityOptions([])
         }
+        // if (required) {
+        //     if (!value) {
+        //         setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
+        //     } else {
+        //         setErrorMessages({ ...errorMessages, [name]: '' });
+        //     }
+        // }
     }
+    useEffect(() => {
+        const isValid = Object.values(errorMessages).some(message => message !== '');
+        setIsFormValid(!isValid);
+        console.log('Error Messages:', errorMessages);
+        console.log('isFormValid:', !isValid);
+        if(isValid){
+            setValidationMessage("Please fill all the required fields.");
+        }
+        if (vendorRepresentatives.length === 0) {
+            setVRepresentativeMessage('Vendor must have atleast one representative added.')
+        } else {
+            setVRepresentativeMessage('');
+        }
+        if (vendorAddresses.length === 0) {
+            setVAddressMessage('Vendor must have atleast one Address added.')
+        } else {
+            setVAddressMessage('');
+        }
+
+    }, [errorMessages]);
 
     const handleVendorSubmit = (value: any) => {
         dispatch(storeVendorType({
@@ -189,6 +268,24 @@ const VendorForm = ({ id }: IFormProps) => {
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+         // Validation checks
+    if (!formData.vendor_number || !formData.name || !formData.vendor_type_id || !formData.opening_balance || !formData.phone || !formData.email || !formData.due_in_days || !formData.tax_reg_no) {
+        setError('All fields are required.');
+        return;
+      }
+  
+      if (formData.representatives.length === 0) {
+        setError('At least one representative must be added.');
+        return;
+      }
+  
+      if (formData.addresses.length === 0) {
+        setError('At least one address must be added.');
+        return;
+      }
+  
+      // If all validations pass, submit the form
+        setError('');
         setFormData(prev => ({ ...prev, image: image }))
         setAuthToken(token)
         setContentType('multipart/form-data')
@@ -364,6 +461,25 @@ const VendorForm = ({ id }: IFormProps) => {
 
     return (
         <form className="space-y-5" onSubmit={handleSubmit}>
+            {!isFormValid  && validationMessage &&
+               <Alert 
+               alertType="error" 
+               message={validationMessage} 
+               setMessages={setValidationMessage} 
+           />}
+           {vendorRepresentatives.length === 0 &&  VRepresentativeMessage && 
+           <Alert 
+           alertType="error" 
+           message={VRepresentativeMessage} 
+           setMessages={setVRepresentativeMessage} 
+           />}
+           {vendorAddresses.length === 0 &&  VAddressMessage && 
+           <Alert 
+           alertType="error" 
+           message={VAddressMessage} 
+           setMessages={setVAddressMessage} 
+           />}
+
             <div className="flex justify-center items-center">
                 <ImageUploader image={image} setImage={setImage} existingImage={imagePreview} />
             </div>
@@ -375,11 +491,19 @@ const VendorForm = ({ id }: IFormProps) => {
                         name='vendor_type_id'
                         options={vendorTypeOptions}
                         value={formData.vendor_type_id}
-                        onChange={(e: any) => {
+                        required={true}
+                        errorMessage={ errorMessages.vendor_type_id}
+                        onChange={(e: any,required:any) => {
                             if (e && e.value && typeof e !== 'undefined') {
                                 setFormData(prev => ({ ...prev, vendor_type_id: e.value }))
+                                if (required) {
+                                    setErrorMessages({ ...errorMessages, vendor_type_id: '' });
+                                }
                             } else {
                                 setFormData(prev => ({ ...prev, vendor_type_id: 0 }))
+                                if (required) {
+                                    setErrorMessages({ ...errorMessages, vendor_type_id: 'This field is required.'});
+                                }
                             }
                         }}
                     />
@@ -407,6 +531,8 @@ const VendorForm = ({ id }: IFormProps) => {
                     placeholder="Enter Vendor Code"
                     isMasked={false}
                     disabled={true}
+                    required={true}
+                    // errorMessage={errorMessages.vendor_number}
                 />
 
                 <Input
@@ -419,6 +545,8 @@ const VendorForm = ({ id }: IFormProps) => {
                     placeholder="Enter Vendor Name"
                     isMasked={false}
                     styles={{ height: 45 }}
+                    required={true}
+                    errorMessage={errorMessages.name}
                 />
 
                 <div className="flex flex-col md:flex-row gap-3 w-full">
@@ -431,6 +559,8 @@ const VendorForm = ({ id }: IFormProps) => {
                         onChange={handleChange}
                         placeholder="Enter Opening Balance"
                         isMasked={false}
+                        required={true}
+                        errorMessage={errorMessages.opening_balance}
                     />
 
                     <Input
@@ -443,6 +573,8 @@ const VendorForm = ({ id }: IFormProps) => {
                         placeholder={MaskConfig.phone.placeholder}
                         isMasked={true}
                         maskPattern={MaskConfig.phone.pattern}
+                        required={true}
+                        errorMessage={errorMessages.phone}
                     />
 
                     <Input
@@ -454,6 +586,8 @@ const VendorForm = ({ id }: IFormProps) => {
                         onChange={handleChange}
                         placeholder="Enter email address"
                         isMasked={false}
+                        required={true}
+                        errorMessage={errorMessages.email}
                     />
 
                 </div>
@@ -467,6 +601,8 @@ const VendorForm = ({ id }: IFormProps) => {
                         onChange={handleChange}
                         placeholder="Enter due in days"
                         isMasked={false}
+                        required={true}
+                        errorMessage={errorMessages.due_in_days}
                     />
 
                     <Input
@@ -478,6 +614,8 @@ const VendorForm = ({ id }: IFormProps) => {
                         onChange={handleChange}
                         placeholder="Enter Vendor Website"
                         isMasked={false}
+                        required={true}
+                        errorMessage={errorMessages.website_url}
                     />
 
                     <Input
@@ -489,6 +627,8 @@ const VendorForm = ({ id }: IFormProps) => {
                         onChange={handleChange}
                         placeholder="Enter tax regiration no"
                         isMasked={false}
+                        required={true}
+                        errorMessage={errorMessages.tax_reg_no}
                     />
 
                 </div>
@@ -501,6 +641,8 @@ const VendorForm = ({ id }: IFormProps) => {
                         options={countryOptions}
                         value={formData.country_id}
                         onChange={(e: any) => handleCountryChange(e)}
+                        // required={true}
+                        // errorMessage={errorMessages.country_id}
                     />
 
                     <Dropdown
@@ -510,6 +652,8 @@ const VendorForm = ({ id }: IFormProps) => {
                         options={stateOptions}
                         value={formData.state_id}
                         onChange={(e: any) => handleStateChange(e)}
+                        // required={true}
+                        // errorMessage={errorMessages.state_id}
                     />
 
                     <Dropdown
@@ -518,13 +662,21 @@ const VendorForm = ({ id }: IFormProps) => {
                         name='city_id'
                         options={stateOptions}
                         value={formData.city_id}
-                        onChange={(e: any) => {
+                        onChange={(e: any,required:any) => {
                             if (e && e.value && typeof e !== 'undefined') {
                                 setFormData(prev => ({ ...prev, city_id: e.value }))
+                                // if (required) {
+                                //     setErrorMessages({ ...errorMessages, city_id: '' });
+                                // }
                             } else {
                                 setFormData(prev => ({ ...prev, city_id: 0 }))
+                                // if (required) {
+                                //     setErrorMessages({ ...errorMessages, city_id: 'This field is required.'});
+                                // }
                             }
                         }}
+                        // required={true}
+                        // errorMessage={errorMessages.city_id}
                     />
                 </div>
                 <div className="flex flex-col md:flex-row gap-3 w-full">
@@ -537,6 +689,8 @@ const VendorForm = ({ id }: IFormProps) => {
                         onChange={handleChange}
                         placeholder="Enter postal code"
                         isMasked={false}
+                        required={true}
+                        errorMessage={errorMessages.postal_code}
                     />
 
                     <Input
@@ -544,11 +698,12 @@ const VendorForm = ({ id }: IFormProps) => {
                         label='Official Address'
                         type='text'
                         name='address'
-                        required={true}
                         value={formData.address}
                         onChange={handleChange}
                         placeholder="Enter address"
                         isMasked={false}
+                        required={true}
+                        errorMessage={errorMessages.address}
                     />
 
                 </div>
@@ -700,13 +855,13 @@ const VendorForm = ({ id }: IFormProps) => {
                 </div>
 
                 <div className="w-full">
-                    <button
+                    {isFormValid && vendorRepresentatives.length > 0 && vendorAddresses.length > 0 && ( <button 
                         type="submit"
                         className="btn btn-primary"
                         disabled={loading}
                     >
                         {loading ? 'Loading...' : id ? 'Update Vendor' : 'Save Vendor'}
-                    </button>
+                    </button>)}
                 </div>
             </div>
             <VendorTypeFormModal

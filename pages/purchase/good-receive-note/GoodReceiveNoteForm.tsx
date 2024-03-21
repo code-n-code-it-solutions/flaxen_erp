@@ -1,10 +1,10 @@
 "use client";
-import React, {useEffect, useState} from 'react';
-import {setAuthToken, setContentType} from "@/configs/api.config";
-import {useDispatch, useSelector} from "react-redux";
-import {ThunkDispatch} from "redux-thunk";
-import {IRootState} from "@/store";
-import {AnyAction} from "redux";
+import React, { useEffect, useState } from 'react';
+import { setAuthToken, setContentType } from "@/configs/api.config";
+import { useDispatch, useSelector } from "react-redux";
+import { ThunkDispatch } from "redux-thunk";
+import { IRootState } from "@/store";
+import { AnyAction } from "redux";
 import Select from "react-select";
 import {getLPOByStatuses, storeLPO} from "@/store/slices/localPurchaseOrderSlice";
 import {clearGoodReceiveNoteState, storeGRN} from "@/store/slices/goodReceiveNoteSlice";
@@ -14,6 +14,7 @@ import {Dropdown} from "@/components/form/Dropdown";
 import {Input} from "@/components/form/Input";
 import RawProductItemListing from "@/components/listing/RawProductItemListing";
 import ServiceItemListing from "@/components/listing/ServiceItemListing";
+import Button from '@/components/Button';
 
 interface IFormData {
     purchase_requisition_id: number;
@@ -30,12 +31,12 @@ interface IFormProps {
     id?: any
 }
 
-const GoodReceiveNoteForm = ({id}: IFormProps) => {
+const GoodReceiveNoteForm = ({ id }: IFormProps) => {
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
-    const {token, user} = useSelector((state: IRootState) => state.user);
-    const {success, loading} = useSelector((state: IRootState) => state.goodReceiveNote);
-    const {allLPOs} = useSelector((state: IRootState) => state.localPurchaseOrder);
-    const {code} = useSelector((state: IRootState) => state.util);
+    const { token, user } = useSelector((state: IRootState) => state.user);
+    const { success, loading } = useSelector((state: IRootState) => state.goodReceiveNote);
+    const { allLPOs } = useSelector((state: IRootState) => state.localPurchaseOrder);
+    const { code } = useSelector((state: IRootState) => state.util);
     const [rawProductModalOpen, setRawProductModalOpen] = useState<boolean>(false);
     const [rawProducts, setRawProducts] = useState<any[]>([]);
     const [serviceItems, setServiceItems] = useState<any[]>([]);
@@ -60,9 +61,9 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
 
     const [itemDetail, setItemDetail] = useState<any>({})
     const [statusOptions, setStatusOptions] = useState<any[]>([
-        {value: '', label: 'Select Status'},
-        {value: 'Draft', label: 'Draft'},
-        {value: 'Pending', label: 'Proceed'},
+        { value: '', label: 'Select Status' },
+        { value: 'Draft', label: 'Draft' },
+        { value: 'Pending', label: 'Proceed' },
     ]);
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -208,6 +209,39 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
     return (
         <form className="space-y-5" onSubmit={(e) => handleSubmit(e)}>
             <div className="flex justify-start flex-col items-start space-y-3">
+
+                {/* <label htmlFor="purchase_requisition_id">LPO</label>
+                    <Select
+                        defaultValue={localPurchaseOrderOptions[0]}
+                        options={localPurchaseOrderOptions}
+                        isSearchable={true}
+                        isClearable={true}
+                        placeholder={'Select LPO'}
+                        onChange={(e: any) => handleLPOChange(e)}
+                    /> */}
+                <Dropdown
+                    divClasses='w-full md:w-1/2'
+                    label='LPO'
+                    name=''
+                    options={localPurchaseOrderOptions}
+                    value={''}
+                    onChange={(e: any) => handleLPOChange(e)}
+                />
+
+
+                <Dropdown
+                    divClasses='w-full md:w-1/2'
+                    label='Status'
+                    name=''
+                    options={statusOptions}
+
+                    value={''}
+                    onChange={(e: any) => setFormData(prev => ({
+                        ...prev,
+                        status: e && typeof e !== 'undefined' ? e.value : ''
+                    }))}
+                />
+
                 <Dropdown
                     divClasses='w-full md:w-1/2'
                     label='LPO'
@@ -247,6 +281,8 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
                         setFormData(prev => ({
                             ...prev,
                             grn_number: e.target.value
+                        }))}
+                    placeholder="Good Receive Note Number"
                         }))
                     }
                     isMasked={false}
@@ -256,7 +292,7 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
                 <div hidden={showDetails} className="w-full space-y-3">
                     <div className="border rounded p-5 w-full">
                         <h3 className="text-lg font-semibold">LPO Details</h3>
-                        <hr className="my-3"/>
+                        <hr className="my-3" />
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full my-5">
                             <div className="w-full">
                                 <strong>Requisition Number: </strong>
@@ -289,38 +325,38 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
                                 </span>
                             </div>
                         </div>
-                        <hr className="my-3"/>
+                        <hr className="my-3" />
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div className="table-responsive">
                                 <h4 className="font-bold text-lg">Vendor Details</h4>
                                 <table>
                                     <thead>
-                                    <tr>
-                                        <th>Vendor Number</th>
-                                        <th>Vendor Name</th>
-                                        <th>Billed From</th>
-                                        <th>Shift From</th>
-                                    </tr>
+                                        <tr>
+                                            <th>Vendor Number</th>
+                                            <th>Vendor Name</th>
+                                            <th>Billed From</th>
+                                            <th>Shift From</th>
+                                        </tr>
                                     </thead>
                                     <tbody>
-                                    <tr>
-                                        <td>{lpoDetails.vendor?.vendor_number}</td>
-                                        <td>{lpoDetails.vendor?.name}</td>
-                                        <td>
-                                            {lpoDetails.vendor?.addresses?.map((address: any, index: number) => {
-                                                if (address.type === 'billing') {
-                                                    return address.address + ', ' + address.city?.name + ', ' + address.state?.name + ', ' + address.country?.name
-                                                }
-                                            })}
-                                        </td>
-                                        <td>
-                                            {lpoDetails.vendor?.addresses?.map((address: any, index: number) => {
-                                                if (address.type === 'shifting') {
-                                                    return address.address + ', ' + address.city?.name + ', ' + address.state?.name + ', ' + address.country?.name
-                                                }
-                                            })}
-                                        </td>
-                                    </tr>
+                                        <tr>
+                                            <td>{lpoDetails.vendor?.vendor_number}</td>
+                                            <td>{lpoDetails.vendor?.name}</td>
+                                            <td>
+                                                {lpoDetails.vendor?.addresses?.map((address: any, index: number) => {
+                                                    if (address.type === 'billing') {
+                                                        return address.address + ', ' + address.city?.name + ', ' + address.state?.name + ', ' + address.country?.name
+                                                    }
+                                                })}
+                                            </td>
+                                            <td>
+                                                {lpoDetails.vendor?.addresses?.map((address: any, index: number) => {
+                                                    if (address.type === 'shifting') {
+                                                        return address.address + ', ' + address.city?.name + ', ' + address.state?.name + ', ' + address.country?.name
+                                                    }
+                                                })}
+                                            </td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -328,28 +364,27 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
                                 <h4 className="font-bold text-lg">Representative Details</h4>
                                 <table>
                                     <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Phone</th>
-                                        <th>Email</th>
-                                        <th>Address</th>
-                                    </tr>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Phone</th>
+                                            <th>Email</th>
+                                            <th>Address</th>
+                                        </tr>
                                     </thead>
                                     <tbody>
-                                    <tr>
-                                        <td>{lpoDetails.vendor_representative?.name}</td>
-                                        <td>{lpoDetails.vendor_representative?.phone}</td>
-                                        <td>{lpoDetails.vendor_representative?.email}</td>
-                                        <td>
-                                            {lpoDetails.vendor_representative?.address + ', ' + lpoDetails.vendor_representative?.city?.name + ', ' + lpoDetails.vendor_representative?.state?.name + ', ' + lpoDetails.vendor_representative?.country?.name}
-                                        </td>
-                                    </tr>
+                                        <tr>
+                                            <td>{lpoDetails.vendor_representative?.name}</td>
+                                            <td>{lpoDetails.vendor_representative?.phone}</td>
+                                            <td>{lpoDetails.vendor_representative?.email}</td>
+                                            <td>
+                                                {lpoDetails.vendor_representative?.address + ', ' + lpoDetails.vendor_representative?.city?.name + ', ' + lpoDetails.vendor_representative?.state?.name + ', ' + lpoDetails.vendor_representative?.country?.name}
+                                            </td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
-
                     {showItemDetail.show && (
                         <div className="border rounded p-5 w-full">
                             <>
@@ -375,20 +410,24 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
                 </div>
 
                 <div className="w-full flex justify-center items-center flex-col md:flex-row gap-3">
-                    <button
-                        type="submit"
-                        className="btn btn-primary"
+                    <Button
+                        
+                        text={loading ? 'Loading...' : 'Save Good Receive Note'}
+                        variant={ButtonVariant.primary}
                         disabled={loading}
-                    >
-                        {loading ? 'Loading...' : 'Save Good Receive Note'}
-                    </button>
-                    <button
-                        type="button"
+                        size={ButtonSize.medium}
+                    // onClick={() => setVendorAddressModal(true)}
+
+                    />
+                    
+                    <Button
+                        text='Clear'
+                        variant={ButtonVariant.info}
+                        size={ButtonSize.medium}
                         onClick={() => window?.location?.reload()}
-                        className="btn btn-info"
-                    >
-                        Clear
-                    </button>
+
+                    />
+
                 </div>
             </div>
         </form>
