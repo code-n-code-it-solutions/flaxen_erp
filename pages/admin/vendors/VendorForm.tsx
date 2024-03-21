@@ -133,10 +133,8 @@ const VendorForm = ({ id }: IFormProps) => {
     const [imagePreview, setImagePreview] = useState('');
     const [isFormValid, setIsFormValid] = useState<boolean>(false);
     const [validationMessage, setValidationMessage] = useState("");
-    const [VAddressMessage, setVAddressMessage] = useState('');
-    const [VRepresentativeMessage, setVRepresentativeMessage] = useState('');
+    const [Message, setMessage] = useState('');
     const [errorMessages, setErrorMessages] = useState({
-        // vendor_number: 'This field is required',
         name: 'This field is required',
         vendor_type_id: 'This field is required',
         opening_balance: 'This field is required',
@@ -145,16 +143,9 @@ const VendorForm = ({ id }: IFormProps) => {
         due_in_days: 'This field is required',
         website_url: 'This field is required',
         tax_reg_no: 'This field is required',
-        // country_id: 'This field is required',
-        // state_id: 'This field is required',
-        // city_id: 'This field is required',
         postal_code: 'This field is required',
         address: 'This field is required',
-        // city_id: 'This field is required',
-        // postal_code: 'This field is required', 
     });
-
-
 
     const [vendorTypeOptions, setVendorTypeOptions] = useState([]);
     const [countryOptions, setCountryOptions] = useState([]);
@@ -196,13 +187,6 @@ const VendorForm = ({ id }: IFormProps) => {
             setStateOptions([])
             setCityOptions([])
         }
-        // if (required) {
-        //     if (!value) {
-        //         setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
-        //     } else {
-        //         setErrorMessages({ ...errorMessages, [name]: '' });
-        //     }
-        // }
     }
 
     const handleStateChange = (e: any) => {
@@ -214,31 +198,15 @@ const VendorForm = ({ id }: IFormProps) => {
             setFormData(prev => ({ ...prev, state_id: 0 }))
             setCityOptions([])
         }
-        // if (required) {
-        //     if (!value) {
-        //         setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
-        //     } else {
-        //         setErrorMessages({ ...errorMessages, [name]: '' });
-        //     }
-        // }
     }
     useEffect(() => {
+        
         const isValid = Object.values(errorMessages).some(message => message !== '');
         setIsFormValid(!isValid);
         console.log('Error Messages:', errorMessages);
         console.log('isFormValid:', !isValid);
         if(isValid){
             setValidationMessage("Please fill all the required fields.");
-        }
-        if (vendorRepresentatives.length === 0) {
-            setVRepresentativeMessage('Vendor must have atleast one representative added.')
-        } else {
-            setVRepresentativeMessage('');
-        }
-        if (vendorAddresses.length === 0) {
-            setVAddressMessage('Vendor must have atleast one Address added.')
-        } else {
-            setVAddressMessage('');
         }
 
     }, [errorMessages]);
@@ -268,57 +236,64 @@ const VendorForm = ({ id }: IFormProps) => {
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setFormData(prev => ({ ...prev, image: image }))
-        setAuthToken(token)
-        setContentType('multipart/form-data')
-
-        let formFinalData = {
-            ...formData,
-            image: image,
-            representatives: vendorRepresentatives.map((representative: any) => {
-                return {
-                    name: representative.name,
-                    phone: representative.phone,
-                    email: representative.email,
-                    country_id: representative.country_id,
-                    state_id: representative.state_id,
-                    city_id: representative.city_id,
-                    address: representative.address,
-                    postal_code: representative.postal_code,
-                    image: representative.image,
-                    is_active: true
-                }
-            }),
-
-            addresses: vendorAddresses.map((address: any) => {
-                return {
-                    address_type: address.address_type,
-                    country_id: address.country_id,
-                    state_id: address.state_id,
-                    city_id: address.city_id,
-                    address: address.address,
-                    postal_code: address.postal_code,
-                    is_active: true
-                }
-            }),
-
-            bank_accounts: vendorBankAccounts.map((bankAccount: any) => {
-                return {
-                    bank_id: bankAccount.bank_id,
-                    currency_id: bankAccount.currency_id,
-                    account_name: bankAccount.account_name,
-                    account_number: bankAccount.account_number,
-                    iban: bankAccount.iban,
-                    is_active: true
-                }
-            })
-        }
-        if (id) {
-            dispatch(updateVendor({ id, vendorData: formFinalData }));
+    
+        if (vendorRepresentatives.length === 0 || vendorAddresses.length === 0) {
+            setMessage("Please add at least one representative and address.");
         } else {
-            dispatch(storeVendor(formFinalData));
+            setFormData(prev => ({ ...prev, image: image }));
+            setAuthToken(token);
+            setContentType('multipart/form-data');
+    
+            let formFinalData = {
+                ...formData,
+                image: image,
+                representatives: vendorRepresentatives.map((representative: any) => {
+                    return {
+                        name: representative.name,
+                        phone: representative.phone,
+                        email: representative.email,
+                        country_id: representative.country_id,
+                        state_id: representative.state_id,
+                        city_id: representative.city_id,
+                        address: representative.address,
+                        postal_code: representative.postal_code,
+                        image: representative.image,
+                        is_active: true
+                    }
+                }),
+    
+                addresses: vendorAddresses.map((address: any) => {
+                    return {
+                        address_type: address.address_type,
+                        country_id: address.country_id,
+                        state_id: address.state_id,
+                        city_id: address.city_id,
+                        address: address.address,
+                        postal_code: address.postal_code,
+                        is_active: true
+                    }
+                }),
+    
+                bank_accounts: vendorBankAccounts.map((bankAccount: any) => {
+                    return {
+                        bank_id: bankAccount.bank_id,
+                        currency_id: bankAccount.currency_id,
+                        account_name: bankAccount.account_name,
+                        account_number: bankAccount.account_number,
+                        iban: bankAccount.iban,
+                        is_active: true
+                    }
+                })
+            };
+    
+            if (id) {
+                dispatch(updateVendor({ id, vendorData: formFinalData }));
+            } else {
+                dispatch(storeVendor(formFinalData));
+            }
         }
     };
+    
 
     useEffect(() => {
         dispatch(clearLocationState())
@@ -449,18 +424,12 @@ const VendorForm = ({ id }: IFormProps) => {
                message={validationMessage} 
                setMessages={setValidationMessage} 
            />}
-           {vendorRepresentatives.length === 0 &&  VRepresentativeMessage && 
-           <Alert 
-           alertType="error" 
-           message={VRepresentativeMessage} 
-           setMessages={setVRepresentativeMessage} 
-           />}
-           {vendorAddresses.length === 0 &&  VAddressMessage && 
-           <Alert 
-           alertType="error" 
-           message={VAddressMessage} 
-           setMessages={setVAddressMessage} 
-           />}
+           {((vendorRepresentatives.length === 0 || vendorAddresses.length === 0) && Message) && (
+                <Alert 
+                alertType="error" 
+                message={Message} 
+                setMessages={setMessage} 
+            />)}
 
             <div className="flex justify-center items-center">
                 <ImageUploader image={image} setImage={setImage} existingImage={imagePreview} />
@@ -837,9 +806,9 @@ const VendorForm = ({ id }: IFormProps) => {
                 </div>
 
                 <div className="w-full">
-                    {isFormValid && vendorRepresentatives.length > 0 && vendorAddresses.length > 0 && ( <button 
+                    {isFormValid && ( <button 
                         type="submit"
-                        className="btn btn-primary"
+                        className="btn btn-primary" 
                         disabled={loading}
                     >
                         {loading ? 'Loading...' : id ? 'Update Vendor' : 'Save Vendor'}
