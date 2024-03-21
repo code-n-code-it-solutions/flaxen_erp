@@ -1,15 +1,14 @@
 "use client";
-import React, { useEffect, useState } from 'react';
-import { setAuthToken, setContentType } from "@/configs/api.config";
-import { useDispatch, useSelector } from "react-redux";
-import { ThunkDispatch } from "redux-thunk";
-import { IRootState } from "@/store";
-import { AnyAction } from "redux";
-import Select from "react-select";
-import {getLPOByStatuses, storeLPO} from "@/store/slices/localPurchaseOrderSlice";
+import React, {useEffect, useState} from 'react';
+import {setAuthToken, setContentType} from "@/configs/api.config";
+import {useDispatch, useSelector} from "react-redux";
+import {ThunkDispatch} from "redux-thunk";
+import {IRootState} from "@/store";
+import {AnyAction} from "redux";
+import {getLPOByStatuses} from "@/store/slices/localPurchaseOrderSlice";
 import {clearGoodReceiveNoteState, storeGRN} from "@/store/slices/goodReceiveNoteSlice";
 import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
-import {FORM_CODE_TYPE, RAW_PRODUCT_LIST_TYPE} from "@/utils/enums";
+import {ButtonSize, ButtonType, ButtonVariant, FORM_CODE_TYPE, RAW_PRODUCT_LIST_TYPE} from "@/utils/enums";
 import {Dropdown} from "@/components/form/Dropdown";
 import {Input} from "@/components/form/Input";
 import RawProductItemListing from "@/components/listing/RawProductItemListing";
@@ -283,8 +282,6 @@ const GoodReceiveNoteForm = ({ id }: IFormProps) => {
                             grn_number: e.target.value
                         }))}
                     placeholder="Good Receive Note Number"
-                        }))
-                    }
                     isMasked={false}
                     disabled={true}
                 />
@@ -411,15 +408,13 @@ const GoodReceiveNoteForm = ({ id }: IFormProps) => {
 
                 <div className="w-full flex justify-center items-center flex-col md:flex-row gap-3">
                     <Button
-                        
+                        type={ButtonType.submit}
                         text={loading ? 'Loading...' : 'Save Good Receive Note'}
                         variant={ButtonVariant.primary}
                         disabled={loading}
                         size={ButtonSize.medium}
-                    // onClick={() => setVendorAddressModal(true)}
-
                     />
-                    
+
                     <Button
                         text='Clear'
                         variant={ButtonVariant.info}
