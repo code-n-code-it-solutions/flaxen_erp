@@ -135,24 +135,7 @@ const VendorForm = ({ id }: IFormProps) => {
     const [validationMessage, setValidationMessage] = useState("");
     const [VAddressMessage, setVAddressMessage] = useState('');
     const [VRepresentativeMessage, setVRepresentativeMessage] = useState('');
-    const [errorMessages, setErrorMessages] = useState({
-        // vendor_number: 'This field is required',
-        name: 'This field is required',
-        vendor_type_id: 'This field is required',
-        opening_balance: 'This field is required',
-        phone: 'This field is required',
-        email: 'This field is required',
-        due_in_days: 'This field is required',
-        website_url: 'This field is required',
-        tax_reg_no: 'This field is required',
-        // country_id: 'This field is required',
-        // state_id: 'This field is required',
-        // city_id: 'This field is required',
-        postal_code: 'This field is required',
-        address: 'This field is required',
-        // city_id: 'This field is required',
-        // postal_code: 'This field is required', 
-    });
+    const [errorMessages, setErrorMessages] = useState<any>({});
 
 
 
@@ -183,7 +166,7 @@ const VendorForm = ({ id }: IFormProps) => {
                 setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
             }
         }
-        
+
     };
     const [error, setError] = useState('');
     const handleCountryChange = (e: any) => {
@@ -273,17 +256,17 @@ const VendorForm = ({ id }: IFormProps) => {
         setError('All fields are required.');
         return;
       }
-  
+
       if (formData.representatives.length === 0) {
         setError('At least one representative must be added.');
         return;
       }
-  
+
       if (formData.addresses.length === 0) {
         setError('At least one address must be added.');
         return;
       }
-  
+
       // If all validations pass, submit the form
         setError('');
         setFormData(prev => ({ ...prev, image: image }))
@@ -462,22 +445,22 @@ const VendorForm = ({ id }: IFormProps) => {
     return (
         <form className="space-y-5" onSubmit={handleSubmit}>
             {!isFormValid  && validationMessage &&
-               <Alert 
-               alertType="error" 
-               message={validationMessage} 
-               setMessages={setValidationMessage} 
+               <Alert
+               alertType="error"
+               message={validationMessage}
+               setMessages={setValidationMessage}
            />}
-           {vendorRepresentatives.length === 0 &&  VRepresentativeMessage && 
-           <Alert 
-           alertType="error" 
-           message={VRepresentativeMessage} 
-           setMessages={setVRepresentativeMessage} 
+           {vendorRepresentatives.length === 0 &&  VRepresentativeMessage &&
+           <Alert
+           alertType="error"
+           message={VRepresentativeMessage}
+           setMessages={setVRepresentativeMessage}
            />}
-           {vendorAddresses.length === 0 &&  VAddressMessage && 
-           <Alert 
-           alertType="error" 
-           message={VAddressMessage} 
-           setMessages={setVAddressMessage} 
+           {vendorAddresses.length === 0 &&  VAddressMessage &&
+           <Alert
+           alertType="error"
+           message={VAddressMessage}
+           setMessages={setVAddressMessage}
            />}
 
             <div className="flex justify-center items-center">
@@ -855,7 +838,7 @@ const VendorForm = ({ id }: IFormProps) => {
                 </div>
 
                 <div className="w-full">
-                    {isFormValid && vendorRepresentatives.length > 0 && vendorAddresses.length > 0 && ( <button 
+                    {isFormValid && vendorRepresentatives.length > 0 && vendorAddresses.length > 0 && ( <button
                         type="submit"
                         className="btn btn-primary"
                         disabled={loading}

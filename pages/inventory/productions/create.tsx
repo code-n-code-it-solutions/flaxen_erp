@@ -18,9 +18,6 @@ import PageWrapper from "@/components/PageWrapper";
 import {getIcon} from "@/utils/helper";
 import {Input} from "@/components/form/Input";
 import {Dropdown} from "@/components/form/Dropdown";
-import {FORM_CODE_TYPE, RAW_PRODUCT_LIST_TYPE} from "@/utils/enums";
-import RawProductModal from "@/components/modals/RawProductModal";
-import Alert from  "@/components/Alert";
 
 interface IFormData {
     batch_number: string;

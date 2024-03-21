@@ -202,17 +202,17 @@ const ProductForm = ({ id }: IFormProps) => {
             setValidationMessage("Please fill all the required fields.");
         }
     }, [errorMessages]);
-  
+
     return (
         <form className="space-y-5" onSubmit={handleSubmit}>
             {!isFormValid  && validationMessage &&
-               <Alert 
-               alertType="error" 
-               message={validationMessage} 
-               setMessages={setValidationMessage} 
+               <Alert
+               alertType="error"
+               message={validationMessage}
+               setMessages={setValidationMessage}
            />
             }
-            
+
             <div className="flex items-center justify-center">
                 <ImageUploader image={image} setImage={setImage} existingImage={imagePreview} />
             </div>
