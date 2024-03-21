@@ -1,5 +1,7 @@
 import React, {Fragment, useEffect, useState} from 'react';
 import Modal from "@/components/Modal";
+import {Input} from '@/components/form/Input'
+import  Alert  from "@/components/Alert";
 
 interface IProps {
     modalOpen: boolean;
@@ -13,6 +15,11 @@ const DocumentFormModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData
     const [name, setName] = useState<string>('');
     const [description, setDescription] = useState<string>('');
     const [isActive, setIsActive] = useState<boolean>(true);
+    const [errorMessages, setErrorMessages] = useState({
+        name: "This field is required",
+    })
+    const [isFormValid, setIsFormValid] = useState<boolean>(false);
+    const [validationMessage, setValidationMessage] = useState("");
 
     useEffect(() => {
         if (modalOpen) {
@@ -22,6 +29,30 @@ const DocumentFormModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData
             setIsActive(true)
         }
     }, [modalOpen]);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { value,required,name } = e.target;
+        if(name === 'name'){
+            setName(value);
+        }
+        if (required) {
+            if (!value) {
+                setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
+            } else {
+                setErrorMessages({ ...errorMessages, [name]: '' });
+            }
+        }
+    };
+
+    useEffect(() => {
+        const isValid = Object.values(errorMessages).some(message => message !== '');
+        setIsFormValid(!isValid);
+        // console.log('Error Messages:', errorMessages);
+        // console.log('isFormValid:', !isValid);
+        if(isValid){
+            setValidationMessage("Please fill the required field.");
+        }
+    }, [errorMessages]);
 
     return (
         <Modal
@@ -34,7 +65,7 @@ const DocumentFormModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData
                             onClick={() => setModalOpen(false)}>
                         Discard
                     </button>
-                    <button type="button" className="btn btn-primary ltr:ml-4 rtl:mr-4"
+                    {isFormValid && <button type="button" className="btn btn-primary ltr:ml-4 rtl:mr-4"
                             onClick={() => handleSubmit({
                                 name,
                                 document,
@@ -42,10 +73,17 @@ const DocumentFormModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData
                                 isActive
                             })}>
                         {modalFormData ? 'Update' : 'Add'}
-                    </button>
+                    </button>}
                 </div>
             }
         >
+            {!isFormValid  && validationMessage &&
+               <Alert 
+               alertType="error" 
+               message={validationMessage} 
+               setMessages={setValidationMessage} 
+           />}
+           
             <div className="w-full">
                 <label htmlFor="document">Document</label>
                 <input
@@ -54,19 +92,21 @@ const DocumentFormModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData
                     name="document"
                     onChange={(e) => setDocument(e.target.files ? e.target.files[0] : null)}
                     className="rtl:file-ml-5 form-input p-0 file:border-0 file:bg-primary/90 file:py-2 file:px-4 file:font-semibold file:text-white file:hover:bg-primary ltr:file:mr-5"
-                    required
+                    required= {true}
                 />
             </div>
             <div className="w-full">
                 <label htmlFor="name">Name</label>
-                <input
+                <Input
+                    label="Name"
                     type="text"
                     name="name"
-                    id="name"
-                    className="form-input"
                     placeholder='Enter document name'
                     value={name}
-                    onChange={e => setName(e.target.value)}
+                    onChange={handleChange}
+                    isMasked={false}
+                    required={true}
+                    errorMessage={errorMessages?.name}
                 />
             </div>
             <div className="w-full">

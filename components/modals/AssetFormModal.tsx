@@ -10,6 +10,7 @@ import {AnyAction} from "redux";
 import {clearAssetState, getAssetStatuses} from "@/store/slices/assetSlice";
 import Select from "react-select";
 import Modal from "@/components/Modal";
+import { log } from 'console';
 
 interface IProps {
     modalOpen: boolean;
@@ -27,20 +28,34 @@ const AssetFormModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData}: 
     const [statusOptions, setStatusOptions] = useState<any[]>([]);
     const [selectedStatus, setSelectedStatus] = useState<any>({});
     const [image, setImage] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState('')
     const {code} = useSelector((state: IRootState) => state.util);
     const {loading, statuses} = useSelector((state: IRootState) => state.asset);
 
+    
+
     useEffect(() => {
         if (modalOpen) {
+            console.log("hello");
+            
             setName('');
             setDescription('');
             setStatus('')
             setImage(null);
             setAssetCode('')
             setSelectedStatus({})
-            dispatch(clearAssetState());
-            dispatch(generateCode(FORM_CODE_TYPE.ASSET));
+            dispatch(clearAssetState());   
             dispatch(getAssetStatuses());
+            if (Object.keys(modalFormData).length>0){
+                setName(modalFormData.name);
+                setDescription(modalFormData.description);
+                setStatus(modalFormData.status);
+                setAssetCode(modalFormData.code);
+                setImagePreview(modalFormData.thumbnail)
+            }else{
+                dispatch(generateCode(FORM_CODE_TYPE.ASSET));
+                setImagePreview(modalFormData.thumbnail)
+            }
         }
     }, [modalOpen]);
 
@@ -61,7 +76,7 @@ const AssetFormModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData}: 
         <Modal
             show={modalOpen}
             setShow={setModalOpen}
-            title='Add Asset'
+            title={Object.keys(modalFormData).length>0 ? 'Update Asset': 'Add Asset'}
             footer={<div className="mt-8 flex items-center justify-end">
                 <button type="button" className="btn btn-outline-danger"
                         onClick={() => setModalOpen(false)}>
@@ -76,7 +91,7 @@ const AssetFormModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData}: 
                             image_id: image,
                             status
                         })}>
-                    {modalFormData ? 'Update' : 'Add'}
+                    {Object.keys(modalFormData).length>0 ? 'Update' : 'Add'}
 
                 </button>
             </div>}
@@ -88,6 +103,7 @@ const AssetFormModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData}: 
                     image={image}
                     setImage={setImage}
                     label="Asset Image (optional)"
+                    existingImage={imagePreview}
                 />
             </div>
             <div className="w-full">

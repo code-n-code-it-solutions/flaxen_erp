@@ -1,32 +1,24 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import PageWrapper from "@/components/PageWrapper";
-import {useDispatch, useSelector} from "react-redux";
-import {ThunkDispatch} from "redux-thunk";
-import {IRootState} from "@/store";
-import {AnyAction} from "redux";
-import Link from "next/link";
+import { useDispatch, useSelector } from "react-redux";
+import { ThunkDispatch } from "redux-thunk";
+import { IRootState } from "@/store";
+import { AnyAction } from "redux";
 import GenericTable from "@/components/GenericTable";
-import {uniqBy} from "lodash";
-import {generatePDF, getIcon, imagePath} from "@/utils/helper";
-import {ButtonVariant, IconType} from "@/utils/enums";
+import { generatePDF, getIcon, imagePath } from "@/utils/helper";
+import { ButtonVariant, IconType } from "@/utils/enums";
 import IconButton from "@/components/IconButton";
-import Preview from "@/pages/inventory/product-assembly/preview";
 import Button from "@/components/Button";
-import {setPageTitle} from "@/store/slices/themeConfigSlice";
-import {
-    clearCategoryState,
-    getProductCategory,
-    storeProductCategory,
-    updateProductCategory
-} from "@/store/slices/categorySlice";
+import { setPageTitle } from "@/store/slices/themeConfigSlice";
+import { storeAssets, getAssets, clearAssetState } from "@/store/slices/assetSlice";
 import Image from "next/image";
-import CategoryModal from "@/components/modals/CategoryModal";
-import {setAuthToken, setContentType} from "@/configs/api.config";
+import AssetFormModal from "@/components/modals/AssetFormModal";
+import { setAuthToken, setContentType } from "@/configs/api.config";
 
-const Categories = () => {
+const Assets = () => {
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
-    const {token} = useSelector((state: IRootState) => state.user);
-    const {allProductCategory, loading, success, productCategory} = useSelector((state: IRootState) => state.productCategory);
+    const { token } = useSelector((state: IRootState) => state.user);
+    const { assets, loading, success, asset } = useSelector((state: IRootState) => state.asset);
     const [rowData, setRowData] = useState([]);
     const [modalOpen, setModalOpen] = useState<boolean>(false);
     const [detail, setDetail] = useState<any>({});
@@ -41,46 +33,47 @@ const Categories = () => {
             href: '/inventory',
         },
         {
-            title: 'All Categories',
+            title: 'Assets',
             href: '#',
         },
     ];
 
-    const handleSubmit = (formData:any) => {
+    const handleSubmit = (formData: any) => {
         setAuthToken(token)
         setContentType('multipart/form-data')
-        if(Object.keys(detail).length>0) {
-            dispatch(updateProductCategory({data: formData, id: detail.id}))
+        if (Object.keys(detail).length > 0) {
+            dispatch(storeAssets({ data: formData, id: detail.id }))
         } else {
-            dispatch(storeProductCategory(formData))
+            dispatch(storeAssets(formData))
         }
     }
 
-    const colName = ['id', 'thumbnail.path', 'name', 'country.name', 'is_active'];
-    const header = ['Id', 'Thumbnail', 'Name', 'Country', 'Status'];
+    const colName = ['id', 'thumbnail.path', 'name', 'code', 'description', 'status', 'is_active'];
+    const header = ['Id', 'thumbnail', 'Name', 'Country', 'Code', 'Description', 'Status'];
 
     useEffect(() => {
         setAuthToken(token)
         setContentType('application/json')
-        dispatch(setPageTitle('All Categories'));
-        dispatch(getProductCategory());
+        dispatch(setPageTitle('Assets'));
+        dispatch(getAssets());
+        dispatch(clearAssetState())
+        setModalOpen(false)
     }, []);
 
     useEffect(() => {
-        if (allProductCategory) {
-            setRowData(allProductCategory);
+        if (assets) {
+            setRowData(assets);
         } else {
             setRowData([])
         }
-    }, [allProductCategory]);
+    }, [assets]);
 
     useEffect(() => {
-        if (success && productCategory) {
-            dispatch(getProductCategory());
+        if (success && asset) {
+            dispatch(getAssets());
             setModalOpen(false);
-            dispatch(clearCategoryState())
         }
-    }, [success, productCategory]);
+    }, [success, asset]);
 
     return (
         <PageWrapper
@@ -89,7 +82,7 @@ const Categories = () => {
             breadCrumbItems={breadCrumbItems}
         >
             <div className="mb-5 flex items-center justify-between">
-                <h5 className="text-lg font-semibold dark:text-white-light">All Categories</h5>
+                <h5 className="text-lg font-semibold dark:text-white-light">All Assets</h5>
                 <Button
                     text={
                         <span className="flex items-center">
@@ -109,15 +102,15 @@ const Categories = () => {
                 header={header}
                 rowData={rowData}
                 loading={loading}
-                exportTitle={'all-categories-' + Date.now()}
+                exportTitle={'assets' + Date.now()}
                 showFooter={rowData.length > 0}
                 columns={[
                     {
-                        accessor: 'thumbnail.path',
+                        accessor: 'row.thumbnail',
                         title: 'Thumbnail',
                         render: (row: any) => (
                             <Image src={imagePath(row.thumbnail)} alt={row.name}
-                                   width={50} height={50} className="rounded"/>
+                                width={50} height={50} className="rounded" />
                         ),
                         sortable: true,
                     },
@@ -127,7 +120,7 @@ const Categories = () => {
                         sortable: true,
                         footer: (
                             <div className='flex gap-2 justify-start items-center'>
-                                <span>Categories:</span>
+                                <span>Assets:</span>
                                 <span>{rowData.length}</span>
                             </div>
                         )
@@ -135,6 +128,16 @@ const Categories = () => {
                     {
                         accessor: 'country.name',
                         title: 'Country',
+                        sortable: true
+                    },
+                    {
+                        accessor: 'code',
+                        title: 'Code',
+                        sortable: true
+                    },
+                    {
+                        accessor: 'description',
+                        title: 'Description',
                         sortable: true
                     },
                     {
@@ -178,7 +181,7 @@ const Categories = () => {
                     }
                 ]}
             />
-            <CategoryModal
+            <AssetFormModal
                 modalOpen={modalOpen}
                 setModalOpen={setModalOpen}
                 handleSubmit={(formData) => handleSubmit(formData)}
@@ -188,4 +191,4 @@ const Categories = () => {
     );
 };
 
-export default Categories;
+export default Assets;

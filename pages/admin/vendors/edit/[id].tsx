@@ -1,6 +1,4 @@
 import React, {useEffect} from 'react';
-import Breadcrumb from "@/components/Breadcrumb";
-import Link from "next/link";
 import {useDispatch, useSelector} from "react-redux";
 import {ThunkDispatch} from "redux-thunk";
 import {IRootState} from "@/store";

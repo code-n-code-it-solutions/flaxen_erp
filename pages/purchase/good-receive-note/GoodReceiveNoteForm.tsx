@@ -6,6 +6,7 @@ import { ThunkDispatch } from "redux-thunk";
 import { IRootState } from "@/store";
 import { AnyAction } from "redux";
 import Select from "react-select";
+
 import { getLPOByStatuses, storeLPO } from "@/store/slices/localPurchaseOrderSlice";
 import { clearGoodReceiveNoteState, storeGRN } from "@/store/slices/goodReceiveNoteSlice";
 import { clearUtilState, generateCode } from "@/store/slices/utilSlice";
@@ -224,11 +225,40 @@ const GoodReceiveNoteForm = ({ id }: IFormProps) => {
                     }))}
                 />
 
-                <Input
+                <Dropdown
                     divClasses='w-full md:w-1/2'
+                    label='LPO'
+                    name='purchase_requisition_id'
+                    options={localPurchaseOrderOptions}
+                    value={formData.local_purchase_order_id}
+                    onChange={(e: any) => handleLPOChange(e)}
+                />
+
+                <Dropdown
+                    divClasses='w-full md:w-1/2'
+                    label='Status'
+                    name='status'
+                    options={statusOptions}
+                    value={formData.status}
+                    onChange={(e: any) => {
+                        if (e && typeof e !== 'undefined') {
+                            setFormData(prev => ({
+                                ...prev,
+                                status: e.value
+                            }))
+                        } else {
+                            setFormData(prev => ({
+                                ...prev,
+                                status: ''
+                            }))
+                        }
+                    }}
+                />
+
+                <Input
                     label='Good Receive Note Number'
                     type='text'
-                    name=''
+                    name='grn_number'
                     value={formData.grn_number}
                     onChange={(e: any) =>
                         setFormData(prev => ({
@@ -236,6 +266,8 @@ const GoodReceiveNoteForm = ({ id }: IFormProps) => {
                             grn_number: e.target.value
                         }))}
                     placeholder="Good Receive Note Number"
+                        }))
+                    }
                     isMasked={false}
                     disabled={true}
                 />

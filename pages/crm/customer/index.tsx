@@ -28,11 +28,11 @@ const Index = () => {
             href: '/main',
         },
         {
-            title: 'Inventory Dashboard',
-            href: '/inventory',
+            title: 'Customer Dashboard',
+            href: '/Customer',
         },
         {
-            title: 'Materials',
+            title: 'Customer',
             href: '#',
         },
     ];
@@ -43,7 +43,7 @@ const Index = () => {
     }
 
     useEffect(() => {
-        dispatch(setPageTitle('All Raw Materials'));
+        dispatch(setPageTitle('Customer Details'));
         dispatch(clearRawProductState());
         getRowItems();
     }, []);
@@ -54,8 +54,8 @@ const Index = () => {
         }
     }, [rawProducts.allRawProducts]);
 
-    const colName = ['id', 'item_code', 'title', 'unit.name', 'valuation_method', 'is_active'];
-    const heads = ['Id', 'Code', 'Title', 'Unit-Sub', 'In Stock', 'Opening Unit Balance-Total', 'Valuation Method', 'Status'];
+    const colName = ['id', 'code', 'Name', 'phone', 'email', 'address','City State','country','postal code','is_active'];
+    const heads = ['Id', 'Code', 'Name', 'Phone', 'Email', 'Adress','address','City State','country','postal code', 'Valuation Method', 'Status'];
 
     const handleDeleteRawProduct = (id: number) => {
         Swal.fire({
@@ -98,7 +98,7 @@ const Index = () => {
             <div>
                 <div className="mb-5 flex items-center justify-between">
                     <h5 className="text-lg font-semibold dark:text-white-light">
-                        Raw Products
+                        Customer Details
                     </h5>
                     <Button
                         text={<span className="flex items-center">
@@ -116,46 +116,88 @@ const Index = () => {
                         </span>}
                         type={ButtonType.link}
                         variant={ButtonVariant.primary}
-                        link="/inventory/products/create"
+                        link="/customer/create"
                         size={ButtonSize.small}
                     />
                 </div>
                 <GenericTable
                     colName={colName}
                     header={heads}
-                    rowData={rowData}
+                    rowData={[]}
                     loading={rawProducts.loading}
                     exportTitle={'all-raw-materials-' + Date.now()}
-                    showFooter={rowData.length>0}
+                    showFooter={false}
                     columns={[
                         {
-                            accessor: 'item_code',
+                            accessor: 'Code',
                             title: 'Code',
                             sortable: true,
                             footer: (
                                 rowData.length > 0 &&
                                 <div className='flex gap-2 justify-start items-center'>
                                     <span>Items:</span>
-                                    <span>{rowData.length}</span>
+                                    <span>{}</span>
                                 </div>
                             )
                         },
                         {
-                            accessor: 'title',
-                            title: 'Title',
+                            accessor: 'name',
+                            title: 'Name',
                             sortable: true
                         },
                         {
-                            accessor: 'unit.name',
-                            title: 'Unit-Sub Unit',
+                            accessor: 'phone',
+                            title: 'Phone',
                             render: (row: any) => (
-                                <span>{row.unit.name}-{row.sub_unit.name}</span>
+                                <span>{}</span>
                             ),
                             sortable: true
                         },
                         {
-                            accessor: 'opening_stock',
-                            title: 'In Stock (Sub Unit)',
+                            accessor: 'emial',
+                            title: 'Email',
+                            sortable: true,
+                            footer: (
+                                rowData.length > 0 &&
+                                <div className='flex gap-2 justify-start items-center'>
+                                    <span className='h-3 w-3'>
+                                        {getIcon(IconType.sum)}
+                                    </span>
+                                    <span>{}</span>
+                                </div>
+                            )
+                        },
+                        {
+                            accessor: 'address',
+                            title: 'Address',
+                            render: (row: any) => (
+                                <span>
+                                    {}
+                                </span>
+                            ),
+                            footer: (
+                                rowData.length > 0 &&
+                                <div className="flex justify-start items-center gap-3">
+                                    <div className='flex gap-2 justify-start items-center'>
+                                        <span className='h-3 w-3'>
+                                            {getIcon(IconType.sum)}
+                                        </span>
+                                        <span>{}</span>
+                                    </div>
+                                    <span> - </span>
+                                    <div className='flex gap-2 justify-start items-center'>
+                                        <span className='h-3 w-3'>
+                                            {getIcon(IconType.sum)}
+                                        </span>
+                                        <span>{}</span>
+                                    </div>
+                                </div>
+                            ),
+                            sortable: true
+                        },
+                        {
+                            accessor: 'city State',
+                            title: 'City State',
                             sortable: true,
                             footer: (
                                 rowData.length > 0 &&
@@ -168,54 +210,32 @@ const Index = () => {
                             )
                         },
                         {
-                            accessor: 'opening_stock_unit_balance',
-                            title: 'Stock Unit-Total Balance',
-                            render: (row: any) => (
-                                <span>
-                                    {Number(row.opening_stock_unit_balance).toLocaleString()} - {Number(row.opening_stock_total_balance).toLocaleString()}
-                                </span>
-                            ),
-                            footer: (
-                                rowData.length > 0 &&
-                                <div className="flex justify-start items-center gap-3">
-                                    <div className='flex gap-2 justify-start items-center'>
-                                        <span className='h-3 w-3'>
-                                            {getIcon(IconType.sum)}
-                                        </span>
-                                        <span>{rowData.reduce((acc: any, item: any) => acc + parseFloat(item.opening_stock_unit_balance), 0)}</span>
-                                    </div>
-                                    <span> - </span>
-                                    <div className='flex gap-2 justify-start items-center'>
-                                        <span className='h-3 w-3'>
-                                            {getIcon(IconType.sum)}
-                                        </span>
-                                        <span>{rowData.reduce((acc: any, item: any) => acc + parseFloat(item.opening_stock_total_balance), 0)}</span>
-                                    </div>
-                                </div>
-                            ),
-                            sortable: true
-                        },
-                        {
-                            accessor: 'valuation_method',
-                            title: 'Valuation Method',
+                            accessor: 'country ',
+                            title: 'Country',
                             sortable: true,
                             footer: (
                                 rowData.length > 0 &&
-                                <div className="flex justify-start items-center gap-3">
-                                    <div className='flex gap-2 justify-start items-center'>
-                                        <span>Average: </span>
-                                        <span>{rowData.reduce((acc: any, item: any) => item.valuation_method === 'Average' ? acc + 1 : 0, 0)}</span>
-                                    </div>
-                                    <div className='flex gap-2 justify-start items-center'>
-                                        <span>LIFO: </span>
-                                        <span>{rowData.reduce((acc: any, item: any) => item.valuation_method === 'LIFO' ? acc + 1 : 0, 0)}</span>
-                                    </div>
-                                    <div className='flex gap-2 justify-start items-center'>
-                                        <span>FIFO: </span>
-                                        <span>{rowData.reduce((acc: any, item: any) => item.valuation_method === 'FIFO' ? acc + 1 : 0, 0)}</span>
-                                    </div>
+                                <div className='flex gap-2 justify-start items-center'>
+                                    <span className='h-3 w-3'>
+                                        {getIcon(IconType.sum)}
+                                    </span>
+                                    <span>{rowData.reduce((acc: any, item: any) => acc + parseFloat(item.opening_stock), 0)}</span>
                                 </div>
-                            ),
+                            )
+                        },
+                        {
+                            accessor: 'Postal Code',
+                            title: 'Postal Code',
+                            sortable: true,
+                            footer: (
+                                rowData.length > 0 &&
+                                <div className='flex gap-2 justify-start items-center'>
+                                    <span className='h-3 w-3'>
+                                        {getIcon(IconType.sum)}
+                                    </span>
+                                    <span>{rowData.reduce((acc: any, item: any) => acc + parseFloat(item.opening_stock), 0)}</span>
+                                </div>
+                            )
                         },
                         {
                             accessor: 'is_active',

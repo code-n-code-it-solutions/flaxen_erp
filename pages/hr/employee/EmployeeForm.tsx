@@ -7,13 +7,13 @@ import {IRootState} from "@/store";
 import {AnyAction} from "redux";
 import {clearLocationState, getCities, getCountries, getStates} from "@/store/slices/locationSlice";
 import {useRouter} from "next/router";
-import BankDetailModal from "@/components/specific-modal/BankDetailModal";
+import BankDetailModal from "@/components/modals/BankDetailModal";
 import {clearEmployeeState, storeEmployee} from "@/store/slices/employeeSlice";
 import {clearDesignationState, getDesignationByDepartmentID, storeDesignation} from "@/store/slices/designationSlice";
 import {clearDepartmentState, getDepartments, storeDepartment} from "@/store/slices/departmentSlice";
-import DepartmentFormModal from "@/components/specific-modal/DepartmentFormModal";
-import DesignationFormModal from "@/components/specific-modal/DesignationFormModal";
-import DocumentFormModal from "@/components/specific-modal/DocumentFormModal";
+import DepartmentFormModal from "@/components/modals/DepartmentFormModal";
+import DesignationFormModal from "@/components/modals/DesignationFormModal";
+import DocumentFormModal from "@/components/modals/DocumentFormModal";
 import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
 import {ButtonSize, ButtonType, ButtonVariant, FORM_CODE_TYPE, IconType} from "@/utils/enums";
 import {MaskConfig} from "@/configs/mask.config";
@@ -23,6 +23,7 @@ import Button from "@/components/Button";
 import {createBlobUrl, getIcon, imagePath} from "@/utils/helper";
 import FileDownloader from "@/components/FileDownloader";
 import {clearRawProductState} from "@/store/slices/rawProductSlice";
+import  Alert  from "@/components/Alert";
 
 interface IFormData {
     employee_code: string;
@@ -76,11 +77,27 @@ const EmployeeForm = ({id}: IFormProps) => {
     const department = useSelector((state: IRootState) => state.department);
     const employee = useSelector((state: IRootState) => state.employee);
     const {code} = useSelector((state: IRootState) => state.util);
-
+    const [errors, setErrors] = useState<Record<string, string>>({});
     const [bankModalOpen, setBankModalOpen] = useState<boolean>(false);
     const [image, setImage] = useState<File | null>(null);
     const [employeeBankAccounts, setEmployeeBankAccounts] = useState<IBankAccount[]>([]);
     const [employeeDocuments, setEmployeeDocuments] = useState<IDocuments[]>([]);
+    const [isFormValid, setIsFormValid] = useState<boolean>(false);
+    const [validationMessage, setValidationMessage] = useState("");
+    // const [VAddressMessage, setVAddressMessage] = useState('');
+    // const [VRepresentativeMessage, setVRepresentativeMessage] = useState('');
+
+    const [errorMessages, setErrorMessages] = useState({
+        department_id: 'This field is required',
+        designation_id: 'This field is required',
+        name: 'This field is required',
+        password: 'This field is required',
+        phone: 'This field is required',
+        email: 'This field is required',
+        id_number: 'This field is required',
+        passport_number: 'This field is required',
+    });
+
     const [formData, setFormData] = useState<IFormData>({
         employee_code: '',
         name: '',
@@ -112,20 +129,40 @@ const EmployeeForm = ({id}: IFormProps) => {
     const [departmentOptions, setDepartmentOptions] = useState<any[]>([]);
     const [designationOptions, setDesignationOptions] = useState<any[]>([]);
 
-    const handleChange = (name: string, value: any) => {
+    const handleChange = (name: string, value: any,required:any) => {
+        // const {required} = e.target;
         setFormData(prevFormData => {
             return {...prevFormData, [name]: value};
         });
+        if (required) {
+            if (!value) {
+                setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
+            } else {
+                setErrorMessages({ ...errorMessages, [name]: '' });
+            }
+        }
+        if (name === 'phone') {
+            if (value === '(+971) __-__-____') {
+                setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
+            }
+        }
     };
 
-    const handleDepartmentChange = (e: any) => {
+    const handleDepartmentChange = (e: any,required:any) => {
+        // const [name,value,required] = e.target;
         if (e && e.value && typeof e !== 'undefined') {
             setFormData(prev => ({...prev, department_id: e.value}))
             dispatch(getDesignationByDepartmentID(parseInt(e.value)))
+            if (required) {
+                setErrorMessages({ ...errorMessages, department_id: '' });
+            }
         } else {
             setDesignationOptions([])
             setFormData(prev => ({...prev, department_id: 0}))
             setFormData(prev => ({...prev, designation_id: 0}))
+            if (required) {
+                setErrorMessages({ ...errorMessages, department_id: 'This field is required.' });
+            }
         }
     }
 
@@ -310,12 +347,42 @@ const EmployeeForm = ({id}: IFormProps) => {
             dispatch(clearDepartmentState())
         }
     }, [department.department]);
+     
+    useEffect(() => {
+        const isValid = Object.values(errorMessages).some(message => message !== '');
+        setIsFormValid(!isValid);
+        console.log('Error Messages:', errorMessages);
+        console.log('isFormValid:', !isValid);
+        if(isValid){
+            setValidationMessage("Please fill all the required fields.");
+        }
+        // if (vendorRepresentatives.length === 0) {
+        //     setVRepresentativeMessage('Vendor must have atleast one representative added.')
+        // } else {
+        //     setVRepresentativeMessage('');
+        // }
+        // if (vendorAddresses.length === 0) {
+        //     setVAddressMessage('Vendor must have atleast one Address added.')
+        // } else {
+        //     setVAddressMessage('');
+        // }
+
+    }, [errorMessages]);
+    
+   
+
 
     return (
-        <form className="space-y-5" onSubmit={(e) => handleSubmit(e)}>
+        <form className="space-y-5"  onSubmit={(e) => handleSubmit(e)}>
             <div className="flex justify-center items-center">
                 <ImageUploader image={image} setImage={setImage} existingImage={imagePreview}/>
             </div>
+            {!isFormValid  && validationMessage &&
+               <Alert 
+               alertType="error" 
+               message={validationMessage} 
+               setMessages={setValidationMessage} 
+           />}
             <div className="flex justify-start flex-col items-start space-y-3">
                 <Input
                     divClasses='w-full md:w-1/3'
@@ -323,10 +390,11 @@ const EmployeeForm = ({id}: IFormProps) => {
                     type='text'
                     name='employee_code'
                     value={formData.employee_code}
-                    onChange={(e) => handleChange('employee_code', e.target.value)}
+                    onChange={(e,required) => handleChange('employee_code', e.target.value,true)}
                     isMasked={false}
                     disabled={true}
                     placeholder='Enter Employee Code'
+                    required= {true}
                 />
                 <div className="w-full md:w-1/2 flex justify-center items-end gap-3">
                     <Dropdown
@@ -335,7 +403,9 @@ const EmployeeForm = ({id}: IFormProps) => {
                         name='deparment_id'
                         options={departmentOptions}
                         value={formData.department_id}
-                        onChange={(e: any) => handleDepartmentChange(e)}
+                        onChange={(e: any,required:any) => handleDepartmentChange(e,required)}
+                        required={true}
+                        errorMessage={errorMessages.department_id}
                     />
                     <Button
                         text={getIcon(IconType.add)}
@@ -352,19 +422,27 @@ const EmployeeForm = ({id}: IFormProps) => {
                         name='designation_id'
                         options={designationOptions}
                         value={formData.designation_id}
-                        onChange={(e: any) => {
+                        onChange={(e: any,required:any) => {
                             if (e && typeof e !== 'undefined') {
                                 setFormData(prev => ({
                                     ...prev,
                                     designation_id: e.value
                                 }))
+                                if (required) {
+                                    setErrorMessages({ ...errorMessages, designation_id: '' });
+                                }
                             } else {
                                 setFormData(prev => ({
                                     ...prev,
                                     designation_id: 0
                                 }))
+                                if (required) {
+                                    setErrorMessages({ ...errorMessages, designation_id: 'This field is required.' });
+                                }
                             }
                         }}
+                        required={true}
+                        errorMessage={errorMessages.designation_id}
                     />
                     <Button
                         text={getIcon(IconType.add)}
@@ -380,10 +458,12 @@ const EmployeeForm = ({id}: IFormProps) => {
                     type='text'
                     name='name'
                     value={formData.name}
-                    onChange={(e) => handleChange('name', e.target.value)}
+                    onChange={(e) => handleChange('name', e.target.value,true)}
                     isMasked={false}
                     styles={{height: 45}}
                     placeholder='Enter Employee Name'
+                    required={true}
+                    errorMessage={errorMessages.name}
                 />
                 <div className="flex flex-col md:flex-row gap-3 w-full">
                     <Input
@@ -392,10 +472,12 @@ const EmployeeForm = ({id}: IFormProps) => {
                         type='text'
                         name='phone'
                         value={formData.phone}
-                        onChange={(e) => handleChange('phone', e.target.value)}
+                        onChange={(e) => handleChange('phone', e.target.value,true)}
                         isMasked={true}
                         placeholder={MaskConfig.phone.placeholder}
                         maskPattern={MaskConfig.phone.pattern}
+                        errorMessage={errorMessages.phone}
+                        required={true}
                     />
 
                     <Input
@@ -404,9 +486,11 @@ const EmployeeForm = ({id}: IFormProps) => {
                         type='email'
                         name='email'
                         value={formData.email}
-                        onChange={(e) => handleChange('email', e.target.value)}
+                        onChange={(e) => handleChange('email', e.target.value,true)}
                         isMasked={false}
                         placeholder='Enter email address'
+                        errorMessage={errorMessages.email}
+                        required={true}
                     />
                     {!router.query.id && (
                         <Input
@@ -415,9 +499,11 @@ const EmployeeForm = ({id}: IFormProps) => {
                             type='password'
                             name='password'
                             value={formData.password}
-                            onChange={(e) => handleChange('password', e.target.value)}
+                            onChange={(e) => handleChange('password', e.target.value,true)}
                             isMasked={false}
                             placeholder='Enter login password'
+                            errorMessage={errorMessages.password}
+                            required={true}
                         />
                     )}
 
@@ -430,10 +516,12 @@ const EmployeeForm = ({id}: IFormProps) => {
                         type='text'
                         name='id_number'
                         value={formData.id_number}
-                        onChange={(e) => handleChange('id_number', e.target.value)}
+                        onChange={(e) => handleChange('id_number', e.target.value,true)}
                         isMasked={true}
                         placeholder={MaskConfig.identityNumber.placeholder}
                         maskPattern={MaskConfig.identityNumber.pattern}
+                        errorMessage={errorMessages.id_number}
+                        required={true}
                     />
 
                     <Input
@@ -442,9 +530,11 @@ const EmployeeForm = ({id}: IFormProps) => {
                         type='text'
                         name='passport_number'
                         value={formData.passport_number}
-                        onChange={(e) => handleChange('passport_number', e.target.value)}
+                        onChange={(e) => handleChange('passport_number', e.target.value,true)}
                         isMasked={false}
                         placeholder='Enter passport number'
+                        errorMessage={errorMessages.passport_number}
+                        required={true}
                     />
                     <Input
                         divClasses='w-full'
@@ -452,9 +542,11 @@ const EmployeeForm = ({id}: IFormProps) => {
                         type='date'
                         name='date_of_joining'
                         value={formData.date_of_joining}
-                        onChange={(date) => handleChange('date_of_joining', date[0].toLocaleDateString())}
+                        onChange={(date) => handleChange('date_of_joining', date.target.value, true)}
                         isMasked={false}
-                        placeholder='Enter passport number'
+                        placeholder='Enter date of joining'
+                        // errorMessage={errorMessages.date_of_joining}
+                        // required={true}
                     />
 
                 </div>
@@ -486,7 +578,7 @@ const EmployeeForm = ({id}: IFormProps) => {
                         value={formData.city_id}
                         onChange={(e: any) => {
                             if (e && typeof e !== 'undefined') {
-                                handleChange('city_id', e.value)
+                                handleChange('city_id', e.value,true)
                             } else {
                                 setFormData(prev => ({
                                     ...prev,
@@ -503,9 +595,11 @@ const EmployeeForm = ({id}: IFormProps) => {
                         type='text'
                         name='postal_code'
                         value={formData.postal_code}
-                        onChange={(e) => handleChange('postal_code', e.target.value)}
+                        onChange={(e) => handleChange('postal_code', e.target.value,true)}
                         isMasked={false}
                         placeholder='Enter postal code'
+                        // errorMessage={errorMessages.postal_code}
+                        // required={true}
                     />
                     <Input
                         divClasses='w-full'
@@ -513,9 +607,11 @@ const EmployeeForm = ({id}: IFormProps) => {
                         type='text'
                         name='address'
                         value={formData.address}
-                        onChange={(e) => handleChange('address', e.target.value)}
+                        onChange={(e) => handleChange('address', e.target.value,true)}
                         isMasked={false}
                         placeholder='Enter street address'
+                        // errorMessage={errorMessages.address}
+                        // required={true}
                     />
                 </div>
 
@@ -626,11 +722,11 @@ const EmployeeForm = ({id}: IFormProps) => {
                 </div>
 
                 <div className="w-full">
-                    <Button
+                    {isFormValid && <Button
                         text={employee.loading ? 'Loading...' : router.query.id ? 'Update Employee' : 'Save Employee'}
                         variant={ButtonVariant.primary}
                         type={ButtonType.submit}
-                    />
+                    />}
                 </div>
             </div>
             <DocumentFormModal
