@@ -12,7 +12,7 @@ interface IProps {
     cols?: number | 30;
     placeholder?: string;
     otherOptions?: Record<string, any>;
-    onChange: (e: any) => void;
+    onChange: (e: any,required:boolean) => void;
     errorMessage?: string;
     isReactQuill: boolean;
     required:  boolean;
@@ -41,7 +41,7 @@ const Textarea: FC<IProps> = ({
                 ? <ReactQuill
                     theme="snow"
                     value={value}
-                    onChange={onChange}
+                    onChange={(e) => onChange(e, required)}
                     placeholder={placeholder}
                     {...otherOptions}
                 />
@@ -54,7 +54,7 @@ const Textarea: FC<IProps> = ({
                     rows={rows}
                     defaultValue={value}
                     {...otherOptions}
-                    onChange={onChange}
+                    onChange={(e) => onChange(e, required)}
                     required={required}
                 ></textarea>}
 

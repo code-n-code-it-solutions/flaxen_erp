@@ -1,4 +1,4 @@
-import React, {FC} from 'react';
+import React, {FC, ChangeEvent} from 'react';
 import Flatpickr from 'react-flatpickr';
 import 'flatpickr/dist/flatpickr.css';
 import MaskedInput from "react-text-mask";
@@ -13,7 +13,8 @@ interface IProps {
     readonly?: boolean;
     required?: boolean;
     disabled?: boolean;
-    onChange: (e: any) => void;
+    onChange: (event: React.ChangeEvent<HTMLInputElement>, required: boolean) => void; // Keep the 'required' parameter
+
     errorMessage?: string;
     isMasked: boolean;
     maskPattern?: any[];
@@ -44,20 +45,21 @@ export const Input: FC<IProps> = ({
 
             {isMasked
                 ? <MaskedInput
-                    id={name}
-                    type={type}
-                    placeholder={placeholder}
-                    className="form-input"
-                    guide={true}
-                    name={name}
-                    value={value}
-                    onChange={onChange}
-                    mask={maskPattern ? maskPattern : []}
-                    disabled={disabled}
-                    required={required}
-                    readOnly={readonly}
-                    style={styles}
-                />
+                id={name}
+                type={type}
+                placeholder={placeholder}
+                className="form-input"
+                guide={true}
+                name={name}
+                value={value}
+                onChange={(e) => onChange(e, required)}
+                mask={maskPattern ? maskPattern : []}
+                disabled={disabled}
+                required={required}
+                readOnly={readonly}
+                style={styles}
+                // errorMessage={errorMessage}
+            />
                 : type === 'date'
                     ? <Flatpickr
                         value={value}
@@ -66,14 +68,14 @@ export const Input: FC<IProps> = ({
                             dateFormat: 'Y-m-d'
                         }}
                         className="form-input"
-                        onChange={onChange}
+                        // onChange={(dates: Date[]) => onChange(dates[0].toISOString(), required)} // Pass the 'required' parameter
                     />
                     : <input
                         type={type}
                         name={name}
                         id={name}
                         value={value}
-                        onChange={onChange}
+                        onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e, required)} // Pass the 'required' parameter
                         placeholder={placeholder}
                         className={`form-input ${errorMessage ? 'border-red-500' : ''}`}
                         disabled={disabled}
