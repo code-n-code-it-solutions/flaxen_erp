@@ -7,6 +7,7 @@ interface IProps {
     name: string;
     value: string;
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    defaultChecked?: boolean;
 }
 
 const Option: FC<IProps> = ({
@@ -15,7 +16,8 @@ const Option: FC<IProps> = ({
                                 type,
                                 name,
                                 value,
-                                onChange
+                                onChange,
+                                defaultChecked = false
                             }) => {
     return (
         <div className={divClasses}>
@@ -24,9 +26,9 @@ const Option: FC<IProps> = ({
                     type={type}
                     name={name}
                     value={value}
-                    className={`${type==='radio' ? 'form-radio' : 'form-checkbox'}`}
+                    className={`${type === 'radio' ? 'form-radio' : 'form-checkbox'}`}
                     onChange={onChange}
-                    defaultChecked={false}
+                    defaultChecked={defaultChecked}
                 />
                 <span className="text-white-dark">{label}</span>
             </label>

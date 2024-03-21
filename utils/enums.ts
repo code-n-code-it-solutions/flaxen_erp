@@ -11,6 +11,7 @@ export enum FORM_CODE_TYPE {
     RAW_MATERIAL = 'raw_material',
     ASSET = 'asset',
     SERVICE = 'service',
+    FILLING = 'filling',
 }
 
 export enum RAW_PRODUCT_LIST_TYPE {
@@ -19,6 +20,7 @@ export enum RAW_PRODUCT_LIST_TYPE {
     FILLING = 'filling',
     PURCHASE_REQUISITION = 'purchase_requisition',
     LOCAL_PURCHASE_ORDER = 'local_purchase_order',
+    GOOD_RECEIVE_NOTE = 'good_receive_note',
 }
 
 export enum ButtonType {
@@ -57,6 +59,7 @@ export enum IconType {
     upload = 'upload',
     cancel = 'cancel',
     sum = 'sum',
+    back = 'back',
 }
 
 export enum ListingType {

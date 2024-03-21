@@ -17,7 +17,10 @@ import { Input } from '@/components/form/Input';
 import { Dropdown } from '@/components/form/Dropdown';
 import PageWrapper from '@/components/PageWrapper';
 import RawProductItemListing from '@/components/listing/RawProductItemListing';
+import Button from "@/components/Button";
+import {getIcon} from "@/utils/helper";
 import Alert from '@/components/Alert';
+
 
 interface ITableRow {
     id: number;
@@ -220,52 +223,56 @@ const Create = () => {
             <div>
                 <div className="mb-5 flex items-center justify-between">
                     <h5 className="text-lg font-semibold dark:text-white-light">Enter Details of Assembly</h5>
-                    <Link href="/inventory/product-assembly" className="btn btn-primary btn-sm m-1">
-                        <span className="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ltr:mr-2 rtl:ml-2" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                <path d="M15 5L9 12L15 19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                            Back
-                        </span>
-                    </Link>
+                    <Button
+                        type={ButtonType.link}
+                        text={
+                            <span className="flex items-center">
+                                {getIcon(IconType.back)}
+                                Back
+                            </span>
+                        }
+                        variant={ButtonVariant.primary}
+                        link="/inventory/product-assembly"
+                    />
                 </div>
                 <form className="space-y-5" onSubmit={handleSubmit}>
                     {!isFormValid && validationMessage && <Alert alertType="error" message={validationMessage} setMessages={setValidationMessage} />}
                     {rawProducts.length === 0 && Message && <Alert alertType="error" message={Message} setMessages={setMessage} />}
-                    <div className="flex w-full flex-col items-start justify-start space-y-3 md:w-1/2">
-                        <Input
-                            divClasses="w-full"
-                            label="Formula Name"
-                            type="text"
-                            name="formula_name"
-                            value={formulaName}
-                            placeholder="Enter Formula Name"
-                            onChange={handleChange}
-                            isMasked={false}
-                            required={true}
+                    <div className="flex w-full flex-row items-start justify-between gap-3">
+                        <div className="flex justify-start flex-col items-start space-y-3 w-full">
+                            <Input
+                                divClasses='w-full'
+                                label='Formula Name'
+                                type='text'
+                                name='formula_name'
+                                value={formulaName}
+                                placeholder='Enter Formula Name'
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormulaName(e.target.value)}
+                                isMasked={false}
+                              required={true}
                             errorMessage={errorMessages.formula_name}
-                        />
+                            />
 
-                        <Input
-                            divClasses="w-full"
-                            label="Formula Code"
-                            type="text"
-                            name="formula_code"
-                            value={formulaCode}
-                            placeholder="Enter Formula Code"
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormulaCode(e.target.value)}
-                            isMasked={false}
-                            disabled={true}
-                            required={true}
-                        />
+                            <Input
+                                divClasses='w-full'
+                                label='Formula Code'
+                                type='text'
+                                name='formula_code'
+                                value={formulaCode}
+                                placeholder='Enter Formula Code'
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormulaCode(e.target.value)}
+                                isMasked={false}
+                                disabled={true}
+                              required={true}
+                            />
 
-                        <Dropdown
-                            divClasses="w-full"
-                            label="Category"
-                            name="category_id"
-                            value={categoryId}
-                            options={categoryOptions}
-                            onChange={(e: any, required: any) => {
+                            <Dropdown
+                                divClasses='w-full'
+                                label='Category'
+                                name='category_id'
+                                value={categoryId}
+                                options={categoryOptions}
+                                onChange={(e: any, required: any) => {
                                 if (e && typeof e !== 'undefined') {
                                     setCategoryId(e.value);
                                     if (required) {
@@ -280,17 +287,17 @@ const Create = () => {
                             }}
                             required={true}
                             errorMessage={errorMessages.category_id}
-                        />
+                            />
 
-                        <div className="flex w-full items-end justify-center gap-2">
-                            <Dropdown
-                                divClasses="w-full"
-                                label="Color Code"
-                                name="color_code_id"
-                                value={colorCodeId}
-                                styles={customStyles}
-                                options={colorCodeOptions}
-                                onChange={(e: any, required: any) => {
+                            <div className="w-full flex justify-center items-end gap-2">
+                                <Dropdown
+                                    divClasses='w-full'
+                                    label='Color Code'
+                                    name='color_code_id'
+                                    value={colorCodeId}
+                                    styles={customStyles}
+                                    options={colorCodeOptions}
+                                    onChange={(e: any, required: any) => {
                                     if (e && typeof e !== 'undefined') {
                                         setColorCodeId(e.value);
                                         if (required) {
@@ -305,25 +312,47 @@ const Create = () => {
                                 }}
                                 required={true}
                                 errorMessage={errorMessages.color_code_id}
-                            />
-                            <button type="button" className="btn btn-primary btn-sm flex items-center justify-center" onClick={() => setColorCodeModal(true)}>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" className="h-5 w-5 ltr:mr-2 rtl:ml-2" fill="none">
-                                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
-                                    <path d="M15 12L12 12M12 12L9 12M12 12L12 9M12 12L12 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                                </svg>
-                            </button>
+                                />
+                                <button type="button"
+                                        className="btn btn-primary btn-sm flex justify-center items-center"
+                                        onClick={() => setColorCodeModal(true)}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                         className="h-5 w-5 ltr:mr-2 rtl:ml-2"
+                                         fill="none">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
+                                        <path d="M15 12L12 12M12 12L9 12M12 12L12 9M12 12L12 15" stroke="currentColor"
+                                              strokeWidth="1.5" strokeLinecap="round"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div className="w-full border rounded p-5 hidden md:block">
+                            <h5 className="text-lg font-semibold dark:text-white-light mb-3">Formula Instructions</h5>
+                            <ul className="list-decimal list-inside space-y-2">
+                                <li>Enter the name of the formula</li>
+                                <li>Enter the code of the formula</li>
+                                <li>Select the category of the formula</li>
+                                <li>Select the color code of the formula</li>
+                                <li>Make sure to fill out all required field</li>
+                                <li>Add raw products which will be include in the formula</li>
+                            </ul>
                         </div>
                     </div>
 
-                    <RawProductItemListing rawProducts={rawProducts} setRawProducts={setRawProducts} type={RAW_PRODUCT_LIST_TYPE.PRODUCT_ASSEMBLY} />
-
+                    <RawProductItemListing
+                        rawProducts={rawProducts}
+                        setRawProducts={setRawProducts}
+                        type={RAW_PRODUCT_LIST_TYPE.PRODUCT_ASSEMBLY}
+                    />
                     {isFormValid && rawProducts.length > 0 && (
-                        <button type="submit" className="btn btn-primary !mt-6">
-                            Submit
-                        </button>
+                      <Button
+                          classes="!mt-6"
+                          type={ButtonType.submit}
+                          text="Submit"
+                          variant={ButtonVariant.primary}
+                      />
                     )}
                 </form>
-
                 <ColorCodeFormModal modalOpen={colorCodeModal} setModalOpen={setColorCodeModal} handleSubmit={(value: any) => handleColorCodeSubmit(value)} />
             </div>
         </PageWrapper>

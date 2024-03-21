@@ -1,4 +1,4 @@
-import React, {FC, ChangeEvent} from 'react';
+import React, {FC} from 'react';
 import Flatpickr from 'react-flatpickr';
 import 'flatpickr/dist/flatpickr.css';
 import MaskedInput from "react-text-mask";
@@ -13,8 +13,7 @@ interface IProps {
     readonly?: boolean;
     required?: boolean;
     disabled?: boolean;
-    onChange: (event: React.ChangeEvent<HTMLInputElement>, required: boolean) => void; // Keep the 'required' parameter
-
+    onChange: (e: any) => void;
     errorMessage?: string;
     isMasked: boolean;
     maskPattern?: any[];
@@ -45,21 +44,20 @@ export const Input: FC<IProps> = ({
 
             {isMasked
                 ? <MaskedInput
-                id={name}
-                type={type}
-                placeholder={placeholder}
-                className="form-input"
-                guide={true}
-                name={name}
-                value={value}
-                onChange={(e) => onChange(e, required)}
-                mask={maskPattern ? maskPattern : []}
-                disabled={disabled}
-                required={required}
-                readOnly={readonly}
-                style={styles}
-                // errorMessage={errorMessage}
-            />
+                    id={name}
+                    type={type}
+                    placeholder={placeholder}
+                    className="form-input"
+                    guide={true}
+                    name={name}
+                    value={value}
+                    onChange={onChange}
+                    mask={maskPattern ? maskPattern : []}
+                    disabled={disabled}
+                    required={required}
+                    readOnly={readonly}
+                    style={styles}
+                />
                 : type === 'date'
                     ? <Flatpickr
                         value={value}
@@ -68,21 +66,33 @@ export const Input: FC<IProps> = ({
                             dateFormat: 'Y-m-d'
                         }}
                         className="form-input"
-                        // onChange={(dates: Date[]) => onChange(dates[0].toISOString(), required)} // Pass the 'required' parameter
+                        onChange={onChange}
                     />
-                    : <input
-                        type={type}
-                        name={name}
-                        id={name}
-                        value={value}
-                        onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e, required)} // Pass the 'required' parameter
-                        placeholder={placeholder}
-                        className={`form-input ${errorMessage ? 'border-red-500' : ''}`}
-                        disabled={disabled}
-                        required={required}
-                        readOnly={readonly}
-                        style={styles}
-                    />
+                    : type === 'time'
+                        ? <Flatpickr
+                            options={{
+                                noCalendar: true,
+                                enableTime: true,
+                                dateFormat: 'h:i K',
+                            }}
+                            placeholder={placeholder}
+                            defaultValue={value}
+                            className="form-input"
+                            onChange={onChange}
+                        />
+                        : <input
+                            type={type}
+                            name={name}
+                            id={name}
+                            value={value}
+                            onChange={onChange}
+                            placeholder={placeholder}
+                            className={`form-input ${errorMessage ? 'border-red-500' : ''}`}
+                            disabled={disabled}
+                            required={required}
+                            readOnly={readonly}
+                            style={styles}
+                        />
             }
 
             {errorMessage && <p className="text-sm text-red-500">{errorMessage}</p>}
