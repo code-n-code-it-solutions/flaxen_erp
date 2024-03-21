@@ -347,7 +347,7 @@ const EmployeeForm = ({id}: IFormProps) => {
             dispatch(clearDepartmentState())
         }
     }, [department.department]);
-     
+
     useEffect(() => {
         const isValid = Object.values(errorMessages).some(message => message !== '');
         setIsFormValid(!isValid);
@@ -368,8 +368,8 @@ const EmployeeForm = ({id}: IFormProps) => {
         // }
 
     }, [errorMessages]);
-    
-   
+
+
 
 
     return (
@@ -378,10 +378,10 @@ const EmployeeForm = ({id}: IFormProps) => {
                 <ImageUploader image={image} setImage={setImage} existingImage={imagePreview}/>
             </div>
             {!isFormValid  && validationMessage &&
-               <Alert 
-               alertType="error" 
-               message={validationMessage} 
-               setMessages={setValidationMessage} 
+               <Alert
+               alertType="error"
+               message={validationMessage}
+               setMessages={setValidationMessage}
            />}
             <div className="flex justify-start flex-col items-start space-y-3">
                 <Input
@@ -390,7 +390,7 @@ const EmployeeForm = ({id}: IFormProps) => {
                     type='text'
                     name='employee_code'
                     value={formData.employee_code}
-                    onChange={(e,required) => handleChange('employee_code', e.target.value,true)}
+                    onChange={(e) => handleChange(e.target.name, e.target.value,e.target.required)}
                     isMasked={false}
                     disabled={true}
                     placeholder='Enter Employee Code'
