@@ -61,7 +61,6 @@ const Edit = () => {
 
     useEffect(() => {
         const {id} = router.query;
-        console.log('Vendor_id ', id);
         if (typeof id === 'string' && id) {
             dispatch(editVendor(parseInt(id)))
         }

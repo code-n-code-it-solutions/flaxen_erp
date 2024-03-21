@@ -51,37 +51,6 @@ interface IFormData {
     items: any[];
 }
 
-interface IRawProduct {
-    id: number;
-    raw_product_id: number;
-    lpo_quantity: number;
-    quantity: number;
-    unit_id: number;
-    unit_price: number;
-    total: number;
-    tax_category_id: string;
-    tax_rate: number;
-    tax_amount: number;
-    row_total: number
-    description: string;
-}
-
-interface IServiceItem {
-    name: string;
-    assets: any;
-    asset_ids: string;
-    quantity: number;
-    lpo_quantity: number;
-    unit_cost: number;
-    total: number;
-    description: string;
-    tax_category_name: string;
-    tax_category_id: string;
-    tax_rate: number;
-    tax_amount: number;
-    row_total: number
-}
-
 interface IFormProps {
     id?: any
 }
@@ -97,13 +66,11 @@ const LPOForm = ({id}: IFormProps) => {
     const {vehicle, success, vehicles} = useSelector((state: IRootState) => state.vehicle);
     const {employees} = useSelector((state: IRootState) => state.employee);
     const {taxCategories} = useSelector((state: IRootState) => state.taxCategory);
-    const [taxCategoryOptions, setTaxCategoryOptions] = useState<any>([]);
     const [showVendorDetail, setShowVendorDetail] = useState<boolean>(false);
     const [vendorDetail, setVendorDetail] = useState<any>({});
-    const [rawProductModalOpen, setRawProductModalOpen] = useState<boolean>(false);
-    const [rawProducts, setRawProducts] = useState<IRawProduct[]>([]);
-    const [serviceItems, setServiceItems] = useState<IServiceItem[]>([]);
-    const [miscellaneousItems, setMiscellaneousItems] = useState<IServiceItem[]>([]);
+    const [rawProducts, setRawProducts] = useState<any[]>([]);
+    const [serviceItems, setServiceItems] = useState<any[]>([]);
+    const [miscellaneousItems, setMiscellaneousItems] = useState<any[]>([]);
     const [formData, setFormData] = useState<IFormData>({
         purchase_requisition_id: 0,
         lpo_number: '',
@@ -129,7 +96,6 @@ const LPOForm = ({id}: IFormProps) => {
     });
 
     const [purchaseRequestOptions, setPurchaseRequestOptions] = useState<any[]>([{value: 0, label: 'Skip Requisition'}])
-    const [selectedPurchaseRequisition, setSelectedPurchaseRequisition] = useState<any>({})
     const [vendorOptions, setVendorOptions] = useState<any[]>([])
     const [currencyOptions, setCurrencyOptions] = useState<any[]>([])
     const [vendorRepresentativeOptions, setVendorRepresentativeOptions] = useState<any[]>([])
@@ -143,15 +109,11 @@ const LPOForm = ({id}: IFormProps) => {
 
     const [vehicleDetail, setVehicleDetail] = useState<any>({})
     const [showVehicleDetail, setShowVehicleDetail] = useState<boolean>(false)
-
-    const [serviceModalOpen, setServiceModalOpen] = useState<boolean>(false);
-    const [miscellaneousModalOpen, setMiscellaneousModalOpen] = useState<boolean>(false);
     const [showItemDetail, setShowItemDetail] = useState<any>({
         show: false,
         type: null
     });
 
-    const [itemDetail, setItemDetail] = useState<any>({})
     const [requisitionStatusOptions, setRequisitionStatusOptions] = useState<any[]>([
         {value: '', label: 'Select Status'},
         {value: 'Draft', label: 'Draft'},
@@ -186,109 +148,6 @@ const LPOForm = ({id}: IFormProps) => {
         }
     };
 
-    function handleEditServiceItem<T extends IServiceItem, K extends keyof T>(
-        {index, field, value, maxQuantity}: {
-            index: number,
-            field: K,
-            value: T[K],
-            maxQuantity?: number
-        }
-    ): void {
-        const updatedServiceItems: T[] = [...serviceItems] as T[];
-        updatedServiceItems[index][field] = value;
-        if (field === 'unit_cost') {
-            const numericValue = Number(value);
-            const clampedValue = numericValue || 0;
-            updatedServiceItems[index]['total'] = clampedValue * updatedServiceItems[index]['lpo_quantity'];
-            updatedServiceItems[index]['tax_amount'] = (updatedServiceItems[index]['total'] * updatedServiceItems[index]['tax_rate']) / 100;
-            updatedServiceItems[index]['row_total'] = updatedServiceItems[index]['total'] + updatedServiceItems[index]['tax_amount'];
-        } else if (field === 'lpo_quantity') {
-            const numericValue = Number(value);
-            const clampedValue = numericValue || 0;
-            updatedServiceItems[index][field] = (maxQuantity !== undefined && clampedValue > maxQuantity)
-                ? maxQuantity as T[K]
-                : clampedValue as T[K];
-            updatedServiceItems[index]['total'] = updatedServiceItems[index]['unit_cost'] * updatedServiceItems[index]['lpo_quantity'];
-            updatedServiceItems[index]['tax_amount'] = (updatedServiceItems[index]['total'] * updatedServiceItems[index]['tax_rate']) / 100;
-            updatedServiceItems[index]['row_total'] = updatedServiceItems[index]['total'] + updatedServiceItems[index]['tax_amount'];
-        } else if (field === 'tax_rate') {
-            const numericValue = Number(value);
-            const clampedValue = numericValue || 0;
-            updatedServiceItems[index]['tax_amount'] = (updatedServiceItems[index]['total'] * clampedValue) / 100;
-            updatedServiceItems[index]['row_total'] = updatedServiceItems[index]['total'] + updatedServiceItems[index]['tax_amount'];
-        } else {
-            updatedServiceItems[index][field] = value;
-        }
-        setMiscellaneousItems(updatedServiceItems);
-    }
-
-    function handleEditMiscellaneousItem<T extends IServiceItem, K extends keyof T>(
-        {index, field, value, maxQuantity}: {
-            index: number,
-            field: K,
-            value: T[K],
-            maxQuantity?: number
-        }
-    ): void {
-        const updatedServiceItems: T[] = [...serviceItems] as T[];
-        updatedServiceItems[index][field] = value;
-        if (field === 'unit_cost') {
-            const numericValue = Number(value);
-            const clampedValue = numericValue || 0;
-            updatedServiceItems[index]['total'] = clampedValue * updatedServiceItems[index]['lpo_quantity'];
-            updatedServiceItems[index]['tax_amount'] = (updatedServiceItems[index]['total'] * updatedServiceItems[index]['tax_rate']) / 100;
-            updatedServiceItems[index]['row_total'] = updatedServiceItems[index]['total'] + updatedServiceItems[index]['tax_amount'];
-        } else if (field === 'lpo_quantity') {
-            const numericValue = Number(value);
-            const clampedValue = numericValue || 0;
-            updatedServiceItems[index][field] = (maxQuantity !== undefined && clampedValue > maxQuantity)
-                ? maxQuantity as T[K]
-                : clampedValue as T[K];
-            updatedServiceItems[index]['total'] = updatedServiceItems[index]['unit_cost'] * updatedServiceItems[index]['lpo_quantity'];
-            updatedServiceItems[index]['tax_amount'] = (updatedServiceItems[index]['total'] * updatedServiceItems[index]['tax_rate']) / 100;
-            updatedServiceItems[index]['row_total'] = updatedServiceItems[index]['total'] + updatedServiceItems[index]['tax_amount'];
-        } else if (field === 'tax_rate') {
-            const numericValue = Number(value);
-            const clampedValue = numericValue || 0;
-            updatedServiceItems[index]['tax_amount'] = (updatedServiceItems[index]['total'] * clampedValue) / 100;
-            updatedServiceItems[index]['row_total'] = updatedServiceItems[index]['total'] + updatedServiceItems[index]['tax_amount'];
-        } else {
-            updatedServiceItems[index][field] = value;
-        }
-        setMiscellaneousItems(updatedServiceItems);
-    }
-
-
-    const handleRemoveItem = (index: number, type: string) => {
-        if (type === 'Service') {
-            const newItems = serviceItems.filter((item, i) => i !== index);
-            setMiscellaneousItems(newItems);
-        } else if (type === 'Material') {
-            const newItems = rawProducts.filter((address, i) => i !== index);
-            setRawProducts(newItems);
-        }
-    }
-
-    const handleRemoveAsset = (index: number, assetIndex: number) => {
-        const newItems = serviceItems.map((item, i) => {
-            if (i === index) {
-                const newAssets: any[] = item.assets.filter((asset: any, j: number) => j !== assetIndex);
-                return {
-                    ...item,
-                    assets: newAssets,
-                    asset_ids: newAssets.map((asset: any) => asset.id).join(','),
-                    // quantity: newAssets.length,
-                    lpo_quantity: newAssets.length,
-                    total: item.unit_cost * newAssets.length,
-                    tax_amount: (item.unit_cost * newAssets.length * item.tax_rate) / 100,
-                    row_total: (item.unit_cost * newAssets.length) + ((item.unit_cost * newAssets.length * item.tax_rate) / 100)
-                };
-            }
-            return item;
-        });
-        setMiscellaneousItems(newItems);
-    }
-
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setAuthToken(token)
@@ -303,32 +162,27 @@ const LPOForm = ({id}: IFormProps) => {
                     ? rawProducts.map((product: any) => {
                         return {
                             raw_product_id: product.raw_product_id,
-                            quantity: product.quantity,
-                            lpo_quantity: product.quantity,
-                            unit_id: product.unit_id,
-                            unit_price: product.unit_price,
-                            total: product.total,
                             description: product.description || '',
+                            unit_id: product.unit_id,
+                            quantity: product.quantity,
+                            unit_price: product.unit_price,
+                            sub_total: product.sub_total,
                             tax_category_id: product.tax_category_id,
                             tax_rate: product.tax_rate,
                             tax_amount: product.tax_amount,
-                            row_total: product.row_total
+                            grand_total: product.grand_total
                         }
                     })
                     : serviceItems.map((item: any) => {
                         return {
-                            name: item.name,
-                            assets: item.assets,
-                            asset_ids: item.asset_ids,
-                            quantity: item.quantity,
-                            lpo_quantity: item.quantity,
-                            unit_cost: item.unit_cost,
-                            total: item.total,
+                            asset_id: item.asset_id,
+                            service_name: item.service_name,
                             description: item.description || '',
+                            cost: item.cost,
                             tax_category_id: item.tax_category_id,
                             tax_rate: item.tax_rate,
                             tax_amount: item.tax_amount,
-                            row_total: item.row_total
+                            grand_total: item.grand_total
                         }
                     })
         }
@@ -401,16 +255,18 @@ const LPOForm = ({id}: IFormProps) => {
 
     const handlePurchaseRequisitionChange = (e: any) => {
         if (e && typeof e !== 'undefined') {
-            setFormData(prev => ({
-                ...prev,
-                purchase_requisition_id: e.value,
-                internal_document_number: e.request.pr_code
-            }))
-            setSelectedPurchaseRequisition(e)
-
+            if (e.value === 0) {
+                dispatch(generateCode(FORM_CODE_TYPE.PURCHASE_REQUISITION))
+            } else {
+                setFormData(prev => ({
+                    ...prev,
+                    purchase_requisition_id: e.value,
+                    internal_document_number: e.request.pr_code
+                }))
+            }
             if (e.value !== 0) {
-                if (formData.type === 'Material') {
-                    if (e.request.items?.length > 0) {
+                if (e.request.items?.length > 0) {
+                    if (formData.type === 'Material') {
                         setRawProducts(prevState => (
                             e.request.items.map((item: any) => ({
                                 raw_product_id: item.raw_product_id,
@@ -425,21 +281,25 @@ const LPOForm = ({id}: IFormProps) => {
                                 grand_total: item.unit_price * item.quantity
                             }))
                         ))
-                    }
-                } else if (formData.type === 'Service') {
-                    if (e.request.items?.length > 0) {
-                        setServiceItems(prevState => (
-                            e.request.items.map((item: any) => ({
-                                asset_id: item.asset_id,
-                                service_name: item.service_name,
-                                description: item.description || '',
-                                cost: isNaN(parseFloat(item.cost)) ? 0 : parseFloat(item.cost),
-                                tax_category_id: item.tax_category_id,
-                                tax_rate: isNaN(parseFloat(item.tax_rate)) ? 0 : parseFloat(item.tax_rate),
-                                tax_amount: isNaN(parseFloat(item.tax_amount)) ? 0 : parseFloat(item.tax_amount),
-                                grand_total: isNaN(parseFloat(item.grand_total)) ? 0 : parseFloat(item.grand_total)
-                            }))
-                        ))
+                    } else if (formData.type === 'Service') {
+                        if (e.request.items?.length > 0) {
+                            setServiceItems(prevState => (
+                                e.request.items.map((item: any) => ({
+                                    asset_id: item.asset_id,
+                                    service_name: item.service_name,
+                                    description: item.description || '',
+                                    cost: isNaN(parseFloat(item.cost)) ? 0 : parseFloat(item.cost),
+                                    tax_category_id: item.tax_category_id,
+                                    tax_rate: isNaN(parseFloat(item.tax_rate)) ? 0 : parseFloat(item.tax_rate),
+                                    tax_amount: isNaN(parseFloat(item.tax_amount)) ? 0 : parseFloat(item.tax_amount),
+                                    grand_total: isNaN(parseFloat(item.grand_total)) ? 0 : parseFloat(item.grand_total)
+                                }))
+                            ))
+                        }
+                    } else {
+                        setRawProducts([])
+                        setServiceItems([])
+                        setMiscellaneousItems([])
                     }
                 } else {
                     setRawProducts([])
@@ -481,7 +341,6 @@ const LPOForm = ({id}: IFormProps) => {
                     type: null
                 })
                 setPurchaseRequestOptions([{value: 0, label: 'Skip Requisition'}])
-                setSelectedPurchaseRequisition({})
                 dispatch(getPurchaseRequisitionByStatuses({type: e.value, statuses: ['Pending', 'Partial']}))
             }
         } else {
@@ -494,7 +353,6 @@ const LPOForm = ({id}: IFormProps) => {
                 type: ''
             }))
             setPurchaseRequestOptions([{value: 0, label: 'Skip Requisition'}])
-            setSelectedPurchaseRequisition({})
         }
     }
 
@@ -513,19 +371,6 @@ const LPOForm = ({id}: IFormProps) => {
         dispatch(generateCode(FORM_CODE_TYPE.PURCHASE_REQUISITION))
         dispatch(getTaxCategories());
     }, [])
-
-    useEffect(() => {
-        if (taxCategories) {
-            let taxCategoryOptions = taxCategories.map((taxCategory: any) => {
-                return {
-                    value: taxCategory.id,
-                    label: taxCategory.name,
-                    taxCategory
-                };
-            })
-            setTaxCategoryOptions([{value: '', label: 'Select Tax Category'}, ...taxCategoryOptions]);
-        }
-    }, [taxCategories])
 
     useEffect(() => {
         if (code) {
@@ -625,12 +470,6 @@ const LPOForm = ({id}: IFormProps) => {
         }
     }, [employees]);
 
-    useEffect(() => {
-        if (!rawProductModalOpen) {
-            setItemDetail({})
-        }
-    }, [rawProductModalOpen]);
-
     return (
         <form className="space-y-5" onSubmit={(e) => handleSubmit(e)}>
             <div className="flex justify-start flex-col items-start space-y-3">
@@ -679,6 +518,7 @@ const LPOForm = ({id}: IFormProps) => {
                                     onChange={handleChange}
                                     placeholder="Enter Internal Document Number"
                                     isMasked={false}
+                                    disabled={true}
                                 />
                             </div>
                             <Dropdown
@@ -686,7 +526,7 @@ const LPOForm = ({id}: IFormProps) => {
                                 label='Status'
                                 name='status_id'
                                 options={requisitionStatusOptions}
-                                value={formData.purchase_requisition_id}
+                                value={formData.status}
                                 onChange={(e: any) => {
                                     if (e && typeof e !== 'undefined') {
                                         setFormData(prev => ({
@@ -740,7 +580,7 @@ const LPOForm = ({id}: IFormProps) => {
 
                                 <Dropdown
                                     divClasses='w-full'
-                                    label='Status'
+                                    label='Currency'
                                     name='currency_id'
                                     options={currencyOptions}
                                     value={formData.currency_id}

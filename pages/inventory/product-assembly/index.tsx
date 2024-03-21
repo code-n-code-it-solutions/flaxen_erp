@@ -3,7 +3,6 @@ import Swal from 'sweetalert2';
 import {useDispatch, useSelector} from 'react-redux';
 import {setPageTitle} from '@/store/slices/themeConfigSlice';
 import Link from "next/link";
-import Breadcrumb from "@/components/Breadcrumb";
 import {ThunkDispatch} from "redux-thunk";
 import {IRootState} from "@/store";
 import {AnyAction} from "redux";
@@ -12,11 +11,12 @@ import GenericTable from "@/components/GenericTable";
 import {deleteProductAssembly, getProductAssemblies} from "@/store/slices/productAssemblySlice";
 import 'tippy.js/dist/tippy.css';
 import IconButton from "@/components/IconButton";
-import {ButtonVariant, IconType} from "@/utils/enums";
+import {ButtonType, ButtonVariant, IconType} from "@/utils/enums";
 import PageWrapper from "@/components/PageWrapper";
 import {generatePDF, getIcon} from "@/utils/helper";
 import Preview from "@/pages/inventory/product-assembly/preview";
 import {uniqBy} from "lodash";
+import Button from "@/components/Button";
 
 const Index = () => {
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
@@ -97,33 +97,32 @@ const Index = () => {
         >
             <div className="mb-5 flex items-center justify-between">
                 <h5 className="text-lg font-semibold dark:text-white-light">All Formula</h5>
-                <Link href="/inventory/product-assembly/create"
-                      className="btn btn-primary btn-sm m-1">
-                    <span className="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                             className="h-5 w-5 ltr:mr-2 rtl:ml-2"
-                             fill="none">
-                            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
-                            <path d="M15 12L12 12M12 12L9 12M12 12L12 9M12 12L12 15" stroke="currentColor"
-                                  strokeWidth="1.5" strokeLinecap="round"/>
-                        </svg>
-                        Add New
-                    </span>
-                </Link>
+                <Button
+                    type={ButtonType.link}
+                    text={
+                        <span className="flex items-center">
+                            {getIcon(IconType.add)}
+                            Add New
+                        </span>
+                    }
+                    variant={ButtonVariant.primary}
+                    link="/inventory/product-assembly/create"
+                />
             </div>
             <GenericTable
                 colName={colName}
                 header={header}
-                rowData={rowData}
+                rowData={rowData.length > 0 ? rowData : []}
                 loading={loading}
                 exportTitle={'all-formula-' + Date.now()}
-                showFooter={true}
+                showFooter={rowData.length > 0}
                 columns={[
                     {
                         accessor: 'formula_code',
                         title: 'Code',
                         sortable: true,
                         footer: (
+                            rowData.length > 0 &&
                             <div className='flex gap-2 justify-start items-center'>
                                 <span>Formulas:</span>
                                 <span>{rowData.length}</span>
@@ -140,9 +139,10 @@ const Index = () => {
                         title: 'Category',
                         sortable: true,
                         footer: (
+                            rowData.length > 0 &&
                             <div className='flex gap-2 justify-start items-center'>
                                 <span>Categories:</span>
-                                <span>{uniqBy(rowData, (record:any) => record.category.name).length}</span>
+                                <span>{uniqBy(rowData, (record: any) => record.category.name).length}</span>
                             </div>
                         )
                     },
@@ -158,9 +158,10 @@ const Index = () => {
                         ),
                         sortable: true,
                         footer: (
+                            rowData.length > 0 &&
                             <div className='flex gap-2 justify-start items-center'>
                                 <span>Colors:</span>
-                                <span>{uniqBy(rowData, (record:any) => record.color_code.hex_code).length}</span>
+                                <span>{uniqBy(rowData, (record: any) => record.color_code.hex_code).length}</span>
                             </div>
                         )
                     },
@@ -173,13 +174,14 @@ const Index = () => {
                         },
                         sortable: true,
                         footer: (
+                            rowData.length > 0 &&
                             <div className='flex gap-2 justify-start items-center'>
                                 <span className='h-3 w-3'>
                                     {getIcon(IconType.sum)}
                                 </span>
                                 <span>
-                                    {rowData.reduce((acc, item:any) => {
-                                        const totalCostForItem = item.product_assembly_items.reduce((accInner:any, itemInner:any) => accInner + parseFloat(itemInner.quantity), 0);
+                                    {rowData.reduce((acc, item: any) => {
+                                        const totalCostForItem = item.product_assembly_items.reduce((accInner: any, itemInner: any) => accInner + parseFloat(itemInner.quantity), 0);
                                         return acc + totalCostForItem;
                                     }, 0)}
                                 </span>
@@ -195,13 +197,14 @@ const Index = () => {
                         },
                         sortable: true,
                         footer: (
+                            rowData.length > 0 &&
                             <div className='flex gap-2 justify-start items-center'>
                                 <span className='h-3 w-3'>
                                     {getIcon(IconType.sum)}
                                 </span>
                                 <span>
-                                    {rowData.reduce((acc, item:any) => {
-                                        const totalCostForItem = item.product_assembly_items.reduce((accInner:any, itemInner:any) => accInner + parseFloat(itemInner.cost), 0);
+                                    {rowData.reduce((acc, item: any) => {
+                                        const totalCostForItem = item.product_assembly_items.reduce((accInner: any, itemInner: any) => accInner + parseFloat(itemInner.cost), 0);
                                         return acc + totalCostForItem;
                                     }, 0)}
                                 </span>
@@ -218,6 +221,7 @@ const Index = () => {
                         ),
                         sortable: true,
                         footer: (
+                            rowData.length > 0 &&
                             <div className="flex justify-start items-center gap-3">
                                 <div className='flex gap-2 justify-start items-center'>
                                     <span>Active: </span>
@@ -257,12 +261,15 @@ const Index = () => {
                                     link={`/inventory/product-assembly/edit/${row.id}`}
                                 />
 
-                                <IconButton
-                                    icon={IconType.delete}
-                                    color={ButtonVariant.danger}
-                                    tooltip='Delete'
-                                    onClick={() => handleDelete(row.id)}
-                                />
+                                {!row.is_used && (
+                                    <IconButton
+                                        icon={IconType.delete}
+                                        color={ButtonVariant.danger}
+                                        tooltip='Delete'
+                                        onClick={() => handleDelete(row.id)}
+                                    />
+                                )}
+
                             </div>
                         )
                     }

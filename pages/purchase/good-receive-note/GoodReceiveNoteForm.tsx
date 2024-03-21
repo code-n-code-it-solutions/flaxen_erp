@@ -9,9 +9,11 @@ import Select from "react-select";
 import {getLPOByStatuses, storeLPO} from "@/store/slices/localPurchaseOrderSlice";
 import {clearGoodReceiveNoteState, storeGRN} from "@/store/slices/goodReceiveNoteSlice";
 import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
-import {FORM_CODE_TYPE} from "@/utils/enums";
+import {FORM_CODE_TYPE, RAW_PRODUCT_LIST_TYPE} from "@/utils/enums";
 import {Dropdown} from "@/components/form/Dropdown";
 import {Input} from "@/components/form/Input";
+import RawProductItemListing from "@/components/listing/RawProductItemListing";
+import ServiceItemListing from "@/components/listing/ServiceItemListing";
 
 interface IFormData {
     purchase_requisition_id: number;
@@ -22,25 +24,6 @@ interface IFormData {
     status: string;
     description: string;
     items: any[];
-}
-
-interface IRawProduct {
-    type: string | 'add';
-    id: number;
-    raw_product_id: number;
-    raw_product_title: string;
-    quantity: number;
-    received_quantity: number;
-    unit_id: number;
-    unit_title: string;
-    unit_price: number;
-    total: number;
-    tax_category_name: string;
-    tax_category_id: string;
-    tax_rate: number;
-    tax_amount: number;
-    row_total: number
-    description: string;
 }
 
 interface IFormProps {
@@ -54,7 +37,8 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
     const {allLPOs} = useSelector((state: IRootState) => state.localPurchaseOrder);
     const {code} = useSelector((state: IRootState) => state.util);
     const [rawProductModalOpen, setRawProductModalOpen] = useState<boolean>(false);
-    const [rawProducts, setRawProducts] = useState<IRawProduct[]>([]);
+    const [rawProducts, setRawProducts] = useState<any[]>([]);
+    const [serviceItems, setServiceItems] = useState<any[]>([]);
     const [formData, setFormData] = useState<IFormData>({
         purchase_requisition_id: 0,
         local_purchase_order_id: 0,
@@ -65,7 +49,10 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
         description: '',
         items: []
     });
-
+    const [showItemDetail, setShowItemDetail] = useState<any>({
+        show: false,
+        type: null
+    });
     const [localPurchaseOrderOptions, setLocalPurchaseOrderOptions] = useState<any[]>([])
     const [lpoDetails, setLPODetails] = useState<any>({})
 
@@ -81,7 +68,7 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setAuthToken(token)
-        console.log(user)
+        // console.log(user)
         let finalData = {
             ...formData,
             user_id: user.id,
@@ -110,7 +97,7 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
 
     const handleLPOChange = (e: any) => {
         if (e && typeof e !== 'undefined') {
-            console.log(e)
+            // console.log(e)
             setFormData(prev => ({
                 ...prev,
                 local_purchase_order_id: e.value,
@@ -121,24 +108,51 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
             setLPODetails(e.lpo)
             setShowDetails(false)
             if (e.lpo.items?.length > 0) {
-                setRawProducts(prevState => (
-                    e.lpo.items.map((item: any) => ({
-                        raw_product_id: item.raw_product_id,
-                        raw_product_title: item.raw_product.title + ' (' + item.raw_product.item_code + ')',
-                        quantity: parseInt(item.quantity),
-                        received_quantity: 0,
-                        unit_id: item.unit_id,
-                        unit_title: item.unit.short_name,
-                        unit_price: parseFloat(item.unit_price),
-                        total: parseFloat(item.unit_price) * parseInt(item.quantity),
-                        description: item.description || '',
-                        tax_category_name: item.tax_category?.name,
-                        tax_category_id: item.tax_category_id,
-                        tax_rate: item.tax_rate,
-                        tax_amount: item.tax_amount,
-                        row_total: item.unit_price * item.quantity
-                    }))
-                ))
+                setShowItemDetail({
+                    show: true,
+                    type: e.lpo.type
+                })
+                // console.log(e.lpo)
+                if (e.lpo.type === 'Material') {
+                    setRawProducts(prevState => (
+                        e.lpo.items.map((item: any) => ({
+                            raw_product_id: item.raw_product_id,
+                            quantity: parseInt(item.quantity),
+                            received_quantity: parseInt(item.quantity),
+                            unit_id: item.unit_id,
+                            unit_price: parseFloat(item.unit_price),
+                            sub_total: parseFloat(item.unit_price) * parseInt(item.quantity),
+                            description: item.description || '',
+                            tax_category_id: 0,
+                            tax_rate: 0,
+                            tax_amount: 0,
+                            grand_total: item.unit_price * item.quantity
+                        }))
+                    ))
+                } else if (e.lpo.type === 'Service') {
+                    setServiceItems(prevState => (
+                        e.lpo.items.map((item: any) => ({
+                            asset_id: item.asset_id,
+                            service_name: item.service_name,
+                            description: item.description || '',
+                            cost: isNaN(parseFloat(item.cost)) ? 0 : parseFloat(item.cost),
+                            tax_category_id: item.tax_category_id,
+                            tax_rate: isNaN(parseFloat(item.tax_rate)) ? 0 : parseFloat(item.tax_rate),
+                            tax_amount: isNaN(parseFloat(item.tax_amount)) ? 0 : parseFloat(item.tax_amount),
+                            grand_total: isNaN(parseFloat(item.grand_total)) ? 0 : parseFloat(item.grand_total)
+                        }))
+                    ))
+                } else {
+                    setRawProducts([])
+                    setServiceItems([])
+                    // setMiscellaneousItems([])
+                }
+
+            } else {
+                setShowItemDetail({
+                    show: false,
+                    type: null
+                })
             }
         } else {
             setFormData(prev => ({
@@ -149,6 +163,10 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
             setLPODetails({})
             setRawProducts([])
             setShowDetails(true)
+            setShowItemDetail({
+                show: false,
+                type: null
+            })
         }
     }
 
@@ -156,7 +174,7 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
         dispatch(clearGoodReceiveNoteState())
         setAuthToken(token)
         setContentType('application/json')
-        dispatch(getLPOByStatuses({statuses: ['Pending']}))
+        dispatch(getLPOByStatuses({statuses: ['Pending', 'Partial']}))
         dispatch(clearUtilState())
         dispatch(generateCode(FORM_CODE_TYPE.GOOD_RECEIVE_NOTE))
     }, [])
@@ -184,6 +202,7 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
                 lpo: lpo
             })))
         }
+        // console.log(allLPOs)
     }, [allLPOs])
 
     return (
@@ -331,102 +350,28 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
                         </div>
                     </div>
 
-                    <div className="border rounded p-5 w-full">
-                        <div className="table-responsive w-full">
-                            <div
-                                className="flex justify-between items-center flex-col md:flex-row space-y-3 md:space-y-0 mb-3">
-                                <h3 className="text-lg font-semibold">Item Details</h3>
-                            </div>
-                            <table>
-                                <thead>
-                                <tr>
-                                    <th>Raw Product</th>
-                                    <th>Description</th>
-                                    <th>Unit</th>
-                                    <th>Quantity</th>
-                                    <th>Received Quantity</th>
-                                    <th>Unit Price</th>
-                                    <th>Total</th>
-                                    <th>Tax Category</th>
-                                    <th>Tax Rate(%)</th>
-                                    <th>Tax Amount</th>
-                                    <th>Row Total</th>
-                                    {/*<th>Action</th>*/}
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {rawProducts.map((product, index) => (
-                                    <tr key={index}>
-                                        <td>{product.raw_product_title}</td>
-                                        <td>{product.description}</td>
-                                        <td>{product.unit_title}</td>
-                                        <td>{product.quantity}</td>
-                                        <td>
-                                            <input
-                                                type="number"
-                                                className="form-input"
-                                                name="received_quantity"
-                                                value={product.received_quantity}
-                                                onChange={(e) => {
-                                                    const {value} = e.target;
-                                                    setRawProducts((prev: any) => {
-                                                        return prev.map((item: any, i: number) => {
-                                                            if (i === index) {
-                                                                return {...item, received_quantity: parseInt(value)};
-                                                            }
-                                                            return item;
-                                                        });
-                                                    });
-                                                }}
+                    {showItemDetail.show && (
+                        <div className="border rounded p-5 w-full">
+                            <>
+                                {showItemDetail.type === 'Material'
+                                    ? (
+                                        <RawProductItemListing
+                                            rawProducts={rawProducts}
+                                            setRawProducts={setRawProducts}
+                                            type={RAW_PRODUCT_LIST_TYPE.GOOD_RECEIVE_NOTE}
+                                        />
+                                    )
+                                    : showItemDetail.type === 'Service'
+                                        ? (
+                                            <ServiceItemListing
+                                                serviceItems={serviceItems}
+                                                setServiceItems={setServiceItems}
+                                                type={RAW_PRODUCT_LIST_TYPE.GOOD_RECEIVE_NOTE}
                                             />
-                                        </td>
-                                        <td>{product.unit_price}</td>
-                                        <td>{product.total}</td>
-                                        <td>{product.tax_category_name}</td>
-                                        <td>{product.tax_rate}</td>
-                                        <td>{product.tax_amount}</td>
-                                        <td>{product.row_total}</td>
-                                        {/*<td>*/}
-                                        {/*    <div className="flex gap-3 items-center">*/}
-                                        {/*        <button*/}
-                                        {/*            type="button"*/}
-                                        {/*            className="btn btn-outline-primary btn-sm"*/}
-                                        {/*            onClick={() => handleEditItem(index)}*/}
-                                        {/*        >*/}
-                                        {/*            Edit*/}
-                                        {/*        </button>*/}
-                                        {/*        <button*/}
-                                        {/*            type="button"*/}
-                                        {/*            onClick={() => handleRemoveItem(index)}*/}
-                                        {/*            className="btn btn-outline-danger btn-sm"*/}
-                                        {/*        >*/}
-                                        {/*            Delete*/}
-                                        {/*        </button>*/}
-                                        {/*    </div>*/}
-                                        {/*</td>*/}
-                                    </tr>
-                                ))}
-                                {rawProducts.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={11} className="text-center">No Item Added</td>
-                                    </tr>
-                                ) : (
-                                    <tr>
-                                        <td colSpan={3} className="font-bold text-center">Total</td>
-                                        <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.quantity, 0)}</td>
-                                        <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.received_quantity, 0)}</td>
-                                        <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.unit_price, 0)}</td>
-                                        <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.total, 0)}</td>
-                                        <td></td>
-                                        <td></td>
-                                        <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.tax_amount, 0)}</td>
-                                        <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.row_total, 0)}</td>
-                                    </tr>
-                                )}
-                                </tbody>
-                            </table>
+                                        ) : <></>}
+                            </>
                         </div>
-                    </div>
+                    )}
                 </div>
 
                 <div className="w-full flex justify-center items-center flex-col md:flex-row gap-3">

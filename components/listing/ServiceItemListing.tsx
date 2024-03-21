@@ -34,6 +34,12 @@ const tableStructure = [
         header: ['Assets', 'Name', 'Desc', 'Cost', 'Tax Category', 'Tax Rate (%)', 'Tax Amount', 'Row Total'],
         columns: ['asset_id', 'service_name', 'description', 'cost', 'tax_category_id', 'tax_rate', 'tax_amount', 'grand_total'],
         numericColumns: ['cost', 'tax_rate', 'tax_amount', 'grand_total']
+    },
+    {
+        listingFor: RAW_PRODUCT_LIST_TYPE.GOOD_RECEIVE_NOTE,
+        header: ['Assets', 'Name', 'Desc', 'Cost', 'Tax Category', 'Tax Rate (%)', 'Tax Amount', 'Row Total'],
+        columns: ['asset_id', 'service_name', 'description', 'cost', 'tax_category_id', 'tax_rate', 'tax_amount', 'grand_total'],
+        numericColumns: ['cost', 'tax_rate', 'tax_amount', 'grand_total']
     }
 ]
 
