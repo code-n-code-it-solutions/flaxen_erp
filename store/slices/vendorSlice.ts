@@ -63,6 +63,22 @@ export const storeVendor = createAsyncThunk(
     async (data: IVendorForm, thunkAPI) => {
         try {
             const response = await API.post('/vendor', data);
+            console.log(response);
+            
+            return response.data;
+        } catch (error:any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const showDetails = createAsyncThunk(
+    'vendors/show',
+    async (id:number, thunkAPI) => {
+        try {
+            const response = await API.get('/vendor/'+id);
             return response.data;
         } catch (error:any) {
             const message =
@@ -85,6 +101,35 @@ export const deleteVendor = createAsyncThunk(
         }
     }
 );
+export const editVendor = createAsyncThunk(
+    'vendors/edit',
+    async (id:number, thunkAPI) => {
+        try {
+            const response = await API.get('/vendor/edit/'+id);
+            console.log(response)
+            return response.data;
+        } catch (error:any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to edit';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+export const updateVendor = createAsyncThunk(
+    'vendors/update',
+    async (data:any, thunkAPI) => {
+        try {
+            const {id, vendorData} = data
+            const response = await API.post('/vendor/update/'+id, vendorData);
+            return response.data;
+        } catch (error:any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to login';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 
 export const getRepresentatives = createAsyncThunk(
     'vendors/representatives',
@@ -139,6 +184,30 @@ export const vendorSlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message;
             })
+            .addCase(editVendor.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(editVendor.fulfilled, (state, action) => {
+                state.loading = false;
+                state.vendorDetail = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(editVendor.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(updateVendor.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(updateVendor.fulfilled, (state, action) => {
+                state.loading = false;
+                state.vendor = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(updateVendor.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
             .addCase(deleteVendor.pending, (state) => {
                 state.loading = true;
             })
@@ -159,6 +228,18 @@ export const vendorSlice = createSlice({
                 state.success = action.payload.success;
             })
             .addCase(getRepresentatives.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(showDetails.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(showDetails.fulfilled, (state, action) => {
+                state.loading = false;
+                state.vendorDetail = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(showDetails.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })

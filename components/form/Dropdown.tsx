@@ -10,8 +10,9 @@ interface IProps {
     styles?: any;
     required?: boolean;
     otherOptions?: Record<string, any>;
-    onChange: (e: any) => void;
+    onChange: (e: any,required: any) => void;
     errorMessage?: string;
+    isDisabled?: boolean;
 }
 
 export const Dropdown: FC<IProps> = ({
@@ -24,8 +25,12 @@ export const Dropdown: FC<IProps> = ({
                                          required = false,
                                          otherOptions,
                                          onChange,
-                                         errorMessage
+                                         errorMessage,
+                                         isDisabled
                                      }) => {
+    const customStyles = {
+        menuPortal: (base: any) => ({...base, zIndex: 9999}), // Adjust zIndex as needed
+    };
     return (
         <div className={divClasses}>
             <label htmlFor={name} className="form-label">
@@ -36,12 +41,14 @@ export const Dropdown: FC<IProps> = ({
                 value={options.map((option) => {
                     return option.value === value ? option : null
                 })}
-                styles={styles}
+                styles={{...styles, customStyles}}
                 options={options}
                 isSearchable={true}
                 isClearable={true}
                 placeholder={'Select ' + label}
                 onChange={onChange}
+                isDisabled={isDisabled}
+                // menuPortalTarget={document.body}
                 {...otherOptions}
             />
             {errorMessage && <p className="text-sm text-red-500">{errorMessage}</p>}

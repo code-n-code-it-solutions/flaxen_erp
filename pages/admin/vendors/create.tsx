@@ -1,57 +1,62 @@
-import React, {useEffect, useState} from 'react';
-import Breadcrumb from "@/components/Breadcrumb";
-import Link from "next/link";
+import React, {useEffect} from 'react';
 import {useDispatch, useSelector} from "react-redux";
 import {ThunkDispatch} from "redux-thunk";
 import {IRootState} from "@/store";
 import {AnyAction} from "redux";
 import {useRouter} from "next/router";
 import {setPageTitle} from "@/store/slices/themeConfigSlice";
-import {clearRawProductState} from "@/store/slices/rawProductSlice";
 import VendorForm from "@/pages/admin/vendors/VendorForm";
+import {clearVendorState} from "@/store/slices/vendorSlice";
+import PageWrapper from "@/components/PageWrapper";
+import Button from "@/components/Button";
+import {ButtonSize, ButtonType, ButtonVariant} from "@/utils/enums";
 
 const Create = () => {
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
     const router = useRouter();
-    const {rawProduct} = useSelector((state: IRootState) => state.rawProduct);
+    const {vendor, loading} = useSelector((state: IRootState) => state.vendor);
+    const breadcrumb = [
+        {
+            title: 'Main Dashboard',
+            href: '/main',
+        },
+        {
+            title: 'Admin Dashboard',
+            href: '/admin',
+        },
+        {
+            title: 'All Vendors',
+            href: '/admin/vendors',
+        },
+        {
+            title: 'Create New',
+            href: '#',
+        },
+    ];
 
     useEffect(() => {
-        dispatch(setPageTitle( 'Create Vendor'));
+        dispatch(setPageTitle('Create Vendor'));
     }, []);
 
-    useEffect(() => {
-        if(rawProduct) {
-            dispatch(clearRawProductState());
-            router.push('/admin/vendors');
-        }
-    }, [rawProduct]);
+    // useEffect(() => {
+    //     if (vendor) {
+    //         dispatch(clearVendorState());
+    //         router.push('/admin/vendors');
+    //     }
+    // }, [vendor]);
 
     return (
-        <div>
-            <Breadcrumb items={[
-                {
-                    title: 'Main Dashboard',
-                    href: '/main',
-                },
-                {
-                    title: 'Admin Dashboard',
-                    href: '/admin',
-                },
-                {
-                    title: 'Al Vendors',
-                    href: '/admin/vendors',
-                },
-                {
-                    title: 'Create New',
-                    href: '#',
-                },
-            ]}/>
-            <div className="pt-5">
-                <div className="panel">
-                    <div className="mb-5 flex items-center justify-between">
-                        <h5 className="text-lg font-semibold dark:text-white-light">Enter Details of Vendors</h5>
-                        <Link href="/admin/vendors"
-                              className="btn btn-primary btn-sm m-1">
+        <PageWrapper
+            loading={false}
+            embedLoader={false}
+            breadCrumbItems={breadcrumb}
+        >
+            <div>
+                <div className="mb-5 flex items-center justify-between">
+                    <h5 className="text-lg font-semibold dark:text-white-light">Enter Details of Vendors</h5>
+                    <Button
+                        type={ButtonType.link}
+                        text={
                             <span className="flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ltr:mr-2 rtl:ml-2" width="24"
                                      height="24" viewBox="0 0 24 24" fill="none">
@@ -60,12 +65,15 @@ const Create = () => {
                                 </svg>
                                 Back
                             </span>
-                        </Link>
-                    </div>
-                    <VendorForm/>
+                        }
+                        variant={ButtonVariant.primary}
+                        link='/admin/vendors'
+                        size={ButtonSize.small}
+                    />
                 </div>
+                <VendorForm/>
             </div>
-        </div>
+        </PageWrapper>
     );
 };
 

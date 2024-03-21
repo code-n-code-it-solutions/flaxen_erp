@@ -519,6 +519,7 @@ const InputMaskForm = () => {
             placeholder="(___) ___-____"
             className="form-input"
             mask={['(', /[0-9]/, /[0-9]/, /[0-9]/, ')', ' ', /[0-9]/, /[0-9]/, /[0-9]/, '-', /[0-9]/, /[0-9]/, /[0-9]/, /[0-9]/]}
+            errorMessage={errorMessage.phone}
         />
     </fieldset>
 </form>`}</pre>

@@ -1,23 +1,27 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import ImageUploader from "@/components/form/ImageUploader";
 import {setAuthToken, setContentType} from "@/configs/api.config";
 import {useDispatch, useSelector} from "react-redux";
 import {ThunkDispatch} from "redux-thunk";
 import {IRootState} from "@/store";
 import {AnyAction} from "redux";
-import Select from "react-select";
-import VendorTypeFormModal from "@/components/specific-modal/VendorTypeFormModal";
-import VendorAddressModal from "@/components/specific-modal/VendorAddressModal";
-import VendorRepresentativeModal from "@/components/specific-modal/VendorRepresentativeModal";
+import VendorTypeFormModal from "@/components/modals/VendorTypeFormModal";
+import VendorAddressModal from "@/components/modals/VendorAddressModal";
+import VendorRepresentativeModal from "@/components/modals/VendorRepresentativeModal";
 import {clearLocationState, getCities, getCountries, getStates} from "@/store/slices/locationSlice";
 import {getVendorTypes, storeVendorType} from "@/store/slices/vendorTypeSlice";
-import {clearVendorState, storeVendor} from "@/store/slices/vendorSlice";
+import {clearVendorState, storeVendor, updateVendor} from "@/store/slices/vendorSlice";
 import {useRouter} from "next/router";
-import BankDetailModal from "@/components/specific-modal/BankDetailModal";
+import BankDetailModal from "@/components/modals/BankDetailModal";
 import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
-import {FORM_CODE_TYPE} from "@/utils/enums";
-import MaskedInput from "react-text-mask";
+import {ButtonSize, ButtonType, ButtonVariant, FORM_CODE_TYPE} from "@/utils/enums";
 import {MaskConfig} from "@/configs/mask.config";
+import {Dropdown} from "@/components/form/Dropdown";
+import Button from "@/components/Button";
+import { Input } from "@/components/form/Input";
+import { getUnits } from '@/store/slices/unitSlice';
+import { imagePath } from "@/utils/helper";
+import Alert from '@/components/Alert';
 
 interface IFormData {
     vendor_number: string;
@@ -85,14 +89,15 @@ interface IFormProps {
     id?: any
 }
 
-const VendorForm = ({id}: IFormProps) => {
+const VendorForm = ({ id }: IFormProps) => {
     const router = useRouter();
+    const { vendorDetail } = useSelector((state: IRootState) => state.vendor);
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
-    const {token} = useSelector((state: IRootState) => state.user);
-    const {countries, states, cities} = useSelector((state: IRootState) => state.location);
-    const {allVendorTypes, vendorType} = useSelector((state: IRootState) => state.vendorType);
-    const {code} = useSelector((state: IRootState) => state.util);
-    const {allVendors, vendor, loading, success} = useSelector((state: IRootState) => state.vendor);
+    const { token } = useSelector((state: IRootState) => state.user);
+    const { countries, states, cities } = useSelector((state: IRootState) => state.location);
+    const { allVendorTypes, vendorType } = useSelector((state: IRootState) => state.vendorType);
+    const { code } = useSelector((state: IRootState) => state.util);
+    const { allVendors, vendor, loading, success } = useSelector((state: IRootState) => state.vendor);
 
     const [vendorTypeModal, setVendorTypeModal] = useState<boolean>(false);
     const [vendorRepresentativeModal, setVendorRepresentativeModal] = useState<boolean>(false);
@@ -125,6 +130,31 @@ const VendorForm = ({id}: IFormProps) => {
         addresses: [],
         bank_accounts: []
     });
+    const [imagePreview, setImagePreview] = useState('');
+    const [isFormValid, setIsFormValid] = useState<boolean>(false);
+    const [validationMessage, setValidationMessage] = useState("");
+    const [VAddressMessage, setVAddressMessage] = useState('');
+    const [VRepresentativeMessage, setVRepresentativeMessage] = useState('');
+    const [errorMessages, setErrorMessages] = useState({
+        // vendor_number: 'This field is required',
+        name: 'This field is required',
+        vendor_type_id: 'This field is required',
+        opening_balance: 'This field is required',
+        phone: 'This field is required',
+        email: 'This field is required',
+        due_in_days: 'This field is required',
+        website_url: 'This field is required',
+        tax_reg_no: 'This field is required',
+        // country_id: 'This field is required',
+        // state_id: 'This field is required',
+        // city_id: 'This field is required',
+        postal_code: 'This field is required',
+        address: 'This field is required',
+        // city_id: 'This field is required',
+        // postal_code: 'This field is required', 
+    });
+
+
 
     const [vendorTypeOptions, setVendorTypeOptions] = useState([]);
     const [countryOptions, setCountryOptions] = useState([]);
@@ -132,25 +162,86 @@ const VendorForm = ({id}: IFormProps) => {
     const [cityOptions, setCityOptions] = useState([]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const {name, value} = e.target;
+        const { name, value,required } = e.target;
         setFormData(prevFormData => {
-            return {...prevFormData, [name]: value};
+            return { ...prevFormData, [name]: value };
         });
-    };
-
-    const handleCountryChange = (e: any) => {
-        if (e && e.value && typeof e !== 'undefined') {
-            setFormData(prev => ({...prev, country_id: e ? e.value : 0}))
-            dispatch(getStates(parseInt(e.value)))
+        if (required) {
+            if (!value) {
+                setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
+            } else {
+                setErrorMessages({ ...errorMessages, [name]: '' });
+            }
         }
+        if (name === 'opening_balance' || name === 'due_in_days') {
+            if (value === '0') {
+                setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
+            }
+        }
+        if (name === 'phone') {
+            if (value === '(+971) __-__-____') {
+                setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
+            }
+        }
+        
+    };
+    const [error, setError] = useState('');
+    const handleCountryChange = (e: any) => {
+        const { name, value,required } = e.target;
+        if (e && e.value && typeof e !== 'undefined') {
+            setFormData(prev => ({ ...prev, country_id: e ? e.value : 0 }))
+            dispatch(getStates(parseInt(e.value)))
+        } else {
+            setFormData(prev => ({ ...prev, country_id: 0 }))
+            setStateOptions([])
+            setCityOptions([])
+        }
+        // if (required) {
+        //     if (!value) {
+        //         setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
+        //     } else {
+        //         setErrorMessages({ ...errorMessages, [name]: '' });
+        //     }
+        // }
     }
 
     const handleStateChange = (e: any) => {
+        const { name, value,required } = e.target;
         if (e && e.value && typeof e !== 'undefined') {
-            setFormData(prev => ({...prev, state_id: e ? e.value : 0}))
-            dispatch(getCities({countryId: formData.country_id, stateId: parseInt(e.value)}))
+            setFormData(prev => ({ ...prev, state_id: e ? e.value : 0 }))
+            dispatch(getCities({ countryId: formData.country_id, stateId: parseInt(e.value) }))
+        } else {
+            setFormData(prev => ({ ...prev, state_id: 0 }))
+            setCityOptions([])
         }
+        // if (required) {
+        //     if (!value) {
+        //         setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
+        //     } else {
+        //         setErrorMessages({ ...errorMessages, [name]: '' });
+        //     }
+        // }
     }
+    useEffect(() => {
+        const isValid = Object.values(errorMessages).some(message => message !== '');
+        setIsFormValid(!isValid);
+        console.log('Error Messages:', errorMessages);
+        console.log('isFormValid:', !isValid);
+        if(isValid){
+            setValidationMessage("Please fill all the required fields.");
+        }
+        if (vendorRepresentatives.length === 0) {
+            setVRepresentativeMessage('Vendor must have atleast one representative added.')
+        } else {
+            setVRepresentativeMessage('');
+        }
+        if (vendorAddresses.length === 0) {
+            setVAddressMessage('Vendor must have atleast one Address added.')
+        } else {
+            setVAddressMessage('');
+        }
+
+    }, [errorMessages]);
 
     const handleVendorSubmit = (value: any) => {
         dispatch(storeVendorType({
@@ -177,11 +268,31 @@ const VendorForm = ({id}: IFormProps) => {
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setFormData(prev => ({...prev, image: image}))
+         // Validation checks
+    if (!formData.vendor_number || !formData.name || !formData.vendor_type_id || !formData.opening_balance || !formData.phone || !formData.email || !formData.due_in_days || !formData.tax_reg_no) {
+        setError('All fields are required.');
+        return;
+      }
+  
+      if (formData.representatives.length === 0) {
+        setError('At least one representative must be added.');
+        return;
+      }
+  
+      if (formData.addresses.length === 0) {
+        setError('At least one address must be added.');
+        return;
+      }
+  
+      // If all validations pass, submit the form
+        setError('');
+        setFormData(prev => ({ ...prev, image: image }))
         setAuthToken(token)
         setContentType('multipart/form-data')
+
         let formFinalData = {
             ...formData,
+            image: image,
             representatives: vendorRepresentatives.map((representative: any) => {
                 return {
                     name: representative.name,
@@ -196,6 +307,7 @@ const VendorForm = ({id}: IFormProps) => {
                     is_active: true
                 }
             }),
+
             addresses: vendorAddresses.map((address: any) => {
                 return {
                     address_type: address.address_type,
@@ -207,6 +319,7 @@ const VendorForm = ({id}: IFormProps) => {
                     is_active: true
                 }
             }),
+
             bank_accounts: vendorBankAccounts.map((bankAccount: any) => {
                 return {
                     bank_id: bankAccount.bank_id,
@@ -219,7 +332,7 @@ const VendorForm = ({id}: IFormProps) => {
             })
         }
         if (id) {
-            // dispatch(updateRawProduct(id, formData));
+            dispatch(updateVendor({ id, vendorData: formFinalData }));
         } else {
             dispatch(storeVendor(formFinalData));
         }
@@ -231,19 +344,29 @@ const VendorForm = ({id}: IFormProps) => {
         setAuthToken(token)
         dispatch(getCountries())
         dispatch(getVendorTypes())
-        dispatch(generateCode(FORM_CODE_TYPE.VENDOR))
     }, [])
 
     useEffect(() => {
-        if (code) {
-            setFormData(prev => ({...prev, vendor_number: code[FORM_CODE_TYPE.VENDOR]}))
+        if (!id) {
+            dispatch(generateCode(FORM_CODE_TYPE.VENDOR))
+            setImagePreview(imagePath(''));
         }
-    }, [code])
+        return () => {
+            dispatch(clearVendorState());
+        };
+    }, [id, dispatch]);
+
+
+    useEffect(() => {
+        if (code) {
+            setFormData(prev => ({ ...prev, vendor_number: code[FORM_CODE_TYPE.VENDOR] }))
+        }
+    }, [code]);
 
     useEffect(() => {
         if (countries) {
             setCountryOptions(countries.map((country: any) => {
-                return {value: country.id, label: country.name}
+                return { value: country.id, label: country.name }
             }))
         }
     }, [countries]);
@@ -251,7 +374,7 @@ const VendorForm = ({id}: IFormProps) => {
     useEffect(() => {
         if (states) {
             setStateOptions(states.map((state: any) => {
-                return {value: state.id, label: state.name}
+                return { value: state.id, label: state.name }
             }))
         }
     }, [states]);
@@ -259,7 +382,7 @@ const VendorForm = ({id}: IFormProps) => {
     useEffect(() => {
         if (cities) {
             setCityOptions(cities.map((city: any) => {
-                return {value: city.id, label: city.name}
+                return { value: city.id, label: city.name }
             }))
         }
     }, [cities]);
@@ -267,7 +390,7 @@ const VendorForm = ({id}: IFormProps) => {
     useEffect(() => {
         if (allVendorTypes) {
             setVendorTypeOptions(allVendorTypes.map((vendorType: any) => {
-                return {value: vendorType.id, label: vendorType.name}
+                return { value: vendorType.id, label: vendorType.name }
             }))
         }
     }, [allVendorTypes]);
@@ -284,202 +407,353 @@ const VendorForm = ({id}: IFormProps) => {
             router.push('/admin/vendors')
             dispatch(clearVendorState())
         }
-    }, [vendor, success])
+    }, [vendor, success]);
+
+    useEffect(() => {
+        if (!id) {
+            dispatch(generateCode(FORM_CODE_TYPE.RAW_MATERIAL));
+            setImagePreview(imagePath(''));
+        }
+        return () => {
+            dispatch(clearVendorState());
+        };
+    }, [id, dispatch]);
+
+    useEffect(() => {
+        if (code) {
+            setFormData(prev => ({ ...prev, item_code: code[FORM_CODE_TYPE.RAW_MATERIAL] }))
+        }
+    }, [code]);
+
+    useEffect(() => {
+        if (vendorDetail) {
+            console.log(vendorDetail);
+
+            setImagePreview(imagePath(vendorDetail.thumbnail))
+            setFormData({
+                ...formData,
+                vendor_number: vendorDetail.vendor_number,
+                name: vendorDetail.name,
+                vendor_type_id: vendorDetail.vendor_type_id,
+                opening_balance: vendorDetail.opening_balance,
+                phone: vendorDetail.phone,
+                email: vendorDetail.email,
+                due_in_days: vendorDetail.due_in_days,
+                postal_code: vendorDetail.postal_code,
+                website_url: vendorDetail.website_url,
+                tax_reg_no: vendorDetail.tax_reg_no,
+                address: vendorDetail.address,
+                country_id: vendorDetail.country_id,
+                state_id: vendorDetail.state_id,
+                city_id: vendorDetail.city_id,
+                image: vendorDetail.image,
+                representatives: vendorDetail.representatives,
+                addresses: vendorDetail.address,
+                bank_accounts: vendorDetail.bank_accounts,
+                is_active: vendorDetail.is_active,
+
+            });
+        } else {
+            setImagePreview(imagePath(''))
+        }
+    }, [vendorDetail]);
+
 
     return (
         <form className="space-y-5" onSubmit={handleSubmit}>
+            {!isFormValid  && validationMessage &&
+               <Alert 
+               alertType="error" 
+               message={validationMessage} 
+               setMessages={setValidationMessage} 
+           />}
+           {vendorRepresentatives.length === 0 &&  VRepresentativeMessage && 
+           <Alert 
+           alertType="error" 
+           message={VRepresentativeMessage} 
+           setMessages={setVRepresentativeMessage} 
+           />}
+           {vendorAddresses.length === 0 &&  VAddressMessage && 
+           <Alert 
+           alertType="error" 
+           message={VAddressMessage} 
+           setMessages={setVAddressMessage} 
+           />}
+
             <div className="flex justify-center items-center">
-                <ImageUploader image={image} setImage={setImage}/>
+                <ImageUploader image={image} setImage={setImage} existingImage={imagePreview} />
             </div>
             <div className="flex justify-start flex-col items-start space-y-3">
                 <div className='flex justify-center items-end gap-2 w-full md:w-1/3'>
-                    <div className='w-full'>
-                        <label htmlFor="vendor_type_id">Vendor Type</label>
-                        <Select
-                            defaultValue={vendorTypeOptions[0]}
-                            options={vendorTypeOptions}
-                            isSearchable={true}
-                            isClearable={true}
-                            placeholder={'Select Vendor Type'}
-                            onChange={(e: any) => setFormData(prev => ({...prev, vendor_type_id: e ? e.value : 0}))}
-                        />
-                    </div>
-                    <button type="button" className="btn btn-primary btn-sm flex justify-center items-center"
-                            onClick={() => setVendorTypeModal(true)}>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                             className="h-5 w-5 ltr:mr-2 rtl:ml-2"
-                             fill="none">
-                            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
+                    <Dropdown
+                        divClasses='w-full'
+                        label='Vendor Type'
+                        name='vendor_type_id'
+                        options={vendorTypeOptions}
+                        value={formData.vendor_type_id}
+                        required={true}
+                        errorMessage={ errorMessages.vendor_type_id}
+                        onChange={(e: any,required:any) => {
+                            if (e && e.value && typeof e !== 'undefined') {
+                                setFormData(prev => ({ ...prev, vendor_type_id: e.value }))
+                                if (required) {
+                                    setErrorMessages({ ...errorMessages, vendor_type_id: '' });
+                                }
+                            } else {
+                                setFormData(prev => ({ ...prev, vendor_type_id: 0 }))
+                                if (required) {
+                                    setErrorMessages({ ...errorMessages, vendor_type_id: 'This field is required.'});
+                                }
+                            }
+                        }}
+                    />
+                    <Button
+                        type={ButtonType.button}
+                        text={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                            className="h-5 w-5 ltr:mr-2 rtl:ml-2"
+                            fill="none">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
                             <path d="M15 12L12 12M12 12L9 12M12 12L12 9M12 12L12 15" stroke="currentColor"
-                                  strokeWidth="1.5" strokeLinecap="round"/>
-                        </svg>
-                    </button>
+                                strokeWidth="1.5" strokeLinecap="round" />
+                        </svg>}
+                        variant={ButtonVariant.primary}
+                        onClick={() => setVendorTypeModal(true)}
+                    />
                 </div>
-                <div className="w-full md:w-1/3">
-                    <label htmlFor="vendor_number">Vendor Number</label>
-                    <input id="vendor_number" type="text" name="vendor_number" placeholder="Enter Vendor Code"
-                           value={formData.vendor_number} onChange={handleChange} disabled={true}
-                           className="form-input"/>
-                </div>
-                <div className="w-full md:w-1/2">
-                    <label htmlFor="name">Vendor Name</label>
-                    <input id="name" type="text" name="name" placeholder="Enter Vendor Name"
-                           value={formData.name} onChange={handleChange}
-                           className="form-input" style={{height: 45}}/>
-                </div>
+
+                <Input
+                    divClasses='w-full md:w-1/3'
+                    label='Vendor Number'
+                    type='text'
+                    name='vendor_number'
+                    value={formData.vendor_number}
+                    onChange={handleChange}
+                    placeholder="Enter Vendor Code"
+                    isMasked={false}
+                    disabled={true}
+                    required={true}
+                    // errorMessage={errorMessages.vendor_number}
+                />
+
+                <Input
+                    divClasses='w-full md:w-1/2'
+                    label='Vendor Name'
+                    type='text'
+                    name='name'
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="Enter Vendor Name"
+                    isMasked={false}
+                    styles={{ height: 45 }}
+                    required={true}
+                    errorMessage={errorMessages.name}
+                />
+
                 <div className="flex flex-col md:flex-row gap-3 w-full">
-                    <div className="w-full">
-                        <label htmlFor="opening_balance">Opening Balance</label>
-                        <input id="opening_balance" type="number" name="opening_balance"
-                               placeholder="Enter Opening Balance"
-                               value={formData.opening_balance} onChange={handleChange}
-                               className="form-input"/>
-                    </div>
-                    <div className="w-full">
-                        <label htmlFor="phone">Phone</label>
-                        <MaskedInput
-                            id="phone"
-                            type="text"
-                            placeholder={MaskConfig.phone.placeholder}
-                            className="form-input"
-                            guide={true}
-                            name="phone"
-                            value={formData.phone}
-                            onChange={handleChange}
-                            mask={MaskConfig.phone.pattern}
-                        />
-                        {/*<input id="phone" type="number" name="phone" placeholder="Enter Phone number"*/}
-                        {/*       value={formData.phone} onChange={handleChange}*/}
-                        {/*       className="form-input"/>*/}
-                    </div>
-                    <div className="w-full">
-                        <label htmlFor="email">Email</label>
-                        <input id="email" type="email" name="email" placeholder="Enter email address"
-                               value={formData.email} onChange={handleChange}
-                               className="form-input"/>
-                    </div>
+                    <Input
+                        divClasses='w-full'
+                        label='Opening Balance'
+                        type='number'
+                        name='opening_balance'
+                        value={formData.opening_balance.toString()}
+                        onChange={handleChange}
+                        placeholder="Enter Opening Balance"
+                        isMasked={false}
+                        required={true}
+                        errorMessage={errorMessages.opening_balance}
+                    />
+
+                    <Input
+                        divClasses='w-full'
+                        label='Phone'
+                        type='text'
+                        name='phone'
+                        value={formData.phone}
+                        onChange={handleChange}
+                        placeholder={MaskConfig.phone.placeholder}
+                        isMasked={true}
+                        maskPattern={MaskConfig.phone.pattern}
+                        required={true}
+                        errorMessage={errorMessages.phone}
+                    />
+
+                    <Input
+                        divClasses='w-full'
+                        label='Email'
+                        type='email'
+                        name='email'
+                        value={formData.email}
+                        onChange={handleChange}
+                        placeholder="Enter email address"
+                        isMasked={false}
+                        required={true}
+                        errorMessage={errorMessages.email}
+                    />
 
                 </div>
                 <div className="flex flex-col md:flex-row gap-3 w-full">
-                    <div className="w-full">
-                        <label htmlFor="due_in_days">Due In (Days)</label>
-                        <input id="due_in_days" type="number" name="due_in_days" placeholder="Enter due in days"
-                               value={formData.due_in_days} onChange={handleChange}
-                               className="form-input"/>
-                    </div>
+                    <Input
+                        divClasses='w-full'
+                        label='Due In (Days)'
+                        type='text'
+                        name='due_in_days'
+                        value={formData.due_in_days.toString()}
+                        onChange={handleChange}
+                        placeholder="Enter due in days"
+                        isMasked={false}
+                        required={true}
+                        errorMessage={errorMessages.due_in_days}
+                    />
 
-                    <div className="w-full">
-                        <label htmlFor="website_url">Website</label>
-                        <input id="website_url" type="text" name="website_url" placeholder="Enter Vendor Website"
-                               value={formData.website_url} onChange={handleChange}
-                               className="form-input"/>
-                    </div>
-                    <div className="w-full">
-                        <label htmlFor="tax_reg_no">Tax Reg No</label>
-                        <input id="tax_reg_no" type="text" name="tax_reg_no" placeholder="Enter tax regiration no"
-                               value={formData.tax_reg_no} onChange={handleChange}
-                               className="form-input"/>
-                    </div>
+                    <Input
+                        divClasses='w-full'
+                        label='Website'
+                        type='text'
+                        name='website_url'
+                        value={formData.website_url}
+                        onChange={handleChange}
+                        placeholder="Enter Vendor Website"
+                        isMasked={false}
+                        required={true}
+                        errorMessage={errorMessages.website_url}
+                    />
+
+                    <Input
+                        divClasses='w-full'
+                        label='Tax Reg No'
+                        type='text'
+                        name='tax_reg_no'
+                        value={formData.tax_reg_no}
+                        onChange={handleChange}
+                        placeholder="Enter tax regiration no"
+                        isMasked={false}
+                        required={true}
+                        errorMessage={errorMessages.tax_reg_no}
+                    />
 
                 </div>
 
                 <div className="flex flex-col md:flex-row gap-3 w-full">
-                    <div className="w-full">
-                        <label htmlFor="country_id">Country</label>
-                        <Select
-                            defaultValue={countryOptions[0]}
-                            options={countryOptions}
-                            isSearchable={true}
-                            isClearable={true}
-                            placeholder={'Select Country'}
-                            onChange={(e: any) => handleCountryChange(e)}
-                        />
-                    </div>
-                    <div className="w-full">
-                        <label htmlFor="state_id">State</label>
-                        <Select
-                            defaultValue={stateOptions[0]}
-                            options={stateOptions}
-                            isSearchable={true}
-                            isClearable={true}
-                            placeholder={'Select State'}
-                            onChange={(e: any) => handleStateChange(e)}
-                        />
-                    </div>
-                    <div className="w-full">
-                        <label htmlFor="city_id">City</label>
-                        <Select
-                            defaultValue={cityOptions[0]}
-                            options={cityOptions}
-                            isSearchable={true}
-                            isClearable={true}
-                            placeholder={'Select City'}
-                            onChange={(e: any) => setFormData(prev => ({...prev, city_id: e ? e.value : 0}))}
-                        />
-                    </div>
+                    <Dropdown
+                        divClasses='w-full'
+                        label='Country'
+                        name='country_id'
+                        options={countryOptions}
+                        value={formData.country_id}
+                        onChange={(e: any) => handleCountryChange(e)}
+                        // required={true}
+                        // errorMessage={errorMessages.country_id}
+                    />
+
+                    <Dropdown
+                        divClasses='w-full'
+                        label='State'
+                        name='state_id'
+                        options={stateOptions}
+                        value={formData.state_id}
+                        onChange={(e: any) => handleStateChange(e)}
+                        // required={true}
+                        // errorMessage={errorMessages.state_id}
+                    />
+
+                    <Dropdown
+                        divClasses='w-full'
+                        label='City'
+                        name='city_id'
+                        options={stateOptions}
+                        value={formData.city_id}
+                        onChange={(e: any,required:any) => {
+                            if (e && e.value && typeof e !== 'undefined') {
+                                setFormData(prev => ({ ...prev, city_id: e.value }))
+                                // if (required) {
+                                //     setErrorMessages({ ...errorMessages, city_id: '' });
+                                // }
+                            } else {
+                                setFormData(prev => ({ ...prev, city_id: 0 }))
+                                // if (required) {
+                                //     setErrorMessages({ ...errorMessages, city_id: 'This field is required.'});
+                                // }
+                            }
+                        }}
+                        // required={true}
+                        // errorMessage={errorMessages.city_id}
+                    />
                 </div>
                 <div className="flex flex-col md:flex-row gap-3 w-full">
-                    <div className="w-full md:w-1/3">
-                        <label htmlFor="postal_code">Postal Code</label>
-                        <input id="postal_code" type="text" name="postal_code" placeholder="Enter postal code"
-                               value={formData.postal_code} onChange={handleChange}
-                               className="form-input"/>
-                    </div>
-                    <div className="w-full">
-                        <label htmlFor="address">Official Address</label>
-                        <input id="address" type="text" name="address" placeholder="Enter address"
-                               value={formData.address} onChange={handleChange}
-                               className="form-input"/>
-                    </div>
+                    <Input
+                        divClasses='w-full md:w-1/3'
+                        label='Postal Code'
+                        type='text'
+                        name='postal_code'
+                        value={formData.postal_code}
+                        onChange={handleChange}
+                        placeholder="Enter postal code"
+                        isMasked={false}
+                        required={true}
+                        errorMessage={errorMessages.postal_code}
+                    />
+
+                    <Input
+                        divClasses='w-full'
+                        label='Official Address'
+                        type='text'
+                        name='address'
+                        value={formData.address}
+                        onChange={handleChange}
+                        placeholder="Enter address"
+                        isMasked={false}
+                        required={true}
+                        errorMessage={errorMessages.address}
+                    />
+
                 </div>
 
                 <div className="table-responsive w-full">
                     <div className="flex justify-between items-center flex-col md:flex-row space-y-3 md:space-y-0 mb-3">
                         <h3 className="text-lg font-semibold">Vendor Representatives</h3>
-                        <button
-                            type="button"
-                            className="btn btn-primary btn-sm"
+                        <Button
+                            text='Add Representative'
+                            variant={ButtonVariant.primary}
+                            size={ButtonSize.small}
                             onClick={() => setVendorRepresentativeModal(true)}
-                        >
-                            Add Representative
-                        </button>
+                        />
                     </div>
                     <table>
                         <thead>
-                        <tr>
-                            <th>Phone</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Country</th>
-                            <th>State</th>
-                            <th>City</th>
-                            <th>Address</th>
-                            <th>Postal Code</th>
-                            <th>Action</th>
-                        </tr>
+                            <tr>
+                                <th>Phone</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Country</th>
+                                <th>State</th>
+                                <th>City</th>
+                                <th>Address</th>
+                                <th>Postal Code</th>
+                                <th>Action</th>
+                            </tr>
                         </thead>
                         <tbody>
-                        {vendorRepresentatives.map((representative, index) => (
-                            <tr key={index}>
-                                <td>{representative.phone}</td>
-                                <td>{representative.name}</td>
-                                <td>{representative.email}</td>
-                                <td>{representative.country_name}</td>
-                                <td>{representative.state_name}</td>
-                                <td>{representative.city_name}</td>
-                                <td>{representative.address}</td>
-                                <td>{representative.postal_code}</td>
-                                <td>
-                                    <button
-                                        type="button"
-                                        onClick={() => handleRepresentativeRowDelete(index)}
-                                        className="btn btn-outline-danger btn-sm"
-                                    >
-                                        Delete
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
+                            {vendorRepresentatives.map((representative, index) => (
+                                <tr key={index}>
+                                    <td>{representative.phone}</td>
+                                    <td>{representative.name}</td>
+                                    <td>{representative.email}</td>
+                                    <td>{representative.country_name}</td>
+                                    <td>{representative.state_name}</td>
+                                    <td>{representative.city_name}</td>
+                                    <td>{representative.address}</td>
+                                    <td>{representative.postal_code}</td>
+                                    <td>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRepresentativeRowDelete(index)}
+                                            className="btn btn-outline-danger btn-sm"
+                                        >
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
                 </div>
@@ -487,46 +761,46 @@ const VendorForm = ({id}: IFormProps) => {
                 <div className="table-responsive w-full">
                     <div className="flex justify-between items-center flex-col md:flex-row space-y-3 md:space-y-0 mb-3">
                         <h3 className="text-lg font-semibold">Vendor Addresses</h3>
-                        <button
-                            type="button"
-                            className="btn btn-primary btn-sm"
+
+                        <Button
+                            text='Add Address'
+                            variant={ButtonVariant.primary}
+                            size={ButtonSize.small}
                             onClick={() => setVendorAddressModal(true)}
-                        >
-                            Add Address
-                        </button>
+                        />
                     </div>
                     <table>
                         <thead>
-                        <tr>
-                            <th>Address Type</th>
-                            <th>Country</th>
-                            <th>State</th>
-                            <th>City</th>
-                            <th>Address</th>
-                            <th>Postal Code</th>
-                            <th>Action</th>
-                        </tr>
+                            <tr>
+                                <th>Address Type</th>
+                                <th>Country</th>
+                                <th>State</th>
+                                <th>City</th>
+                                <th>Address</th>
+                                <th>Postal Code</th>
+                                <th>Action</th>
+                            </tr>
                         </thead>
                         <tbody>
-                        {vendorAddresses.map((address, index) => (
-                            <tr key={index}>
-                                <td>{address.address_type_name}</td>
-                                <td>{address.country_name}</td>
-                                <td>{address.state_name}</td>
-                                <td>{address.city_name}</td>
-                                <td>{address.address}</td>
-                                <td>{address.postal_code}</td>
-                                <td>
-                                    <button
-                                        type="button"
-                                        onClick={() => handleAddressRowDelete(index)}
-                                        className="btn btn-outline-danger btn-sm"
-                                    >
-                                        Delete
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
+                            {vendorAddresses.map((address, index) => (
+                                <tr key={index}>
+                                    <td>{address.address_type_name}</td>
+                                    <td>{address.country_name}</td>
+                                    <td>{address.state_name}</td>
+                                    <td>{address.city_name}</td>
+                                    <td>{address.address}</td>
+                                    <td>{address.postal_code}</td>
+                                    <td>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleAddressRowDelete(index)}
+                                            className="btn btn-outline-danger btn-sm"
+                                        >
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
                 </div>
@@ -534,66 +808,66 @@ const VendorForm = ({id}: IFormProps) => {
                 <div className="table-responsive w-full">
                     <div className="flex justify-between items-center flex-col md:flex-row space-y-3 md:space-y-0 mb-3">
                         <h3 className="text-lg font-semibold">Vendor Bank Accounts</h3>
-                        <button
-                            type="button"
-                            className="btn btn-primary btn-sm"
+
+                        <Button
+                            text='Add Bank Details'
+                            variant={ButtonVariant.primary}
+                            size={ButtonSize.small}
                             onClick={() => setVendorBankModal(true)}
-                        >
-                            Add Bank Details
-                        </button>
+                        />
                     </div>
                     <table>
                         <thead>
-                        <tr>
-                            <th>Bank</th>
-                            <th>Account No</th>
-                            <th>Account Title</th>
-                            <th>IBAN No</th>
-                            <th>Currency</th>
-                            <th>Action</th>
-                        </tr>
+                            <tr>
+                                <th>Bank</th>
+                                <th>Account No</th>
+                                <th>Account Title</th>
+                                <th>IBAN No</th>
+                                <th>Currency</th>
+                                <th>Action</th>
+                            </tr>
                         </thead>
                         <tbody>
-                        {vendorBankAccounts.map((bankAccount, index) => (
-                            <tr key={index}>
-                                <td>{bankAccount.bank_name}</td>
-                                <td>{bankAccount.account_number}</td>
-                                <td>{bankAccount.account_name}</td>
-                                <td>{bankAccount.iban}</td>
-                                <td>
-                                    {
-                                        bankAccount.currency_name + ' (' + bankAccount.currency_code + ')'
-                                    }
-                                </td>
-                                <td>
-                                    <button
-                                        type="button"
-                                        onClick={() => handleRemoveBank(index)}
-                                        className="btn btn-outline-danger btn-sm"
-                                    >
-                                        Delete
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
+                            {vendorBankAccounts.map((bankAccount, index) => (
+                                <tr key={index}>
+                                    <td>{bankAccount.bank_name}</td>
+                                    <td>{bankAccount.account_number}</td>
+                                    <td>{bankAccount.account_name}</td>
+                                    <td>{bankAccount.iban}</td>
+                                    <td>
+                                        {
+                                            bankAccount.currency_name + ' (' + bankAccount.currency_code + ')'
+                                        }
+                                    </td>
+                                    <td>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveBank(index)}
+                                            className="btn btn-outline-danger btn-sm"
+                                        >
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
                 </div>
 
                 <div className="w-full">
-                    <button
+                    {isFormValid && vendorRepresentatives.length > 0 && vendorAddresses.length > 0 && ( <button 
                         type="submit"
                         className="btn btn-primary"
                         disabled={loading}
                     >
-                        {loading ? 'Loading...' : 'Save Vendor'}
-                    </button>
+                        {loading ? 'Loading...' : id ? 'Update Vendor' : 'Save Vendor'}
+                    </button>)}
                 </div>
             </div>
             <VendorTypeFormModal
-                vendorTypeFormModal={vendorTypeModal}
-                setVendorTypeFormModal={setVendorTypeModal}
-                handleSubmitVendorType={(value: any) => handleVendorSubmit(value)}
+                modalOpen={vendorTypeModal}
+                setModalOpen={setVendorTypeModal}
+                handleSubmit={(value: any) => handleVendorSubmit(value)}
             />
             <VendorAddressModal
                 vendorAddressModal={vendorAddressModal}
@@ -615,7 +889,7 @@ const VendorForm = ({id}: IFormProps) => {
                 title='Vendor'
                 modalOpen={vendorBankModal}
                 setModalOpen={setVendorBankModal}
-                handleAddition={(value:any) => {
+                handleSubmit={(value: any) => {
                     setVendorBankAccounts([...vendorBankAccounts, value])
                     setVendorBankModal(false)
                 }}

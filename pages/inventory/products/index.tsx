@@ -8,14 +8,12 @@ import {AnyAction} from "redux";
 import {clearRawProductState, deleteRawProduct, getRawProducts} from "@/store/slices/rawProductSlice";
 import {setAuthToken, setContentType} from "@/configs/api.config";
 import GenericTable from "@/components/GenericTable";
-import {clearServiceState, getServices, storeService} from "@/store/slices/serviceSlice";
-import ReactDOMServer from "react-dom/server";
 import Preview from "@/pages/inventory/products/preview";
 import IconButton from "@/components/IconButton";
 import {ButtonSize, ButtonType, ButtonVariant, IconType} from "@/utils/enums";
 import PageWrapper from "@/components/PageWrapper";
 import Button from "@/components/Button";
-import {generatePDF} from "@/utils/helper";
+import {capitalizeFirstLetter, generatePDF, getIcon} from "@/utils/helper";
 
 const Index = () => {
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
@@ -30,6 +28,10 @@ const Index = () => {
             href: '/main',
         },
         {
+            title: 'Inventory Dashboard',
+            href: '/inventory',
+        },
+        {
             title: 'Materials',
             href: '#',
         },
@@ -37,13 +39,12 @@ const Index = () => {
     const getRowItems = () => {
         setAuthToken(token)
         setContentType('application/json')
-        dispatch(getRawProducts())
+        dispatch(getRawProducts([]))
     }
 
     useEffect(() => {
         dispatch(setPageTitle('All Raw Materials'));
         dispatch(clearRawProductState());
-        dispatch(clearServiceState());
         getRowItems();
     }, []);
 
@@ -125,9 +126,40 @@ const Index = () => {
                     rowData={rowData}
                     loading={rawProducts.loading}
                     exportTitle={'all-raw-materials-' + Date.now()}
+                    showFooter={rowData.length > 0}
                     columns={[
-                        {accessor: 'item_code', title: 'Code', sortable: true},
-                        {accessor: 'title', title: 'Title', sortable: true},
+                        {
+                            accessor: 'item_code',
+                            title: 'Code',
+                            sortable: true,
+                            footer: (
+                                rowData.length > 0 &&
+                                <div className='flex gap-2 justify-start items-center'>
+                                    <span>Items:</span>
+                                    <span>{rowData.length}</span>
+                                </div>
+                            )
+                        },
+                        {
+                            accessor: 'title',
+                            title: 'Title',
+                            sortable: true
+                        },
+                        {
+                            accessor: 'product_type',
+                            title: 'Product Type',
+                            render: (row: any) => (
+                                <span>
+                                    {
+                                        row.product_type
+                                            .split('-')
+                                            .map(capitalizeFirstLetter)
+                                            .join(' ')
+                                    }
+                                </span>
+                            ),
+                            sortable: true
+                        },
                         {
                             accessor: 'unit.name',
                             title: 'Unit-Sub Unit',
@@ -139,7 +171,16 @@ const Index = () => {
                         {
                             accessor: 'opening_stock',
                             title: 'In Stock (Sub Unit)',
-                            sortable: true
+                            sortable: true,
+                            footer: (
+                                rowData.length > 0 &&
+                                <div className='flex gap-2 justify-start items-center'>
+                                    <span className='h-3 w-3'>
+                                        {getIcon(IconType.sum)}
+                                    </span>
+                                    <span>{rowData.reduce((acc: any, item: any) => acc + parseFloat(item.opening_stock), 0)}</span>
+                                </div>
+                            )
                         },
                         {
                             accessor: 'opening_stock_unit_balance',
@@ -149,19 +190,47 @@ const Index = () => {
                                     {Number(row.opening_stock_unit_balance).toLocaleString()} - {Number(row.opening_stock_total_balance).toLocaleString()}
                                 </span>
                             ),
-                            // footer: (
-                            //     <span>Total</span>
-                            //     // <Group spacing="xs">
-                            //     //     <IconSum size="1.25em" />
-                            //     //     <Text mb={-2}>{records.length} employees</Text>
-                            //     // </Group>
-                            // ),
+                            footer: (
+                                rowData.length > 0 &&
+                                <div className="flex justify-start items-center gap-3">
+                                    <div className='flex gap-2 justify-start items-center'>
+                                        <span className='h-3 w-3'>
+                                            {getIcon(IconType.sum)}
+                                        </span>
+                                        <span>{rowData.reduce((acc: any, item: any) => acc + parseFloat(item.opening_stock_unit_balance), 0)}</span>
+                                    </div>
+                                    <span> - </span>
+                                    <div className='flex gap-2 justify-start items-center'>
+                                        <span className='h-3 w-3'>
+                                            {getIcon(IconType.sum)}
+                                        </span>
+                                        <span>{rowData.reduce((acc: any, item: any) => acc + parseFloat(item.opening_stock_total_balance), 0)}</span>
+                                    </div>
+                                </div>
+                            ),
                             sortable: true
                         },
                         {
                             accessor: 'valuation_method',
                             title: 'Valuation Method',
-                            sortable: true
+                            sortable: true,
+                            footer: (
+                                rowData.length > 0 &&
+                                <div className="flex justify-start items-center gap-3">
+                                    <div className='flex gap-2 justify-start items-center'>
+                                        <span>Average: </span>
+                                        <span>{rowData.reduce((acc: any, item: any) => item.valuation_method === 'Average' ? acc + 1 : 0, 0)}</span>
+                                    </div>
+                                    <div className='flex gap-2 justify-start items-center'>
+                                        <span>LIFO: </span>
+                                        <span>{rowData.reduce((acc: any, item: any) => item.valuation_method === 'LIFO' ? acc + 1 : 0, 0)}</span>
+                                    </div>
+                                    <div className='flex gap-2 justify-start items-center'>
+                                        <span>FIFO: </span>
+                                        <span>{rowData.reduce((acc: any, item: any) => item.valuation_method === 'FIFO' ? acc + 1 : 0, 0)}</span>
+                                    </div>
+                                </div>
+                            ),
                         },
                         {
                             accessor: 'is_active',
@@ -172,7 +241,20 @@ const Index = () => {
                                     {row.is_active ? 'Active' : 'Inactive'}
                                 </span>
                             ),
-                            sortable: true
+                            sortable: true,
+                            footer: (
+                                rowData.length > 0 &&
+                                <div className="flex justify-start items-center gap-3">
+                                    <div className='flex gap-2 justify-start items-center'>
+                                        <span>Active: </span>
+                                        <span>{rowData.reduce((acc: any, item: any) => item.is_active ? acc + 1 : 0, 0)}</span>
+                                    </div>
+                                    <div className='flex gap-2 justify-start items-center'>
+                                        <span>Not Active: </span>
+                                        <span>{rowData.reduce((acc: any, item: any) => !item.is_active ? acc + 1 : 0, 0)}</span>
+                                    </div>
+                                </div>
+                            ),
                         },
                         {
                             accessor: 'actions',
@@ -200,12 +282,12 @@ const Index = () => {
                                         tooltip='Edit'
                                         link={`/inventory/products/edit/${row.id}`}
                                     />
-                                    <IconButton
-                                        icon={IconType.delete}
-                                        color={ButtonVariant.danger}
-                                        tooltip='Delete'
-                                        onClick={() => handleDeleteRawProduct(row.id)}
-                                    />
+                                    {/*<IconButton*/}
+                                    {/*    icon={IconType.delete}*/}
+                                    {/*    color={ButtonVariant.danger}*/}
+                                    {/*    tooltip='Delete'*/}
+                                    {/*    onClick={() => handleDeleteRawProduct(row.id)}*/}
+                                    {/*/>*/}
                                 </div>
                             )
                         }

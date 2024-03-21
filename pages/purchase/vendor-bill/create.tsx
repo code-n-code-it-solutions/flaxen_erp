@@ -11,12 +11,26 @@ import {clearGoodReceiveNoteState} from "@/store/slices/goodReceiveNoteSlice";
 import GoodReceiveNoteForm from "@/pages/purchase/good-receive-note/GoodReceiveNoteForm";
 import VendorBillForm from "@/pages/purchase/vendor-bill/VendorBillForm";
 import {clearVendorBillState} from "@/store/slices/vendorBillSlice";
+import PageWrapper from '@/components/PageWrapper';
 
 const Create = () => {
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
     const router = useRouter();
     const {vendorBill, success, loading} = useSelector((state: IRootState) => state.vendorBill);
-
+    const breadCrumbItems = [
+        {
+            title: 'Home',
+            href: '/main',
+        },
+        {
+            title: 'Purchases',
+            href: '/purchase/vendor-bill',
+        },
+        {
+            title: 'Create New',
+            href: '#',
+        },
+    ];
     useEffect(() => {
         dispatch(setPageTitle( 'New Good Receive Note'));
     }, []);
@@ -29,25 +43,11 @@ const Create = () => {
     }, [vendorBill, success]);
 
     return (
-        <div>
-            <Breadcrumb items={[
-                {
-                    title: 'Main Dashboard',
-                    href: '/main',
-                },
-                {
-                    title: 'Purchase Dashboard',
-                    href: '/purchase',
-                },
-                {
-                    title: 'All Good Receive Note',
-                    href: '/purchase/good-receive-note',
-                },
-                {
-                    title: 'Create New',
-                    href: '#',
-                },
-            ]}/>
+        <PageWrapper
+        embedLoader={false}
+        breadCrumbItems={breadCrumbItems}
+    >
+         <div>   
             <div className="pt-5">
                 <div className="panel">
                     <div className="mb-5 flex items-center justify-between">
@@ -70,6 +70,7 @@ const Create = () => {
                 </div>
             </div>
         </div>
+        </PageWrapper>
     );
 };
 
