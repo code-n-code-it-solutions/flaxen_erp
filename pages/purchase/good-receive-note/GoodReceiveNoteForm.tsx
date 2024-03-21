@@ -1,17 +1,20 @@
 "use client";
-import React, {useEffect, useState} from 'react';
-import {setAuthToken, setContentType} from "@/configs/api.config";
-import {useDispatch, useSelector} from "react-redux";
-import {ThunkDispatch} from "redux-thunk";
-import {IRootState} from "@/store";
-import {AnyAction} from "redux";
+import React, { useEffect, useState } from 'react';
+import { setAuthToken, setContentType } from "@/configs/api.config";
+import { useDispatch, useSelector } from "react-redux";
+import { ThunkDispatch } from "redux-thunk";
+import { IRootState } from "@/store";
+import { AnyAction } from "redux";
 import Select from "react-select";
-import {getLPOByStatuses, storeLPO} from "@/store/slices/localPurchaseOrderSlice";
-import {clearGoodReceiveNoteState, storeGRN} from "@/store/slices/goodReceiveNoteSlice";
-import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
-import {FORM_CODE_TYPE} from "@/utils/enums";
-import {Dropdown} from "@/components/form/Dropdown";
-import {Input} from "@/components/form/Input";
+
+import { getLPOByStatuses, storeLPO } from "@/store/slices/localPurchaseOrderSlice";
+import { clearGoodReceiveNoteState, storeGRN } from "@/store/slices/goodReceiveNoteSlice";
+import { clearUtilState, generateCode } from "@/store/slices/utilSlice";
+import { ButtonSize, ButtonVariant, FORM_CODE_TYPE } from "@/utils/enums";
+import { Dropdown } from '@/components/form/Dropdown';
+import { Input } from '@/components/form/Input';
+import { stat } from 'fs';
+import Button from '@/components/Button';
 
 interface IFormData {
     purchase_requisition_id: number;
@@ -47,12 +50,12 @@ interface IFormProps {
     id?: any
 }
 
-const GoodReceiveNoteForm = ({id}: IFormProps) => {
+const GoodReceiveNoteForm = ({ id }: IFormProps) => {
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
-    const {token, user} = useSelector((state: IRootState) => state.user);
-    const {success, loading} = useSelector((state: IRootState) => state.goodReceiveNote);
-    const {allLPOs} = useSelector((state: IRootState) => state.localPurchaseOrder);
-    const {code} = useSelector((state: IRootState) => state.util);
+    const { token, user } = useSelector((state: IRootState) => state.user);
+    const { success, loading } = useSelector((state: IRootState) => state.goodReceiveNote);
+    const { allLPOs } = useSelector((state: IRootState) => state.localPurchaseOrder);
+    const { code } = useSelector((state: IRootState) => state.util);
     const [rawProductModalOpen, setRawProductModalOpen] = useState<boolean>(false);
     const [rawProducts, setRawProducts] = useState<IRawProduct[]>([]);
     const [formData, setFormData] = useState<IFormData>({
@@ -73,9 +76,9 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
 
     const [itemDetail, setItemDetail] = useState<any>({})
     const [statusOptions, setStatusOptions] = useState<any[]>([
-        {value: '', label: 'Select Status'},
-        {value: 'Draft', label: 'Draft'},
-        {value: 'Pending', label: 'Proceed'},
+        { value: '', label: 'Select Status' },
+        { value: 'Draft', label: 'Draft' },
+        { value: 'Pending', label: 'Proceed' },
     ]);
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -156,7 +159,7 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
         dispatch(clearGoodReceiveNoteState())
         setAuthToken(token)
         setContentType('application/json')
-        dispatch(getLPOByStatuses({statuses: ['Pending']}))
+        dispatch(getLPOByStatuses({ statuses: ['Pending'] }))
         dispatch(clearUtilState())
         dispatch(generateCode(FORM_CODE_TYPE.GOOD_RECEIVE_NOTE))
     }, [])
@@ -189,6 +192,39 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
     return (
         <form className="space-y-5" onSubmit={(e) => handleSubmit(e)}>
             <div className="flex justify-start flex-col items-start space-y-3">
+
+                {/* <label htmlFor="purchase_requisition_id">LPO</label>
+                    <Select
+                        defaultValue={localPurchaseOrderOptions[0]}
+                        options={localPurchaseOrderOptions}
+                        isSearchable={true}
+                        isClearable={true}
+                        placeholder={'Select LPO'}
+                        onChange={(e: any) => handleLPOChange(e)}
+                    /> */}
+                <Dropdown
+                    divClasses='w-full md:w-1/2'
+                    label='LPO'
+                    name=''
+                    options={localPurchaseOrderOptions}
+                    value={''}
+                    onChange={(e: any) => handleLPOChange(e)}
+                />
+
+
+                <Dropdown
+                    divClasses='w-full md:w-1/2'
+                    label='Status'
+                    name=''
+                    options={statusOptions}
+
+                    value={''}
+                    onChange={(e: any) => setFormData(prev => ({
+                        ...prev,
+                        status: e && typeof e !== 'undefined' ? e.value : ''
+                    }))}
+                />
+
                 <Dropdown
                     divClasses='w-full md:w-1/2'
                     label='LPO'
@@ -228,6 +264,8 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
                         setFormData(prev => ({
                             ...prev,
                             grn_number: e.target.value
+                        }))}
+                    placeholder="Good Receive Note Number"
                         }))
                     }
                     isMasked={false}
@@ -237,7 +275,7 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
                 <div hidden={showDetails} className="w-full space-y-3">
                     <div className="border rounded p-5 w-full">
                         <h3 className="text-lg font-semibold">LPO Details</h3>
-                        <hr className="my-3"/>
+                        <hr className="my-3" />
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full my-5">
                             <div className="w-full">
                                 <strong>Requisition Number: </strong>
@@ -270,38 +308,38 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
                                 </span>
                             </div>
                         </div>
-                        <hr className="my-3"/>
+                        <hr className="my-3" />
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div className="table-responsive">
                                 <h4 className="font-bold text-lg">Vendor Details</h4>
                                 <table>
                                     <thead>
-                                    <tr>
-                                        <th>Vendor Number</th>
-                                        <th>Vendor Name</th>
-                                        <th>Billed From</th>
-                                        <th>Shift From</th>
-                                    </tr>
+                                        <tr>
+                                            <th>Vendor Number</th>
+                                            <th>Vendor Name</th>
+                                            <th>Billed From</th>
+                                            <th>Shift From</th>
+                                        </tr>
                                     </thead>
                                     <tbody>
-                                    <tr>
-                                        <td>{lpoDetails.vendor?.vendor_number}</td>
-                                        <td>{lpoDetails.vendor?.name}</td>
-                                        <td>
-                                            {lpoDetails.vendor?.addresses?.map((address: any, index: number) => {
-                                                if (address.type === 'billing') {
-                                                    return address.address + ', ' + address.city?.name + ', ' + address.state?.name + ', ' + address.country?.name
-                                                }
-                                            })}
-                                        </td>
-                                        <td>
-                                            {lpoDetails.vendor?.addresses?.map((address: any, index: number) => {
-                                                if (address.type === 'shifting') {
-                                                    return address.address + ', ' + address.city?.name + ', ' + address.state?.name + ', ' + address.country?.name
-                                                }
-                                            })}
-                                        </td>
-                                    </tr>
+                                        <tr>
+                                            <td>{lpoDetails.vendor?.vendor_number}</td>
+                                            <td>{lpoDetails.vendor?.name}</td>
+                                            <td>
+                                                {lpoDetails.vendor?.addresses?.map((address: any, index: number) => {
+                                                    if (address.type === 'billing') {
+                                                        return address.address + ', ' + address.city?.name + ', ' + address.state?.name + ', ' + address.country?.name
+                                                    }
+                                                })}
+                                            </td>
+                                            <td>
+                                                {lpoDetails.vendor?.addresses?.map((address: any, index: number) => {
+                                                    if (address.type === 'shifting') {
+                                                        return address.address + ', ' + address.city?.name + ', ' + address.state?.name + ', ' + address.country?.name
+                                                    }
+                                                })}
+                                            </td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -309,22 +347,22 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
                                 <h4 className="font-bold text-lg">Representative Details</h4>
                                 <table>
                                     <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Phone</th>
-                                        <th>Email</th>
-                                        <th>Address</th>
-                                    </tr>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Phone</th>
+                                            <th>Email</th>
+                                            <th>Address</th>
+                                        </tr>
                                     </thead>
                                     <tbody>
-                                    <tr>
-                                        <td>{lpoDetails.vendor_representative?.name}</td>
-                                        <td>{lpoDetails.vendor_representative?.phone}</td>
-                                        <td>{lpoDetails.vendor_representative?.email}</td>
-                                        <td>
-                                            {lpoDetails.vendor_representative?.address + ', ' + lpoDetails.vendor_representative?.city?.name + ', ' + lpoDetails.vendor_representative?.state?.name + ', ' + lpoDetails.vendor_representative?.country?.name}
-                                        </td>
-                                    </tr>
+                                        <tr>
+                                            <td>{lpoDetails.vendor_representative?.name}</td>
+                                            <td>{lpoDetails.vendor_representative?.phone}</td>
+                                            <td>{lpoDetails.vendor_representative?.email}</td>
+                                            <td>
+                                                {lpoDetails.vendor_representative?.address + ', ' + lpoDetails.vendor_representative?.city?.name + ', ' + lpoDetails.vendor_representative?.state?.name + ', ' + lpoDetails.vendor_representative?.country?.name}
+                                            </td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -339,90 +377,90 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
                             </div>
                             <table>
                                 <thead>
-                                <tr>
-                                    <th>Raw Product</th>
-                                    <th>Description</th>
-                                    <th>Unit</th>
-                                    <th>Quantity</th>
-                                    <th>Received Quantity</th>
-                                    <th>Unit Price</th>
-                                    <th>Total</th>
-                                    <th>Tax Category</th>
-                                    <th>Tax Rate(%)</th>
-                                    <th>Tax Amount</th>
-                                    <th>Row Total</th>
-                                    {/*<th>Action</th>*/}
-                                </tr>
+                                    <tr>
+                                        <th>Raw Product</th>
+                                        <th>Description</th>
+                                        <th>Unit</th>
+                                        <th>Quantity</th>
+                                        <th>Received Quantity</th>
+                                        <th>Unit Price</th>
+                                        <th>Total</th>
+                                        <th>Tax Category</th>
+                                        <th>Tax Rate(%)</th>
+                                        <th>Tax Amount</th>
+                                        <th>Row Total</th>
+                                        {/*<th>Action</th>*/}
+                                    </tr>
                                 </thead>
                                 <tbody>
-                                {rawProducts.map((product, index) => (
-                                    <tr key={index}>
-                                        <td>{product.raw_product_title}</td>
-                                        <td>{product.description}</td>
-                                        <td>{product.unit_title}</td>
-                                        <td>{product.quantity}</td>
-                                        <td>
-                                            <input
-                                                type="number"
-                                                className="form-input"
-                                                name="received_quantity"
-                                                value={product.received_quantity}
-                                                onChange={(e) => {
-                                                    const {value} = e.target;
-                                                    setRawProducts((prev: any) => {
-                                                        return prev.map((item: any, i: number) => {
-                                                            if (i === index) {
-                                                                return {...item, received_quantity: parseInt(value)};
-                                                            }
-                                                            return item;
+                                    {rawProducts.map((product, index) => (
+                                        <tr key={index}>
+                                            <td>{product.raw_product_title}</td>
+                                            <td>{product.description}</td>
+                                            <td>{product.unit_title}</td>
+                                            <td>{product.quantity}</td>
+                                            <td>
+                                                <input
+                                                    type="number"
+                                                    className="form-input"
+                                                    name="received_quantity"
+                                                    value={product.received_quantity}
+                                                    onChange={(e) => {
+                                                        const { value } = e.target;
+                                                        setRawProducts((prev: any) => {
+                                                            return prev.map((item: any, i: number) => {
+                                                                if (i === index) {
+                                                                    return { ...item, received_quantity: parseInt(value) };
+                                                                }
+                                                                return item;
+                                                            });
                                                         });
-                                                    });
-                                                }}
-                                            />
-                                        </td>
-                                        <td>{product.unit_price}</td>
-                                        <td>{product.total}</td>
-                                        <td>{product.tax_category_name}</td>
-                                        <td>{product.tax_rate}</td>
-                                        <td>{product.tax_amount}</td>
-                                        <td>{product.row_total}</td>
-                                        {/*<td>*/}
-                                        {/*    <div className="flex gap-3 items-center">*/}
-                                        {/*        <button*/}
-                                        {/*            type="button"*/}
-                                        {/*            className="btn btn-outline-primary btn-sm"*/}
-                                        {/*            onClick={() => handleEditItem(index)}*/}
-                                        {/*        >*/}
-                                        {/*            Edit*/}
-                                        {/*        </button>*/}
-                                        {/*        <button*/}
-                                        {/*            type="button"*/}
-                                        {/*            onClick={() => handleRemoveItem(index)}*/}
-                                        {/*            className="btn btn-outline-danger btn-sm"*/}
-                                        {/*        >*/}
-                                        {/*            Delete*/}
-                                        {/*        </button>*/}
-                                        {/*    </div>*/}
-                                        {/*</td>*/}
-                                    </tr>
-                                ))}
-                                {rawProducts.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={11} className="text-center">No Item Added</td>
-                                    </tr>
-                                ) : (
-                                    <tr>
-                                        <td colSpan={3} className="font-bold text-center">Total</td>
-                                        <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.quantity, 0)}</td>
-                                        <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.received_quantity, 0)}</td>
-                                        <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.unit_price, 0)}</td>
-                                        <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.total, 0)}</td>
-                                        <td></td>
-                                        <td></td>
-                                        <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.tax_amount, 0)}</td>
-                                        <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.row_total, 0)}</td>
-                                    </tr>
-                                )}
+                                                    }}
+                                                />
+                                            </td>
+                                            <td>{product.unit_price}</td>
+                                            <td>{product.total}</td>
+                                            <td>{product.tax_category_name}</td>
+                                            <td>{product.tax_rate}</td>
+                                            <td>{product.tax_amount}</td>
+                                            <td>{product.row_total}</td>
+                                            {/*<td>*/}
+                                            {/*    <div className="flex gap-3 items-center">*/}
+                                            {/*        <button*/}
+                                            {/*            type="button"*/}
+                                            {/*            className="btn btn-outline-primary btn-sm"*/}
+                                            {/*            onClick={() => handleEditItem(index)}*/}
+                                            {/*        >*/}
+                                            {/*            Edit*/}
+                                            {/*        </button>*/}
+                                            {/*        <button*/}
+                                            {/*            type="button"*/}
+                                            {/*            onClick={() => handleRemoveItem(index)}*/}
+                                            {/*            className="btn btn-outline-danger btn-sm"*/}
+                                            {/*        >*/}
+                                            {/*            Delete*/}
+                                            {/*        </button>*/}
+                                            {/*    </div>*/}
+                                            {/*</td>*/}
+                                        </tr>
+                                    ))}
+                                    {rawProducts.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={11} className="text-center">No Item Added</td>
+                                        </tr>
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={3} className="font-bold text-center">Total</td>
+                                            <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.quantity, 0)}</td>
+                                            <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.received_quantity, 0)}</td>
+                                            <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.unit_price, 0)}</td>
+                                            <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.total, 0)}</td>
+                                            <td></td>
+                                            <td></td>
+                                            <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.tax_amount, 0)}</td>
+                                            <td className="text-left font-bold">{rawProducts.reduce((acc: number, item) => acc + item.row_total, 0)}</td>
+                                        </tr>
+                                    )}
                                 </tbody>
                             </table>
                         </div>
@@ -430,20 +468,24 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
                 </div>
 
                 <div className="w-full flex justify-center items-center flex-col md:flex-row gap-3">
-                    <button
-                        type="submit"
-                        className="btn btn-primary"
+                    <Button
+                        
+                        text={loading ? 'Loading...' : 'Save Good Receive Note'}
+                        variant={ButtonVariant.primary}
                         disabled={loading}
-                    >
-                        {loading ? 'Loading...' : 'Save Good Receive Note'}
-                    </button>
-                    <button
-                        type="button"
+                        size={ButtonSize.medium}
+                    // onClick={() => setVendorAddressModal(true)}
+
+                    />
+                    
+                    <Button
+                        text='Clear'
+                        variant={ButtonVariant.info}
+                        size={ButtonSize.medium}
                         onClick={() => window?.location?.reload()}
-                        className="btn btn-info"
-                    >
-                        Clear
-                    </button>
+
+                    />
+
                 </div>
             </div>
         </form>
