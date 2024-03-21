@@ -149,6 +149,11 @@ const Index = () => {
                             sortable: true
                         },
                         {
+                            accessor: 'generation_type',
+                            title: 'Generation Type',
+                            sortable: true
+                        },
+                        {
                             accessor: 'description',
                             title: 'Description',
                             sortable: true

@@ -8,12 +8,12 @@ import {AnyAction} from "redux";
 import {clearRawProductState, deleteRawProduct, getRawProducts} from "@/store/slices/rawProductSlice";
 import {setAuthToken, setContentType} from "@/configs/api.config";
 import GenericTable from "@/components/GenericTable";
-import Preview from "@/pages/inventory/productions/preview";
+import Preview from "@/pages/inventory/products/preview";
 import IconButton from "@/components/IconButton";
 import {ButtonSize, ButtonType, ButtonVariant, IconType} from "@/utils/enums";
 import PageWrapper from "@/components/PageWrapper";
 import Button from "@/components/Button";
-import {generatePDF, getIcon} from "@/utils/helper";
+import {capitalizeFirstLetter, generatePDF, getIcon} from "@/utils/helper";
 
 const Index = () => {
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
@@ -39,7 +39,7 @@ const Index = () => {
     const getRowItems = () => {
         setAuthToken(token)
         setContentType('application/json')
-        dispatch(getRawProducts())
+        dispatch(getRawProducts([]))
     }
 
     useEffect(() => {
@@ -126,7 +126,7 @@ const Index = () => {
                     rowData={rowData}
                     loading={rawProducts.loading}
                     exportTitle={'all-raw-materials-' + Date.now()}
-                    showFooter={rowData.length>0}
+                    showFooter={rowData.length > 0}
                     columns={[
                         {
                             accessor: 'item_code',
@@ -143,6 +143,21 @@ const Index = () => {
                         {
                             accessor: 'title',
                             title: 'Title',
+                            sortable: true
+                        },
+                        {
+                            accessor: 'product_type',
+                            title: 'Product Type',
+                            render: (row: any) => (
+                                <span>
+                                    {
+                                        row.product_type
+                                            .split('-')
+                                            .map(capitalizeFirstLetter)
+                                            .join(' ')
+                                    }
+                                </span>
+                            ),
                             sortable: true
                         },
                         {

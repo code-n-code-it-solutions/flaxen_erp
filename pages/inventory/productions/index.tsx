@@ -2,21 +2,20 @@ import React, {useEffect, useState} from 'react';
 import Swal from 'sweetalert2';
 import {useDispatch, useSelector} from 'react-redux';
 import {setPageTitle} from '@/store/slices/themeConfigSlice';
-import Link from 'next/link';
-import Breadcrumb from '@/components/Breadcrumb';
 import {ThunkDispatch} from 'redux-thunk';
 import {IRootState} from '@/store';
 import {AnyAction} from 'redux';
 import {setAuthToken, setContentType} from '@/configs/api.config';
 import GenericTable from '@/components/GenericTable';
-import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css';
 import {deleteProduction, getProductions} from '@/store/slices/productionSlice';
 import IconButton from '@/components/IconButton';
-import {ButtonVariant, IconType} from '@/utils/enums';
+import {ButtonSize, ButtonType, ButtonVariant, IconType} from '@/utils/enums';
 import {generatePDF, getIcon} from '@/utils/helper';
 import Preview from '@/pages/inventory/productions/preview';
 import {uniqBy} from "lodash";
+import Button from "@/components/Button";
+import PageWrapper from "@/components/PageWrapper";
 
 const Index = () => {
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
@@ -24,11 +23,22 @@ const Index = () => {
     const {allProductions, loading, success} = useSelector((state: IRootState) => state.production);
     const [deleteLoading, setDeleteLoading] = useState(false);
     const [printLoading, setPrintLoading] = useState<boolean>(false);
-
-    useEffect(() => {
-        dispatch(setPageTitle('All Productions'));
-    });
     const [rowData, setRowData] = useState([]);
+
+    const breadcrumbItems = [
+        {
+            title: 'Home',
+            href: '/main',
+        },
+        {
+            title: 'Inventory Dashboard',
+            href: '/inventory',
+        },
+        {
+            title: 'All Productions',
+            href: '#',
+        },
+    ];
 
     const getRawItems = () => {
         setAuthToken(token);
@@ -38,6 +48,7 @@ const Index = () => {
 
     useEffect(() => {
         getRawItems();
+        dispatch(setPageTitle('All Productions'));
     }, []);
 
     useEffect(() => {
@@ -83,141 +94,142 @@ const Index = () => {
     }, [success]);
 
     return (
-        <div>
-            <Breadcrumb
-                items={[
+        <PageWrapper
+            embedLoader={true}
+            breadCrumbItems={breadcrumbItems}
+            loading={loading}
+        >
+            <div className="mb-5 flex items-center justify-between">
+                <h5 className="text-lg font-semibold dark:text-white-light">All Productions</h5>
+                <Button
+                    type={ButtonType.link}
+                    text={
+                        <span className="flex items-center">
+                            {getIcon(IconType.add)}
+                            Add New
+                        </span>
+                    }
+                    variant={ButtonVariant.primary}
+                    link="/inventory/productions/create"
+                    size={ButtonSize.small}
+                />
+            </div>
+            <GenericTable
+                colName={colName}
+                header={header}
+                rowData={rowData}
+                loading={loading}
+                exportTitle={'all-production-' + Date.now()}
+                showFooter={rowData.length > 0}
+                columns={[
                     {
-                        title: 'Home',
-                        href: '/main',
+                        accessor: 'batch_number',
+                        title: 'Code',
+                        sortable: true,
+                        footer: (
+                            rowData.length > 0 &&
+                            <div className='flex gap-2 justify-start items-center'>
+                                <span>Productions:</span>
+                                <span>{rowData.length}</span>
+                            </div>
+                        )
                     },
                     {
-                        title: 'All Productions',
-                        href: '#',
+                        accessor: 'no_of_quantity',
+                        title: 'Quantity (KG)',
+                        sortable: true,
+                        footer: (
+                            rowData.length > 0 &&
+                            <div className='flex gap-2 justify-start items-center'>
+                                <span className='h-3 w-3'>
+                                    {getIcon(IconType.sum)}
+                                </span>
+                                <span>
+                                    {rowData.reduce((acc, item: any) => acc + parseFloat(item.no_of_quantity), 0)}
+                                </span>
+                            </div>
+                        )
                     },
-                ]}
-            />
-            <div className="pt-5">
-                <div className="panel">
-                    <div className="mb-5 flex items-center justify-between">
-                        <h5 className="text-lg font-semibold dark:text-white-light">All Productions</h5>
-                        <Link href="/inventory/productions/create" className="btn btn-primary btn-sm m-1">
-                            <span className="flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                     className="h-5 w-5 ltr:mr-2 rtl:ml-2" fill="none">
-                                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
-                                    <path d="M15 12L12 12M12 12L9 12M12 12L12 9M12 12L12 15" stroke="currentColor"
-                                          strokeWidth="1.5" strokeLinecap="round"/>
-                                </svg>
-                                Add New
+                    {
+                        accessor: 'product_assembly.formula_name',
+                        title: 'Formula',
+                        render: (row: any) =>
+                            <span>{row.product_assembly.formula_name + ' (' + row.product_assembly.formula_code + ')'}</span>,
+                        sortable: true,
+                        footer: (
+                            rowData.length > 0 &&
+                            <div className='flex gap-2 justify-start items-center'>
+                                <span>Formulas:</span>
+                                <span>{uniqBy(rowData, (record: any) => record.product_assembly.formula_code).length}</span>
+                            </div>
+                        )
+                    },
+                    {
+                        accessor: 'is_active',
+                        title: 'Status',
+                        render: (row: any) => (
+                            <span className={`badge bg-${row.is_active ? 'warning' : 'success'}`}>
+                                {row.is_active ? 'Pending' : 'Completed'}
                             </span>
-                        </Link>
-                    </div>
-                    <GenericTable
-                        colName={colName}
-                        header={header}
-                        rowData={rowData}
-                        loading={loading}
-                        exportTitle={'all-production-' + Date.now()}
-                        showFooter={true}
-                        columns={[
-                            {
-                                accessor: 'batch_number',
-                                title: 'Code',
-                                sortable: true,
-                                footer: (
-                                    <div className='flex gap-2 justify-start items-center'>
-                                        <span>Productions:</span>
-                                        <span>{rowData.length}</span>
-                                    </div>
-                                )
-                            },
-                            {
-                                accessor: 'no_of_quantity',
-                                title: 'Quantity (KG)',
-                                sortable: true,
-                                footer: (
-                                    <div className='flex gap-2 justify-start items-center'>
-                                        <span className='h-3 w-3'>
-                                            {getIcon(IconType.sum)}
-                                        </span>
-                                        <span>
-                                            {rowData.reduce((acc, item:any) => acc + parseFloat(item.no_of_quantity), 0)}
-                                        </span>
-                                    </div>
-                                )
-                            },
-                            {
-                                accessor: 'product_assembly.formula_name',
-                                title: 'Formula',
-                                render: (row: any) =>
-                                    <span>{row.product_assembly.formula_name + ' (' + row.product_assembly.formula_code + ')'}</span>,
-                                sortable: true,
-                                footer: (
-                                    <div className='flex gap-2 justify-start items-center'>
-                                        <span>Formulas:</span>
-                                        <span>{uniqBy(rowData, (record:any) => record.product_assembly.formula_code).length}</span>
-                                    </div>
-                                )
-                            },
-                            {
-                                accessor: 'is_active',
-                                title: 'Status',
-                                render: (row: any) => <span
-                                    className={`badge bg-${row.is_active ? 'success' : 'danger'}`}>{row.is_active ? 'Active' : 'Inactive'}</span>,
-                                sortable: true,
-                                footer: (
-                                    <div className="flex justify-start items-center gap-3">
-                                        <div className='flex gap-2 justify-start items-center'>
-                                            <span>Completed: </span>
-                                            <span>{rowData.reduce((acc: any, item: any) => !item.is_active ? acc + 1 : 0, 0)}</span>
-                                        </div>
-                                        <div className='flex gap-2 justify-start items-center'>
-                                            <span>Pending: </span>
-                                            <span>{rowData.reduce((acc: any, item: any) => item.is_active ? acc + 1 : 0, 0)}</span>
-                                        </div>
-                                    </div>
-                                ),
-                            },
-                            {
-                                accessor: 'actions',
-                                title: 'Actions',
-                                render: (row: any) => (
-                                    <div className="flex items-center gap-3">
-                                        <IconButton
-                                            icon={IconType.print}
-                                            color={ButtonVariant.secondary}
-                                            tooltip="Print"
-                                            onClick={() => generatePDF(<Preview content={row}/>, setPrintLoading)}
-                                        />
+                        ),
+                        sortable: true,
+                        footer: (
+                            rowData.length > 0 &&
+                            <div className="flex justify-start items-center gap-3">
+                                <div className='flex gap-2 justify-start items-center'>
+                                    <span>C: </span>
+                                    <span>{rowData.reduce((acc: any, item: any) => !item.is_active ? acc + 1 : 0, 0)}</span>
+                                </div>
+                                <div className='flex gap-2 justify-start items-center'>
+                                    <span>P: </span>
+                                    <span>{rowData.reduce((acc: any, item: any) => item.is_active ? acc + 1 : 0, 0)}</span>
+                                </div>
+                            </div>
+                        ),
+                    },
+                    {
+                        accessor: 'actions',
+                        title: 'Actions',
+                        render: (row: any) => (
+                            <div className="flex items-center gap-3">
+                                <IconButton
+                                    icon={IconType.print}
+                                    color={ButtonVariant.secondary}
+                                    tooltip="Print"
+                                    onClick={() => generatePDF(<Preview content={row}/>, setPrintLoading)}
+                                />
 
-                                        <IconButton
-                                            icon={IconType.view}
-                                            color={ButtonVariant.info}
-                                            tooltip="View"
-                                            link={`/inventory/productions/view/${row.id}`}
-                                        />
+                                <IconButton
+                                    icon={IconType.view}
+                                    color={ButtonVariant.info}
+                                    tooltip="View"
+                                    link={`/inventory/productions/view/${row.id}`}
+                                />
 
+
+                                {row.is_active ? (
+                                    <>
                                         <IconButton
                                             icon={IconType.edit}
                                             color={ButtonVariant.primary}
                                             tooltip="Edit"
                                             link={`/inventory/productions/edit/${row.id}`}
                                         />
-
                                         <IconButton
                                             icon={IconType.delete}
                                             color={ButtonVariant.danger}
                                             tooltip="Delete"
                                             onClick={() => handleDelete(row.id)}
                                         />
-                                    </div>
-                                ),
-                            },
-                        ]}
-                    />
-                </div>
-            </div>
-        </div>
+                                    </>
+                                ) : <></>}
+
+                            </div>
+                        ),
+                    },
+                ]}
+            />
+        </PageWrapper>
     );
 };
 

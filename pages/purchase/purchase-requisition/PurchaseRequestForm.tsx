@@ -265,7 +265,7 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
                     label='Status'
                     name='status_id'
                     options={requisitionStatusOptions}
-                    value={formData.type}
+                    value={formData.status}
                     onChange={(e: any) => {
                         if (e && typeof e !== 'undefined') {
                             setFormData(prev => ({

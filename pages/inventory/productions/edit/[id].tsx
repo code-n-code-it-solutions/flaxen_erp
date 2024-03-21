@@ -7,9 +7,8 @@ import {useRouter} from "next/router";
 import {setPageTitle} from "@/store/slices/themeConfigSlice";
 import {setAuthToken, setContentType} from "@/configs/api.config";
 import {clearProductAssemblyState, getAssemblyItems, getProductAssemblies} from "@/store/slices/productAssemblySlice";
-import {clearProductionState, storeProduction} from "@/store/slices/productionSlice";
+import {clearProductionState, editProduction, updateProduction} from "@/store/slices/productionSlice";
 import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
-
 import {ButtonSize, ButtonType, ButtonVariant, FORM_CODE_TYPE, IconType, RAW_PRODUCT_LIST_TYPE} from "@/utils/enums";
 import Alert from "@/components/Alert";
 import RawProductItemListing from "@/components/listing/RawProductItemListing";
@@ -18,9 +17,6 @@ import PageWrapper from "@/components/PageWrapper";
 import {getIcon} from "@/utils/helper";
 import {Input} from "@/components/form/Input";
 import {Dropdown} from "@/components/form/Dropdown";
-import {FORM_CODE_TYPE, RAW_PRODUCT_LIST_TYPE} from "@/utils/enums";
-import RawProductModal from "@/components/modals/RawProductModal";
-import Alert from  "@/components/Alert";
 
 interface IFormData {
     batch_number: string;
@@ -29,13 +25,13 @@ interface IFormData {
     production_items: any[];
 }
 
-const Create = () => {
+const Edit = () => {
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
     const router = useRouter();
     const {token} = useSelector((state: IRootState) => state.user);
     const {code} = useSelector((state: IRootState) => state.util);
     const {allProductAssemblies, assemblyItems} = useSelector((state: IRootState) => state.productAssembly);
-    const {production, success} = useSelector((state: IRootState) => state.production);
+    const {production, success, productionDetail} = useSelector((state: IRootState) => state.production);
 
     const [batchNumber, setBatchNumber] = useState('');
     const [noOfQuantity, setNoOfQuantity] = useState<any>(0);
@@ -48,11 +44,11 @@ const Create = () => {
         {title: 'Home', href: '/main'},
         {title: 'Inventory Dashboard', href: '/inventory'},
         {title: 'All Productions', href: '/inventory/productions'},
-        {title: 'Create New', href: '#'},
+        {title: 'Update', href: '#'},
     ];
 
     const hasInsufficientQuantity = () => {
-        return rawProducts.some((row) => row.available_quantity < row.required_quantity);
+        return rawProducts.some((row) => row.availableQuantity < row.requiredQuantity);
     };
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -67,7 +63,7 @@ const Create = () => {
         setAuthToken(token);
         setContentType('application/json');
         dispatch(clearProductAssemblyState());
-        dispatch(storeProduction(formData));
+        dispatch(updateProduction({id: router.query.id, productionData: formData}));
     };
 
     const handleFormulaChange = (e: any) => {
@@ -92,12 +88,40 @@ const Create = () => {
 
     useEffect(() => {
         setAuthToken(token);
-        dispatch(setPageTitle('Create Productions'));
+        dispatch(setPageTitle('Edit Productions'));
         dispatch(getProductAssemblies());
         dispatch(clearUtilState());
         dispatch(generateCode(FORM_CODE_TYPE.PRODUCTION));
         setRawProducts([])
-    }, []);
+        const {id} = router.query;
+        if (typeof id === 'string' && id) {
+            dispatch(editProduction(parseInt(id)))
+        }
+    }, [router.query]);
+
+    useEffect(() => {
+        if (productionDetail) {
+
+            setBatchNumber(productionDetail.batch_number);
+            setNoOfQuantity(productionDetail.no_of_quantity);
+            setProductAssemblyId(productionDetail.product_assembly_id);
+
+            setRawProducts(prevState => (
+                productionDetail.production_items.map((item: any) => (
+                    {
+                        raw_product_id: item.raw_product_id,
+                        description: item.description,
+                        unit_id: item.unit_id,
+                        unit_price: parseFloat(item.unit_cost),
+                        quantity: parseFloat(item.quantity),
+                        available_quantity: parseFloat(item.available_quantity),
+                        required_quantity: item.quantity * productionDetail.no_of_quantity,
+                        sub_total: item.product.opening_stock_unit_balance * item.quantity * productionDetail.no_of_quantity,
+                    }
+                ))
+            ))
+        }
+    }, [productionDetail]);
 
     useEffect(() => {
         if (production && success) {
@@ -170,7 +194,7 @@ const Create = () => {
                     />}
             </div>
             <div className="mb-5 flex items-center justify-between">
-                <h5 className="text-lg font-semibold dark:text-white-light">Enter Details of Productions</h5>
+                <h5 className="text-lg font-semibold dark:text-white-light">Update Details of Productions</h5>
                 <Button
                     type={ButtonType.link}
                     text={
@@ -180,8 +204,8 @@ const Create = () => {
                         </span>
                     }
                     variant={ButtonVariant.primary}
-                    size={ButtonSize.small}
                     link="/inventory/productions"
+                    size={ButtonSize.small}
                 />
             </div>
             <form className="space-y-5" onSubmit={handleSubmit}>
@@ -245,7 +269,7 @@ const Create = () => {
                     <Button
                         classes="!mt-6"
                         type={ButtonType.submit}
-                        text="Submit"
+                        text="Update"
                         variant={ButtonVariant.primary}
                     />
                 )}
@@ -254,4 +278,4 @@ const Create = () => {
     );
 };
 
-export default Create;
+export default Edit;

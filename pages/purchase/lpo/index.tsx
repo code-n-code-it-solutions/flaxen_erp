@@ -17,6 +17,7 @@ import {ButtonType, ButtonVariant, IconType} from "@/utils/enums";
 import {generatePDF, imagePath} from "@/utils/helper";
 import PageWrapper from "@/components/PageWrapper";
 import Button from "@/components/Button";
+import {isNull} from "lodash";
 
 const Index = () => {
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
@@ -124,11 +125,31 @@ const Index = () => {
                     loading={loading}
                     exportTitle={'all-lpo-' + Date.now()}
                     columns={[
-                        {accessor: 'lpo_number', title: 'LPO #', sortable: true},
-                        {accessor: 'purchase_requisition.pr_code', title: 'Requisition Code', sortable: true},
-                        {accessor: 'type', title: 'Type', sortable: true},
-                        {accessor: 'internal_document_number', title: 'ID #', sortable: true},
-                        {accessor: 'phone', title: 'phone', sortable: true},
+                        {
+                            accessor: 'lpo_number',
+                            title: 'LPO #',
+                            sortable: true
+                        },
+                        {
+                            accessor: 'purchase_requisition.pr_code',
+                            title: 'Requisition Code',
+                            sortable: true
+                        },
+                        {
+                            accessor: 'generation_type',
+                            title: 'Generation Type',
+                            sortable: true
+                        },
+                        {
+                            accessor: 'type',
+                            title: 'Type',
+                            sortable: true
+                        },
+                        {
+                            accessor: 'internal_document_number',
+                            title: 'ID #',
+                            sortable: true
+                        },
                         {
                             accessor: 'user.name',
                             title: 'Created By',
@@ -139,9 +160,9 @@ const Index = () => {
                             title: 'Vendor',
                             render: (row: any) => (
                                 <div className="flex flex-col items-center gap-3">
-                                    <Image src={imagePath(row.vendor.thumbnail)} alt={row.vendor.name}
+                                    <Image src={imagePath(row.vendor?.thumbnail)} alt={row.vendor.name}
                                            width={50} height={50} className="rounded"/>
-                                    <span>{row.vendor.name}</span>
+                                    <span>{row.vendor?.name}</span>
                                 </div>
                             ),
                             sortable: true
@@ -151,10 +172,10 @@ const Index = () => {
                             title: 'V Representative',
                             render: (row: any) => (
                                 <div className="flex flex-col items-center gap-3">
-                                    <Image src={imagePath(row.vendor_representative.thumbnail)}
+                                    <Image src={imagePath(row.vendor_representative?.thumbnail)}
                                            alt={row.vendor_representative.name} width={50} height={50}
                                            className="rounded"/>
-                                    <span>{row.vendor_representative.name}</span>
+                                    <span>{row.vendor_representative?.name}</span>
                                 </div>
                             ),
                             sortable: true
@@ -163,17 +184,20 @@ const Index = () => {
                             accessor: 'vehicle.make',
                             title: 'Vehicle',
                             render: (row: any) => (
-                                <div className="flex flex-col items-center gap-3">
-                                    <Image src={imagePath(row.vehicle.thumbnail)} alt={row.vehicle.make}
-                                           width={50} height={50} className="rounded"/>
-                                    <span>{row.vehicle.make + '-' + row.vehicle.model + ' (' + row.vehicle.number_plate + ')'}</span>
-                                </div>
+                                row.vehicle === null ? 'N/A' :
+                                    <div className="flex flex-col items-center gap-3">
+                                        <Image src={imagePath(row.vehicle?.thumbnail)} alt={row.vehicle?.make}
+                                               width={50} height={50} className="rounded"/>
+                                        <span>{row.vehicle?.make + '-' + row.vehicle?.model + ' (' + row.vehicle?.number_plate + ')'}</span>
+                                    </div>
                             ),
                             sortable: true
                         },
-                        {accessor: 'purchased_by.name', title: 'Purchased By', sortable: true},
-                        // {accessor: 'received_by.name', title: 'Received By', sortable: true},
-                        {accessor: 'delivery_due_date', title: 'Due Date', sortable: true},
+                        {
+                            accessor: 'delivery_due_date',
+                            title: 'Due Date',
+                            sortable: true
+                        },
                         {
                             accessor: 'actions',
                             title: 'Actions',
@@ -200,12 +224,15 @@ const Index = () => {
                                         link={`/purchase/lpo/edit/${row.id}`}
                                     />
 
-                                    <IconButton
-                                        icon={IconType.delete}
-                                        color={ButtonVariant.danger}
-                                        tooltip="Delete"
-                                        onClick={() => handleDelete(row.id)}
-                                    />
+                                    {isNull(row.good_receive_note) &&
+                                        <IconButton
+                                            icon={IconType.delete}
+                                            color={ButtonVariant.danger}
+                                            tooltip="Delete"
+                                            onClick={() => handleDelete(row.id)}
+                                        />
+                                    }
+
                                 </div>
                             )
                         }
