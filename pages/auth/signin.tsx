@@ -4,25 +4,23 @@ import {IRootState, AppDispatch} from '@/store';
 import {useEffect, useState} from 'react';
 import {setPageTitle} from '@/store/slices/themeConfigSlice';
 import {useRouter} from 'next/router';
-import BlankLayout from '@/components/Layouts/BlankLayout';
 import {loginUser, logoutUser} from '@/store/slices/userSlice';
 import {ThunkDispatch} from "redux-thunk";
 import { AnyAction } from 'redux';
 import AuthLayout from "@/components/Layouts/AuthLayout";
+import {setActiveModule} from "@/store/slices/menuSlice";
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
 
-    const {token, isLoggedIn, loading} = useSelector((state: IRootState) => state.user);
+    const {isLoggedIn, loading} = useSelector((state: IRootState) => state.user);
 
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
     useEffect(() => {
         dispatch(setPageTitle('Login'));
-    });
-    const router = useRouter();
-    const isDark = useSelector((state: IRootState) => state.themeConfig.theme) === 'dark';
+    }, []);
 
     const submitForm = (e: any) => {
         e.preventDefault();
@@ -30,7 +28,11 @@ const Login = () => {
         // router.push('/');
     };
 
-
+    // useEffect(() => {
+    //     if (isLoggedIn) {
+    //         dispatch(setActiveModule('Home'))
+    //     }
+    // }, [isLoggedIn]);
 
     return (
         !isLoggedIn &&
