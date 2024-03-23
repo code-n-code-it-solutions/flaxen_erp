@@ -152,7 +152,7 @@ const RawProductItemListing: FC<IProps> = ({
             let rawProductOptions = allRawProducts.map((rawProduct: any) => {
                 return {
                     value: rawProduct.id,
-                    label: rawProduct.title + ' (' + rawProduct.item_code + ')',
+                    label: rawProduct.title + ' (' + rawProduct.item_code + ') - ' + rawProduct.valuation_method,
                     unit_price: rawProduct.opening_stock_unit_balance
                 };
             })
@@ -204,12 +204,11 @@ const RawProductItemListing: FC<IProps> = ({
             })));
         if (rawProducts.length > 0) {
             columns.flatMap((column: any) => {
-                // console.log(column)
                 if (tableStructure.find(table => table.listingFor === type)?.numericColumns.includes(column.accessor)) {
                     column.footer = (
                         <div className="flex gap-2 items-center">
                             <span className="h-3 w-3">{getIcon(IconType.sum)}</span>
-                            {/*<span>{columnTotals[column.accessor].toFixed(2)}</span>*/}
+                            <span>{typeof columnTotals[column.accessor]==='number' ? columnTotals[column.accessor].toFixed(2) : columnTotals[column.accessor]}</span>
                         </div>
                     )
                 }

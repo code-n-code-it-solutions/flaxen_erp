@@ -14,6 +14,7 @@ import {logoutUser} from "@/store/slices/userSlice";
 import {ThunkDispatch} from "redux-thunk";
 import {AnyAction} from "redux";
 import {clearMenuState} from "@/store/slices/menuSlice";
+import WelcomeModule from "@/components/WelcomeModule";
 
 const DefaultLayout = ({children}: PropsWithChildren) => {
     const router = useRouter();
@@ -24,6 +25,23 @@ const DefaultLayout = ({children}: PropsWithChildren) => {
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
 
     const {token, isLoggedIn} = useSelector((state: IRootState) => state.user);
+    const {activeModule} = useSelector((state: IRootState) => state.menu);
+    const [moduleChanged, setModuleChanged] = useState<boolean>(false);
+
+    // Detect changes in activeModule and update the state accordingly
+    useEffect(() => {
+        if (activeModule) {
+            // When activeModule changes, show WelcomeModule
+            setModuleChanged(true);
+        }
+    }, [activeModule]);
+
+    useEffect(() => {
+        // This will reset the moduleChanged state whenever the pathname changes
+        // which means navigation to a completely different page (not module change)
+        setModuleChanged(false);
+    }, [router.pathname]);
+
     const goToTop = () => {
         document.body.scrollTop = 0;
         document.documentElement.scrollTop = 0;
@@ -59,6 +77,21 @@ const DefaultLayout = ({children}: PropsWithChildren) => {
         setAnimation(themeConfig.animation);
     }, [themeConfig.animation]);
 
+    // useEffect(() => {
+    //     if (activeModule) {
+    //         setModuleChanged(true)
+    //     }
+    //     return () => {
+    //         setModuleChanged(false)
+    //     }
+    // }, [])
+    //
+    // useEffect(() => {
+    //     if(router.pathname && !moduleChanged) {
+    //         setModuleChanged(false)
+    //     }
+    // }, [router.pathname]);
+
     useEffect(() => {
         setTimeout(() => {
             setAnimation('');
@@ -79,7 +112,6 @@ const DefaultLayout = ({children}: PropsWithChildren) => {
             router.push('/auth/signin');
         }
     }, [token, router])
-
 
     return (
         isLoggedIn ?
@@ -145,7 +177,7 @@ const DefaultLayout = ({children}: PropsWithChildren) => {
                             <Header/>
                             {/* END TOP NAVBAR */}
                             <div className={`${animation} animate__animated p-6`}>
-                                {children}
+                                {moduleChanged ? <WelcomeModule title={activeModule}/> : children}
                                 {/* BEGIN FOOTER */}
                                 <Footer/>
                                 {/* END FOOTER */}
