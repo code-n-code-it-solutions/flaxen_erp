@@ -168,7 +168,7 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
             let rawProductOptions = allRawProducts.map((rawProduct: any) => {
                 return {
                     value: rawProduct.id,
-                    label: rawProduct.title,
+                    label: rawProduct.title + ' (' + rawProduct.item_code + ') - ' + rawProduct.valuation_method,
                     unit_price: rawProduct.opening_stock_unit_balance
                 };
             })
@@ -238,7 +238,7 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                 options={unitOptions}
                 required={true}
                 value={formData.unit_id}
-                isDisabled={listFor === RAW_PRODUCT_LIST_TYPE.GOOD_RECEIVE_NOTE}
+                isDisabled={true}
                 onChange={(e) => handleChange('unit_id', e && typeof e !== 'undefined' ? e.value : 0)}
             />
 
@@ -306,7 +306,7 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                         value={formData.unit_price}
                         onChange={(e) => handleChange('unit_price', parseFloat(e.target.value))}
                         isMasked={false}
-                        disabled={listFor === RAW_PRODUCT_LIST_TYPE.GOOD_RECEIVE_NOTE}
+                        disabled={true}
                     />
 
                     <Input
