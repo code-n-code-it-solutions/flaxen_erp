@@ -233,6 +233,20 @@ const Index = () => {
                             ),
                         },
                         {
+                            accessor: 'valuated_unit_price',
+                            title: 'Valuated Unit Price',
+                            sortable: true,
+                            footer: (
+                                rowData.length > 0 &&
+                                <div className='flex gap-2 justify-start items-center'>
+                                    <span className='h-3 w-3'>
+                                        {getIcon(IconType.sum)}
+                                    </span>
+                                    <span>{rowData.reduce((acc: any, item: any) => acc + parseFloat(item.valuated_unit_price), 0)}</span>
+                                </div>
+                            ),
+                        },
+                        {
                             accessor: 'is_active',
                             title: 'Status',
                             render: (row: any) => (
