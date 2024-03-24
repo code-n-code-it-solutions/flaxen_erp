@@ -30,6 +30,7 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
     const [unitOptions, setUnitOptions] = useState<any>([]);
     const [productOptions, setProductOptions] = useState<any>([]);
+    const [valuationMethod, setValuationMethod] = useState('')
     const [taxCategoryOptions, setTaxCategoryOptions] = useState<any>([]);
 
     const {token} = useSelector((state: IRootState) => state.user);
@@ -40,6 +41,7 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
     const handleChange = (name: string, value: any) => {
         if (name === 'raw_product_id') {
             let selectedProduct = allRawProducts.find((product: any) => product.id === value);
+            setValuationMethod(selectedProduct.valuation_method)
             // console.log(selectedProduct)
             if (selectedProduct) {
                 if (listFor === RAW_PRODUCT_LIST_TYPE.FILLING) {
@@ -47,7 +49,7 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                         ...formData,
                         [name]: value,
                         unit_id: selectedProduct.sub_unit_id,
-                        unit_price: parseFloat(selectedProduct.opening_stock_unit_balance),
+                        unit_price: selectedProduct.valuated_unit_price,
                         quantity: 1,
                         capacity: 0,
                         filling_quantity: 0,
@@ -60,8 +62,8 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                         [name]: value,
                         unit_id: selectedProduct.sub_unit_id,
                         quantity: 1,
-                        unit_price: parseFloat(selectedProduct.opening_stock_unit_balance),
-                        sub_total: isNaN(formData.quantity) ? 0 : parseFloat(selectedProduct.opening_stock_unit_balance) * formData.quantity
+                        unit_price: selectedProduct.valuated_unit_price,
+                        sub_total: isNaN(formData.quantity) ? 0 : parseFloat(selectedProduct.valuated_unit_price) * formData.quantity
                     });
                 }
             }
@@ -300,7 +302,7 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
             {(listFor === RAW_PRODUCT_LIST_TYPE.PRODUCT_ASSEMBLY || listFor === RAW_PRODUCT_LIST_TYPE.PRODUCTION || listFor === RAW_PRODUCT_LIST_TYPE.PURCHASE_REQUISITION || listFor === RAW_PRODUCT_LIST_TYPE.GOOD_RECEIVE_NOTE) && (
                 <>
                     <Input
-                        label='Unit Cost'
+                        label={'Unit Cost (' + valuationMethod + ')'}
                         type='number'
                         name='unit_price'
                         value={formData.unit_price}
