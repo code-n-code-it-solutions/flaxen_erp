@@ -4,7 +4,7 @@ import Footer from "@/components/Report/Footer";
 import {imagePath} from "@/utils/helper";
 
 const Preview = ({content}: any) => {
-    // console.log(content)
+    console.log(content)
     return (
         <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
             <div

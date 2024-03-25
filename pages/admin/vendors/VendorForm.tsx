@@ -133,19 +133,11 @@ const VendorForm = ({ id }: IFormProps) => {
     const [imagePreview, setImagePreview] = useState('');
     const [isFormValid, setIsFormValid] = useState<boolean>(false);
     const [validationMessage, setValidationMessage] = useState("");
-    const [Message, setMessage] = useState('');
-    const [errorMessages, setErrorMessages] = useState({
-        name: 'This field is required',
-        vendor_type_id: 'This field is required',
-        opening_balance: 'This field is required',
-        phone: 'This field is required',
-        email: 'This field is required',
-        due_in_days: 'This field is required',
-        website_url: 'This field is required',
-        tax_reg_no: 'This field is required',
-        postal_code: 'This field is required',
-        address: 'This field is required',
-    });
+    const [VAddressMessage, setVAddressMessage] = useState('');
+    const [VRepresentativeMessage, setVRepresentativeMessage] = useState('');
+    const [errorMessages, setErrorMessages] = useState<any>({});
+
+
 
     const [vendorTypeOptions, setVendorTypeOptions] = useState([]);
     const [countryOptions, setCountryOptions] = useState([]);
@@ -174,9 +166,9 @@ const VendorForm = ({ id }: IFormProps) => {
                 setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
             }
         }
-        
-    };
 
+    };
+    const [error, setError] = useState('');
     const handleCountryChange = (e: any) => {
         const { name, value,required } = e.target;
         if (e && e.value && typeof e !== 'undefined') {
@@ -236,61 +228,73 @@ const VendorForm = ({ id }: IFormProps) => {
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-    
-        if (vendorRepresentatives.length === 0 || vendorAddresses.length === 0) {
-            setMessage("Please add at least one representative and address.");
+         // Validation checks
+    if (!formData.vendor_number || !formData.name || !formData.vendor_type_id || !formData.opening_balance || !formData.phone || !formData.email || !formData.due_in_days || !formData.tax_reg_no) {
+        setError('All fields are required.');
+        return;
+      }
+
+      if (formData.representatives.length === 0) {
+        setError('At least one representative must be added.');
+        return;
+      }
+
+      if (formData.addresses.length === 0) {
+        setError('At least one address must be added.');
+        return;
+      }
+
+      // If all validations pass, submit the form
+        setError('');
+        setFormData(prev => ({ ...prev, image: image }))
+        setAuthToken(token)
+        setContentType('multipart/form-data')
+
+        let formFinalData = {
+            ...formData,
+            image: image,
+            representatives: vendorRepresentatives.map((representative: any) => {
+                return {
+                    name: representative.name,
+                    phone: representative.phone,
+                    email: representative.email,
+                    country_id: representative.country_id,
+                    state_id: representative.state_id,
+                    city_id: representative.city_id,
+                    address: representative.address,
+                    postal_code: representative.postal_code,
+                    image: representative.image,
+                    is_active: true
+                }
+            }),
+
+            addresses: vendorAddresses.map((address: any) => {
+                return {
+                    address_type: address.address_type,
+                    country_id: address.country_id,
+                    state_id: address.state_id,
+                    city_id: address.city_id,
+                    address: address.address,
+                    postal_code: address.postal_code,
+                    is_active: true
+                }
+            }),
+
+            bank_accounts: vendorBankAccounts.map((bankAccount: any) => {
+                return {
+                    bank_id: bankAccount.bank_id,
+                    currency_id: bankAccount.currency_id,
+                    account_name: bankAccount.account_name,
+                    account_number: bankAccount.account_number,
+                    iban: bankAccount.iban,
+                    is_active: true
+                }
+            })
+        }
+        if (id) {
+            dispatch(updateVendor({ id, vendorData: formFinalData }));
         } else {
-            setFormData(prev => ({ ...prev, image: image }));
-            setAuthToken(token);
-            setContentType('multipart/form-data');
-    
-            let formFinalData = {
-                ...formData,
-                image: image,
-                representatives: vendorRepresentatives.map((representative: any) => {
-                    return {
-                        name: representative.name,
-                        phone: representative.phone,
-                        email: representative.email,
-                        country_id: representative.country_id,
-                        state_id: representative.state_id,
-                        city_id: representative.city_id,
-                        address: representative.address,
-                        postal_code: representative.postal_code,
-                        image: representative.image,
-                        is_active: true
-                    }
-                }),
-    
-                addresses: vendorAddresses.map((address: any) => {
-                    return {
-                        address_type: address.address_type,
-                        country_id: address.country_id,
-                        state_id: address.state_id,
-                        city_id: address.city_id,
-                        address: address.address,
-                        postal_code: address.postal_code,
-                        is_active: true
-                    }
-                }),
-    
-                bank_accounts: vendorBankAccounts.map((bankAccount: any) => {
-                    return {
-                        bank_id: bankAccount.bank_id,
-                        currency_id: bankAccount.currency_id,
-                        account_name: bankAccount.account_name,
-                        account_number: bankAccount.account_number,
-                        iban: bankAccount.iban,
-                        is_active: true
-                    }
-                })
-            };
-    
-            if (id) {
-                dispatch(updateVendor({ id, vendorData: formFinalData }));
-            } else {
-                dispatch(storeVendor(formFinalData));
-            }
+            dispatch(storeVendor(formFinalData));
         }
     };
     
@@ -419,17 +423,23 @@ const VendorForm = ({ id }: IFormProps) => {
     return (
         <form className="space-y-5" onSubmit={handleSubmit}>
             {!isFormValid  && validationMessage &&
-               <Alert 
-               alertType="error" 
-               message={validationMessage} 
-               setMessages={setValidationMessage} 
+               <Alert
+               alertType="error"
+               message={validationMessage}
+               setMessages={setValidationMessage}
            />}
-           {((vendorRepresentatives.length === 0 || vendorAddresses.length === 0) && Message) && (
-                <Alert 
-                alertType="error" 
-                message={Message} 
-                setMessages={setMessage} 
-            />)}
+           {vendorRepresentatives.length === 0 &&  VRepresentativeMessage &&
+           <Alert
+           alertType="error"
+           message={VRepresentativeMessage}
+           setMessages={setVRepresentativeMessage}
+           />}
+           {vendorAddresses.length === 0 &&  VAddressMessage &&
+           <Alert
+           alertType="error"
+           message={VAddressMessage}
+           setMessages={setVAddressMessage}
+           />}
 
             <div className="flex justify-center items-center">
                 <ImageUploader image={image} setImage={setImage} existingImage={imagePreview} />
@@ -806,7 +816,7 @@ const VendorForm = ({ id }: IFormProps) => {
                 </div>
 
                 <div className="w-full">
-                    {isFormValid && ( <button 
+                    {isFormValid && vendorRepresentatives.length > 0 && vendorAddresses.length > 0 && ( <button
                         type="submit"
                         className="btn btn-primary" 
                         disabled={loading}

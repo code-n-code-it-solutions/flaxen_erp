@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Edit = () => {
+const ProductAssemblyForm = () => {
     return (
         <div>
 
@@ -8,4 +8,4 @@ const Edit = () => {
     );
 };
 
-export default Edit;
+export default ProductAssemblyForm;

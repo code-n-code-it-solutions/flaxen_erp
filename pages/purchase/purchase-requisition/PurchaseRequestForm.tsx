@@ -4,8 +4,11 @@ import {useDispatch, useSelector} from "react-redux";
 import {ThunkDispatch} from "redux-thunk";
 import {IRootState} from "@/store";
 import {AnyAction} from "redux";
-import {clearPurchaseRequisitionState, storePurchaseRequest, updatePurchaseRequisition} from "@/store/slices/purchaseRequisitionSlice";
-import PRRawProductModal from "@/components/specific-modal/purchase-requisition/PRRawProductModal";
+import {
+    clearPurchaseRequisitionState,
+    storePurchaseRequest,
+    updatePurchaseRequisition
+} from "@/store/slices/purchaseRequisitionSlice";
 import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
 import {ButtonType, ButtonVariant, FORM_CODE_TYPE, RAW_PRODUCT_LIST_TYPE} from "@/utils/enums";
 import 'flatpickr/dist/flatpickr.css';
@@ -91,16 +94,6 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
         });
     };
 
-    const handleRemoveItem = (index: number, type: string) => {
-        if (type === 'Material') {
-            const newItems = rawProducts.filter((address, i) => i !== index);
-            setRawProducts(newItems);
-        } else {
-            const newItems = serviceItems.filter((address, i) => i !== index);
-            setServiceItems(newItems);
-        }
-    }
-
     const handleRequisitionTypeChange = (e: any) => {
 
         if (e && typeof e !== 'undefined') {
@@ -128,7 +121,7 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
         e.preventDefault();
         setAuthToken(token)
         setContentType('multipart/form-data')
-            dispatch(generateCode(FORM_CODE_TYPE.PURCHASE_REQUISITION))
+        dispatch(generateCode(FORM_CODE_TYPE.PURCHASE_REQUISITION))
         let finalData = {
             ...formData,
             user_id: user.id,
@@ -158,7 +151,7 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
         }
         console.log(finalData);
         if (id) {
-             dispatch(updatePurchaseRequisition({id, purchaseRequestData:finalData}));
+            dispatch(updatePurchaseRequisition({id, purchaseRequestData: finalData}));
         } else {
             // console.log(finalData)
             dispatch(storePurchaseRequest(finalData));
@@ -193,7 +186,7 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
                 status,
                 items
             } = purchaseRequestDetail;
-    
+
             // Set the form data with the fetched requisition details
             setFormData({
                 pr_title,
@@ -207,16 +200,25 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
                 status,
                 items
             });
-    
+
             // Check if the requisition type is Material or Service and set corresponding state
             if (type === 'Material') {
-                setRawProducts(items); // Set rawProducts state with fetched items
+                console.log(purchaseRequestDetail.items)
+                setRawProducts(purchaseRequestDetail.items.map((item: any) => ({
+                    raw_product_id: item.raw_product_id,
+                    quantity: item.quantity,
+                    unit_id: item.unit_id,
+                    unit_price: item.unit_price,
+                    sub_total: item.quantity * item.unit_price,
+                    description: item.description
+
+                }))); // Set rawProducts state with fetched items
                 setShowItemDetail({
                     show: true,
                     type: 'Material'
                 });
             } else if (type === 'Service') {
-                setServiceItems(items); // Set serviceItems state with fetched items
+                setServiceItems(purchaseRequestDetail.items); // Set serviceItems state with fetched items
                 setShowItemDetail({
                     show: true,
                     type: 'Service'
@@ -224,7 +226,16 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
             }
         }
     }, [purchaseRequestDetail]); // Trigger useEffect when purchaseRequestDetail changes
-    
+
+    useEffect(() => {
+        if (code) {
+            setFormData(prev => ({
+                ...prev,
+                pr_code: code[FORM_CODE_TYPE.PURCHASE_REQUISITION]
+            }))
+        }
+    }, [code]);
+
 
     return (
         <form className="space-y-5" onSubmit={handleSubmit}>
@@ -265,7 +276,7 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
                     label='Status'
                     name='status_id'
                     options={requisitionStatusOptions}
-                    value={formData.type}
+                    value={formData.status}
                     onChange={(e: any) => {
                         if (e && typeof e !== 'undefined') {
                             setFormData(prev => ({

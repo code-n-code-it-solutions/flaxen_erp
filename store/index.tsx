@@ -29,6 +29,8 @@ import menuReducer from './slices/menuSlice';
 import permissionReducer from './slices/permissionSlice';
 import assetReducer from './slices/assetSlice';
 import serviceReducer from './slices/serviceSlice';
+import fillingReducer from './slices/fillingSlice';
+import workingShiftReducer from './slices/workingShiftSlice';
 
 const persistConfig = {
     key: 'root',
@@ -58,7 +60,9 @@ const persistConfig = {
         'util',
         'permission',
         'asset',
-        'service'
+        'service',
+        'filling',
+        'workingShift'
     ]
 };
 
@@ -90,7 +94,9 @@ const rootReducer = combineReducers({
     menu: menuReducer,
     permission: permissionReducer,
     asset: assetReducer,
-    service: serviceReducer
+    service: serviceReducer,
+    filling: fillingReducer,
+    workingShift: workingShiftReducer
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
