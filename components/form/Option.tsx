@@ -7,8 +7,12 @@ interface IProps {
     name: string;
     value: string;
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+<<<<<<< HEAD
     defaultChecked?: boolean
 
+=======
+    defaultChecked?: boolean;
+>>>>>>> 25e6e141cdb32493bcd0ae227bb0c6e5a572350d
 }
 
 const Option: FC<IProps> = ({
