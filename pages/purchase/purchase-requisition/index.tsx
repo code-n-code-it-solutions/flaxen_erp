@@ -1,8 +1,7 @@
-import {Fragment, useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
 import Swal from 'sweetalert2';
 import {useDispatch, useSelector} from 'react-redux';
 import {setPageTitle} from '@/store/slices/themeConfigSlice';
-import Link from "next/link";
 import {ThunkDispatch} from "redux-thunk";
 import {IRootState} from "@/store";
 import {AnyAction} from "redux";
@@ -13,17 +12,14 @@ import {
     deletePurchaseRequisition,
     getPurchaseRequisitions
 } from "@/store/slices/purchaseRequisitionSlice";
-import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css';
-import {Tab} from "@headlessui/react";
-import ReactDOMServer from "react-dom/server";
 import Preview from "@/pages/purchase/purchase-requisition/preview";
 import IconButton from "@/components/IconButton";
 import {ButtonType, ButtonVariant, IconType} from "@/utils/enums";
 import {generatePDF} from "@/utils/helper";
 import PageWrapper from "@/components/PageWrapper";
 import Button from "@/components/Button";
-import {isNull} from "lodash";
+import {capitalize, isNull} from "lodash";
 
 const Index = () => {
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
@@ -146,6 +142,14 @@ const Index = () => {
                         {
                             accessor: 'pr_code',
                             title: 'Code',
+                            sortable: true
+                        },
+                        {
+                            accessor: 'generation_type',
+                            title: 'Generation Type',
+                            render: (row: any) => (
+                                <span>{capitalize(row.generation_type)}</span>
+                            ),
                             sortable: true
                         },
                         {

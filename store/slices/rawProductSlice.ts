@@ -1,37 +1,22 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
 
-
-interface IRawProduct {
-    item_code: string;
-    title: string;
-    unit_id: string;
-    sub_unit_id: string;
-    purchase_description: string;
-    value_per_unit: string;
-    valuation_method: string;
-    min_stock_level: string;
-    opening_stock: number;
-    opening_stock_unit_balance: number;
-    opening_stock_total_balance: number;
-    sale_description: string;
-    image: File | null;
-}
-
-interface RawProductState {
+interface IRawProductState {
     rawProduct: any;
     rawProductDetail: any
     allRawProducts: any;
+    fillingProducts: any;
     loading: boolean;
     error: any;
     success: boolean;
 }
 
 // Initial state
-const initialState: RawProductState = {
+const initialState: IRawProductState = {
     rawProduct: null,
     rawProductDetail: null,
     allRawProducts: null,
+    fillingProducts: null,
     loading: false,
     error: null,
     success: false,
@@ -40,9 +25,31 @@ const initialState: RawProductState = {
 // Async thunks
 export const getRawProducts = createAsyncThunk(
     'rawProducts/all',
-    async (_, thunkAPI) => {
+    async (type:any[], thunkAPI) => {
         try {
-            const response = await API.get('/raw-products');
+            let param = ''
+            if (type.length>0) {
+                param = '?product_type='+type.join(',')
+            }
+            const response = await API.get('/raw-products'+param);
+            return response.data;
+        } catch (error:any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const getFillingProducts = createAsyncThunk(
+    'rawProducts/filling-products/all',
+    async (type:any[], thunkAPI) => {
+        try {
+            let param = ''
+            if (type.length>0) {
+                param = '?product_type='+type.join(',')
+            }
+            const response = await API.get('/raw-products'+param);
             return response.data;
         } catch (error:any) {
             const message =
@@ -68,7 +75,7 @@ export const showDetails = createAsyncThunk(
 
 export const storeRawProduct = createAsyncThunk(
     'rawProducts/store',
-    async (productData:IRawProduct, thunkAPI) => {
+    async (productData:any, thunkAPI) => {
         try {
             const response = await API.post('/raw-products', productData);
             return response.data;
@@ -147,6 +154,17 @@ export const rawProductSlice = createSlice({
                 state.allRawProducts = action.payload.data;
             })
             .addCase(getRawProducts.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(getFillingProducts.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getFillingProducts.fulfilled, (state, action) => {
+                state.loading = false;
+                state.fillingProducts = action.payload.data;
+            })
+            .addCase(getFillingProducts.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })

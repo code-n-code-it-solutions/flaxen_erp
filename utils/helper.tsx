@@ -152,6 +152,12 @@ export const getIcon = (icon: IconType, width?: number, height?: number, classes
                         d="M102.67,23.25v-9.59H24.32l42.55,42.77c2.65,2.67,2.64,6.98-0.03,9.63l-43.5,43.17h79.32V99.9h13.65v16.15 c0,3.77-3.06,6.83-6.83,6.83H6.81v-0.02c-1.75,0-3.5-0.67-4.83-2.01c-2.65-2.67-2.64-6.98,0.03-9.63L52.42,61.2L3.47,11.99 C2.02,10.74,1.1,8.89,1.1,6.83C1.1,3.06,4.16,0,7.93,0H109.5c3.77,0,6.83,3.06,6.83,6.83v16.42H102.67L102.67,23.25z"/>
                 </g>
             </svg>
+        case IconType.back:
+            return <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ltr:mr-2 rtl:ml-2" width="24"
+                        height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M15 5L9 12L15 19" stroke="currentColor" strokeWidth="1.5"
+                      strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
         default:
             return <></>
     }
@@ -210,4 +216,9 @@ export const toSentenceCase = (str: string) => {
     } else {
         return '';
     }
+}
+
+
+export const capitalizeFirstLetter = (string: string) => {
+    return string.charAt(0).toUpperCase() + string.slice(1);
 }

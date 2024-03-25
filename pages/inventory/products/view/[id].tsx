@@ -91,7 +91,6 @@ const View = () => {
                         />
                     </div>
                 </div>
-                {console.log(rawProductDetail)}
                 {rawProductDetail && (
                     <div className='flex w-full flex-col justify-center items-center'>
                         <div className='w-full flex justify-center items-center'>
@@ -107,6 +106,14 @@ const View = () => {
                             <div className="flex flex-col md:flex-row justify-start items-center gap-3">
                                 <strong>Title: </strong>
                                 <span>{rawProductDetail.title}</span>
+                            </div>
+                            <div className="flex flex-col md:flex-row justify-start items-center gap-3">
+                                <strong>Valuation Mehtod: </strong>
+                                <span>{rawProductDetail.valuation_method}</span>
+                            </div>
+                            <div className="flex flex-col md:flex-row justify-start items-center gap-3">
+                                <strong>Valuated Price: </strong>
+                                <span>{rawProductDetail.valuated_unit_price}</span>
                             </div>
                             <div className="flex flex-col md:flex-row justify-start items-center gap-3">
                                 <strong>Main Unit: </strong>

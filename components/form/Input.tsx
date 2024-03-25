@@ -68,19 +68,31 @@ export const Input: FC<IProps> = ({
                         className="form-input"
                         onChange={onChange}
                     />
-                    : <input
-                        type={type}
-                        name={name}
-                        id={name}
-                        value={value}
-                        onChange={onChange}
-                        placeholder={placeholder}
-                        className={`form-input ${errorMessage ? 'border-red-500' : ''}`}
-                        disabled={disabled}
-                        required={required}
-                        readOnly={readonly}
-                        style={styles}
-                    />
+                    : type === 'time'
+                        ? <Flatpickr
+                            options={{
+                                noCalendar: true,
+                                enableTime: true,
+                                dateFormat: 'h:i K',
+                            }}
+                            placeholder={placeholder}
+                            defaultValue={value}
+                            className="form-input"
+                            onChange={onChange}
+                        />
+                        : <input
+                            type={type}
+                            name={name}
+                            id={name}
+                            value={value}
+                            onChange={onChange}
+                            placeholder={placeholder}
+                            className={`form-input ${errorMessage ? 'border-red-500' : ''}`}
+                            disabled={disabled}
+                            required={required}
+                            readOnly={readonly}
+                            style={styles}
+                        />
             }
 
             {errorMessage && <p className="text-sm text-red-500">{errorMessage}</p>}

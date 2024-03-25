@@ -59,7 +59,22 @@ export const storeAssets = createAsyncThunk(
             return response.data;
         } catch (error:any) {
             const message =
-                error.response?.data?.message || error.message || 'Failed to fetch';
+                error.response?.data?.message || error.message || 'Failed to store';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const updateAsset = createAsyncThunk(
+    'assets/update',
+    async (data: any, thunkAPI) => {
+        try {
+            const {id, assetData} = data
+            const response = await API.post('/asset/update/'+id, assetData);
+            return response.data;
+        } catch (error:any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to update';
             return thunkAPI.rejectWithValue(message);
         }
     }
@@ -101,6 +116,18 @@ export const assetSlice = createSlice({
                 state.success = action.payload.success;
             })
             .addCase(storeAssets.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(updateAsset.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(updateAsset.fulfilled, (state, action) => {
+                state.loading = false;
+                state.asset = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(updateAsset.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })

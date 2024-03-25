@@ -2,6 +2,8 @@ import React, {Fragment, useEffect, useState} from 'react';
 import {Dialog, Transition} from "@headlessui/react";
 import ImageUploader from "@/components/form/ImageUploader";
 import Modal from "@/components/Modal";
+import { Input } from '../form/Input';
+import Alert from '@/components/Alert'
 
 interface IProps {
     modalOpen: boolean;
@@ -15,6 +17,12 @@ const ColorCodeFormModal = ({modalOpen, setModalOpen, handleSubmit, modalFormDat
     const [code, setCode] = useState<any>('');
     const [hexCode, setHexCode] = useState<any>('');
     const [name, setName] = useState<any>(0);
+    const [errorMessages, setErrorMessages] = useState({
+        code: "This field is required",
+        name: "This field is required",
+    })
+    const [isFormValid, setIsFormValid] = useState<boolean>(false);
+    const [validationMessage, setValidationMessage] = useState("");
 
 
     useEffect(() => {
@@ -25,6 +33,34 @@ const ColorCodeFormModal = ({modalOpen, setModalOpen, handleSubmit, modalFormDat
             setImage(null);
         }
     }, [modalOpen]);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { value,required,name } = e.target;
+        if(name === 'name'){
+            setName(value);
+        }
+        else {
+            setCode(value);
+        }
+
+        if (required) {
+            if (!value) {
+                setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
+            } else {
+                setErrorMessages({ ...errorMessages, [name]: '' });
+            }
+        }
+    };
+
+    useEffect(() => {
+        const isValid = Object.values(errorMessages).some(message => message !== '');
+        setIsFormValid(!isValid);
+        // console.log('Error Messages:', errorMessages);
+        // console.log('isFormValid:', !isValid);
+        if(isValid){
+            setValidationMessage("Please fill all the required fields.");
+        }
+    }, [errorMessages]);
 
     return (
         <Modal
@@ -37,7 +73,7 @@ const ColorCodeFormModal = ({modalOpen, setModalOpen, handleSubmit, modalFormDat
                             onClick={() => setModalOpen(false)}>
                         Discard
                     </button>
-                    <button type="button" className="btn btn-primary ltr:ml-4 rtl:mr-4"
+                    {isFormValid && <button type="button" className="btn btn-primary ltr:ml-4 rtl:mr-4"
                             onClick={() => handleSubmit({
                                 image: image,
                                 code: code,
@@ -45,35 +81,49 @@ const ColorCodeFormModal = ({modalOpen, setModalOpen, handleSubmit, modalFormDat
                                 hex_code: hexCode,
                             })}>
                         {modalFormData ? 'Update' : 'Add'}
-                    </button>
+                    </button>}
                 </div>
             }
         >
             <div className="flex justify-center items-center">
                 <ImageUploader image={image} setImage={setImage}/>
             </div>
-
-
+            <div>
+            {!isFormValid  && validationMessage &&
+               <Alert 
+               alertType="error" 
+               message={validationMessage} 
+               setMessages={setValidationMessage} 
+           />
+            }
+            </div>
+            
             <div className="w-full">
-                <label htmlFor="code">Code</label>
-                <input
+                {/* <label htmlFor="code">Code</label> */}
+                <Input
+                    label='Code'
                     type="text"
                     name="code"
-                    className="form-input"
                     placeholder='e.g. FSG-001'
                     value={code}
-                    onChange={e => setCode(e.target.value)}
+                    isMasked={false}
+                    onChange={handleChange}
+                    required= {true}
+                    errorMessage={errorMessages.code}
                 />
             </div>
             <div className="w-full">
-                <label htmlFor="name">Name</label>
-                <input
+                {/* <label htmlFor="name">Name</label> */}
+                <Input
+                    label="Name"
                     type="text"
                     name="name"
-                    className="form-input"
                     placeholder='e.g. Red'
                     value={name}
-                    onChange={e => setName(e.target.value)}
+                    isMasked={false}
+                    onChange={handleChange}
+                    required= {true}
+                    errorMessage={errorMessages.name}
                 />
             </div>
             <div className="w-full flex justify-center items-end">

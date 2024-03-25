@@ -30,6 +30,9 @@ import permissionReducer from './slices/permissionSlice';
 import assetReducer from './slices/assetSlice';
 import serviceReducer from './slices/serviceSlice';
 import customerReducer from './slices/customerSlice'
+import fillingReducer from './slices/fillingSlice';
+import workingShiftReducer from './slices/workingShiftSlice';
+
 
 const persistConfig = {
     key: 'root',
@@ -60,7 +63,10 @@ const persistConfig = {
         'permission',
         'asset',
         'service',
-        'customer'
+        'customer',
+        'filling',
+        'workingShift'
+
     ]
 };
 
@@ -93,7 +99,10 @@ const rootReducer = combineReducers({
     permission: permissionReducer,
     asset: assetReducer,
     service: serviceReducer,
-    customer: customerReducer
+    customer: customerReducer,
+    filling: fillingReducer,
+    workingShift: workingShiftReducer
+
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
