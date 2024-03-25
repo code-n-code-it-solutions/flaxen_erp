@@ -243,10 +243,10 @@ const VendorRepresentativeModal = ({
                                     <div className="w-full">
                                         {/* <label htmlFor="name">Vendor Name</label> */}
                                         <Input 
-                                        label='Vendor Name'
+                                        label='Representative Name'
                                         type="text" 
                                         name="name" 
-                                        placeholder="Enter Vendor Name"
+                                        placeholder="Enter Representative Name"
                                         value={formData.name} 
                                         onChange={handleChange}
                                         isMasked={false}
