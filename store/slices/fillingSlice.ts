@@ -1,36 +1,20 @@
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
 
-
-interface IProduction {
-    production_name: string;
-    production_code: string;
-    product_assembly_id: number;
-    production_items: IRawProduct[];
-}
-
-interface IRawProduct {
-    raw_product_id: number
-    unit_id: number
-    quantity: number
-    cost: number
-    total: number
-}
-
-interface ProductAssemblyState {
-    production: any;
-    productionDetail: any
-    allProductions: any;
+interface IFillingState {
+    filling: any;
+    fillingDetail: any
+    fillings: any;
     loading: boolean;
     error: any;
     success: boolean;
 }
 
 // Initial state
-const initialState: ProductAssemblyState = {
-    production: null,
-    productionDetail: null,
-    allProductions: null,
+const initialState: IFillingState = {
+    filling: null,
+    fillingDetail: null,
+    fillings: null,
     loading: false,
     error: null,
     success: false,
@@ -41,7 +25,7 @@ export const getFillings = createAsyncThunk(
     'fillings/all',
     async (_, thunkAPI) => {
         try {
-            const response = await API.get('/formula-production');
+            const response = await API.get('/filling');
             return response.data;
         } catch (error: any) {
             const message =
@@ -53,9 +37,9 @@ export const getFillings = createAsyncThunk(
 
 export const storeFilling = createAsyncThunk(
     'fillings/store',
-    async (productAssemblyData: IProduction, thunkAPI) => {
+    async (data: any, thunkAPI) => {
         try {
-            const response = await API.post('/formula-production', productAssemblyData);
+            const response = await API.post('/filling', data);
             return response.data;
         } catch (error: any) {
             const message =
@@ -69,7 +53,7 @@ export const editFilling = createAsyncThunk(
     'fillings/edit',
     async (id: number, thunkAPI) => {
         try {
-            const response = await API.get('/formula-production/' + id);
+            const response = await API.get('/filling/edit/' + id);
             return response.data;
         } catch (error: any) {
             const message =
@@ -79,26 +63,27 @@ export const editFilling = createAsyncThunk(
     }
 );
 
-// export const updateFilling = createAsyncThunk(
-//     'fillings/update',
-//     async (rawProductData, thunkAPI) => {
-//         try {
-//             const response = await API.put('/raw-products/'+rawProductData.id, rawProductData);
-//             return response.data;
-//         } catch (error:any) {
-//             const message =
-//                 error.response?.data?.message || error.message || 'Failed to login';
-//             return thunkAPI.rejectWithValue(message);
-//         }
-//     }
-// );
+export const updateFilling = createAsyncThunk(
+    'fillings/update',
+    async (data: any, thunkAPI) => {
+        try {
+            const {id, fillingData} = data
+            const response = await API.put('/filling/update/' + id, fillingData);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to update';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
 
 
 export const deleteFilling = createAsyncThunk(
     'fillings/delete',
     async (id: number, thunkAPI) => {
         try {
-            const response = await API.delete('/formula-production/' + id);
+            const response = await API.delete('/filling/' + id);
             return response.data;
         } catch (error: any) {
             const message =
@@ -113,11 +98,11 @@ export const fillingSlice = createSlice({
     name: 'fillings',
     initialState,
     reducers: {
-        clearProductionState: (state) => {
-            state.production = null;
+        clearFillingState: (state) => {
+            state.filling = null;
             state.error = null;
             state.success = false;
-            state.productionDetail = null;
+            state.fillingDetail = null;
         },
     },
     extraReducers: (builder) => {
@@ -127,7 +112,7 @@ export const fillingSlice = createSlice({
             })
             .addCase(getFillings.fulfilled, (state, action) => {
                 state.loading = false;
-                state.allProductions = action.payload.data;
+                state.fillings = action.payload.data;
             })
             .addCase(getFillings.rejected, (state, action) => {
                 state.loading = false;
@@ -138,10 +123,34 @@ export const fillingSlice = createSlice({
             })
             .addCase(storeFilling.fulfilled, (state, action) => {
                 state.loading = false;
-                state.production = action.payload.data;
+                state.filling = action.payload.data;
                 state.success = action.payload.success;
             })
             .addCase(storeFilling.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(editFilling.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(editFilling.fulfilled, (state, action) => {
+                state.loading = false;
+                state.fillingDetail = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(editFilling.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(updateFilling.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(updateFilling.fulfilled, (state, action) => {
+                state.loading = false;
+                state.filling = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(updateFilling.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })
@@ -158,5 +167,5 @@ export const fillingSlice = createSlice({
             })
     },
 });
-export const {clearProductionState} = fillingSlice.actions;
+export const {clearFillingState} = fillingSlice.actions;
 export default fillingSlice.reducer;

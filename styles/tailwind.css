@@ -703,3 +703,6 @@ pre.hljs {
 .swal2-container .swal2-popup.swal2-toast.color-success {
     @apply bg-success;
 }
+[class*="-menu"] {
+    z-index: 999 !important;
+}

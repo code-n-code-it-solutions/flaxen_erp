@@ -10,6 +10,9 @@ import ImageUploader from "@/components/form/ImageUploader";
 import {clearLocationState, getCities, getCountries, getStates} from "@/store/slices/locationSlice";
 import {MaskConfig} from "@/configs/mask.config";
 import MaskedInput from "react-text-mask";
+import { Input } from "@/components/form/Input";
+import {Dropdown} from "@/components/form/Dropdown";
+import Alert from '@/components/Alert';
 
 interface IProps {
     vendorRepresentativeModal: boolean;
@@ -48,25 +51,70 @@ const VendorRepresentativeModal = ({
     const [stateOptions, setStateOptions] = useState([]);
     const [cityOptions, setCityOptions] = useState([]);
 
+    const [errorMessages, setErrorMessages] = useState({
+        // vendor_number: 'This field is required',
+        name: 'This field is required',
+        // vendor_type_id: 'This field is required',
+        // opening_balance: 'This field is required',
+        // phone: 'This field is required',
+        email: 'This field is required',
+        // due_in_days: 'This field is required',
+        // website_url: 'This field is required',
+        // tax_reg_no: 'This field is required',
+        // country_id: 'This field is required',
+        // state_id: 'This field is required',
+        // city_id: 'This field is required',
+        postal_code: 'This field is required',
+        address: 'This field is required',
+    });
+    const [isFormValid, setIsFormValid] = useState<boolean>(false);
+    const [validationMessage, setValidationMessage] = useState("");
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const {name, value} = e.target;
+        const {name, value,required} = e.target;
         setFormData((prevFormData: any) => {
             return {...prevFormData, [name]: value};
         });
+        if (required) {
+            if (!value) {
+                setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
+            } else {
+                setErrorMessages({ ...errorMessages, [name]: '' });
+            }
+        }
+        console.log('Required',required);
     };
 
+    
+
     const handleCountryChange = (e: any) => {
+        // const { name, value,required } = e.target;
         if (e && e.value && typeof e !== 'undefined') {
             setFormData((prev:any) => ({...prev, country_id: e ? e.value : 0, country_name: e ? e.label : ''}))
             dispatch(getStates(parseInt(e.value)))
         }
+        // if (required) {
+        //     if (!value) {
+        //         setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
+        //     } else {
+        //         setErrorMessages({ ...errorMessages, [name]: '' });
+        //     }
+        // }
     }
 
     const handleStateChange = (e: any) => {
+        const { name, value,required } = e.target;
         if (e && e.value && typeof e !== 'undefined') {
             setFormData((prev:any) => ({...prev, state_id: e ? e.value : 0, state_name: e ? e.label : ''}))
             dispatch(getCities({countryId: formData.country_id, stateId: parseInt(e.value)}))
         }
+        // if (required) {
+        //     if (!value) {
+        //         setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
+        //     } else {
+        //         setErrorMessages({ ...errorMessages, [name]: '' });
+        //     }
+        // }
     }
 
 
@@ -124,6 +172,16 @@ const VendorRepresentativeModal = ({
         }
     }, [cities]);
 
+    useEffect(() => {
+        const isValid = Object.values(errorMessages).some((message) => message !== '');
+        setIsFormValid(!isValid);
+        console.log('Error Messages:', errorMessages);
+        console.log('isFormValid:', !isValid);
+        if (isValid) {
+            setValidationMessage('Please fill all the required fields.');
+        }
+    }, [errorMessages]);
+
     return (
         <Transition appear show={vendorRepresentativeModal} as={Fragment}>
             <Dialog as="div" open={vendorRepresentativeModal} onClose={() => setVendorRepresentativeModal(false)}>
@@ -176,13 +234,25 @@ const VendorRepresentativeModal = ({
                                     <div className="flex justify-center items-center">
                                         <ImageUploader image={image} setImage={setImage}/>
                                     </div>
-
-
+                                    {!isFormValid && validationMessage && 
+                                    <Alert 
+                                      alertType="error" 
+                                      message={validationMessage} 
+                                      setMessages={setValidationMessage} 
+                                    />}
                                     <div className="w-full">
-                                        <label htmlFor="name">Vendor Name</label>
-                                        <input id="name" type="text" name="name" placeholder="Enter Vendor Name"
-                                               value={formData.name} onChange={handleChange}
-                                               className="form-input"/>
+                                        {/* <label htmlFor="name">Vendor Name</label> */}
+                                        <Input 
+                                        label='Vendor Name'
+                                        type="text" 
+                                        name="name" 
+                                        placeholder="Enter Vendor Name"
+                                        value={formData.name} 
+                                        onChange={handleChange}
+                                        isMasked={false}
+                                        errorMessage={errorMessages.name}
+                                        required={true}
+                                    />
                                     </div>
                                     <div className="w-full">
                                         <label htmlFor="phone">Phone</label>
@@ -196,82 +266,134 @@ const VendorRepresentativeModal = ({
                                             value={formData.phone}
                                             onChange={handleChange}
                                             mask={MaskConfig.phone.pattern}
+                                            // errorMessage={errorMessages.phone}
+                                            // required={true}
                                         />
                                         {/*<input id="phone" type="number" name="phone" placeholder="Enter Phone number"*/}
                                         {/*       value={formData.phone} onChange={handleChange}*/}
                                         {/*       className="form-input"/>*/}
                                     </div>
                                     <div className="w-full">
-                                        <label htmlFor="email">Email</label>
-                                        <input id="email" type="email" name="email" placeholder="Enter email address"
-                                               value={formData.email} onChange={handleChange}
-                                               className="form-input"/>
+                                        {/* <label htmlFor="email">Email</label> */}
+                                        <Input 
+                                        label='Email'
+                                        type="email" 
+                                        name="email" 
+                                        placeholder="Enter email address"
+                                        value={formData.email} 
+                                        onChange={handleChange}
+                                        errorMessage={errorMessages.email}
+                                        required={true}
+                                        isMasked={false}
+                                        />
                                     </div>
                                     <div className="flex flex-col md:flex-row gap-3 w-full">
-                                        <div className="w-full">
-                                            <label htmlFor="country_id">Country</label>
-                                            <Select
-                                                defaultValue={countryOptions[0]}
-                                                options={countryOptions}
-                                                isSearchable={true}
-                                                isClearable={true}
-                                                placeholder={'Select Country'}
-                                                onChange={(e: any) => handleCountryChange(e)}
-                                            />
-                                        </div>
-                                        <div className="w-full">
-                                            <label htmlFor="state_id">State</label>
-                                            <Select
-                                                defaultValue={stateOptions[0]}
-                                                options={stateOptions}
-                                                isSearchable={true}
-                                                isClearable={true}
-                                                placeholder={'Select State'}
-                                                onChange={(e: any) => handleStateChange(e)}
-                                            />
-                                        </div>
-
+                                        {/* <div className="w-full"> */}
+                                            {/* <label htmlFor="country_id">Country</label> */}
+                                            <Dropdown
+                                            divClasses='w-full'
+                                            label='Country'
+                                            name='country_id'
+                                            options={countryOptions}
+                                            value={formData.country_id}
+                                            onChange={(e: any) => handleCountryChange(e)}
+                                            // required={true}
+                                            // errorMessage={errorMessages.country_id}
+                    />
+                                        {/* </div> */}
+                                        {/* <div className="w-full"> */}
+                                            {/* <label htmlFor="state_id">State</label> */}
+                                            <Dropdown
+                                            divClasses='w-full'
+                                            label='State'
+                                            name='state_id'
+                                            options={stateOptions}
+                                            value={formData.state_id}
+                                            onChange={(e: any) => handleStateChange(e)}
+                                            // required={true}
+                                            // errorMessage={errorMessages.state_id}
+                    />
+                                        {/* </div> */}
                                     </div>
                                     <div className="flex flex-col md:flex-row gap-3 w-full">
+                                        {/* <div className="w-full"> */}
+                                            {/* <label htmlFor="city_id">City</label> */}
+                                            <Dropdown
+                                            divClasses='w-full'
+                                            label='City'
+                                            name='city_id'
+                                            options={stateOptions}
+                                            value={formData.city_id}
+                                            onChange={(e: any) => {
+                                                if (e) {
+                                                    setFormData((prev: any) => ({
+                                                        ...prev,
+                                                        city_id: e.value,
+                                                        city_name: e.label
+                                                    }));
+                                                } else {
+                                                    setFormData((prev: any) => ({
+                                                        ...prev,
+                                                        city_id: 0,
+                                                        city_name: ''
+                                                    }));
+                                                }
+                                            
+                                                // Check for required field validation
+                                                // const { name, value, required } = e.target;
+                                                // if (required) {
+                                                //     if (!value) {
+                                                //         setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
+                                                //     } else {
+                                                //         setErrorMessages({ ...errorMessages, [name]: '' });
+                                                //     }
+                                                // }
+                                            }}
+                                            
+                                            // required={true}
+                                            // errorMessage={errorMessages.city_id}
+                                        />
+                                        {/* </div> */}
                                         <div className="w-full">
-                                            <label htmlFor="city_id">City</label>
-                                            <Select
-                                                defaultValue={cityOptions[0]}
-                                                options={cityOptions}
-                                                isSearchable={true}
-                                                isClearable={true}
-                                                placeholder={'Select City'}
-                                                onChange={(e: any) => setFormData((prev: any) => ({
-                                                    ...prev,
-                                                    city_id: e ? e.value : 0,
-                                                    city_name: e ? e.label : ''
-                                                }))}
+                                            {/* <label htmlFor="postal_code">Postal Code</label> */}
+                                            <Input 
+                                            label="Postal Code" 
+                                            type="text" 
+                                            name="postal_code"
+                                            placeholder="Enter postal code"
+                                            value={formData.postal_code} onChange={handleChange}
+                                            errorMessage={errorMessages.postal_code}
+                                            required={true}
+                                            isMasked={false}
                                             />
-                                        </div>
-                                        <div className="w-full">
-                                            <label htmlFor="postal_code">Postal Code</label>
-                                            <input id="postal_code" type="text" name="postal_code"
-                                                   placeholder="Enter postal code"
-                                                   value={formData.postal_code} onChange={handleChange}
-                                                   className="form-input"/>
                                         </div>
                                     </div>
 
                                     <div className="w-full">
-                                        <label htmlFor="address">Official Address</label>
-                                        <input id="address" type="text" name="address" placeholder="Enter address"
-                                               value={formData.address} onChange={handleChange}
-                                               className="form-input"/>
+                                        {/* <label htmlFor="address">Official Address</label> */}
+                                        <Input 
+                                        label="Official Address" 
+                                        type="text" 
+                                        name="address" 
+                                        placeholder="Enter address"
+                                        value={formData.address} 
+                                        onChange={handleChange}
+                                        errorMessage={errorMessages.address}
+                                        required={true}
+                                        isMasked={false}
+                                            />
                                     </div>
                                     <div className="mt-8 flex items-center justify-end">
                                         <button type="button" className="btn btn-outline-danger"
                                                 onClick={() => setVendorRepresentativeModal(false)}>
                                             Discard
                                         </button>
+                                        {isFormValid && (
                                         <button type="button" className="btn btn-primary ltr:ml-4 rtl:mr-4"
-                                                onClick={() => handleAddRepresentative({...formData, image})}>
-                                            {modalFormData ? 'Update' : 'Add'}
-                                        </button>
+                                                  onClick={() => handleAddRepresentative({...formData, image})}>
+                                              {modalFormData ? 'Update' : 'Add'}
+                                       </button>
+                                      )}
                                     </div>
                                 </div>
                             </Dialog.Panel>

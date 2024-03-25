@@ -3,6 +3,8 @@ import {API} from "@/configs/api.config";
 
 interface IMenusState {
     permittedMenus: any;
+    activeModule: any;
+    moduleMenus: any;
     loading: boolean;
     error: any;
     success: boolean;
@@ -11,6 +13,8 @@ interface IMenusState {
 // Initial state
 const initialState: IMenusState = {
     permittedMenus: null,
+    activeModule: null,
+    moduleMenus: null,
     loading: false,
     error: null,
     success: false,
@@ -38,8 +42,16 @@ export const menuSlice = createSlice({
     reducers: {
         clearMenuState: (state) => {
             state.permittedMenus = null;
+            state.activeModule = null;
+            state.moduleMenus = null;
             state.error = null;
             state.success = false;
+        },
+        setActiveModule: (state, action) => {
+            state.activeModule = action.payload;
+        },
+        setModuleMenus: (state, action) => {
+            state.moduleMenus = action.payload;
         },
     },
     extraReducers: (builder) => {
@@ -58,5 +70,8 @@ export const menuSlice = createSlice({
             })
     },
 });
-export const { clearMenuState } = menuSlice.actions;
+export const {
+    clearMenuState,
+    setModuleMenus,
+    setActiveModule } = menuSlice.actions;
 export default menuSlice.reducer;
