@@ -29,6 +29,7 @@ import menuReducer from './slices/menuSlice';
 import permissionReducer from './slices/permissionSlice';
 import assetReducer from './slices/assetSlice';
 import serviceReducer from './slices/serviceSlice';
+import customerReducer from './slices/customerSlice'
 
 const persistConfig = {
     key: 'root',
@@ -58,7 +59,8 @@ const persistConfig = {
         'util',
         'permission',
         'asset',
-        'service'
+        'service',
+        'customer'
     ]
 };
 
@@ -90,7 +92,8 @@ const rootReducer = combineReducers({
     menu: menuReducer,
     permission: permissionReducer,
     asset: assetReducer,
-    service: serviceReducer
+    service: serviceReducer,
+    customer: customerReducer
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
