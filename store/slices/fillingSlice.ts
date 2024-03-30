@@ -1,9 +1,40 @@
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
 
+interface IProduction {
+    batch_number: string;
+    no_of_quantity: number;
+    product_assembly_id: number;
+    filling_code: number;
+    filling_date: number;
+    filling_time: number;
+    filling_shift_id: number;  
+    unit_id:  number; 
+    fillings_items: IRawProduct[];
+    filling_calculations: IFillingCalculation[];    
+}
+
+interface IFillingCalculation {
+    filling_quantity: number;
+    id: number ;
+    quantity: number;
+    required_quantity: number;
+    total_cost: number;
+    capacity: number;
+    unit_price: number;
+    unit_id: number;
+
+}
+interface IRawProduct {
+    raw_product_id: number
+    unit_id: number
+    quantity: number
+    cost: number
+    total: number
+}
 interface IFillingState {
     filling: any;
-    fillingDetail: any
+    fillingDetail: any;
     fillings: any;
     loading: boolean;
     error: any;
@@ -25,9 +56,22 @@ export const getFillings = createAsyncThunk(
     'fillings/all',
     async (_, thunkAPI) => {
         try {
-            const response = await API.get('/filling');
+            const response = await API.get('/filling/');
             return response.data;
         } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+export const showDetails = createAsyncThunk(
+    'fillings/show',
+    async (id:number, thunkAPI) => {
+        try {
+            const response = await API.get('/filling/'+id);
+            return response.data;
+        } catch (error:any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -39,7 +83,7 @@ export const storeFilling = createAsyncThunk(
     'fillings/store',
     async (data: any, thunkAPI) => {
         try {
-            const response = await API.post('/filling', data);
+            const response = await API.post('/filling/', data);
             return response.data;
         } catch (error: any) {
             const message =
@@ -77,7 +121,6 @@ export const updateFilling = createAsyncThunk(
         }
     }
 );
-
 
 export const deleteFilling = createAsyncThunk(
     'fillings/delete',
@@ -162,6 +205,18 @@ export const fillingSlice = createSlice({
                 state.success = action.payload.success;
             })
             .addCase(deleteFilling.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(showDetails.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(showDetails.fulfilled, (state, action) => {
+                state.loading = false;
+                state.fillingDetail= action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(showDetails.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })
