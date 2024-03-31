@@ -21,6 +21,7 @@ export enum RAW_PRODUCT_LIST_TYPE {
     PURCHASE_REQUISITION = 'purchase_requisition',
     LOCAL_PURCHASE_ORDER = 'local_purchase_order',
     GOOD_RECEIVE_NOTE = 'good_receive_note',
+    VENDOR_BILL = 'vendor_bill',
 }
 
 export enum ButtonType {

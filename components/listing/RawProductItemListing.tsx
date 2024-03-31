@@ -76,6 +76,12 @@ const tableStructure = [
         header: ['Product', 'Desc', 'Unit', 'Qty (KG)', 'R. Qty (KG)', 'Unit Price (KG)', 'Sub Total', 'Tax Category', 'Tax Rate', 'Tax Amount', 'Total'],
         columns: ['raw_product_id', 'description', 'unit_id', 'quantity', 'received_quantity', 'unit_price', 'sub_total', 'tax_category_id', 'tax_rate', 'tax_amount', 'grand_total'],
         numericColumns: ['quantity', 'received_quantity', 'unit_price', 'sub_total', 'tax_rate', 'tax_amount', 'grand_total']
+    },
+    {
+        listingFor: RAW_PRODUCT_LIST_TYPE.VENDOR_BILL,
+        header: ['Product', 'Desc', 'Unit', 'Qty (KG)', 'R. Qty (KG)', 'Unit Price (KG)', 'Sub Total', 'Tax Category', 'Tax Rate', 'Tax Amount', 'Total'],
+        columns: ['raw_product_id', 'description', 'unit_id', 'quantity', 'received_quantity', 'unit_price', 'sub_total', 'tax_category_id', 'tax_rate', 'tax_amount', 'grand_total'],
+        numericColumns: ['quantity', 'received_quantity', 'unit_price', 'sub_total', 'tax_rate', 'tax_amount', 'grand_total']
     }
 ]
 
@@ -190,7 +196,7 @@ const RawProductItemListing: FC<IProps> = ({
                 accessor: column,
                 title: table.header[index],
                 sortable: true,
-                render: (row: any) => (
+                render: (row: any, index: number) => (
                     table.numericColumns.includes(column)
                         ? <>{row[column].toFixed(2)}</>
                         : column === 'raw_product_id'
@@ -208,7 +214,7 @@ const RawProductItemListing: FC<IProps> = ({
                     column.footer = (
                         <div className="flex gap-2 items-center">
                             <span className="h-3 w-3">{getIcon(IconType.sum)}</span>
-                            <span>{typeof columnTotals[column.accessor]==='number' ? columnTotals[column.accessor].toFixed(2) : columnTotals[column.accessor]}</span>
+                            <span>{typeof columnTotals[column.accessor] === 'number' ? columnTotals[column.accessor].toFixed(2) : columnTotals[column.accessor]}</span>
                         </div>
                     )
                 }
@@ -216,6 +222,33 @@ const RawProductItemListing: FC<IProps> = ({
             })
         }
         // console.log(columns)
+        if (type !== RAW_PRODUCT_LIST_TYPE.PRODUCTION && type !== RAW_PRODUCT_LIST_TYPE.FILLING && type !== RAW_PRODUCT_LIST_TYPE.VENDOR_BILL) {
+            columns.push({
+                accessor: 'action',
+                title: 'Actions',
+                sortable: false,
+                render: (row: any, index: number) => (
+                    <div className="flex justify-center items-center gap-1">
+                        <IconButton
+                            icon={IconType.edit}
+                            color={ButtonVariant.primary}
+                            onClick={() => {
+                                setProductDetail(row)
+                                setModalOpen(true)
+                            }}
+                            tooltip="Edit"
+                        />
+                        <IconButton
+                            icon={IconType.delete}
+                            color={ButtonVariant.danger}
+                            onClick={() => handleRemove(index)}
+                            tooltip="Remove"
+                        />
+                    </div>
+                )
+            })
+        }
+
         return columns
     };
 
@@ -224,7 +257,7 @@ const RawProductItemListing: FC<IProps> = ({
             <div
                 className="flex justify-between items-center flex-col md:flex-row space-y-3 md:space-y-0 mb-3">
                 <h3 className="text-lg font-semibold">Item Details</h3>
-                {type !== RAW_PRODUCT_LIST_TYPE.GOOD_RECEIVE_NOTE && type !== RAW_PRODUCT_LIST_TYPE.PRODUCTION && type !== RAW_PRODUCT_LIST_TYPE.FILLING &&
+                {type !== RAW_PRODUCT_LIST_TYPE.GOOD_RECEIVE_NOTE && type !== RAW_PRODUCT_LIST_TYPE.PRODUCTION && type !== RAW_PRODUCT_LIST_TYPE.FILLING && type !== RAW_PRODUCT_LIST_TYPE.VENDOR_BILL &&
                     <Button
                         type={ButtonType.button}
                         text='Add New Item'
@@ -243,35 +276,8 @@ const RawProductItemListing: FC<IProps> = ({
                 rowData={rawProducts.length > 0 ? rawProducts : []}
                 header={tableStructure.filter(table => table.listingFor === type).flatMap(table => table.header)}
                 loading={isAdding}
-                columns={[
-                    ...tableColumns(),
-                    {
-                        accessor: 'action',
-                        title: 'Actions',
-                        sortable: false,
-                        render: (row: any, index: number) => (
-                            type !== RAW_PRODUCT_LIST_TYPE.PRODUCTION && (
-                                <div className="flex justify-center items-center gap-1">
-                                    <IconButton
-                                        icon={IconType.edit}
-                                        color={ButtonVariant.primary}
-                                        onClick={() => {
-                                            setProductDetail(row)
-                                            setModalOpen(true)
-                                        }}
-                                        tooltip="Edit"
-                                    />
-                                    <IconButton
-                                        icon={IconType.delete}
-                                        color={ButtonVariant.danger}
-                                        onClick={() => handleRemove(index)}
-                                        tooltip="Remove"
-                                    />
-                                </div>
-                            )
-                        )
-                    }
-                ]}
+                rowStyle={(row: any) => (theme: any) => ({backgroundColor: row.required_quantity && row.required_quantity > row.available_quantity ? theme.colors.red[4] : 'auto'})}
+                columns={tableColumns()}
                 exportTitle={'Raw Product List'}
             />
             <RawProductModal

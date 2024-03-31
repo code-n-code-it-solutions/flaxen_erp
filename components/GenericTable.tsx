@@ -1,17 +1,17 @@
 import React, {useEffect, useState} from 'react';
 import {DataTable, DataTableSortStatus} from "mantine-datatable";
 import sortBy from 'lodash/sortBy';
-import type {DataTableColumn} from "mantine-datatable/dist/types/DataTableColumn";
 
 interface IGenericTableProps {
     colName: string[];
     rowData: any[];
     header: string[];
-    columns: DataTableColumn<any>[];
+    columns: any[];
     loading: boolean;
     exportTitle: string;
     showFooter?: boolean;
     isAdvanced?: boolean;
+    rowStyle?: any;
 }
 
 const GenericTable = ({
@@ -22,7 +22,8 @@ const GenericTable = ({
                           loading,
                           exportTitle,
                           showFooter = false,
-                          isAdvanced = true
+                          isAdvanced = true,
+                          rowStyle
                       }: IGenericTableProps) => {
 
     const [page, setPage] = useState(1);
@@ -347,6 +348,7 @@ const GenericTable = ({
                     // loaderType="bars"
                     loaderBackgroundBlur={6}
                     fetching={loading}
+                    rowStyle={rowStyle}
                     paginationText={({
                                          from,
                                          to,

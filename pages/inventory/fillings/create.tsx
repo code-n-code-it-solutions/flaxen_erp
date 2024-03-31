@@ -68,7 +68,7 @@ const Create = () => {
     }
 
     const hasInsufficientQuantity = () => {
-        return rawProducts.some((row) => row.availableQuantity < row.requiredQuantity);
+        return rawProducts.some((row) => row.available_quantity < row.required_quantity);
     };
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {

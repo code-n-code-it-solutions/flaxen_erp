@@ -2,19 +2,17 @@ import {useEffect, useState} from 'react';
 import Swal from 'sweetalert2';
 import {useDispatch, useSelector} from 'react-redux';
 import {setPageTitle} from '@/store/slices/themeConfigSlice';
-import Link from "next/link";
 import {ThunkDispatch} from "redux-thunk";
 import {IRootState} from "@/store";
 import {AnyAction} from "redux";
 import {setAuthToken, setContentType} from "@/configs/api.config";
 import GenericTable from "@/components/GenericTable";
 import Image from "next/image";
-import {BASE_URL} from "@/configs/server.config";
 import {deleteLPO, getLPO} from "@/store/slices/localPurchaseOrderSlice";
 import Preview from "@/pages/purchase/lpo/preview";
 import IconButton from "@/components/IconButton";
 import {ButtonType, ButtonVariant, IconType} from "@/utils/enums";
-import {generatePDF, imagePath} from "@/utils/helper";
+import {generatePDF, getIcon, imagePath} from "@/utils/helper";
 import PageWrapper from "@/components/PageWrapper";
 import Button from "@/components/Button";
 import {isNull} from "lodash";
@@ -104,13 +102,7 @@ const Index = () => {
                         type={ButtonType.link}
                         text={
                             <span className="flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                     className="h-5 w-5 ltr:mr-2 rtl:ml-2"
-                                     fill="none">
-                                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
-                                    <path d="M15 12L12 12M12 12L9 12M12 12L12 9M12 12L12 15" stroke="currentColor"
-                                          strokeWidth="1.5" strokeLinecap="round"/>
-                                </svg>
+                                {getIcon(IconType.add)}
                                 Add New
                             </span>
                         }

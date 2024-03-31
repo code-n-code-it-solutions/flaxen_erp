@@ -8,8 +8,9 @@ import Button from "@/components/Button";
 import {ButtonSize, ButtonType, ButtonVariant, IconType} from "@/utils/enums";
 import {getIcon} from "@/utils/helper";
 import {setPageTitle} from "@/store/slices/themeConfigSlice";
+import DeliveryNoteForm from "@/pages/sale/delivery-note/DeliveryNoteForm";
 
-const Index = () => {
+const Create = () => {
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
     const {token} = useSelector((state: IRootState) => state.user);
     const breadcrumb = [
@@ -23,12 +24,16 @@ const Index = () => {
         },
         {
             title: 'All Delivery Notes',
+            href: '/sale/delivery-note'
+        },
+        {
+            title: 'Create Delivery Note',
             href: '#'
         }
     ];
 
     useEffect(() => {
-        dispatch(setPageTitle('All Delivery Notes'));
+        dispatch(setPageTitle('Create Delivery Note'));
     }, []);
 
     return (
@@ -37,22 +42,23 @@ const Index = () => {
             breadCrumbItems={breadcrumb}
         >
             <div className="mb-5 flex items-center justify-between">
-                <h5 className="text-lg font-semibold dark:text-white-light">All Delivery Notes</h5>
+                <h5 className="text-lg font-semibold dark:text-white-light">Create Delivery Note</h5>
                 <Button
                     type={ButtonType.link}
                     text={
                         <span className="flex items-center">
-                            {getIcon(IconType.add)}
-                            Add New
+                            {getIcon(IconType.back)}
+                            Back
                         </span>
                     }
                     variant={ButtonVariant.primary}
-                    link={'/sale/delivery-note/create'}
+                    link={'/sale/delivery-note'}
                     size={ButtonSize.small}
                 />
             </div>
+            <DeliveryNoteForm/>
         </PageWrapper>
     );
 };
 
-export default Index;
+export default Create;

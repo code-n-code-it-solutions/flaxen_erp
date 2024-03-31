@@ -17,7 +17,7 @@ function App({ children }: PropsWithChildren) {
         dispatch(toggleAnimation(localStorage.getItem('animation') || themeConfig.animation));
         dispatch(toggleNavbar(localStorage.getItem('navbar') || themeConfig.navbar));
         dispatch(toggleSemidark(localStorage.getItem('semidark') || themeConfig.semidark));
-        // locale
+        // locale or translation
         const locale = localStorage.getItem('i18nextLng') || themeConfig.locale;
         dispatch(toggleLocale(locale));
         i18n.changeLanguage(locale);
