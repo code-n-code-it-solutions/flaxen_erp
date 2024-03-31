@@ -43,6 +43,7 @@ const Textarea: FC<IProps> = ({
                     value={value}
                     onChange={onChange}
                     placeholder={placeholder}
+                    className={`${errorMessage ? 'border-red-500' : ''}`}
                     {...otherOptions}
                 />
                 : <textarea

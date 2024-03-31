@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
 import {getVendors} from "@/store/slices/vendorSlice";
 
@@ -6,6 +6,8 @@ interface IVendorBillState {
     vendorBill: any;
     vendorBillDetail: any
     vendorBills: any;
+    payments: any;
+    payment: any;
     loading: boolean;
     error: any;
     success: boolean;
@@ -16,6 +18,8 @@ const initialState: IVendorBillState = {
     vendorBill: null,
     vendorBillDetail: null,
     vendorBills: null,
+    payments: null,
+    payment: null,
     loading: false,
     error: null,
     success: false,
@@ -28,7 +32,35 @@ export const getVendorBills = createAsyncThunk(
         try {
             const response = await API.get('/vendor-bill');
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const getVendorBillPayments = createAsyncThunk(
+    'vendor-bill/payments',
+    async (_, thunkAPI) => {
+        try {
+            const response = await API.get('/vendor-bill-payment');
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const storeBillPayments = createAsyncThunk(
+    'vendor-bill/payments/store',
+    async (data: any, thunkAPI) => {
+        try {
+            const response = await API.post('/vendor-bill-payment', data);
+            return response.data;
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -42,7 +74,7 @@ export const storeVendorBill = createAsyncThunk(
         try {
             const response = await API.post('/vendor-bill', data);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -52,11 +84,11 @@ export const storeVendorBill = createAsyncThunk(
 
 export const deleteVendorBill = createAsyncThunk(
     'vendor-bill/delete',
-    async (id:number, thunkAPI) => {
+    async (id: number, thunkAPI) => {
         try {
-            const response = await API.delete('/vendor-bill/'+id);
+            const response = await API.delete('/vendor-bill/' + id);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -66,11 +98,11 @@ export const deleteVendorBill = createAsyncThunk(
 
 export const getVendorBillByStatuses = createAsyncThunk(
     'vendor-bill/by-statuses',
-    async (statuses:any, thunkAPI) => {
+    async (statuses: any, thunkAPI) => {
         try {
             const response = await API.post('/vendor-bill/by-statuses', statuses);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -85,6 +117,7 @@ export const vendorBillSlice = createSlice({
     reducers: {
         clearVendorBillState: (state) => {
             state.vendorBill = null;
+            state.payment = null;
             state.error = null;
             state.success = false;
             state.vendorBillDetail = null;
@@ -139,7 +172,31 @@ export const vendorBillSlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message;
             })
+            .addCase(getVendorBillPayments.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getVendorBillPayments.fulfilled, (state, action) => {
+                state.loading = false;
+                state.payments = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getVendorBillPayments.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(storeBillPayments.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(storeBillPayments.fulfilled, (state, action) => {
+                state.loading = false;
+                state.payment = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(storeBillPayments.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
     },
 });
-export const { clearVendorBillState } = vendorBillSlice.actions;
+export const {clearVendorBillState} = vendorBillSlice.actions;
 export default vendorBillSlice.reducer;

@@ -22,13 +22,16 @@ const Index = () => {
             href: '/sale'
         },
         {
-            title: 'All Delivery Notes',
+            title: 'All Quotations',
             href: '#'
         }
     ];
 
+    const colName = ['id', 'product', 'main_uom', 'sub_uom', 'total_purchases', 'available_stock', 'used_stock'];
+    const header = ['ID', 'Product', 'Main UOM', 'Sub UOM', 'Total Purchases', 'Available Stock', 'Used Stock'];
+
     useEffect(() => {
-        dispatch(setPageTitle('All Delivery Notes'));
+        dispatch(setPageTitle('All Quotations'));
     }, []);
 
     return (
@@ -37,7 +40,7 @@ const Index = () => {
             breadCrumbItems={breadcrumb}
         >
             <div className="mb-5 flex items-center justify-between">
-                <h5 className="text-lg font-semibold dark:text-white-light">All Delivery Notes</h5>
+                <h5 className="text-lg font-semibold dark:text-white-light">All Quotations</h5>
                 <Button
                     type={ButtonType.link}
                     text={
@@ -47,7 +50,7 @@ const Index = () => {
                         </span>
                     }
                     variant={ButtonVariant.primary}
-                    link={'/sale/delivery-note/create'}
+                    link={'/sale/quotation/create'}
                     size={ButtonSize.small}
                 />
             </div>

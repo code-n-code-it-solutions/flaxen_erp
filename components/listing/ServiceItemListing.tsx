@@ -5,12 +5,13 @@ import {IRootState} from "@/store";
 import {AnyAction} from "redux";
 import {setAuthToken} from "@/configs/api.config";
 import {getTaxCategories} from "@/store/slices/taxCategorySlice";
-import {ButtonVariant, IconType, RAW_PRODUCT_LIST_TYPE} from "@/utils/enums";
+import {ButtonSize, ButtonType, ButtonVariant, IconType, RAW_PRODUCT_LIST_TYPE} from "@/utils/enums";
 import IconButton from "@/components/IconButton";
 import ServiceModal from "@/components/modals/ServiceModal";
 import {getAssets} from "@/store/slices/assetSlice";
 import {getIcon} from "@/utils/helper";
 import GenericTable from "@/components/GenericTable";
+import Button from "@/components/Button";
 
 interface IProps {
     serviceItems: any[];
@@ -37,6 +38,12 @@ const tableStructure = [
     },
     {
         listingFor: RAW_PRODUCT_LIST_TYPE.GOOD_RECEIVE_NOTE,
+        header: ['Assets', 'Name', 'Desc', 'Cost', 'Tax Category', 'Tax Rate (%)', 'Tax Amount', 'Row Total'],
+        columns: ['asset_id', 'service_name', 'description', 'cost', 'tax_category_id', 'tax_rate', 'tax_amount', 'grand_total'],
+        numericColumns: ['cost', 'tax_rate', 'tax_amount', 'grand_total']
+    },
+    {
+        listingFor: RAW_PRODUCT_LIST_TYPE.VENDOR_BILL,
         header: ['Assets', 'Name', 'Desc', 'Cost', 'Tax Category', 'Tax Rate (%)', 'Tax Amount', 'Row Total'],
         columns: ['asset_id', 'service_name', 'description', 'cost', 'tax_category_id', 'tax_rate', 'tax_amount', 'grand_total'],
         numericColumns: ['cost', 'tax_rate', 'tax_amount', 'grand_total']
@@ -166,16 +173,18 @@ const ServiceItemListing: FC<IProps> = ({
             <div
                 className="flex justify-between items-center flex-col md:flex-row space-y-3 md:space-y-0 mb-3">
                 <h3 className="text-lg font-semibold">Item Details</h3>
-                <button
-                    type="button"
-                    className="btn btn-primary btn-sm"
-                    onClick={() => {
-                        setServiceItemDetail({})
-                        setModalOpen(true)
-                    }}
-                >
-                    Add New Item
-                </button>
+                {type !== RAW_PRODUCT_LIST_TYPE.GOOD_RECEIVE_NOTE && type !== RAW_PRODUCT_LIST_TYPE.PRODUCTION && type !== RAW_PRODUCT_LIST_TYPE.FILLING && type !== RAW_PRODUCT_LIST_TYPE.VENDOR_BILL &&
+                    <Button
+                        type={ButtonType.button}
+                        text='Add New Item'
+                        variant={ButtonVariant.primary}
+                        size={ButtonSize.small}
+                        onClick={() => {
+                            setServiceItemDetail({})
+                            setModalOpen(true)
+                        }}
+                    />
+                }
             </div>
             <GenericTable
                 isAdvanced={false}
@@ -189,6 +198,7 @@ const ServiceItemListing: FC<IProps> = ({
                         title: 'Actions',
                         sortable: false,
                         render: (row: any, index: number) => (
+                            type !== RAW_PRODUCT_LIST_TYPE.PRODUCTION && type !== RAW_PRODUCT_LIST_TYPE.FILLING && type !== RAW_PRODUCT_LIST_TYPE.VENDOR_BILL &&
                             <div className="flex justify-center items-center gap-1">
                                 <IconButton
                                     icon={IconType.edit}
