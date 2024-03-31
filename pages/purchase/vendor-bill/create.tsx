@@ -23,7 +23,11 @@ const Create = () => {
             href: '/main',
         },
         {
-            title: 'Purchases',
+            title: 'Purchase Dashboard',
+            href: '/purchase',
+        },
+        {
+            title: 'Vendor Bills',
             href: '/purchase/vendor-bill',
         },
         {
@@ -44,32 +48,26 @@ const Create = () => {
 
     return (
         <PageWrapper
-        embedLoader={false}
-        breadCrumbItems={breadCrumbItems}
-    >
-         <div>   
-            <div className="pt-5">
-                <div className="panel">
-                    <div className="mb-5 flex items-center justify-between">
-                        <h5 className="text-lg font-semibold dark:text-white-light">
-                            Enter Details of Good Receive Notes
-                        </h5>
-                        <Link href="/purchase/good-receive-note"
-                              className="btn btn-primary btn-sm m-1">
-                            <span className="flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ltr:mr-2 rtl:ml-2" width="24"
-                                     height="24" viewBox="0 0 24 24" fill="none">
-                                    <path d="M15 5L9 12L15 19" stroke="currentColor" strokeWidth="1.5"
-                                          strokeLinecap="round" strokeLinejoin="round"/>
-                                </svg>
-                                Back
-                            </span>
-                        </Link>
-                    </div>
-                    <VendorBillForm/>
-                </div>
+            embedLoader={false}
+            breadCrumbItems={breadCrumbItems}
+        >
+            <div className="mb-5 flex items-center justify-between">
+                <h5 className="text-lg font-semibold dark:text-white-light">
+                    Enter Details of Good Receive Notes
+                </h5>
+                <Link href="/purchase/good-receive-note"
+                      className="btn btn-primary btn-sm m-1">
+                    <span className="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ltr:mr-2 rtl:ml-2" width="24"
+                             height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M15 5L9 12L15 19" stroke="currentColor" strokeWidth="1.5"
+                                  strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        Back
+                    </span>
+                </Link>
             </div>
-        </div>
+            <VendorBillForm/>
         </PageWrapper>
     );
 };

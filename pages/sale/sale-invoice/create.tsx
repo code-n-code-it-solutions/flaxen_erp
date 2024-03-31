@@ -8,8 +8,9 @@ import Button from "@/components/Button";
 import {ButtonSize, ButtonType, ButtonVariant, IconType} from "@/utils/enums";
 import {getIcon} from "@/utils/helper";
 import {setPageTitle} from "@/store/slices/themeConfigSlice";
+import SaleInvoiceForm from "@/pages/sale/sale-invoice/SaleInvoiceForm";
 
-const Index = () => {
+const Create = () => {
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
     const {token} = useSelector((state: IRootState) => state.user);
     const breadcrumb = [
@@ -22,13 +23,17 @@ const Index = () => {
             href: '/sale'
         },
         {
-            title: 'All Delivery Notes',
+            title: 'All Sale Invoices',
+            href: '/sale/sale-invoice'
+        },
+        {
+            title: 'Create Sale Invoice',
             href: '#'
         }
     ];
 
     useEffect(() => {
-        dispatch(setPageTitle('All Delivery Notes'));
+        dispatch(setPageTitle('Create Sale Invoice'));
     }, []);
 
     return (
@@ -37,22 +42,23 @@ const Index = () => {
             breadCrumbItems={breadcrumb}
         >
             <div className="mb-5 flex items-center justify-between">
-                <h5 className="text-lg font-semibold dark:text-white-light">All Delivery Notes</h5>
+                <h5 className="text-lg font-semibold dark:text-white-light">Create Sale Invoice</h5>
                 <Button
                     type={ButtonType.link}
                     text={
                         <span className="flex items-center">
-                            {getIcon(IconType.add)}
-                            Add New
+                            {getIcon(IconType.back)}
+                            Back
                         </span>
                     }
                     variant={ButtonVariant.primary}
-                    link={'/sale/delivery-note/create'}
+                    link={'/sale/sale-invoice'}
                     size={ButtonSize.small}
                 />
             </div>
+            <SaleInvoiceForm/>
         </PageWrapper>
     );
 };
 
-export default Index;
+export default Create;

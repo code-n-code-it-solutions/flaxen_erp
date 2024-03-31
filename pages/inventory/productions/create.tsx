@@ -232,6 +232,7 @@ const Create = () => {
                 </div>
 
                 <RawProductItemListing
+                    key={noOfQuantity}
                     rawProducts={rawProducts}
                     setRawProducts={setRawProducts}
                     type={RAW_PRODUCT_LIST_TYPE.PRODUCTION}
