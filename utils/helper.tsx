@@ -191,7 +191,7 @@ export const generatePDF = async (PreviewComponent: JSX.Element, setLoading: (va
         setLoading(false);
         link.click();
         document.body.removeChild(link);
-        window.URL.revokeObjectURL(url); // Clean up the object URL
+        window.URL.revokeObjectURL(url);
 
     } catch (error) {
         setLoading(false)
