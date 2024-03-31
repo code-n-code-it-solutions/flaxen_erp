@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import Swal from 'sweetalert2';
 import {useDispatch, useSelector} from 'react-redux';
 import {setPageTitle} from '@/store/slices/themeConfigSlice';
@@ -16,6 +16,8 @@ import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css';
 import Preview from "@/pages/purchase/good-receive-note/preview";
 import {deleteVendorBill, getVendorBills} from "@/store/slices/vendorBillSlice";
+import {imagePath} from "@/utils/helper";
+import {capitalize} from "lodash";
 
 const Index = () => {
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
@@ -23,9 +25,6 @@ const Index = () => {
     const {vendorBills, loading, success} = useSelector((state: IRootState) => state.vendorBill);
     const [deleteLoading, setDeleteLoading] = useState(false);
 
-    useEffect(() => {
-        dispatch(setPageTitle('All Vendor Bills'));
-    });
     const [rowData, setRowData] = useState([]);
 
     const getRawItems = () => {
@@ -36,6 +35,7 @@ const Index = () => {
 
     useEffect(() => {
         getRawItems();
+        dispatch(setPageTitle('All Vendor Bills'));
     }, []);
 
     useEffect(() => {
@@ -46,7 +46,6 @@ const Index = () => {
 
     const colName = ['id', 'bill_number', 'pr_code', 'internal_document_number', 'lpo_number', 'grn_number', 'user_id', 'vendor_id', 'received_by_id', 'bill_amount', 'paid_amount', 'balance'];
     const header = ['ID', 'Bill #', 'PR Code', 'ID #', 'LPO #', 'GRN #', 'Created By', 'Vendor', 'Received By', 'Bill Amount', 'Paid Amount', 'Balance'];
-
 
     const handleDelete = (id: number) => {
         Swal.fire({
@@ -151,42 +150,25 @@ const Index = () => {
                             {accessor: 'local_purchase_order.lpo_number', title: 'LPO #', sortable: true},
                             {accessor: 'good_receive_note.grn_number', title: 'GRN #', sortable: true},
                             {
-                                accessor: 'created_by.name',
-                                title: 'Created By',
-                                sortable: true
-                            },
-                            {
                                 accessor: 'local_purchase_order.vendor.name',
                                 title: 'Vendor',
-                                render: (row: any) => (
-                                    <div className="flex flex-col items-center gap-3">
-                                        <Image src={`${BASE_URL}/${row.good_receive_note.local_purchase_order?.vendor?.thumbnail?.path}`}
-                                               alt={row.good_receive_note.local_purchase_order?.vendor?.name}
-                                               width={50} height={50} className="rounded"/>
-                                        <span>{row.good_receive_note.local_purchase_order?.vendor?.name}</span>
-                                    </div>
-                                ),
+                                render: (row: any) => (<span>{row.good_receive_note.local_purchase_order?.vendor?.name}</span>),
                                 sortable: true
                             },
                             {
                                 accessor: 'vendor_representative.name',
                                 title: 'V Representative',
-                                render: (row: any) => (
-                                    <div className="flex flex-col items-center gap-3">
-                                        <Image
-                                            src={`${BASE_URL}/${row.good_receive_note.local_purchase_order?.vendor_representative?.thumbnail?.path}`}
-                                            alt={row.good_receive_note.local_purchase_order?.vendor_representative?.name} width={50}
-                                            height={50}
-                                            className="rounded"/>
-                                        <span>{row.good_receive_note.local_purchase_order?.vendor_representative?.name}</span>
-                                    </div>
-                                ),
+                                render: (row: any) => (<span>{row.good_receive_note.local_purchase_order?.vendor_representative?.name}</span>),
                                 sortable: true
                             },
-                            {accessor: 'received_by.name', title: 'Received By', sortable: true},
                             {accessor: 'bill_amount', title: 'Bill Amount', sortable: true},
-                            {accessor: 'paid_amount', title: 'Paid Amount', sortable: true},
-                            {accessor: 'balance', title: 'Balance', sortable: true},
+                            {
+                                title: 'Status',
+                                accessor: 'status',
+                                sortable: true,
+                                render: (row: any) => (<span
+                                    className={`badge ${row.status === 'pending' ? 'bg-warning' : row.status === 'partial' ? 'bg-danger' : 'bg-success'}`}>{capitalize((row.status))}</span>)
+                            },
                             {
                                 accessor: 'actions',
                                 title: 'Actions',

@@ -2,6 +2,8 @@ import {BASE_URL} from "@/configs/server.config";
 import {ButtonType, IconType} from "@/utils/enums";
 import React from "react";
 import ReactDOMServer from "react-dom/server";
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 export const getRandomInt = (min: number, max: number) => {
     min = Math.ceil(min);
@@ -166,13 +168,14 @@ export const getIcon = (icon: IconType, width?: number, height?: number, classes
 export const generatePDF = async (PreviewComponent: JSX.Element, setLoading: (value: boolean) => void) => {
     const pdfContent = ReactDOMServer.renderToStaticMarkup(PreviewComponent);
     setLoading(true);
+
     try {
         const res = await fetch('/api/generate-pdf', {
             method: 'POST',
             headers: {
-                'Content-Type': 'text/html',
+                'Content-Type': 'html/text'
             },
-            body: pdfContent
+            body: pdfContent,
         });
 
         if (!res.ok) {
@@ -222,3 +225,10 @@ export const toSentenceCase = (str: string) => {
 export const capitalizeFirstLetter = (string: string) => {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
+
+export const formatCurrency = (amount: number) => {
+    return amount.toLocaleString('en-AE', {
+        style: 'currency',
+        currency: 'AED',
+    });
+};
