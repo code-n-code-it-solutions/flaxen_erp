@@ -8,6 +8,7 @@ interface IProps {
     value: string;
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     defaultChecked?: boolean;
+
 }
 
 const Option: FC<IProps> = ({

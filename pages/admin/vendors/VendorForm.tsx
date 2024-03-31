@@ -179,13 +179,6 @@ const VendorForm = ({ id }: IFormProps) => {
             setStateOptions([])
             setCityOptions([])
         }
-        // if (required) {
-        //     if (!value) {
-        //         setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
-        //     } else {
-        //         setErrorMessages({ ...errorMessages, [name]: '' });
-        //     }
-        // }
     }
 
     const handleStateChange = (e: any) => {
@@ -197,31 +190,15 @@ const VendorForm = ({ id }: IFormProps) => {
             setFormData(prev => ({ ...prev, state_id: 0 }))
             setCityOptions([])
         }
-        // if (required) {
-        //     if (!value) {
-        //         setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
-        //     } else {
-        //         setErrorMessages({ ...errorMessages, [name]: '' });
-        //     }
-        // }
     }
     useEffect(() => {
+        
         const isValid = Object.values(errorMessages).some(message => message !== '');
         setIsFormValid(!isValid);
         console.log('Error Messages:', errorMessages);
         console.log('isFormValid:', !isValid);
         if(isValid){
             setValidationMessage("Please fill all the required fields.");
-        }
-        if (vendorRepresentatives.length === 0) {
-            setVRepresentativeMessage('Vendor must have atleast one representative added.')
-        } else {
-            setVRepresentativeMessage('');
-        }
-        if (vendorAddresses.length === 0) {
-            setVAddressMessage('Vendor must have atleast one Address added.')
-        } else {
-            setVAddressMessage('');
         }
 
     }, [errorMessages]);
@@ -320,6 +297,7 @@ const VendorForm = ({ id }: IFormProps) => {
             dispatch(storeVendor(formFinalData));
         }
     };
+    
 
     useEffect(() => {
         dispatch(clearLocationState())
@@ -840,7 +818,7 @@ const VendorForm = ({ id }: IFormProps) => {
                 <div className="w-full">
                     {isFormValid && vendorRepresentatives.length > 0 && vendorAddresses.length > 0 && ( <button
                         type="submit"
-                        className="btn btn-primary"
+                        className="btn btn-primary" 
                         disabled={loading}
                     >
                         {loading ? 'Loading...' : id ? 'Update Vendor' : 'Save Vendor'}
