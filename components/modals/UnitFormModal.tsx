@@ -33,17 +33,9 @@ const UnitFormModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData}: I
                 setName(modalFormData.name);
                 setShortName(modalFormData.shortname)
                 setDescription(modalFormData.description);
-            }else{
-                dispatch(generateCode(FORM_CODE_TYPE.UNIT));
-                
             }
         }
     }, [modalOpen]);
-
-    const FORM_CODE_TYPE = {
-        UNIT: 'UNIT',
-        // Other properties...
-    };
     return (
         <Modal
             show={modalOpen}
@@ -59,7 +51,7 @@ const UnitFormModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData}: I
                         onClick={() => handleSubmit({
                             name,
                             description,
-                            shortName,
+                            short_name: shortName,
                         })}>
                     {Object.keys(modalFormData).length>0 ? 'Update' : 'Add'}
 

@@ -128,8 +128,8 @@ const Unit = () => {
                                     color={ButtonVariant.primary}
                                     tooltip='Edit'
                                     onClick={() => {
-                                        setDetail(row);
-                                        setModalOpen(true);
+                                        setModalOpen(true)
+                                        // setDetail({})
                                     }}
                                 />
                             </div>
