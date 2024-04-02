@@ -11,7 +11,6 @@ import IconButton from "@/components/IconButton";
 import Button from "@/components/Button";
 import { setPageTitle } from "@/store/slices/themeConfigSlice";
 import { storeUnits, getUnits, clearUnitState } from "@/store/slices/unitSlice";
-import Image from "next/image";
 import UnitFormModal from "@/components/modals/UnitFormModal";
 import { setAuthToken, setContentType } from "@/configs/api.config";
 
@@ -41,7 +40,6 @@ const Unit = () => {
 
     const handleSubmit = (formData: any) => {
         setAuthToken(token)
-        setContentType('multipart/form-data')
         if (Object.keys(detail).length > 0) {
             dispatch(storeUnits({ data: formData, id: detail.id }))
         } else {
@@ -49,8 +47,8 @@ const Unit = () => {
         }
     }
 
-    const colName = ['id', 'name', 'short_name','description','is_active'];
-    const header = ['Id',  'Name', 'Short Name','Description', 'Status'];
+    const colName = ['id', 'label'];
+    const header = ['Id',  'label'];
 
     useEffect(() => {
         setAuthToken(token)
@@ -62,12 +60,14 @@ const Unit = () => {
     }, []);
 
     useEffect(() => {
-        if (unit) {
-            setRowData(unit);
+        console.log(units);
+        
+        if (units) {
+            setRowData(units);
         } else {
             setRowData([])
         }
-    }, [unit]);
+    }, [units]);
 
     useEffect(() => {
         if (success && unit) {
@@ -108,7 +108,7 @@ const Unit = () => {
                 columns={[
                    
                     {
-                        accessor: 'name',
+                        accessor: 'label',
                         title: 'Title',
                         sortable: true,
                         footer: (
@@ -117,39 +117,6 @@ const Unit = () => {
                                 <span>{rowData.length}</span>
                             </div>
                         )
-                    },
-                    {
-                        accessor: 'short_name.name',
-                        title: 'Short name',
-                        sortable: true
-                    },
-                    
-                    {
-                        accessor: 'description',
-                        title: 'Description',
-                        sortable: true
-                    },
-                    {
-                        accessor: 'is_active',
-                        title: 'Status',
-                        render: (row: any) => (
-                            <span className={`badge bg-${row.is_active ? 'success' : 'danger'}`}>
-                                {row.is_active ? 'Active' : 'Inactive'}
-                            </span>
-                        ),
-                        sortable: true,
-                        footer: (
-                            <div className="flex justify-start items-center gap-3">
-                                <div className='flex gap-2 justify-start items-center'>
-                                    <span>Active: </span>
-                                    <span>{rowData.reduce((acc: any, item: any) => item.is_active ? acc + 1 : 0, 0)}</span>
-                                </div>
-                                <div className='flex gap-2 justify-start items-center'>
-                                    <span>Not Active: </span>
-                                    <span>{rowData.reduce((acc: any, item: any) => !item.is_active ? acc + 1 : 0, 0)}</span>
-                                </div>
-                            </div>
-                        ),
                     },
                     {
                         accessor: 'actions',
