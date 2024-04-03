@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
 
 // Define a type for the slice state
-interface UnitState {
+interface IUnitState {
     unit: any;
     unitDetail: any
     units: any;
@@ -13,7 +13,7 @@ interface UnitState {
 }
 
 // Initial state
-const initialState: UnitState = {
+const initialState: IUnitState = {
     unit: null,
     unitDetail: null,
     units: null,
@@ -39,10 +39,10 @@ export const getUnits = createAsyncThunk(
 );
 //unitstatuses
 export const getUnitStatuses = createAsyncThunk(
-    'assets/statuses',
+    'units/statuses',
     async (_, thunkAPI) => {
         try {
-            const response = await API.get('/unit/get/statuses');
+            const response = await API.get('/units/get/statuses');
             return response.data;
         } catch (error:any) {
             const message =
@@ -53,14 +53,14 @@ export const getUnitStatuses = createAsyncThunk(
 );
 //store unit
 export const storeUnits = createAsyncThunk(
-    'unit/store',
+    'units/store',
     async (data: any, thunkAPI) => {
         try {
-            const response = await API.post('/unit', data);
+            const response = await API.post('/units', data);
             return response.data;
         } catch (error:any) {
             const message =
-                error.response?.data?.message || error.message || 'Failed to unit';
+                error.response?.data?.message || error.message || 'Failed to store';
             return thunkAPI.rejectWithValue(message);
         }
     }
@@ -68,11 +68,11 @@ export const storeUnits = createAsyncThunk(
 
 //update Unit
 export const updateUnits = createAsyncThunk(
-    'unit/update',
+    'units/update',
     async (data: any, thunkAPI) => {
         try {
             const {id, unitData} = data
-            const response = await API.post('/unit/update/'+id, unitData);
+            const response = await API.post('/units/update/'+id, unitData);
             return response.data;
         } catch (error:any) {
             const message =
