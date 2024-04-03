@@ -192,15 +192,16 @@ const RawProductItemListing: FC<IProps> = ({
                 sortable: true,
                 render: (row: any) => (
                     table.numericColumns.includes(column)
-                        ? <>{row[column].toFixed(2)}</>
+                        ? <>{typeof row[column] === 'number' ? row[column].toFixed(2) : row[column]}</>
                         : column === 'raw_product_id'
-                            ? <>{productOptions.filter((item: any) => item.value === row[column])[0]?.label}</>
+                            ? <>{productOptions.find((item: any) => item.value === row[column])?.label}</>
                             : column === 'unit_id'
-                                ? <>{unitOptions.filter((item: any) => item.value === row[column])[0]?.label}</>
+                                ? <>{unitOptions.find((item: any) => item.value === row[column])?.label}</>
                                 : column === 'tax_category_id'
-                                    ? <>{taxCategoryOptions.filter((item: any) => item.value === row[column])[0]?.label}</>
+                                    ? <>{taxCategoryOptions.find((item: any) => item.value === row[column])?.label}</>
                                     : <>{row[column]}</>
                 ),
+                
             })));
         if (rawProducts.length > 0) {
             columns.flatMap((column: any) => {

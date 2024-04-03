@@ -46,7 +46,7 @@ const AssetFormModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData}: 
             setSelectedStatus({})
             dispatch(clearAssetState());   
             dispatch(getAssetStatuses());
-            if (Object.keys(modalFormData).length>0){
+            if (modalFormData && Object.keys(modalFormData).length>0){
                 setName(modalFormData.name);
                 setDescription(modalFormData.description);
                 setStatus(modalFormData.status);
@@ -54,7 +54,7 @@ const AssetFormModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData}: 
                 setImagePreview(modalFormData.thumbnail)
             }else{
                 dispatch(generateCode(FORM_CODE_TYPE.ASSET));
-                setImagePreview(modalFormData.thumbnail)
+                setImagePreview(modalFormData && modalFormData.thumbnail ? modalFormData.thumbnail : '')
             }
         }
     }, [modalOpen]);
@@ -76,7 +76,7 @@ const AssetFormModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData}: 
         <Modal
             show={modalOpen}
             setShow={setModalOpen}
-            title={Object.keys(modalFormData).length>0 ? 'Update Asset': 'Add Asset'}
+            title={modalFormData && Object.keys(modalFormData).length > 0 ? 'Update Asset' : 'Add Asset'}
             footer={<div className="mt-8 flex items-center justify-end">
                 <button type="button" className="btn btn-outline-danger"
                         onClick={() => setModalOpen(false)}>
@@ -91,7 +91,7 @@ const AssetFormModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData}: 
                             image_id: image,
                             status
                         })}>
-                    {Object.keys(modalFormData).length>0 ? 'Update' : 'Add'}
+                    {modalFormData && Object.keys(modalFormData).length > 0 ? 'Update' : 'Add'}
 
                 </button>
             </div>}
