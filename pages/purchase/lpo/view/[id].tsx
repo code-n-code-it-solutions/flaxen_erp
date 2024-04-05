@@ -173,27 +173,27 @@ const View = () => {
                             width: '100%',
                             borderCollapse: 'collapse',
                         }}>
-                            <thead style={{backgroundColor: '#f9fafb', borderBottom: '2px solid #e5e7eb'}}>
+                            <thead>
                             <tr>
-                                <th style={{textAlign: 'left', paddingLeft: '5px', paddingRight: '5px', paddingTop: '2px', paddingBottom: '2px'}}>#</th>
-                                <th style={{textAlign: 'left', paddingLeft: '5px', paddingRight: '5px', paddingTop: '2px', paddingBottom: '2px'}}>Item</th>
-                                <th style={{textAlign: 'left', paddingLeft: '5px', paddingRight: '5px', paddingTop: '2px', paddingBottom: '2px'}}>Unit</th>
-                                <th style={{textAlign: 'left', paddingLeft: '5px', paddingRight: '5px', paddingTop: '2px', paddingBottom: '2px'}}>Description</th>
-                                <th style={{textAlign: 'left', paddingLeft: '5px', paddingRight: '5px', paddingTop: '2px', paddingBottom: '2px'}}>Quantity</th>
-                                <th style={{textAlign: 'left', paddingLeft: '5px', paddingRight: '5px', paddingTop: '2px', paddingBottom: '2px'}}>Unit Price</th>
-                                <th style={{textAlign: 'left', paddingLeft: '5px', paddingRight: '5px', paddingTop: '2px', paddingBottom: '2px'}}>Total</th>
+                                <th>#</th>
+                                <th>Item</th>
+                                <th>Unit</th>
+                                <th>Description</th>
+                                <th>Quantity</th>
+                                <th>Unit Price</th>
+                                <th>Total</th>
                             </tr>
                             </thead>
                             <tbody>
-                            {LPODetail?.items?.map((item:any, index:number) => (
+                            {LPODetail?.items.map((item:any, index:number) => (
                                 <tr key={index}>
-                                    <td style={{textAlign: 'left', paddingLeft: '5px', paddingRight: '5px', paddingTop: '2px', paddingBottom: '2px'}}>{index + 1}</td>
-                                    <td style={{textAlign: 'left', paddingLeft: '5px', paddingRight: '5px', paddingTop: '2px', paddingBottom: '2px'}}>{item.raw_product?.name}</td>
-                                    <td style={{textAlign: 'left', paddingLeft: '5px', paddingRight: '5px', paddingTop: '2px', paddingBottom: '2px'}}>{item.unit?.name}</td>
-                                    <td style={{textAlign: 'left', paddingLeft: '5px', paddingRight: '5px', paddingTop: '2px', paddingBottom: '2px'}}>{item.description}</td>
-                                    <td style={{textAlign: 'left', paddingLeft: '5px', paddingRight: '5px', paddingTop: '2px', paddingBottom: '2px'}}>{item.quantity}</td>
-                                    <td style={{textAlign: 'left', paddingLeft: '5px', paddingRight: '5px', paddingTop: '2px', paddingBottom: '2px'}}>{item.unit_price}</td>
-                                    <td style={{textAlign: 'left', paddingLeft: '5px', paddingRight: '5px', paddingTop: '2px', paddingBottom: '2px'}}>{item.total_price}</td>
+                                    <td>{index + 1}</td>
+                                    <td>{item.raw_product?.name}</td>
+                                    <td>{item.unit?.name}</td>
+                                    <td>{item.description}</td>
+                                    <td>{item.quantity}</td>
+                                    <td>{item.unit_price}</td>
+                                    <td>{item.total_price}</td>
                                 </tr>
                             ))}
                             </tbody>

@@ -93,7 +93,7 @@ const Preview = ({ content }: any) => {
                             </span>
                         </div>
                     </div>
-                    <h3 className="mb-4 text-sm font-semibold">Filling -(0 KG)</h3>
+                    <h3 className="mb-4 text-sm font-semibold"> Filling - (0 KG) </h3>
                     <table
                         style={{
                             width: '100%',
@@ -157,7 +157,7 @@ const Preview = ({ content }: any) => {
                             </tr>
                         </tbody>
                     </table>
-                    {/* <h3 className="mb-4 text-sm font-semibold">Fillings Calculations:</h3>
+                    <h3 className="mb-4 text-sm font-semibold"> Items Details </h3>
                     <table
                         style={{
                             width: '100%',
@@ -171,57 +171,57 @@ const Preview = ({ content }: any) => {
                     >
                         <thead>
                             <tr>
-                                <th style={myStyle}>Sr. No</th>
+                                
+                                <th style={myStyle}>#</th>
                                 <th style={myStyle}>Product</th>
+                                <th style={myStyle}>Desc</th>
                                 <th style={myStyle}>Unit</th>
                                 <th style={myStyle}>Unit Price</th>
-                                <th style={myStyle}>Qty</th>
-                                <th style={myStyle}>Available Qty</th>
-                                <th style={myStyle}>Req Qty</th>
-                                <th style={myStyle}>Total Cost</th>
+                                <th style={myStyle}>Qty (KG)</th>
+                                <th style={myStyle}>Available Qty (KG)</th>
+                                <th style={myStyle}>Required Qty (KG)</th>
+                                <th style={myStyle}>Total</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {content?.filling_calculations.map((item: any, index: any) => (
+                            {content?.filling_items.map((item: any, index: any) => (
                                 <tr key={index}>
-                                    <td style={{ ...myStyle, textAlign: 'center' }}>{index + 1}</td>
-                                    <td style={{ ...myStyle, textAlign: 'center' }}>
-                                    {item.raw_product_id}
-                                    </td>
-                                    <td style={{ ...myStyle, textAlign: 'center' }}>
-                                    {item.unit_id}
-                                    </td>
-                                    <td style={{ ...myStyle, textAlign: 'center' }}>{item.unit_price}</td>
+                                    <td style={{ ...myStyle, textAlign: 'center' }}> {index + 1} </td>
+                                    <td style={{ ...myStyle, textAlign: 'center' }}>{}</td>
+                                    <td style={{ ...myStyle, textAlign: 'center' }}>{}</td>
+                                    <td style={{ ...myStyle, textAlign: 'center' }}>{}</td>
+                                    <td style={{ ...myStyle, textAlign: 'center' }}>{item.unit_cost}</td>
                                     <td style={{ ...myStyle, textAlign: 'center' }}>{item.quantity}</td>
-                                    <td style={{ ...myStyle, textAlign: 'center' }}>{item.filling_quantity}</td>
+                                    <td style={{ ...myStyle, textAlign: 'center' }}>{item.available_quantity}</td>
                                     <td style={{ ...myStyle, textAlign: 'center' }}>{item.required_quantity}</td>
                                     <td style={{ ...myStyle, textAlign: 'center' }}>{(parseFloat(item.unit_cost) * parseFloat(item.quantity) * parseFloat(item.required_quantity)).toFixed(2)}</td>
                                 </tr>
                             ))}
                             <tr>
                                 <td></td>
-                                <th>Total</th>
+                                <td></td>
+                                <th style={{textAlign: 'center'}}>Total</th>
                                 <td></td>
                                 <th style={{ ...myStyle, textAlign: 'center' }}>
-                                    {content?.filling_calculations.reduce((totalUnitCost: number, item: any) => totalUnitCost + parseFloat(item.unit_cost), 0)}
+                                    {content?.filling_items.reduce((totalUnitCost: number, item: any) => totalUnitCost + parseFloat(item.unit_cost), 0)}
                                 </th>
                                 <th style={{ ...myStyle, textAlign: 'center' }}>
-                                    {content?.filling_calculations.reduce((totalQuantity: number, item: any) => totalQuantity + parseFloat(item.quantity), 0)}
+                                    {content?.filling_items.reduce((totalQuantity: number, item: any) => totalQuantity + parseFloat(item.quantity), 0)}
                                 </th>
                                 <th style={{ ...myStyle, textAlign: 'center' }}>
-                                    {content?.filling_calculations.reduce((totalAvaQuantity: number, item: any) => totalAvaQuantity + parseFloat(item.available_quantity), 0)}
+                                    {content?.filling_items.reduce((totalAvailableQuantity: number, item: any) => totalAvailableQuantity + parseFloat(item.available_quantity), 0)}
                                 </th>
                                 <th style={{ ...myStyle, textAlign: 'center' }}>
-                                    {content?.filling_calculations.reduce((totalReqQuantity: number, item: any) => totalReqQuantity + parseFloat(item.required_quantity), 0)}
+                                    {content?.filling_items.reduce((totalReqQuantity: number, item: any) => totalReqQuantity + parseFloat(item.required_quantity), 0)}
                                 </th>
                                 <th style={{ ...myStyle, textAlign: 'center' }}>
-                                    {content?.filling_calculations
+                                    {content?.filling_items
                                         .reduce((total: number, item: any) => total + parseFloat(item.unit_cost) * parseFloat(item.quantity) * parseFloat(item.required_quantity), 0)
                                         .toFixed(2)}
                                 </th>
                             </tr>
                         </tbody>
-                    </table> */}
+                    </table>
                 </div>
                 <Footer />
             </div>
