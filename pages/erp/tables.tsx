@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import CodeHighlight from '../components/Highlight';
+import CodeHighlight from '@/components/Highlight';
 import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css';
 import { useDispatch, useSelector } from 'react-redux';
