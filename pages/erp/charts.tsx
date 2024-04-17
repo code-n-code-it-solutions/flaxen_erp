@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import CodeHighlight from '../components/Highlight';
+import CodeHighlight from '@/components/Highlight';
 import { useDispatch, useSelector } from 'react-redux';
 import { IRootState } from '@/store';
 import { setPageTitle } from '@/store/slices/themeConfigSlice';
