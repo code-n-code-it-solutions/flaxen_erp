@@ -1,5 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
+import {configureSlice} from "@/utils/helper";
 
 interface IProductCategoryState {
     colorCategories: any;
@@ -123,4 +124,5 @@ export const colorCodeSlice = createSlice({
     },
 });
 export const { clearColorCodeState } = colorCodeSlice.actions;
-export default colorCodeSlice.reducer;
+
+export const colorCodeSliceConfig = configureSlice(colorCodeSlice, false);

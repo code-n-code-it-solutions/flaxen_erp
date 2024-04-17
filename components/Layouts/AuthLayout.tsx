@@ -21,7 +21,7 @@ const AuthLayout = ({children}: PropsWithChildren) => {
                 .then(r => {
                         // console.log('r', r)
                     if (r) {
-                        router.push('/main');
+                        router.push('/erp/main');
                     } else {
                         dispatch(logoutUser());
                         dispatch(clearMenuState());

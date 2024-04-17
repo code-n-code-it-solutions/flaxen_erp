@@ -1,5 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
+import {configureSlice} from "@/utils/helper";
 
 interface ILPOState {
     LPO: any;
@@ -48,6 +49,22 @@ export const storeLPO = createAsyncThunk(
         }
     }
 );
+
+export const showDetails = createAsyncThunk(
+    'local-purchase-order/show',
+    async (id:number, thunkAPI) => {
+        try {
+            const response = await API.get('/local-purchase-order/'+id);
+            return response.data;
+        } catch (error:any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+
 
 export const deleteLPO = createAsyncThunk(
     'local-purchase-order/delete',
@@ -138,7 +155,20 @@ export const localPurchaseOrderSlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message;
             })
+            .addCase(showDetails.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(showDetails.fulfilled, (state, action) => {
+                state.loading = false;
+                state.LPODetail = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(showDetails.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
     },
 });
 export const { clearLocalPurchaseOrderState } = localPurchaseOrderSlice.actions;
-export default localPurchaseOrderSlice.reducer;
+
+export const localPurchaseOrderSliceConfig = configureSlice(localPurchaseOrderSlice, false);

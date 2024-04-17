@@ -12,6 +12,7 @@ export enum FORM_CODE_TYPE {
     ASSET = 'asset',
     SERVICE = 'service',
     FILLING = 'filling',
+    QUOTATION = 'quotation',
 }
 
 export enum RAW_PRODUCT_LIST_TYPE {
@@ -22,6 +23,7 @@ export enum RAW_PRODUCT_LIST_TYPE {
     LOCAL_PURCHASE_ORDER = 'local_purchase_order',
     GOOD_RECEIVE_NOTE = 'good_receive_note',
     VENDOR_BILL = 'vendor_bill',
+    QUOTATION = 'quotation',
 }
 
 export enum ButtonType {

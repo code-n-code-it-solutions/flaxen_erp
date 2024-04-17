@@ -1,5 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
+import {configureSlice} from "@/utils/helper";
 
 interface IDesignationState {
     designation: any;
@@ -64,7 +65,7 @@ export const storeDesignation = createAsyncThunk(
 );
 
 // Slice
-export const vendorTypeSlice = createSlice({
+export const designationSlice = createSlice({
     name: 'designations',
     initialState,
     reducers: {
@@ -115,5 +116,6 @@ export const vendorTypeSlice = createSlice({
             })
     },
 });
-export const { clearDesignationState } = vendorTypeSlice.actions;
-export default vendorTypeSlice.reducer;
+export const { clearDesignationState } = designationSlice.actions;
+
+export const designationSliceConfig = configureSlice(designationSlice, false);

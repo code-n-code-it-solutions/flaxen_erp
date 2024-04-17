@@ -1,5 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
+import {configureSlice} from "@/utils/helper";
 
 interface IVendorTypeState {
     vendorType: any;
@@ -90,4 +91,5 @@ export const vendorTypeSlice = createSlice({
     },
 });
 export const { clearVendorTypeState } = vendorTypeSlice.actions;
-export default vendorTypeSlice.reducer;
+
+export const vendorTypeSliceConfig = configureSlice(vendorTypeSlice, false);

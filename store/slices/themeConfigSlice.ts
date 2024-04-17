@@ -1,17 +1,18 @@
-import { createSlice } from '@reduxjs/toolkit';
-import themeConfig from '../../theme.config';
+import {createSlice} from '@reduxjs/toolkit';
+import themeConfiguration from '@/theme.config';
+import {configureSlice} from "@/utils/helper";
 
 const initialState = {
     isDarkMode: false,
     sidebar: false,
-    theme: themeConfig.theme,
-    menu: themeConfig.menu,
-    layout: themeConfig.layout,
-    rtlClass: themeConfig.rtlClass,
-    animation: themeConfig.animation,
-    navbar: themeConfig.navbar,
-    locale: themeConfig.locale,
-    semidark: themeConfig.semidark,
+    theme: themeConfiguration.theme,
+    menu: themeConfiguration.menu,
+    layout: themeConfiguration.layout,
+    rtlClass: themeConfiguration.rtlClass,
+    animation: themeConfiguration.animation,
+    navbar: themeConfiguration.navbar,
+    locale: themeConfiguration.locale,
+    semidark: themeConfiguration.semidark,
     languageList: [
         { code: 'zh', name: 'Chinese' },
         { code: 'da', name: 'Danish' },
@@ -107,4 +108,4 @@ const themeConfigSlice = createSlice({
 
 export const { toggleTheme, toggleMenu, toggleLayout, toggleRTL, toggleAnimation, toggleNavbar, toggleSemidark, toggleLocale, toggleSidebar, setPageTitle } = themeConfigSlice.actions;
 
-export default themeConfigSlice.reducer;
+export const themeConfigSliceConfig = configureSlice(themeConfigSlice, true);

@@ -1,5 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
+import {configureSlice} from "@/utils/helper";
 
 interface IVendorState {
     vendor: any;
@@ -22,27 +23,6 @@ const initialState: IVendorState = {
     representatives: null,
 };
 
-interface IVendorForm {
-    vendor_number: string;
-    name: string;
-    vendor_type_id: number;
-    opening_balance: number,
-    phone: string,
-    email: string,
-    due_in_days: number,
-    postal_code: string,
-    website_url: string,
-    tax_reg_no: string,
-    address: string,
-    country_id: number,
-    state_id: number,
-    city_id: number,
-    image: File | null;
-    representatives: any[];
-    addresses: any[];
-    is_active: boolean;
-}
-
 // Async thunks
 export const getVendors = createAsyncThunk(
     'vendors/all',
@@ -60,11 +40,11 @@ export const getVendors = createAsyncThunk(
 
 export const storeVendor = createAsyncThunk(
     'vendors/store',
-    async (data: IVendorForm, thunkAPI) => {
+    async (data: any, thunkAPI) => {
         try {
             const response = await API.post('/vendor', data);
             console.log(response);
-            
+
             return response.data;
         } catch (error:any) {
             const message =
@@ -246,4 +226,5 @@ export const vendorSlice = createSlice({
     },
 });
 export const { clearVendorState } = vendorSlice.actions;
-export default vendorSlice.reducer;
+
+export const vendorSliceConfig = configureSlice(vendorSlice, false);

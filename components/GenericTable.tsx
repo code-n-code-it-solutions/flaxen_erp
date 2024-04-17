@@ -73,20 +73,10 @@ const GenericTable = ({
     }, [search]);
 
     useEffect(() => {
-        const data = sortBy(initialRecords, sortStatus.columnAccessor);
-        setInitialRecords(sortStatus.direction === 'desc' ? data.reverse() : data);
-        setPage(1);
-    }, [sortStatus]);
-
-    const formatDate = (date: any) => {
-        if (date) {
-            const dt = new Date(date);
-            const month = dt.getMonth() + 1 < 10 ? '0' + (dt.getMonth() + 1) : dt.getMonth() + 1;
-            const day = dt.getDate() < 10 ? '0' + dt.getDate() : dt.getDate();
-            return day + '/' + month + '/' + dt.getFullYear();
-        }
-        return '';
-    };
+        const sortedData = sortBy(rowData, sortStatus.columnAccessor);
+        const orderedData = sortStatus.direction === 'desc' ? sortedData.reverse() : sortedData;
+        setInitialRecords(orderedData);
+    }, [rowData, sortStatus.columnAccessor, sortStatus.direction]);
 
     const exportTable = (type: any) => {
         let columns: any = colName;

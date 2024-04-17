@@ -1,6 +1,6 @@
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
-import {getVendors} from "@/store/slices/vendorSlice";
+import {configureSlice} from "@/utils/helper";
 
 interface IVendorBillState {
     vendorBill: any;
@@ -199,4 +199,5 @@ export const vendorBillSlice = createSlice({
     },
 });
 export const {clearVendorBillState} = vendorBillSlice.actions;
-export default vendorBillSlice.reducer;
+
+export const vendorBillSliceConfig = configureSlice(vendorBillSlice, false);

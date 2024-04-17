@@ -1,5 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
+import {configureSlice} from "@/utils/helper";
 
 interface ILPOState {
     GRN: any;
@@ -141,4 +142,5 @@ export const goodReceiveNoteSlice = createSlice({
     },
 });
 export const { clearGoodReceiveNoteState } = goodReceiveNoteSlice.actions;
-export default goodReceiveNoteSlice.reducer;
+
+export const goodReceiveNoteSliceConfig = configureSlice(goodReceiveNoteSlice, false);

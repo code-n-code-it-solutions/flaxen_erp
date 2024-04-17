@@ -178,7 +178,7 @@ const RawProductItemListing: FC<IProps> = ({
 
             rawProducts?.forEach((item) => {
                 tableConfig.numericColumns.forEach((column: string) => {
-                    const value = item[column];
+                    const value = parseFloat(item[column]);
                     totals[column] += value;
                 });
             });
@@ -198,13 +198,13 @@ const RawProductItemListing: FC<IProps> = ({
                 sortable: true,
                 render: (row: any, index: number) => (
                     table.numericColumns.includes(column)
-                        ? <>{row[column].toFixed(2)}</>
+                        ? <>{parseFloat(row[column]).toFixed(2)}</>
                         : column === 'raw_product_id'
-                            ? <>{productOptions.filter((item: any) => item.value === row[column])[0]?.label}</>
+                            ? <>{productOptions.find((item: any) => item.value === row[column])?.label}</>
                             : column === 'unit_id'
-                                ? <>{unitOptions.filter((item: any) => item.value === row[column])[0]?.label}</>
+                                ? <>{unitOptions.find((item: any) => item.value === row[column])?.label}</>
                                 : column === 'tax_category_id'
-                                    ? <>{taxCategoryOptions.filter((item: any) => item.value === row[column])[0]?.label}</>
+                                    ? <>{taxCategoryOptions.find((item: any) => item.value === row[column])?.label}</>
                                     : <>{row[column]}</>
                 ),
             })));
@@ -222,7 +222,7 @@ const RawProductItemListing: FC<IProps> = ({
             })
         }
         // console.log(columns)
-        if (type !== RAW_PRODUCT_LIST_TYPE.PRODUCTION && type !== RAW_PRODUCT_LIST_TYPE.FILLING && type !== RAW_PRODUCT_LIST_TYPE.VENDOR_BILL) {
+        if (type !== RAW_PRODUCT_LIST_TYPE.PRODUCTION && type !== RAW_PRODUCT_LIST_TYPE.FILLING && type !== RAW_PRODUCT_LIST_TYPE.VENDOR_BILL && type !== RAW_PRODUCT_LIST_TYPE.QUOTATION) {
             columns.push({
                 accessor: 'action',
                 title: 'Actions',

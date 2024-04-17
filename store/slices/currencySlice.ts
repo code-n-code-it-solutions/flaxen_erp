@@ -1,5 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
+import {configureSlice} from "@/utils/helper";
 
 interface ICurrencyState {
     currency: any;
@@ -90,4 +91,5 @@ export const currencySlice = createSlice({
     },
 });
 export const { clearCurrencyState } = currencySlice.actions;
-export default currencySlice.reducer;
+
+export const currencySliceConfig = configureSlice(currencySlice, false);

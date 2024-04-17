@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
+import {configureSlice} from "@/utils/helper";
 
 interface ICustomerState {
     customer: any;
@@ -119,4 +120,5 @@ export const customerSlice = createSlice({
     },
 });
 export const { clearCustomerState } = customerSlice.actions;
-export default customerSlice.reducer;
+export const customerSliceConfig = configureSlice(customerSlice, false);
+
