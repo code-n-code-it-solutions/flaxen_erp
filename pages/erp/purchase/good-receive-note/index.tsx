@@ -31,11 +31,11 @@ const Index = () => {
     const breadcrumbItems = [
         {
             title: 'Main Dashboard',
-            href: '/main',
+            href: '/erp/main',
         },
         {
             title: 'Purchase Dashboard',
-            href: '/purchase',
+            href: '/erp/purchase',
         },
         {
             title: 'All Good Receive Notes',

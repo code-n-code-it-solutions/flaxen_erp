@@ -13,7 +13,7 @@ const BlankLayout = ({children}: PropsWithChildren) => {
         if (token) {
             checkServerSideAuth(token).then(r => {
                 if (r) {
-                    router.push('/main');
+                    router.push('/erp/main');
                 }
             });
         }

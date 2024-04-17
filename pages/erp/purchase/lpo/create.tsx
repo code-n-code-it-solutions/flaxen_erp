@@ -23,7 +23,7 @@ const Create = () => {
     useEffect(() => {
         if(LPO && success) {
             dispatch(clearLocalPurchaseOrderState());
-            router.push('/purchase/lpo');
+            router.push('/erp/purchase/lpo');
         }
     }, [LPO, success]);
 

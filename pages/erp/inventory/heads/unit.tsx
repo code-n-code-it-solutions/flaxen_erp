@@ -26,11 +26,11 @@ const Unit = () => {
     const breadCrumbItems = [
         {
             title: 'Home',
-            href: '/main',
+            href: '/erp/main',
         },
         {
             title: 'Inventory Dashboard',
-            href: '/inventory',
+            href: '/erp/inventory',
         },
         {
             title: 'Units',
@@ -61,7 +61,7 @@ const Unit = () => {
 
     useEffect(() => {
         console.log(units);
-        
+
         if (units) {
             setRowData(units);
         } else {
@@ -106,7 +106,7 @@ const Unit = () => {
                 exportTitle={'unit' + Date.now()}
                 showFooter={rowData.length > 0}
                 columns={[
-                   
+
                     {
                         accessor: 'label',
                         title: 'Title',

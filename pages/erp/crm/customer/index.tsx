@@ -25,14 +25,14 @@ const Index = () => {
     const breadCrumbItems = [
         {
             title: 'Home',
-            href: '/main',
+            href: '/erp/main',
         },
         {
             title: 'Customer Dashboard',
-            href: '/Customer',
+            href: '/erp/customer',
         },
         {
-            title: 'Customer',
+            title: 'All Customers',
             href: '#',
         },
     ];

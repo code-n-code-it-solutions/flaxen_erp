@@ -22,7 +22,7 @@ const Create = () => {
     useEffect(() => {
         if(GRN && success) {
             dispatch(clearGoodReceiveNoteState());
-            router.push('/purchase/good-receive-note');
+            router.push('/erp/purchase/good-receive-note');
         }
     }, [GRN, success]);
 

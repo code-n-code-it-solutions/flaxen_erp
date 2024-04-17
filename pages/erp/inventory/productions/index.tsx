@@ -28,7 +28,7 @@ const Index = () => {
     const breadcrumbItems = [
         {
             title: 'Home',
-            href: '/main',
+            href: '/erp/main',
         },
         {
             title: 'Inventory Dashboard',

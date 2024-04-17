@@ -1,8 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import {useDispatch, useSelector} from "react-redux";
-import {ThunkDispatch} from "redux-thunk";
-import {IRootState} from "@/store";
-import {AnyAction} from "redux";
+import React, {useEffect} from 'react';
+import {useAppDispatch, useAppSelector} from "@/store";
 import {useRouter} from "next/router";
 import {setPageTitle} from "@/store/slices/themeConfigSlice";
 import PageWrapper from "@/components/PageWrapper";
@@ -12,17 +9,17 @@ import CustomerForm from './CustomerForm';
 import { clearCustomerState } from '@/store/slices/customerSlice';
 
 const Create = () => {
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
-    const {customer, success} = useSelector((state: IRootState) => state.customer);
+    const dispatch = useAppDispatch();
+    const {customer, success} = useAppSelector((state) => state.customer);
     const router = useRouter();
     const breadCrumbItems = [
         {
             title: 'Home',
-            href: '/main',
+            href: '/erp/main',
         },
         {
             title: 'CRM dashboard',
-            href: '/crm',
+            href: '/erp/crm',
         },
         {
             title: 'All customers',
@@ -39,12 +36,12 @@ const Create = () => {
 
     useEffect(() => {
         if (customer && success) {
-          router.push('/crm/customer')
+          router.push('/erp/crm/customer')
           dispatch(clearCustomerState())
         }
       }, [customer, success]);
 
-    
+
 
     return (
         <PageWrapper

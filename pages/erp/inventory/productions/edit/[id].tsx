@@ -41,7 +41,7 @@ const Edit = () => {
     const [messages, setMessages] = useState("Production can't be proceeding. Please purchase the In-stock quantities.");
 
     const breadCrumbItems = [
-        {title: 'Home', href: '/main'},
+        {title: 'Home', href: '/erp/main'},
         {title: 'Inventory Dashboard', href: '/erp/inventory'},
         {title: 'All Productions', href: '/erp/inventory/productions'},
         {title: 'Update', href: '#'},

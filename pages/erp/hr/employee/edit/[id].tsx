@@ -16,15 +16,15 @@ const Edit = () => {
     const breadCrumbItems = [
         {
             title: 'Home',
-            href: '/main',
+            href: '/erp/main',
         },
         {
             title: 'HR Dashboard',
-            href: '/hr',
+            href: '/erp/hr',
         },
         {
             title: 'All Employees',
-            href: '/hr/employee',
+            href: '/erp/hr/employee',
         },
         {
             title: 'Edit Employee',
@@ -35,7 +35,7 @@ const Edit = () => {
     useEffect(() => {
         if (employee) {
             dispatch(clearEmployeeState());
-            router.push('/hr/employee');
+            router.push('/erp/hr/employee');
         }
     }, [employee]);
 
