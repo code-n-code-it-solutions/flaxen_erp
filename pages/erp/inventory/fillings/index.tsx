@@ -10,7 +10,7 @@ import GenericTable from '@/components/GenericTable';
 import IconButton from '@/components/IconButton';
 import {ButtonSize, ButtonType, ButtonVariant, IconType} from '@/utils/enums';
 import {generatePDF, getIcon} from '@/utils/helper';
-import Preview from '@/pages/inventory/fillings/preview';
+import Preview from '@/pages/erp/inventory/fillings/preview';
 import Button from "@/components/Button";
 import PageWrapper from "@/components/PageWrapper";
 import {deleteFilling, getFillings} from "@/store/slices/fillingSlice";
