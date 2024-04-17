@@ -29,7 +29,7 @@ import {workingShiftSliceConfig} from "@/store/slices/workingShiftSlice";
 import {quotationSliceConfig} from "@/store/slices/quotationSlice";
 import {reportSliceConfig} from "@/store/slices/reportSlice";
 import {themeConfigSliceConfig} from "@/store/slices/themeConfigSlice";
-
+import {customerSliceConfig} from "@/store/slices/customerSlice";
 
 
 export const slices = {
@@ -63,7 +63,8 @@ export const slices = {
     workingShift: workingShiftSliceConfig,
     quotation: quotationSliceConfig,
     report: reportSliceConfig,
-    themeConfig: themeConfigSliceConfig
+    themeConfig: themeConfigSliceConfig,
+    customer: customerSliceConfig
 }
 
 
@@ -98,5 +99,6 @@ export const reducers = {
     workingShift: workingShiftSliceConfig.reducer,
     quotation: quotationSliceConfig.reducer,
     report: reportSliceConfig.reducer,
-    themeConfig: themeConfigSliceConfig.reducer
+    themeConfig: themeConfigSliceConfig.reducer,
+    customer: customerSliceConfig.reducer
 }
