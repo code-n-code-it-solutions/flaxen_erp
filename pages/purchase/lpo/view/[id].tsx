@@ -11,7 +11,7 @@ import {generatePDF, getIcon, imagePath} from '@/utils/helper';
 import Image from 'next/image';
 import Button from '@/components/Button';
 import {ButtonSize, ButtonType, ButtonVariant, IconType} from '@/utils/enums';
-import Preview from '@/erp/pages/purchase/lpo/preview';
+import Preview from '@/pages/erp/purchase/lpo/preview';
 
 const View = () => {
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
