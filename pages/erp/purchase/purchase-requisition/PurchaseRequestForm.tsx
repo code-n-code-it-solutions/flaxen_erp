@@ -236,6 +236,8 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
         }
     }, [code]);
 
+    // console.log(formData);
+
 
     return (
         <form className="space-y-5" onSubmit={handleSubmit}>

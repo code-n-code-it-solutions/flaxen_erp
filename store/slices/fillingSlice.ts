@@ -4,7 +4,7 @@ import {configureSlice} from "@/utils/helper";
 
 interface IFillingState {
     filling: any;
-    fillingDetail: any
+    fillingDetail: any;
     fillings: any;
     loading: boolean;
     error: any;
@@ -29,6 +29,19 @@ export const getFillings = createAsyncThunk(
             const response = await API.get('/filling');
             return response.data;
         } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+export const showDetails = createAsyncThunk(
+    'fillings/show',
+    async (id:number, thunkAPI) => {
+        try {
+            const response = await API.get('/filling/'+id);
+            return response.data;
+        } catch (error:any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -188,6 +201,18 @@ export const fillingSlice = createSlice({
                 state.fillings = action.payload.data;
             })
             .addCase(pendingFillings.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(showDetails.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(showDetails.fulfilled, (state, action) => {
+                state.loading = false;
+                state.fillingDetail= action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(showDetails.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })

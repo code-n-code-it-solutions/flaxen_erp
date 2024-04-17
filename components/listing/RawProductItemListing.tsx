@@ -101,7 +101,7 @@ const RawProductItemListing: FC<IProps> = ({
     const {units} = useSelector((state: IRootState) => state.unit);
     const {allRawProducts} = useSelector((state: IRootState) => state.rawProduct);
     const {taxCategories} = useSelector((state: IRootState) => state.taxCategory);
-
+    // console.log(rawProducts)
     const handleAdd = (value: any) => {
         setIsAdding(true);
         setRawProducts((prev) => {
@@ -159,7 +159,7 @@ const RawProductItemListing: FC<IProps> = ({
                 return {
                     value: rawProduct.id,
                     label: rawProduct.title + ' (' + rawProduct.item_code + ') - ' + rawProduct.valuation_method,
-                    unit_price: parseFloat(rawProduct.opening_stock_unit_balance)
+                    unit_price: rawProduct.opening_stock_unit_balance
                 };
             })
             // console.log('rawProductOptions', rawProductOptions)
@@ -200,18 +200,17 @@ const RawProductItemListing: FC<IProps> = ({
                     table.numericColumns.includes(column)
                         ? <>{parseFloat(row[column]).toFixed(2)}</>
                         : column === 'raw_product_id'
-                            ? <>{productOptions.filter((item: any) => item.value === row[column])[0]?.label}</>
+                            ? <>{productOptions.find((item: any) => item.value === row[column])?.label}</>
                             : column === 'unit_id'
-                                ? <>{unitOptions.filter((item: any) => item.value === row[column])[0]?.label}</>
+                                ? <>{unitOptions.find((item: any) => item.value === row[column])?.label}</>
                                 : column === 'tax_category_id'
-                                    ? <>{taxCategoryOptions.filter((item: any) => item.value === row[column])[0]?.label}</>
+                                    ? <>{taxCategoryOptions.find((item: any) => item.value === row[column])?.label}</>
                                     : <>{row[column]}</>
                 ),
             })));
         if (rawProducts.length > 0) {
             columns.flatMap((column: any) => {
                 if (tableStructure.find(table => table.listingFor === type)?.numericColumns.includes(column.accessor)) {
-                    // console.log(column.accessor, columnTotals[column.accessor], typeof columnTotals[column.accessor])
                     column.footer = (
                         <div className="flex gap-2 items-center">
                             <span className="h-3 w-3">{getIcon(IconType.sum)}</span>

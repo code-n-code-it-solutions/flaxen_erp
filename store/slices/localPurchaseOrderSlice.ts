@@ -50,6 +50,22 @@ export const storeLPO = createAsyncThunk(
     }
 );
 
+export const showDetails = createAsyncThunk(
+    'local-purchase-order/show',
+    async (id:number, thunkAPI) => {
+        try {
+            const response = await API.get('/local-purchase-order/'+id);
+            return response.data;
+        } catch (error:any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+
+
 export const deleteLPO = createAsyncThunk(
     'local-purchase-order/delete',
     async (id:number, thunkAPI) => {
@@ -136,6 +152,18 @@ export const localPurchaseOrderSlice = createSlice({
                 state.success = action.payload.success;
             })
             .addCase(getLPOByStatuses.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(showDetails.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(showDetails.fulfilled, (state, action) => {
+                state.loading = false;
+                state.LPODetail = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(showDetails.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })
