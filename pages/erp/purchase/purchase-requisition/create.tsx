@@ -22,7 +22,7 @@ const Create = () => {
     useEffect(() => {
         if(purchaseRequest && success) {
             dispatch(clearPurchaseRequisitionState());
-            router.push('/purchase/purchase-requisition');
+            router.push('/erp/purchase/purchase-requisition');
         }
     }, [purchaseRequest, success]);
 

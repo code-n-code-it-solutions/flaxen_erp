@@ -27,11 +27,11 @@ const Index = () => {
     const breadCrumbItems = [
         {
             title: 'Home',
-            href: '/main',
+            href: '/erp/main',
         },
         {
             title: 'Purchase Dashboard',
-            href: '/purchase',
+            href: '/erp/purchase',
         },
         {
             title: 'All LPO',

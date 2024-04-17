@@ -21,7 +21,7 @@ const Edit = () => {
     const breadCrumbItems = [
         {
             title: 'Home',
-            href: '/main',
+            href: '/erp/main',
         },
         {
             title: 'Inventory Dashboard',

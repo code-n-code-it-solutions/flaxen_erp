@@ -36,15 +36,15 @@ const Payments = () => {
     const breadCrumbItems = [
         {
             title: 'Home',
-            href: '/main',
+            href: '/erp/main',
         },
         {
             title: 'Purchase Dashboard',
-            href: '/purchase',
+            href: '/erp/purchase',
         },
         {
             title: 'Vendor Bills',
-            href: '/purchase/vendor-bill',
+            href: '/erp/purchase/vendor-bill',
         },
         {
             title: 'Payments',

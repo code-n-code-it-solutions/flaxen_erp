@@ -21,11 +21,15 @@ const View = () => {
     const breadCrumbItems = [
         {
             title: 'Home',
-            href: '/main',
+            href: '/erp/main',
+        },
+        {
+            title: 'Purchase Dashboard',
+            href: '/erp/purchase',
         },
         {
             title: 'All Local Purchase Order',
-            href: '/purchase/lpo',
+            href: '/erp/purchase/lpo',
         },
         {
             title: 'Local Purchase Order Details',

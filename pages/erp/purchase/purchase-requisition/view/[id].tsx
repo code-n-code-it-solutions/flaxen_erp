@@ -21,11 +21,11 @@ const View = () => {
     const breadCrumbItems = [
         {
             title: 'Home',
-            href: '/main',
+            href: '/erp/main',
         },
         {
             title: 'All Product Assembly',
-            href: '/purchase/purchase-requisition',
+            href: '/erp/purchase/purchase-requisition',
         },
         {
             title: 'Purchase Requisition Details',

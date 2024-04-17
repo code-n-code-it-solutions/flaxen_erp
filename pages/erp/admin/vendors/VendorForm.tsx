@@ -192,7 +192,7 @@ const VendorForm = ({ id }: IFormProps) => {
         }
     }
     useEffect(() => {
-        
+
         const isValid = Object.values(errorMessages).some(message => message !== '');
         setIsFormValid(!isValid);
         console.log('Error Messages:', errorMessages);
@@ -297,7 +297,7 @@ const VendorForm = ({ id }: IFormProps) => {
             dispatch(storeVendor(formFinalData));
         }
     };
-    
+
 
     useEffect(() => {
         dispatch(clearLocationState())
@@ -365,7 +365,7 @@ const VendorForm = ({ id }: IFormProps) => {
 
     useEffect(() => {
         if (vendor && success) {
-            router.push('/admin/vendors')
+            router.push('/erp/admin/vendors')
             dispatch(clearVendorState())
         }
     }, [vendor, success]);
@@ -818,7 +818,7 @@ const VendorForm = ({ id }: IFormProps) => {
                 <div className="w-full">
                     {isFormValid && vendorRepresentatives.length > 0 && vendorAddresses.length > 0 && ( <button
                         type="submit"
-                        className="btn btn-primary" 
+                        className="btn btn-primary"
                         disabled={loading}
                     >
                         {loading ? 'Loading...' : id ? 'Update Vendor' : 'Save Vendor'}

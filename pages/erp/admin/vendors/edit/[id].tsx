@@ -40,11 +40,15 @@ const Edit = () => {
     const breadCrumbItems = [
         {
             title: 'Home',
-            href: '/main',
+            href: '/erp/main',
+        },
+        {
+            title: 'Admin Dashboard',
+            href: '/erp/admin',
         },
         {
             title: 'All Vendors ',
-            href: '/vendors/',
+            href: '/erp/vendors',
         },
         {
             title: 'Update vendor',
@@ -55,7 +59,7 @@ const Edit = () => {
     useEffect(() => {
         if (vendor) {
             dispatch(clearVendorState());
-            router.push('/admin/vendors');
+            router.push('/erp/admin/vendors');
         }
     }, [vendor]);
 

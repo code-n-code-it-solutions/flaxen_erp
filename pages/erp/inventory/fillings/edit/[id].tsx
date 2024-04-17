@@ -45,9 +45,9 @@ const Edit = () => {
     const [messages, setMessages] = useState("Production can't be proceeding. Please purchase the In-stock quantities.");
 
     const breadCrumbItems = [
-        {title: 'Home', href: '/main'},
-        {title: 'Inventory Dashboard', href: '/inventory'},
-        {title: 'All Productions', href: '/inventory/productions'},
+        {title: 'Home', href: '/erp/main'},
+        {title: 'Inventory Dashboard', href: '/erp/inventory'},
+        {title: 'All Productions', href: '/erp/inventory/productions'},
         {title: 'Update', href: '#'},
     ];
 
@@ -130,7 +130,7 @@ const Edit = () => {
     useEffect(() => {
         if (production && success) {
             dispatch(clearProductionState());
-            router.push('/inventory/productions');
+            router.push('/erp/inventory/productions');
         }
     }, [production, success]);
 

@@ -26,11 +26,11 @@ const Assets = () => {
     const breadCrumbItems = [
         {
             title: 'Home',
-            href: '/main',
+            href: '/erp/main',
         },
         {
             title: 'Inventory Dashboard',
-            href: '/inventory',
+            href: '/erp/inventory',
         },
         {
             title: 'Assets',

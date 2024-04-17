@@ -19,15 +19,15 @@ const Create = () => {
     const breadCrumbItems = [
         {
             title: 'Home',
-            href: '/main',
+            href: '/erp/main',
         },
         {
             title: 'HR Dashboard',
-            href: '/hr',
+            href: '/erp/hr',
         },
         {
             title: 'All Employees',
-            href: '/hr/employee',
+            href: '/erp/hr/employee',
         },
         {
             title: 'Create New',
@@ -42,7 +42,7 @@ const Create = () => {
     useEffect(() => {
         if (rawProduct && success) {
             dispatch(clearEmployeeState());
-            router.push('/hr/employee');
+            router.push('/erp/hr/employee');
         }
     }, [rawProduct, success]);
 

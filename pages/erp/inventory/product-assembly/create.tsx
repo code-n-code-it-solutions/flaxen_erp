@@ -71,15 +71,15 @@ const Create = () => {
     const breadcrumbItems = [
         {
             title: 'Home',
-            href: '/main',
+            href: '/erp/main',
         },
         {
             title: 'Inventory Dashboard',
-            href: '/inventory',
+            href: '/erp/inventory',
         },
         {
             title: 'All Product Assemblies',
-            href: '/inventory/product-assembly',
+            href: '/erp/inventory/product-assembly',
         },
         {
             title: 'Create New',

@@ -20,15 +20,15 @@ const Create = () => {
     const breadCrumbItems = [
         {
             title: 'Home',
-            href: '/main',
+            href: '/erp/main',
         },
         {
             title: 'Purchase Dashboard',
-            href: '/purchase',
+            href: '/erp/purchase',
         },
         {
             title: 'Vendor Bills',
-            href: '/purchase/vendor-bill',
+            href: '/erp/purchase/vendor-bill',
         },
         {
             title: 'Create New',
@@ -42,7 +42,7 @@ const Create = () => {
     useEffect(() => {
         if(vendorBill && success) {
             dispatch(clearVendorBillState());
-            router.push('/purchase/vendor-bill');
+            router.push('/erp/purchase/vendor-bill');
         }
     }, [vendorBill, success]);
 

@@ -56,9 +56,9 @@ const Create = () => {
     const [noOfProductionQty, setNoOfProductionQty] = useState<number>(0);
 
     const breadCrumbItems = [
-        {title: 'Home', href: '/main'},
-        {title: 'Inventory Dashboard', href: '/inventory'},
-        {title: 'All Fillings', href: '/inventory/fillings'},
+        {title: 'Home', href: '/erp/main'},
+        {title: 'Inventory Dashboard', href: '/erp/inventory'},
+        {title: 'All Fillings', href: '/erp/inventory/fillings'},
         {title: 'Create New', href: '#'},
     ];
 
@@ -118,7 +118,7 @@ const Create = () => {
     useEffect(() => {
         if (filling && success) {
             dispatch(clearFillingState());
-            router.push('/inventory/fillings');
+            router.push('/erp/inventory/fillings');
         }
     }, [filling, success]);
 
