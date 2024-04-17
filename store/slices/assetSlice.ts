@@ -1,5 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
+import {configureSlice} from "@/utils/helper";
 
 interface IAssetState {
     asset: any;
@@ -146,4 +147,7 @@ export const assetSlice = createSlice({
     },
 });
 export const { clearAssetState } = assetSlice.actions;
-export default assetSlice.reducer;
+
+export const assetSliceConfig = configureSlice(assetSlice, false);
+
+

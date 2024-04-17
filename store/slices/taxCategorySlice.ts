@@ -1,5 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
+import {configureSlice} from "@/utils/helper";
 
 interface ITaxCategoryState {
     taxCategory: any;
@@ -90,4 +91,5 @@ export const taxCategorySlice = createSlice({
     },
 });
 export const { clearTaxCategoryState } = taxCategorySlice.actions;
-export default taxCategorySlice.reducer;
+
+export const taxCategorySliceConfig = configureSlice(taxCategorySlice, false);

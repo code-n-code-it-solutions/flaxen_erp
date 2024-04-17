@@ -1,9 +1,10 @@
 // userSlice.ts
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
+import {configureSlice} from "@/utils/helper";
 
 // Define a type for the slice state
-interface UserState {
+interface IUserState {
     user: any;
     token: string;
     isLoggedIn: boolean;
@@ -11,14 +12,8 @@ interface UserState {
     error: any;
 }
 
-interface LoginCredentials {
-    email: string;
-    password: string;
-    rememberMe: boolean;
-}
-
 // Initial state
-const initialState: UserState = {
+const initialState: IUserState = {
     user: null,
     token: '',
     isLoggedIn: false,
@@ -29,11 +24,11 @@ const initialState: UserState = {
 // Async thunks
 export const loginUser = createAsyncThunk(
     'user/login',
-    async (userData:LoginCredentials, thunkAPI) => {
+    async (userData: any, thunkAPI) => {
         try {
             const response = await API.post('/login', userData);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to login';
             return thunkAPI.rejectWithValue(message);
@@ -47,7 +42,7 @@ export const logoutUser = createAsyncThunk(
         try {
             const response = await API.post('/logout');
             return response.status === 200
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to logout';
             return thunkAPI.rejectWithValue(message);
@@ -91,4 +86,6 @@ export const userSlice = createSlice({
     },
 });
 
-export default userSlice.reducer;
+// Export reducer
+
+export const userSliceConfig = configureSlice(userSlice, true);

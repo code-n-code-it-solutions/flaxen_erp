@@ -1,5 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
+import {configureSlice} from "@/utils/helper";
 
 interface IReportState {
     vendor: any;
@@ -88,4 +89,5 @@ export const reportSlice = createSlice({
     },
 });
 export const { clearReportState } = reportSlice.actions;
-export default reportSlice.reducer;
+
+export const reportSliceConfig = configureSlice(reportSlice, false);

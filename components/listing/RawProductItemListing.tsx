@@ -101,7 +101,7 @@ const RawProductItemListing: FC<IProps> = ({
     const {units} = useSelector((state: IRootState) => state.unit);
     const {allRawProducts} = useSelector((state: IRootState) => state.rawProduct);
     const {taxCategories} = useSelector((state: IRootState) => state.taxCategory);
-    // console.log(rawProducts)
+
     const handleAdd = (value: any) => {
         setIsAdding(true);
         setRawProducts((prev) => {
@@ -159,7 +159,7 @@ const RawProductItemListing: FC<IProps> = ({
                 return {
                     value: rawProduct.id,
                     label: rawProduct.title + ' (' + rawProduct.item_code + ') - ' + rawProduct.valuation_method,
-                    unit_price: rawProduct.opening_stock_unit_balance
+                    unit_price: parseFloat(rawProduct.opening_stock_unit_balance)
                 };
             })
             // console.log('rawProductOptions', rawProductOptions)
@@ -178,7 +178,7 @@ const RawProductItemListing: FC<IProps> = ({
 
             rawProducts?.forEach((item) => {
                 tableConfig.numericColumns.forEach((column: string) => {
-                    const value = item[column];
+                    const value = parseFloat(item[column]);
                     totals[column] += value;
                 });
             });
@@ -198,7 +198,7 @@ const RawProductItemListing: FC<IProps> = ({
                 sortable: true,
                 render: (row: any, index: number) => (
                     table.numericColumns.includes(column)
-                        ? <>{row[column].toFixed(2)}</>
+                        ? <>{parseFloat(row[column]).toFixed(2)}</>
                         : column === 'raw_product_id'
                             ? <>{productOptions.filter((item: any) => item.value === row[column])[0]?.label}</>
                             : column === 'unit_id'
@@ -211,6 +211,7 @@ const RawProductItemListing: FC<IProps> = ({
         if (rawProducts.length > 0) {
             columns.flatMap((column: any) => {
                 if (tableStructure.find(table => table.listingFor === type)?.numericColumns.includes(column.accessor)) {
+                    // console.log(column.accessor, columnTotals[column.accessor], typeof columnTotals[column.accessor])
                     column.footer = (
                         <div className="flex gap-2 items-center">
                             <span className="h-3 w-3">{getIcon(IconType.sum)}</span>
@@ -222,7 +223,7 @@ const RawProductItemListing: FC<IProps> = ({
             })
         }
         // console.log(columns)
-        if (type !== RAW_PRODUCT_LIST_TYPE.PRODUCTION && type !== RAW_PRODUCT_LIST_TYPE.FILLING && type !== RAW_PRODUCT_LIST_TYPE.VENDOR_BILL) {
+        if (type !== RAW_PRODUCT_LIST_TYPE.PRODUCTION && type !== RAW_PRODUCT_LIST_TYPE.FILLING && type !== RAW_PRODUCT_LIST_TYPE.VENDOR_BILL && type !== RAW_PRODUCT_LIST_TYPE.QUOTATION) {
             columns.push({
                 accessor: 'action',
                 title: 'Actions',

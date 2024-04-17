@@ -1,5 +1,6 @@
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
+import {configureSlice} from "@/utils/helper";
 
 
 interface IProductAssembly {
@@ -56,11 +57,11 @@ export const getProductAssemblies = createAsyncThunk(
 
 export const showDetails = createAsyncThunk(
     'productAssemblies/show',
-    async (id:number, thunkAPI) => {
+    async (id: number, thunkAPI) => {
         try {
-            const response = await API.get('/product-assemblies/'+id);
+            const response = await API.get('/product-assemblies/' + id);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -98,12 +99,12 @@ export const editProductAssembly = createAsyncThunk(
 
 export const updateProductAssembly = createAsyncThunk(
     'productAssemblies/update',
-    async (data:any, thunkAPI) => {
+    async (data: any, thunkAPI) => {
         try {
             const {id, productAssemblyData} = data;
-            const response = await API.post('/product-assemblies/update/'+id, productAssemblyData);
+            const response = await API.post('/product-assemblies/update/' + id, productAssemblyData);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to login';
             return thunkAPI.rejectWithValue(message);
@@ -238,4 +239,5 @@ export const productAssemblySlice = createSlice({
     },
 });
 export const {clearProductAssemblyState} = productAssemblySlice.actions;
-export default productAssemblySlice.reducer;
+
+export const productAssemblySliceConfig = configureSlice(productAssemblySlice, false);

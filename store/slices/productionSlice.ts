@@ -1,23 +1,8 @@
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
+import {configureSlice} from "@/utils/helper";
 
-
-interface IProduction {
-    batch_number: string;
-    no_of_quantity: number;
-    product_assembly_id: number;
-    production_items: IRawProduct[];
-}
-
-interface IRawProduct {
-    raw_product_id: number
-    unit_id: number
-    quantity: number
-    cost: number
-    total: number
-}
-
-interface ProductAssemblyState {
+interface IProductionState {
     production: any;
     productionDetail: any
     allProductions: any;
@@ -28,7 +13,7 @@ interface ProductAssemblyState {
 }
 
 // Initial state
-const initialState: ProductAssemblyState = {
+const initialState: IProductionState = {
     production: null,
     productionDetail: null,
     allProductions: null,
@@ -264,4 +249,5 @@ export const productionSlice = createSlice({
     },
 });
 export const {clearProductionState} = productionSlice.actions;
-export default productionSlice.reducer;
+
+export const productionSliceConfig = configureSlice(productionSlice, false);

@@ -1,5 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
+import {configureSlice} from "@/utils/helper";
 
 // Define a type for the slice state
 interface UnitState {
@@ -53,4 +54,4 @@ export const unitSlice = createSlice({
     },
 });
 
-export default unitSlice.reducer;
+export const unitSliceConfig = configureSlice(unitSlice, false);

@@ -1,5 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
+import {configureSlice} from "@/utils/helper";
 
 interface IVehicleState {
     vehicle: any;
@@ -90,4 +91,5 @@ export const vehicleSlice = createSlice({
     },
 });
 export const { clearVehicleState } = vehicleSlice.actions;
-export default vehicleSlice.reducer;
+
+export const vehicleSliceConfig = configureSlice(vehicleSlice, false);

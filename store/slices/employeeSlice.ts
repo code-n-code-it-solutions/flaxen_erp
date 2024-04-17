@@ -1,5 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
+import {configureSlice} from "@/utils/helper";
 
 interface IEmployeeState {
     employee: any;
@@ -218,4 +219,5 @@ export const employeeSlice = createSlice({
     },
 });
 export const { clearEmployeeState } = employeeSlice.actions;
-export default employeeSlice.reducer;
+
+export const employeeSliceConfig = configureSlice(employeeSlice, false);

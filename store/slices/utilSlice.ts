@@ -1,5 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
+import {configureSlice} from "@/utils/helper";
 
 interface IUTILState {
     code: any;
@@ -59,4 +60,5 @@ export const utilSlice = createSlice({
     },
 });
 export const { clearUtilState } = utilSlice.actions;
-export default utilSlice.reducer;
+
+export const utilSliceConfig = configureSlice(utilSlice, false);

@@ -1,5 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
+import {configureSlice} from "@/utils/helper";
 
 interface IDepartmentState {
     department: any;
@@ -90,4 +91,5 @@ export const departmentSlice = createSlice({
     },
 });
 export const { clearDepartmentState } = departmentSlice.actions;
-export default departmentSlice.reducer;
+
+export const departmentSliceConfig = configureSlice(departmentSlice, false);

@@ -1,5 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
+import {configureSlice} from "@/utils/helper";
 
 interface ILPOState {
     LPO: any;
@@ -141,4 +142,5 @@ export const localPurchaseOrderSlice = createSlice({
     },
 });
 export const { clearLocalPurchaseOrderState } = localPurchaseOrderSlice.actions;
-export default localPurchaseOrderSlice.reducer;
+
+export const localPurchaseOrderSliceConfig = configureSlice(localPurchaseOrderSlice, false);

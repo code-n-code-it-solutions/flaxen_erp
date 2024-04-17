@@ -1,5 +1,6 @@
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
+import {configureSlice} from "@/utils/helper";
 
 interface IFillingState {
     filling: any;
@@ -93,6 +94,20 @@ export const deleteFilling = createAsyncThunk(
     }
 );
 
+export const pendingFillings = createAsyncThunk(
+    'fillings/pending',
+    async (_, thunkAPI) => {
+        try {
+            const response = await API.get('/filling/list/pending');
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 // Slice
 export const fillingSlice = createSlice({
     name: 'fillings',
@@ -165,7 +180,19 @@ export const fillingSlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message;
             })
+            .addCase(pendingFillings.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(pendingFillings.fulfilled, (state, action) => {
+                state.loading = false;
+                state.fillings = action.payload.data;
+            })
+            .addCase(pendingFillings.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
     },
 });
 export const {clearFillingState} = fillingSlice.actions;
-export default fillingSlice.reducer;
+
+export const fillingSliceConfig = configureSlice(fillingSlice, false);
