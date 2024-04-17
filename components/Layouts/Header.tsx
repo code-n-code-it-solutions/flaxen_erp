@@ -20,6 +20,7 @@ const Header = () => {
     const {isLoggedIn, token} = useSelector((state: IRootState) => state.user);
     const {permittedMenus, moduleMenus, activeModule} = useSelector((state: IRootState) => state.menu);
     const handleLogout = () => {
+        setAuthToken(token)
         dispatch(clearMenuState());
         dispatch(logoutUser());
     }

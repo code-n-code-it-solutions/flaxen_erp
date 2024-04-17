@@ -4,6 +4,7 @@ import React from "react";
 import ReactDOMServer from "react-dom/server";
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import {Slice, SliceCaseReducers, ValidateSliceCaseReducers} from "@reduxjs/toolkit";
 
 export const getRandomInt = (min: number, max: number) => {
     min = Math.ceil(min);
@@ -232,3 +233,56 @@ export const formatCurrency = (amount: number) => {
         currency: 'AED',
     });
 };
+
+
+
+export function configureSlice<State, CaseReducers extends SliceCaseReducers<State>>(
+    slice: Slice<State, CaseReducers, string>,
+    persist: boolean
+) {
+    return {
+        reducer: slice.reducer,
+        actions: slice.actions, // if you want to export the actions too
+        persist
+    };
+}
+
+export const formatData = (date: any, format: string = 'mm/dd/yyyy') => {
+    const d = new Date(date);
+    const dtf = new Intl.DateTimeFormat('en', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+    });
+    const [{value: mo}, , {value: da}, , {value: ye}] = dtf.formatToParts(d);
+
+    switch (format) {
+        case 'mm/dd/yyyy':
+            return `${mo}/${da}/${ye}`;
+        case 'dd/mm/yyyy':
+            return `${da}/${mo}/${ye}`;
+        case 'yyyy-mm-dd':
+            return `${ye}-${mo}-${da}`;
+        default:
+            return `${mo}/${da}/${ye}`;
+    }
+}
+
+export const formatTime = (date: any, format: string = 'hh:mm:ss') => {
+    const d = new Date(date);
+    const dtf = new Intl.DateTimeFormat('en', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+    });
+    const [{value: hr}, , {value: min}, , {value: sec}] = dtf.formatToParts(d);
+
+    switch (format) {
+        case 'hh:mm:ss':
+            return `${hr}:${min}:${sec}`;
+        case 'hh:mm':
+            return `${hr}:${min}`;
+        default:
+            return `${hr}:${min}:${sec}`;
+    }
+}

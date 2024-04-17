@@ -1,7 +1,8 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
+import {configureSlice} from "@/utils/helper";
 
-interface IProductCategoryState {
+interface ILocationState {
     countries: any;
     states: any
     cities: any;
@@ -11,7 +12,7 @@ interface IProductCategoryState {
 }
 
 // Initial state
-const initialState: IProductCategoryState = {
+const initialState: ILocationState = {
     countries: null,
     states: null,
     cities: null,
@@ -126,4 +127,5 @@ export const locationSlice = createSlice({
     },
 });
 export const { clearLocationState, clearState, clearCity } = locationSlice.actions;
-export default locationSlice.reducer;
+
+export const locationSliceConfig = configureSlice(locationSlice, false);

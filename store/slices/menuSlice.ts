@@ -1,5 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
+import {configureSlice} from "@/utils/helper";
 
 interface IMenusState {
     permittedMenus: any;
@@ -74,4 +75,5 @@ export const {
     clearMenuState,
     setModuleMenus,
     setActiveModule } = menuSlice.actions;
-export default menuSlice.reducer;
+
+export const menuSliceConfig = configureSlice(menuSlice, true);

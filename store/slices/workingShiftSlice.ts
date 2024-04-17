@@ -1,5 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
+import {configureSlice} from "@/utils/helper";
 
 interface IWorkingShiftState {
     workingShift: any;
@@ -117,4 +118,5 @@ export const workingShiftSlice = createSlice({
     },
 });
 export const { clearWorkingShiftState } = workingShiftSlice.actions;
-export default workingShiftSlice.reducer;
+
+export const workingShiftSliceConfig = configureSlice(workingShiftSlice, false);

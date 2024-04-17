@@ -1,5 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
+import {configureSlice} from "@/utils/helper";
 
 interface IMenusState {
     permissions: any;
@@ -59,4 +60,5 @@ export const permissionSlice = createSlice({
     },
 });
 export const { clearPermissionState } = permissionSlice.actions;
-export default permissionSlice.reducer;
+
+export const permissionSliceConfig = configureSlice(permissionSlice, true);

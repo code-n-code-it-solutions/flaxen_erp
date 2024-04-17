@@ -1,5 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
+import {configureSlice} from "@/utils/helper";
 
 interface IProductCategoryState {
     productCategory: any;
@@ -116,4 +117,5 @@ export const productCategorySlice = createSlice({
     },
 });
 export const { clearCategoryState } = productCategorySlice.actions;
-export default productCategorySlice.reducer;
+
+export const categorySliceConfig = configureSlice(productCategorySlice, false);

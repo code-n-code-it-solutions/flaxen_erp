@@ -1,4 +1,3 @@
-import {IRootState} from '@/store';
 import {toggleSidebar} from '@/store/slices/themeConfigSlice';
 import {PropsWithChildren, useEffect, useState} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
@@ -15,12 +14,14 @@ import {ThunkDispatch} from "redux-thunk";
 import {AnyAction} from "redux";
 import {clearMenuState} from "@/store/slices/menuSlice";
 import WelcomeModule from "@/components/WelcomeModule";
+import {IRootState, useAppSelector} from "@/store";
+import {RootState} from "@reduxjs/toolkit/query";
 
 const DefaultLayout = ({children}: PropsWithChildren) => {
     const router = useRouter();
     const [showLoader, setShowLoader] = useState(true);
     const [showTopButton, setShowTopButton] = useState(false);
-    const themeConfig = useSelector((state: IRootState) => state.themeConfig);
+    const themeConfig = useAppSelector((state: IRootState) => state.themeConfig);
     const [animation, setAnimation] = useState(themeConfig.animation);
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
 

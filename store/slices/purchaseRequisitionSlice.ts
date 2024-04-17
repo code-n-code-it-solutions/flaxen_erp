@@ -1,5 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
+import {configureSlice} from "@/utils/helper";
 
 interface IPRState {
     statuses: any;
@@ -244,8 +245,9 @@ export const purchaseRequisitionSlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message;
             })
-            
+
     },
 });
 export const { clearPurchaseRequisitionState } = purchaseRequisitionSlice.actions;
-export default purchaseRequisitionSlice.reducer;
+
+export const purchaseRequisitionSliceConfig = configureSlice(purchaseRequisitionSlice, false);

@@ -1,37 +1,7 @@
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
+import {configureSlice} from "@/utils/helper";
 
-interface IProduction {
-    batch_number: string;
-    no_of_quantity: number;
-    product_assembly_id: number;
-    filling_code: number;
-    filling_date: number;
-    filling_time: number;
-    filling_shift_id: number;  
-    unit_id:  number; 
-    fillings_items: IRawProduct[];
-    filling_calculations: IFillingCalculation[];    
-}
-
-interface IFillingCalculation {
-    filling_quantity: number;
-    id: number ;
-    quantity: number;
-    required_quantity: number;
-    total_cost: number;
-    capacity: number;
-    unit_price: number;
-    unit_id: number;
-
-}
-interface IRawProduct {
-    raw_product_id: number
-    unit_id: number
-    quantity: number
-    cost: number
-    total: number
-}
 interface IFillingState {
     filling: any;
     fillingDetail: any;
@@ -56,7 +26,7 @@ export const getFillings = createAsyncThunk(
     'fillings/all',
     async (_, thunkAPI) => {
         try {
-            const response = await API.get('/filling/');
+            const response = await API.get('/filling');
             return response.data;
         } catch (error: any) {
             const message =
@@ -83,7 +53,7 @@ export const storeFilling = createAsyncThunk(
     'fillings/store',
     async (data: any, thunkAPI) => {
         try {
-            const response = await API.post('/filling/', data);
+            const response = await API.post('/filling', data);
             return response.data;
         } catch (error: any) {
             const message =
@@ -122,6 +92,7 @@ export const updateFilling = createAsyncThunk(
     }
 );
 
+
 export const deleteFilling = createAsyncThunk(
     'fillings/delete',
     async (id: number, thunkAPI) => {
@@ -131,6 +102,20 @@ export const deleteFilling = createAsyncThunk(
         } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to delete';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const pendingFillings = createAsyncThunk(
+    'fillings/pending',
+    async (_, thunkAPI) => {
+        try {
+            const response = await API.get('/filling/list/pending');
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
         }
     }
@@ -208,6 +193,17 @@ export const fillingSlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message;
             })
+            .addCase(pendingFillings.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(pendingFillings.fulfilled, (state, action) => {
+                state.loading = false;
+                state.fillings = action.payload.data;
+            })
+            .addCase(pendingFillings.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
             .addCase(showDetails.pending, (state) => {
                 state.loading = true;
             })
@@ -223,4 +219,5 @@ export const fillingSlice = createSlice({
     },
 });
 export const {clearFillingState} = fillingSlice.actions;
-export default fillingSlice.reducer;
+
+export const fillingSliceConfig = configureSlice(fillingSlice, false);

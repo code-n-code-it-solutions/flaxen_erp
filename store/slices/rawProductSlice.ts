@@ -1,5 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
+import {configureSlice} from "@/utils/helper";
 
 interface IRawProductState {
     rawProduct: any;
@@ -230,4 +231,6 @@ export const rawProductSlice = createSlice({
     },
 });
 export const { clearRawProductState } = rawProductSlice.actions;
-export default rawProductSlice.reducer;
+
+export const rawProductSliceConfig = configureSlice(rawProductSlice, false);
+

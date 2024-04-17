@@ -1,5 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
+import {configureSlice} from "@/utils/helper";
 
 interface IBankState {
     bank: any;
@@ -90,4 +91,5 @@ export const bankSlice = createSlice({
     },
 });
 export const { clearBankState } = bankSlice.actions;
-export default bankSlice.reducer;
+
+export const bankSliceConfig = configureSlice(bankSlice, false);

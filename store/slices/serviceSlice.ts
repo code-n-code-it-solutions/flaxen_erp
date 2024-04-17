@@ -1,5 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
+import {configureSlice} from "@/utils/helper";
 
 interface IServiceState {
     service: any;
@@ -90,4 +91,5 @@ export const serviceSlice = createSlice({
     },
 });
 export const { clearServiceState } = serviceSlice.actions;
-export default serviceSlice.reducer;
+
+export const serviceSliceConfig = configureSlice(serviceSlice, false);
