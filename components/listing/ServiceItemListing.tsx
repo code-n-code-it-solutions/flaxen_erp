@@ -188,9 +188,7 @@ const ServiceItemListing: FC<IProps> = ({
             </div>
             <GenericTable
                 isAdvanced={false}
-                colName={tableStructure.filter(table => table.listingFor === type).flatMap(table => table.columns)}
                 rowData={serviceItems}
-                header={tableStructure.filter(table => table.listingFor === type).flatMap(table => table.header)}
                 columns={[
                     ...tableColumns(),
                     {
