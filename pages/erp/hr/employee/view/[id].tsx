@@ -1,27 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { ThunkDispatch } from 'redux-thunk';
-import { IRootState } from '@/store';
-import { AnyAction } from 'redux';
-import { useRouter } from 'next/router';
-import { setPageTitle } from '@/store/slices/themeConfigSlice';
-import { clearEmployeeState, showDetails } from '@/store/slices/employeeSlice';
+import React, {useEffect} from 'react';
+import {useAppDispatch, useAppSelector} from '@/store';
+import {useRouter} from 'next/router';
+import {setPageTitle} from '@/store/slices/themeConfigSlice';
+import {clearEmployeeState, showDetails} from '@/store/slices/employeeSlice';
 import PageWrapper from '@/components/PageWrapper';
-import { generatePDF, getIcon, imagePath } from '@/utils/helper';
+import {getIcon, serverFilePath} from '@/utils/helper';
 import Image from 'next/image';
-
-import image_path from '@C:\Users\User\Documents\flaxen_erp\public\assets\images\default.png'
-import Button from '@/components/Button';
-import { ButtonSize, ButtonType, ButtonVariant, IconType } from '@/utils/enums';
-import Preview from '@/pages/erp/inventory/product-assembly/preview';
+import {ButtonSize, ButtonType, ButtonVariant, IconType} from '@/utils/enums';
+import FileDownloader from "@/components/FileDownloader";
 
 const View = () => {
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
+    const dispatch = useAppDispatch();
     const router = useRouter();
-    const { loading, employeeDetail } = useSelector((state: IRootState) => state.employee);
-    console.log(employeeDetail);
-
-    const [printLoading, setPrintLoading] = useState<boolean>(false);
+    const {loading, employeeDetail} = useAppSelector(state => state.employee);
     const breadCrumbItems = [
         {
             title: 'Main Dashboard',
@@ -32,6 +23,10 @@ const View = () => {
             href: '/erp/hr',
         },
         {
+            title: 'All Employees',
+            href: '/erp/hr/employee',
+        },
+        {
             title: 'Employee Details',
             href: '#',
         },
@@ -40,168 +35,178 @@ const View = () => {
     useEffect(() => {
         dispatch(setPageTitle('Employee Details'));
         dispatch(clearEmployeeState());
-
-        const productAssemblyId = router.query.id;
         const employeeId = router.query.id;
-        // console.log('Product Assembly ID:', productAssemblyId);
-
         if (employeeId) {
-            // If the productId is an array (with catch-all routes), take the first element.
             const id = Array.isArray(employeeId) ? employeeId[0] : employeeId;
             dispatch(showDetails(parseInt(id)));
         }
     }, [router.query.id, dispatch]);
 
+    // console.log(employeeDetail)
+
     return (
-        <PageWrapper loading={loading} breadCrumbItems={breadCrumbItems} embedLoader={true}>
-            <div>
-                <div className="mb-5 flex items-center justify-between">
-                    <h5 className="text-lg font-semibold dark:text-white-light">Details of Employee</h5>
-                    <div className="flex justify-end gap-3">
-                        <Button
-                            text={
-                                printLoading ? (
-                                    'Generating...'
-                                ) : (
-                                    <span className="flex items-center">
-                                        {getIcon(IconType.print, 0, 0, 'h-5 w-5 ltr:mr-2 rtl:ml-2')}
-                                        Print
-                                    </span>
-                                )
-                            }
-                            type={ButtonType.button}
-                            variant={ButtonVariant.success}
-                            size={ButtonSize.small}
-                            disabled={printLoading}
-                            onClick={() => generatePDF(<Preview content={employeeDetail} />, setPrintLoading)}
-                        />
-                        <Button
-                            text={
-                                <span className="flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ltr:mr-2 rtl:ml-2" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                        <path d="M15 5L9 12L15 19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                    Back
-                                </span>
-                            }
-                            type={ButtonType.link}
-                            variant={ButtonVariant.primary}
-                            link="/hr/employee"
-                            size={ButtonSize.small}
-                        />
-                    </div>
-                </div>
-
-                {employeeDetail && (
-                <div className="h-950 px-10">
-
-
-                    <hr></hr>
-                    <div className="mt-10 mb-5 flex flex-col items-center justify-center">
-
-                        <h1 className="font-bold text-2xl">Employee Details</h1>
-                    </div>
-
-                    <div className="flex items-start justify-between p-10 mb-10">
+        <PageWrapper
+            loading={loading}
+            breadCrumbItems={breadCrumbItems}
+            embedLoader={true}
+            title="Employee Details"
+            buttons={[
+                {
+                    text: 'Edit',
+                    type: ButtonType.link,
+                    variant: ButtonVariant.info,
+                    icon: IconType.edit,
+                    link: '/erp/hr/employee/edit/' + router.query.id
+                },
+                {
+                    text: 'Print',
+                    type: ButtonType.link,
+                    variant: ButtonVariant.success,
+                    icon: IconType.print,
+                    link: '/erp/hr/employee/print/' + router.query.id
+                },
+                {
+                    text: 'Back',
+                    type: ButtonType.link,
+                    variant: ButtonVariant.primary,
+                    icon: IconType.back,
+                    link: '/erp/hr/employee'
+                }
+            ]}
+        >
+            {employeeDetail && (
+                <div>
+                    <div className="flex items-start justify-between mb-10">
                         <div className="flex flex-col gap-5">
-                            <span className="mb-15 text-base">
+                            <span className="flex justify-start items-center gap-2">
                                 <strong>Employee Code: </strong>
-                                <span>{employeeDetail.employee_code}sds</span>
+                                <span>{employeeDetail.employee_code}</span>
                             </span>
-                            <span className="text-base mb-15">
+                            <span className="flex justify-start items-center gap-2">
                                 <strong>Registered at: </strong>
                                 <span>{employeeDetail.created_at}</span>
                             </span>
-                            <span className="text-base mb-15">
+                            <span className="flex justify-start items-center gap-2">
                                 <strong>Print at: </strong>
                                 <span>{(new Date()).toLocaleDateString()}</span>
                             </span>
                         </div>
-                        <div className="flex flex-col gap-5">
-                            <span className="text-base mb-15">
-
-                            <Image width={24} height={24} src={imagePath(employeeDetail?.thumbnail)}
-                                    alt="product image"
-                                    className="w-24 h-24 object-cover"/>
-
-                            </span>
-                        </div>
+                        <Image
+                            width={24}
+                            height={24}
+                            priority={true}
+                            src={serverFilePath(employeeDetail?.thumbnail?.path)}
+                            alt="profile"
+                            className="w-24 h-24"
+                        />
                     </div>
 
 
-                    <h3 className="mb-8 text-xl font-bold">Formula Product Details:</h3>
+                    <h3 className="mt-8 text-lg font-bold">Email Details:</h3>
                     <table>
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>{employeeDetail?.user?.name}</th>
-                                <th>Email</th>
-                                <th>{employeeDetail?.user?.email}</th>
-                            </tr>
-                        </thead>
                         <tbody>
-                            <tr>
-                                <td>Phone</td>
-                                <td>{employeeDetail.phone}</td>
-                                <td>Joining Date</td>
-                                <td>{employeeDetail.date_of_joining}</td>
-                            </tr>
-                            <tr>
-                                <td>Department </td>
-                                <td>{employeeDetail?.department?.name}</td>
-                                <td>Designation</td>
-                                <td>{employeeDetail?.designation?.name}</td>
-                            </tr>
-                            <tr>
-                                <td>Passport Number</td>
-                                <td>{employeeDetail.passport_number}</td>
-                                <td>Id Number </td>
-                                <td>{employeeDetail.id_number}</td>
-                            </tr>
-
-
+                        <tr>
+                            <td>Name</td>
+                            <td>{employeeDetail?.user?.name}</td>
+                            <td>Email</td>
+                            <td>{employeeDetail?.user?.email}</td>
+                        </tr>
+                        <tr>
+                            <td>Phone</td>
+                            <td>{employeeDetail.phone}</td>
+                            <td>Joining Date</td>
+                            <td>{employeeDetail.date_of_joining}</td>
+                        </tr>
+                        <tr>
+                            <td>Department</td>
+                            <td>{employeeDetail?.department?.name}</td>
+                            <td>Designation</td>
+                            <td>{employeeDetail?.designation?.name}</td>
+                        </tr>
+                        <tr>
+                            <td>Passport Number</td>
+                            <td>{employeeDetail.passport_number}</td>
+                            <td>Id Number</td>
+                            <td>{employeeDetail.id_number}</td>
+                        </tr>
                         </tbody>
                     </table>
-                    <h3 className="mb-8 text-xl font-bold">Bank Details:</h3>
+                    <h3 className="mt-8 text-lg font-bold">Bank Details:</h3>
                     <table>
                         <thead>
-                            <tr>
-                                <th>Bank Name </th>
-                                <th>s</th>
-                                <th>Account Number</th>
-                                <th>IBAN</th>
-                                <th>Currency</th></tr>
+                        <tr>
+                            <th>Bank Name</th>
+                            <th>s</th>
+                            <th>Account Number</th>
+                            <th>IBAN</th>
+                            <th>Currency</th>
+                        </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>{}</td>
-                                <td>{}</td>
-                                <td>{}</td>
-                                <td>{}</td>
-                            </tr>
+                        {employeeDetail?.bank_accounts?.length > 0
+                            ? employeeDetail?.bank_accounts?.map((bank: any, index: number) => (
+                                <tr key={index}>
+                                    <td>{bank.bank.name}</td>
+                                    <td>{bank.account_name}</td>
+                                    <td>{bank.account_number}</td>
+                                    <td>{bank.iban}</td>
+                                    <td>{bank.currency?.code}</td>
+                                </tr>
+                            )) : (
+                                <tr>
+                                    <td colSpan={5}>
+                                        No Bank Details Found
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
-                    <h3 className="mb-8 text-xl font-bold"> Document uploded:</h3>
+                    <h3 className="mt-8 text-lg font-bold"> Document uploded:</h3>
                     <table>
                         <thead>
-                            <tr>
-                                <th>Document Name  </th>
-                                <th>Description </th>
-                            </tr>
+                        <tr>
+                            <th>Document</th>
+                            <th>Document Name</th>
+                            <th>Description</th>
+                        </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>{}</td>
-                                <td>{}</td>
-
-                            </tr>
+                        {employeeDetail?.documents?.length > 0
+                            ? employeeDetail?.documents?.map((document: any, index: number) => (
+                                <tr key={index}>
+                                    <td>
+                                        {document.document
+                                            ? (<span className="flex gap-2 items-center text-primary">
+                                                    <FileDownloader
+                                                        file={document.document.path}
+                                                        title={
+                                                            <span className="flex justify-center items-center gap-3">
+                                                                {getIcon(IconType.download)}
+                                                                <span>Download</span>
+                                                            </span>
+                                                        }
+                                                        buttonType={ButtonType.link}
+                                                        buttonVariant={ButtonVariant.primary}
+                                                        size={ButtonSize.small}
+                                                    />
+                                                </span>
+                                            ) : <span>No Preview</span>
+                                        }
+                                    </td>
+                                    <td>{document.name}</td>
+                                    <td>{document.description}</td>
+                                </tr>
+                            )) : (
+                                <tr>
+                                    <td colSpan={2}>
+                                        No Documents Found
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
-                )}
-
-
-            </div>
+            )}
         </PageWrapper>
     );
 };

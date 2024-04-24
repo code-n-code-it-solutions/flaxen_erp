@@ -1,42 +1,42 @@
 import React, {useEffect, useState} from 'react';
-import Swal from 'sweetalert2';
-import {useDispatch, useSelector} from 'react-redux';
 import {setPageTitle} from '@/store/slices/themeConfigSlice';
-import Link from "next/link";
-import Breadcrumb from "@/components/Breadcrumb";
-import {ThunkDispatch} from "redux-thunk";
-import {IRootState} from "@/store";
-import {AnyAction} from "redux";
+import {IRootState, useAppDispatch, useAppSelector} from "@/store";
 import {setAuthToken, setContentType} from "@/configs/api.config";
-import GenericTable from "@/components/GenericTable";
 import Image from "next/image";
-import {BASE_URL} from "@/configs/server.config";
-import {clearEmployeeState, deleteEmployee, getEmployees} from "@/store/slices/employeeSlice";
+import {clearEmployeeState, getEmployees} from "@/store/slices/employeeSlice";
 import IconButton from "@/components/IconButton";
-import {ButtonVariant, IconType} from "@/utils/enums";
-import {generatePDF} from "@/utils/helper";
-import Preview from "@/pages/erp/hr/employee/preview";
+import {ButtonType, ButtonVariant, IconType} from "@/utils/enums";
+import {serverFilePath} from "@/utils/helper";
+import GenericTable from "@/components/GenericTable";
+import PageWrapper from "@/components/PageWrapper";
 
 const Index = () => {
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
-    const {token} = useSelector((state: IRootState) => state.user);
-    const {employees, loading, success} = useSelector((state: IRootState) => state.employee);
-    const [deleteLoading, setDeleteLoading] = useState(false);
+    const dispatch = useAppDispatch();
+    const {token} = useAppSelector((state) => state.user);
+    const {employees, loading, success} = useAppSelector((state: IRootState) => state.employee);
+
+    const [rowData, setRowData] = useState<any>([]);
+
+    const breadCrumbItems = [
+        {
+            title: 'Main Dashboard',
+            href: '/erp/main',
+        },
+        {
+            title: 'HR Dashboard',
+            href: '/erp/hr',
+        },
+        {
+            title: 'All Employees',
+            href: '#',
+        },
+    ]
 
     useEffect(() => {
         dispatch(setPageTitle('All Employees'));
-    });
-    const [rowData, setRowData] = useState([]);
-    const [printLoading, setPrintLoading] = useState(false)
-
-    const getRawItems = () => {
         setAuthToken(token)
         setContentType('application/json')
         dispatch(getEmployees())
-    }
-
-    useEffect(() => {
-        getRawItems();
         dispatch(clearEmployeeState());
     }, []);
 
@@ -46,150 +46,95 @@ const Index = () => {
         }
     }, [employees]);
 
-    const colName = ['id', 'employee_code', 'user.name', 'contact', 'passport_number', 'address', 'is_active'];
-    const header = ['Id', 'Employee Code', 'Name', 'Contact', 'Passport #', 'Address', 'Status'];
-
-
-    const handleDelete = (id: number) => {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Are you sure?',
-            text: "You won't be able to revert this!",
-            showCancelButton: true,
-            confirmButtonText: 'Delete',
-            padding: '2em',
-            customClass: 'sweet-alerts',
-        }).then((result) => {
-            if (result.value) {
-                dispatch(deleteEmployee(id));
-                setDeleteLoading(true);
-            }
-        });
-    }
-
-    useEffect(() => {
-        if(!deleteLoading) return;
-        if (success) {
-            getRawItems();
-            setDeleteLoading(false);
-            Swal.fire({ title: 'Deleted!', text: 'Your file has been deleted.', icon: 'success', customClass: 'sweet-alerts' });
-        } else {
-            Swal.fire({ title: 'Failed!', text: 'Something went wrong.', icon: 'error', customClass: 'sweet-alerts' });
-        }
-    }, [success]);
-
     return (
-        <div>
-            <Breadcrumb items={[
+        <PageWrapper
+            embedLoader={true}
+            loading={loading}
+            breadCrumbItems={breadCrumbItems}
+            title={'All Employees'}
+            buttons={[
                 {
-                    title: 'Main Dashboard',
-                    href: '/main',
-                },
-                {
-                    title: 'HR Dashboard',
-                    href: '/hr',
-                },
-                {
-                    title: 'All Employees',
-                    href: '#',
-                },
-            ]}/>
-
-            <div className="pt-5">
-                <div className="panel">
-                    <div className="mb-5 flex items-center justify-between">
-                        <h5 className="text-lg font-semibold dark:text-white-light">All Employees</h5>
-                        <Link href="/hr/employee/create"
-                              className="btn btn-primary btn-sm m-1">
-                            <span className="flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                     className="h-5 w-5 ltr:mr-2 rtl:ml-2"
-                                     fill="none">
-                                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
-                                    <path d="M15 12L12 12M12 12L9 12M12 12L12 9M12 12L12 15" stroke="currentColor"
-                                          strokeWidth="1.5" strokeLinecap="round"/>
-                                </svg>
-                                Add New
+                    text: 'Add New',
+                    type: ButtonType.link,
+                    variant: ButtonVariant.primary,
+                    icon: IconType.add,
+                    link: '/erp/hr/employee/create'
+                }
+            ]}
+        >
+            <GenericTable
+                rowData={rowData}
+                loading={loading}
+                exportTitle={'all-employees-' + Date.now()}
+                columns={[
+                    {
+                        accessor: 'image_id',
+                        title: 'Photo',
+                        render: (row: any) => (
+                            <Image
+                                src={serverFilePath(row.employee?.thumbnail?.path)}
+                                alt={row.name}
+                                priority={true}
+                                width={40}
+                                height={40}
+                                className="w-10 h-10 rounded-full"
+                            />
+                        ),
+                        sortable: true
+                    },
+                    {
+                        accessor: 'employee_code',
+                        title: 'Employee Code',
+                        render: (row: any) => (
+                            <span>{row.employee?.employee_code}</span>
+                        ),
+                        sortable: true
+                    },
+                    {accessor: 'name', title: 'name', sortable: true},
+                    {accessor: 'email', title: 'Email', sortable: true},
+                    {accessor: 'employee.passport_number', title: 'Passport #', sortable: true},
+                    {
+                        accessor: 'employee.address',
+                        title: 'Address',
+                        render: (row: any) => (
+                            <span>
+                                {row.employee?.address} {row.employee?.city?.name} {row.employee?.state?.name}, <br/>
+                                {row.employee?.country?.name}, {row.employee?.postal_code}
                             </span>
-                        </Link>
-                    </div>
-                    <GenericTable
-                        colName={colName}
-                        header={header}
-                        rowData={rowData}
-                        loading={loading}
-                        exportTitle={'all-employees-' + Date.now()}
-                        columns={[
-                            {
-                                accessor: 'image_id',
-                                title: 'Photo',
-                                render: (row: any) => (
-                                    <Image
-                                        src={BASE_URL+'/'+row.thumbnail?.path}
-                                        alt={row.name}
-                                        width={40}
-                                        height={40}
-                                        className="w-10 h-10 rounded-full"
-                                    />
-                                ),
-                                sortable: true
-                            },
-                            {accessor: 'employee_code', title: 'Employee Code', sortable: true},
-                            {accessor: 'user.name', title: 'name', sortable: true},
-                            {accessor: 'user.email', title: 'Email', sortable: true},
-                            {accessor: 'passport_number', title: 'Passport #', sortable: true},
-                            {
-                                accessor: 'address',
-                                title: 'Address',
-                                render: (row: any) => (
-                                    <span>
-                                        {row.address} {row.city?.name} {row.state?.name}, <br/>
-                                        {row.country?.name}, {row.postal_code}
-                                    </span>
-                                ),
-                                sortable: true
-                            },
-                            {
-                                accessor: 'actions',
-                                title: 'Actions',
-                                render: (row: any) => (
-                                    <div className="flex items-center gap-3">
-                                        <IconButton
-                                            icon={IconType.print}
-                                            color={ButtonVariant.secondary}
-                                            tooltip='Print'
-                                            onClick={() => generatePDF(<Preview content={row} />, setPrintLoading)}
-                                        />
+                        ),
+                        sortable: true
+                    },
+                    {
+                        accessor: 'actions',
+                        title: 'Actions',
+                        render: (row: any) => (
+                            <div className="flex items-center gap-3">
+                                <IconButton
+                                    icon={IconType.print}
+                                    color={ButtonVariant.secondary}
+                                    tooltip='Print'
+                                    link={`/erp/hr/employee/print/${row.employee.id}`}
+                                />
 
-                                        <IconButton
-                                            icon={IconType.view}
-                                            color={ButtonVariant.info}
-                                            tooltip='View'
-                                            link={`/hr/employee/view/${row.id}`}
-                                        />
+                                <IconButton
+                                    icon={IconType.view}
+                                    color={ButtonVariant.info}
+                                    tooltip='View'
+                                    link={`/erp/hr/employee/view/${row.employee.id}`}
+                                />
 
-                                        <IconButton
-                                            icon={IconType.edit}
-                                            color={ButtonVariant.primary}
-                                            tooltip='Edit'
-                                            link={`/hr/employee/edit/${row.id}`}
-                                        />
-
-                                        <IconButton
-                                            icon={IconType.delete}
-                                            color={ButtonVariant.danger}
-                                            tooltip='Delete'
-                                            onClick={() => handleDelete(row.id)}
-                                        />
-                                    </div>
-                                )
-                            }
-                        ]}
-                    />
-                </div>
-            </div>
-
-        </div>
+                                <IconButton
+                                    icon={IconType.edit}
+                                    color={ButtonVariant.primary}
+                                    tooltip='Edit'
+                                    link={`/erp/hr/employee/edit/${row.employee.id}`}
+                                />
+                            </div>
+                        )
+                    }
+                ]}
+            />
+        </PageWrapper>
     );
 };
 

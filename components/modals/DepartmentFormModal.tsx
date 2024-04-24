@@ -1,61 +1,80 @@
-import React, {Fragment, useEffect, useState} from 'react';
-import {Dialog, Transition} from "@headlessui/react";
+import React, {useEffect, useState} from 'react';
 import Select from "react-select";
 import Modal from "@/components/Modal";
 import {Input} from '@/components/form/Input'
-import  Alert  from "@/components/Alert";
+import Alert from "@/components/Alert";
+import {useAppDispatch, useAppSelector} from "@/store";
+import Button from "@/components/Button";
+import {ButtonType, ButtonVariant} from "@/utils/enums";
+import {Dropdown} from "@/components/form/Dropdown";
+import Textarea from "@/components/form/Textarea";
+import {clearDepartmentState, storeDepartment} from "@/store/slices/departmentSlice";
+import Option from "@/components/form/Option";
 
 interface IProps {
     modalOpen: boolean;
     setModalOpen: (value: boolean) => void;
-    handleAddition: (value: any) => void;
-    departments: any[];
     modalFormData?: any;
+    departments: any[];
 }
 
-const DepartmentFormModal = ({modalOpen, setModalOpen, handleAddition, modalFormData, departments}: IProps) => {
-    const [name, setName] = useState<string>('');
-    const [parentId, setParentId] = useState<number>(0);
-    const [description, setDescription] = useState<string>('');
-    const [isActive, setIsActive] = useState<boolean>(true);
-    const [errorMessages, setErrorMessages] = useState({
-        name: "This field is required",
-    })
+const DepartmentFormModal = ({modalOpen, setModalOpen, modalFormData, departments}: IProps) => {
+    const dispatch = useAppDispatch()
+    const {department, success, loading} = useAppSelector(state => state.department)
+
+    const [formData, setFormData] = useState<any>({})
+    const [errorMessages, setErrorMessages] = useState<any>({})
     const [isFormValid, setIsFormValid] = useState<boolean>(false);
     const [validationMessage, setValidationMessage] = useState("");
 
     useEffect(() => {
         if (modalOpen) {
-            setName('');
-            setParentId(0);
-            setDescription('');
-            setIsActive(true)
+            setFormData({is_active: 1})
         }
     }, [modalOpen]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { value,required,name } = e.target;
-        if(name === 'name'){
-            setName(value);
+    const handleChange = (name: string, value: any, required: boolean) => {
+        if (name === 'parent_id') {
+            if (value && typeof value !== 'undefined') {
+                setFormData({...formData, [name]: value.value})
+            } else {
+                setFormData({...formData, [name]: ''})
+            }
+        } else if (name === 'is_active') {
+            setFormData({...formData, [name]: value ? 1 : 0})
+        } else {
+            setFormData({...formData, [name]: value})
         }
         if (required) {
             if (!value) {
-                setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
+                setErrorMessages({...errorMessages, [name]: 'This field is required.'});
             } else {
-                setErrorMessages({ ...errorMessages, [name]: '' });
+                setErrorMessages((prev: any) => {
+                    delete prev[name];
+                    return prev;
+                })
             }
         }
     };
 
+    const handleSubmit = () => {
+        dispatch(storeDepartment(formData))
+    }
+
     useEffect(() => {
         const isValid = Object.values(errorMessages).some(message => message !== '');
         setIsFormValid(!isValid);
-        // console.log('Error Messages:', errorMessages);
-        // console.log('isFormValid:', !isValid);
-        if(isValid){
+        if (isValid) {
             setValidationMessage("Please fill the required field.");
         }
     }, [errorMessages]);
+
+    useEffect(() => {
+        if (success && department) {
+            dispatch(clearDepartmentState())
+            setModalOpen(false)
+        }
+    }, [success, department]);
 
     return (
         <Modal
@@ -63,65 +82,71 @@ const DepartmentFormModal = ({modalOpen, setModalOpen, handleAddition, modalForm
             setShow={setModalOpen}
             title='Add New Department'
             footer={
-                <div className="mt-8 flex items-center justify-end">
-                    <button type="button" className="btn btn-outline-danger"
-                            onClick={() => setModalOpen(false)}>
-                        Discard
-                    </button>
-                    {isFormValid && <button type="button" className="btn btn-primary ltr:ml-4 rtl:mr-4"
-                            onClick={() => handleAddition({
-                                name,
-                                parentId,
-                                description,
-                                isActive
-                            })}>
-                        {modalFormData ? 'Update' : 'Add'}
-                    </button>}
+                <div className="mt-8 flex items-center gap-3 justify-end">
+                    <Button
+                        type={ButtonType.button}
+                        text="Discard"
+                        variant={ButtonVariant.secondary}
+                        onClick={() => setModalOpen(false)}
+                    />
+                    {isFormValid && (
+                        <Button
+                            type={ButtonType.button}
+                            text={modalFormData ? 'Update' : 'Add'}
+                            variant={ButtonVariant.primary}
+                            onClick={() => handleSubmit()}
+                        />
+                    )}
                 </div>
             }
         >
-            {!isFormValid  && validationMessage &&
-               <Alert 
-               alertType="error" 
-               message={validationMessage} 
-               setMessages={setValidationMessage} 
-           />}
-            <div className="w-full">
-                {/* <label htmlFor="name">Department Name</label> */}
-                <Input
-                    label='Department Name'
-                    type="text"
-                    name="name"
-                    placeholder='Enter department name'
-                    value={name}
-                    onChange={handleChange}
-                    required={true}
-                    isMasked={false}
-                    errorMessage={errorMessages.name}
+            {!isFormValid && validationMessage &&
+                <Alert
+                    alertType="error"
+                    message={validationMessage}
+                    setMessages={setValidationMessage}
                 />
-            </div>
-            <div className="w-full">
-                <label htmlFor="parent_id">Parent Department (Optional)</label>
-                <Select
-                    defaultValue={departments[0]}
-                    options={departments}
-                    isSearchable={true}
-                    isClearable={true}
-                    placeholder={'Select Parent Department'}
-                    onChange={(e: any) => setParentId(e && typeof e !== 'undefined' ? e.value : 0)}
-                />
-            </div>
-            <div className="w-full">
-                <label htmlFor="description">Description (Optional)</label>
-                <textarea
-                    name="description"
-                    id="description"
-                    className="form-input"
-                    placeholder='Department description'
-                    value={description}
-                    onChange={e => setDescription(e.target.value)}
-                ></textarea>
-            </div>
+            }
+
+            <Input
+                divClasses="w-full"
+                label='Department Name'
+                type="text"
+                name="name"
+                placeholder='Enter department name'
+                value={formData.name}
+                onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
+                required={true}
+                isMasked={false}
+                errorMessage={errorMessages.name}
+            />
+
+            <Dropdown
+                divClasses="w-full"
+                label="Parent Department (Optional)"
+                name="parent_id"
+                options={departments}
+                value={formData.parent_id}
+                onChange={(e) => handleChange('parent_id', e, false)}
+            />
+
+            <Textarea
+                divClasses="w-full"
+                label="Description (Optional)"
+                name="description"
+                value={formData.description}
+                onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
+                isReactQuill={false}
+            />
+
+            <Option
+                label="Is Active"
+                type="checkbox"
+                name="is_active"
+                value={formData.is_active}
+                defaultChecked={true}
+                onChange={(e) => handleChange(e.target.name, e.target.checked, e.target.required)}
+            />
         </Modal>
     );
 };

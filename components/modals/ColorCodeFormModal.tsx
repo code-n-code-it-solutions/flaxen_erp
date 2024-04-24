@@ -4,15 +4,18 @@ import ImageUploader from "@/components/form/ImageUploader";
 import Modal from "@/components/Modal";
 import { Input } from '../form/Input';
 import Alert from '@/components/Alert'
+import {clearColorCodeState, storeColorCode} from "@/store/slices/colorCodeSlice";
+import {useAppDispatch, useAppSelector} from "@/store";
 
 interface IProps {
     modalOpen: boolean;
     setModalOpen: (value: boolean) => void;
-    handleSubmit: (value: any) => void;
     modalFormData?: any;
 }
 
-const ColorCodeFormModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData}: IProps) => {
+const ColorCodeFormModal = ({modalOpen, setModalOpen, modalFormData}: IProps) => {
+    const dispatch = useAppDispatch();
+    const {colorCode, success} = useAppSelector(state => state.colorCode)
     const [image, setImage] = useState<File | null>(null);
     const [code, setCode] = useState<any>('');
     const [hexCode, setHexCode] = useState<any>('');
@@ -24,6 +27,9 @@ const ColorCodeFormModal = ({modalOpen, setModalOpen, handleSubmit, modalFormDat
     const [isFormValid, setIsFormValid] = useState<boolean>(false);
     const [validationMessage, setValidationMessage] = useState("");
 
+    const handleSubmit = (value: any) => {
+        dispatch(storeColorCode(value));
+    };
 
     useEffect(() => {
         if (modalOpen) {
@@ -31,8 +37,16 @@ const ColorCodeFormModal = ({modalOpen, setModalOpen, handleSubmit, modalFormDat
             setHexCode('');
             setName('')
             setImage(null);
+            dispatch(clearColorCodeState());
         }
     }, [modalOpen]);
+
+    useEffect(() => {
+        if(colorCode && success) {
+            setModalOpen(false);
+            dispatch(clearColorCodeState());
+        }
+    }, [colorCode, success]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { value,required,name } = e.target;
@@ -90,14 +104,14 @@ const ColorCodeFormModal = ({modalOpen, setModalOpen, handleSubmit, modalFormDat
             </div>
             <div>
             {!isFormValid  && validationMessage &&
-               <Alert 
-               alertType="error" 
-               message={validationMessage} 
-               setMessages={setValidationMessage} 
+               <Alert
+               alertType="error"
+               message={validationMessage}
+               setMessages={setValidationMessage}
            />
             }
             </div>
-            
+
             <div className="w-full">
                 {/* <label htmlFor="code">Code</label> */}
                 <Input

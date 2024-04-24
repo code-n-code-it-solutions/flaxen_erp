@@ -1,27 +1,23 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import ImageUploader from "@/components/form/ImageUploader";
 import {setAuthToken, setContentType} from "@/configs/api.config";
-import {useDispatch, useSelector} from "react-redux";
-import {ThunkDispatch} from "redux-thunk";
-import {IRootState} from "@/store";
-import {AnyAction} from "redux";
+import {useAppDispatch, useAppSelector} from "@/store";
 import VendorTypeFormModal from "@/components/modals/VendorTypeFormModal";
 import VendorAddressModal from "@/components/modals/VendorAddressModal";
 import VendorRepresentativeModal from "@/components/modals/VendorRepresentativeModal";
 import {clearLocationState, getCities, getCountries, getStates} from "@/store/slices/locationSlice";
-import {getVendorTypes, storeVendorType} from "@/store/slices/vendorTypeSlice";
+import {getVendorTypes} from "@/store/slices/vendorTypeSlice";
 import {clearVendorState, storeVendor, updateVendor} from "@/store/slices/vendorSlice";
-import {useRouter} from "next/router";
 import BankDetailModal from "@/components/modals/BankDetailModal";
 import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
-import {ButtonSize, ButtonType, ButtonVariant, FORM_CODE_TYPE} from "@/utils/enums";
+import {ButtonSize, ButtonType, ButtonVariant, FORM_CODE_TYPE, IconType} from "@/utils/enums";
 import {MaskConfig} from "@/configs/mask.config";
 import {Dropdown} from "@/components/form/Dropdown";
 import Button from "@/components/Button";
-import { Input } from "@/components/form/Input";
-import { getUnits } from '@/store/slices/unitSlice';
-import { imagePath } from "@/utils/helper";
+import {Input} from "@/components/form/Input";
+import {getIcon, serverFilePath} from "@/utils/helper";
 import Alert from '@/components/Alert';
+import IconButton from "@/components/IconButton";
 
 interface IFormData {
     vendor_number: string;
@@ -45,69 +41,67 @@ interface IFormData {
     is_active: boolean;
 }
 
-interface IRepresentative {
-    name: string;
-    phone: string;
-    email: string;
-    country_id: number;
-    country_name: string;
-    state_id: number;
-    state_name: string;
-    city_id: number;
-    city_name: string;
-    address: string;
-    postal_code: string;
-    is_active: boolean;
-}
-
-interface IAddress {
-    address_type: number;
-    address_type_name: string;
-    country_id: number;
-    country_name: string;
-    state_id: number;
-    state_name: string;
-    city_id: number;
-    city_name: string;
-    address: string;
-    postal_code: string;
-    is_active: boolean;
-}
-
-interface IBankAccount {
-    bank_id: number;
-    bank_name: string;
-    currency_id: number;
-    currency_name: string;
-    currency_code: string;
-    account_name: string;
-    account_number: string;
-    iban: string;
-}
+// interface IRepresentative {
+//     name: string;
+//     phone: string;
+//     email: string;
+//     country_id: number;
+//     country_name: string;
+//     state_id: number;
+//     state_name: string;
+//     city_id: number;
+//     city_name: string;
+//     address: string;
+//     postal_code: string;
+//     is_active: boolean;
+// }
+//
+// interface IAddress {
+//     address_type: number;
+//     address_type_name: string;
+//     country_id: number;
+//     country_name: string;
+//     state_id: number;
+//     state_name: string;
+//     city_id: number;
+//     city_name: string;
+//     address: string;
+//     postal_code: string;
+//     is_active: boolean;
+// }
+//
+// interface IBankAccount {
+//     bank_id: number;
+//     bank_name: string;
+//     currency_id: number;
+//     currency_name: string;
+//     currency_code: string;
+//     account_name: string;
+//     account_number: string;
+//     iban: string;
+// }
 
 interface IFormProps {
     id?: any
 }
 
-const VendorForm = ({ id }: IFormProps) => {
-    const router = useRouter();
-    const { vendorDetail } = useSelector((state: IRootState) => state.vendor);
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
-    const { token } = useSelector((state: IRootState) => state.user);
-    const { countries, states, cities } = useSelector((state: IRootState) => state.location);
-    const { allVendorTypes, vendorType } = useSelector((state: IRootState) => state.vendorType);
-    const { code } = useSelector((state: IRootState) => state.util);
-    const { allVendors, vendor, loading, success } = useSelector((state: IRootState) => state.vendor);
+const VendorForm = ({id}: IFormProps) => {
+    const {vendorDetail} = useAppSelector(state => state.vendor);
+    const dispatch = useAppDispatch();
+    const {token} = useAppSelector(state => state.user);
+    const {countries, states, cities} = useAppSelector(state => state.location);
+    const {allVendorTypes, vendorType} = useAppSelector(state => state.vendorType);
+    const {code} = useAppSelector(state => state.util);
+    const {loading, success} = useAppSelector(state => state.vendor);
 
     const [vendorTypeModal, setVendorTypeModal] = useState<boolean>(false);
     const [vendorRepresentativeModal, setVendorRepresentativeModal] = useState<boolean>(false);
     const [vendorAddressModal, setVendorAddressModal] = useState<boolean>(false);
     const [vendorBankModal, setVendorBankModal] = useState<boolean>(false);
     const [image, setImage] = useState<File | null>(null);
-    const [vendorTypeId, setVendorTypeId] = useState<any>(null);
-    const [vendorAddresses, setVendorAddresses] = useState<IAddress[]>([]);
-    const [vendorRepresentatives, setVendorRepresentatives] = useState<IRepresentative[]>([]);
-    const [vendorBankAccounts, setVendorBankAccounts] = useState<IBankAccount[]>([]);
+    const [vendorAddresses, setVendorAddresses] = useState<any[]>([]);
+    const [vendorRepresentatives, setVendorRepresentatives] = useState<any[]>([]);
+    const [vendorBankAccounts, setVendorBankAccounts] = useState<any[]>([]);
 
     const [formData, setFormData] = useState<IFormData>({
         vendor_number: '',
@@ -137,116 +131,86 @@ const VendorForm = ({ id }: IFormProps) => {
     const [VRepresentativeMessage, setVRepresentativeMessage] = useState('');
     const [errorMessages, setErrorMessages] = useState<any>({});
 
-
-
     const [vendorTypeOptions, setVendorTypeOptions] = useState([]);
     const [countryOptions, setCountryOptions] = useState([]);
     const [stateOptions, setStateOptions] = useState([]);
     const [cityOptions, setCityOptions] = useState([]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const { name, value,required } = e.target;
-        setFormData(prevFormData => {
-            return { ...prevFormData, [name]: value };
-        });
+    const handleChange = (name: string, value: any, required: boolean) => {
         if (required) {
             if (!value) {
-                setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
+                setErrorMessages({...errorMessages, [name]: 'This field is required.'});
+                return
             } else {
-                setErrorMessages({ ...errorMessages, [name]: '' });
+                setErrorMessages((prev: any) => {
+                    delete prev[name];
+                    return prev;
+                });
             }
         }
-        if (name === 'opening_balance' || name === 'due_in_days') {
-            if (value === '0') {
-                setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
-            }
+        switch (name) {
+            case 'vendor_type_id':
+                if (value && typeof value !== 'undefined') {
+                    setFormData(prev => ({...prev, [name]: value.value}))
+                } else {
+                    setFormData(prev => ({...prev, [name]: 0}))
+                }
+                break;
+            case 'country_id':
+                if (value && typeof value !== 'undefined') {
+                    setFormData(prev => ({...prev, [name]: value.value}))
+                    dispatch(getStates(parseInt(value.value)))
+                } else {
+                    setFormData(prev => ({...prev, [name]: 0, state_id: 0, city_id: 0}))
+                    setStateOptions([])
+                    setCityOptions([])
+                }
+                break;
+            case 'state_id':
+                if (value && typeof value !== 'undefined') {
+                    setFormData(prev => ({...prev, [name]: value.value}))
+                    dispatch(getCities({countryId: formData.country_id, stateId: parseInt(value.value)}))
+                } else {
+                    setFormData(prev => ({...prev, [name]: 0, city_id: 0}))
+                    setCityOptions([])
+                }
+                break;
+            case 'city_id':
+                if (value && typeof value !== 'undefined') {
+                    setFormData(prev => ({...prev, [name]: value}))
+                } else {
+                    setFormData(prev => ({...prev, [name]: 0}))
+                }
+                break;
+            default:
+                setFormData(prev => ({...prev, [name]: value}))
+                break;
         }
-        if (name === 'phone') {
-            if (value === '(+971) __-__-____') {
-                setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
-            }
-        }
-
     };
-    const [error, setError] = useState('');
-    const handleCountryChange = (e: any) => {
-        const { name, value,required } = e.target;
-        if (e && e.value && typeof e !== 'undefined') {
-            setFormData(prev => ({ ...prev, country_id: e ? e.value : 0 }))
-            dispatch(getStates(parseInt(e.value)))
-        } else {
-            setFormData(prev => ({ ...prev, country_id: 0 }))
-            setStateOptions([])
-            setCityOptions([])
-        }
-    }
 
-    const handleStateChange = (e: any) => {
-        const { name, value,required } = e.target;
-        if (e && e.value && typeof e !== 'undefined') {
-            setFormData(prev => ({ ...prev, state_id: e ? e.value : 0 }))
-            dispatch(getCities({ countryId: formData.country_id, stateId: parseInt(e.value) }))
-        } else {
-            setFormData(prev => ({ ...prev, state_id: 0 }))
-            setCityOptions([])
-        }
-    }
     useEffect(() => {
-
         const isValid = Object.values(errorMessages).some(message => message !== '');
         setIsFormValid(!isValid);
-        console.log('Error Messages:', errorMessages);
-        console.log('isFormValid:', !isValid);
-        if(isValid){
+        if (isValid) {
             setValidationMessage("Please fill all the required fields.");
         }
 
     }, [errorMessages]);
 
-    const handleVendorSubmit = (value: any) => {
-        dispatch(storeVendorType({
-            name: value.name,
-            description: value.description,
-            is_active: value.is_active
-        }))
-    }
-
-    const handleAddressRowDelete = (index: number) => {
-        const newAddresses = vendorAddresses.filter((address, i) => i !== index);
-        setVendorAddresses(newAddresses);
-    }
-
-    const handleRepresentativeRowDelete = (index: number) => {
-        const newVendorRepresentatives = vendorRepresentatives.filter((address, i) => i !== index);
-        setVendorRepresentatives(newVendorRepresentatives);
-    }
-
-    const handleRemoveBank = (index: number) => {
-        const newVendorBankAccounts = vendorBankAccounts.filter((address, i) => i !== index);
-        setVendorBankAccounts(newVendorBankAccounts);
+    const handleRemoveRow = (type: string, index: number) => {
+        if (type === 'address') {
+            setVendorAddresses(vendorAddresses.filter((_, i) => i !== index));
+        } else if (type === 'representative') {
+            setVendorRepresentatives(vendorRepresentatives.filter((_, i) => i !== index));
+        } else if (type === 'bank') {
+            setVendorBankAccounts(vendorBankAccounts.filter((_, i) => i !== index));
+        }
     }
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-         // Validation checks
-    if (!formData.vendor_number || !formData.name || !formData.vendor_type_id || !formData.opening_balance || !formData.phone || !formData.email || !formData.due_in_days || !formData.tax_reg_no) {
-        setError('All fields are required.');
-        return;
-      }
 
-      if (formData.representatives.length === 0) {
-        setError('At least one representative must be added.');
-        return;
-      }
-
-      if (formData.addresses.length === 0) {
-        setError('At least one address must be added.');
-        return;
-      }
-
-      // If all validations pass, submit the form
-        setError('');
-        setFormData(prev => ({ ...prev, image: image }))
+        setFormData(prev => ({...prev, image: image}))
         setAuthToken(token)
         setContentType('multipart/form-data')
 
@@ -292,7 +256,7 @@ const VendorForm = ({ id }: IFormProps) => {
             })
         }
         if (id) {
-            dispatch(updateVendor({ id, vendorData: formFinalData }));
+            dispatch(updateVendor({id, vendorData: formFinalData}));
         } else {
             dispatch(storeVendor(formFinalData));
         }
@@ -310,7 +274,7 @@ const VendorForm = ({ id }: IFormProps) => {
     useEffect(() => {
         if (!id) {
             dispatch(generateCode(FORM_CODE_TYPE.VENDOR))
-            setImagePreview(imagePath(''));
+            setImagePreview(serverFilePath(''));
         }
         return () => {
             dispatch(clearVendorState());
@@ -320,14 +284,14 @@ const VendorForm = ({ id }: IFormProps) => {
 
     useEffect(() => {
         if (code) {
-            setFormData(prev => ({ ...prev, vendor_number: code[FORM_CODE_TYPE.VENDOR] }))
+            setFormData(prev => ({...prev, vendor_number: code[FORM_CODE_TYPE.VENDOR]}))
         }
     }, [code]);
 
     useEffect(() => {
         if (countries) {
             setCountryOptions(countries.map((country: any) => {
-                return { value: country.id, label: country.name }
+                return {value: country.id, label: country.name}
             }))
         }
     }, [countries]);
@@ -335,7 +299,7 @@ const VendorForm = ({ id }: IFormProps) => {
     useEffect(() => {
         if (states) {
             setStateOptions(states.map((state: any) => {
-                return { value: state.id, label: state.name }
+                return {value: state.id, label: state.name}
             }))
         }
     }, [states]);
@@ -343,7 +307,7 @@ const VendorForm = ({ id }: IFormProps) => {
     useEffect(() => {
         if (cities) {
             setCityOptions(cities.map((city: any) => {
-                return { value: city.id, label: city.name }
+                return {value: city.id, label: city.name}
             }))
         }
     }, [cities]);
@@ -351,46 +315,22 @@ const VendorForm = ({ id }: IFormProps) => {
     useEffect(() => {
         if (allVendorTypes) {
             setVendorTypeOptions(allVendorTypes.map((vendorType: any) => {
-                return { value: vendorType.id, label: vendorType.name }
+                return {value: vendorType.id, label: vendorType.name}
             }))
         }
     }, [allVendorTypes]);
 
     useEffect(() => {
-        if (vendorType) {
-            setVendorTypeModal(false)
+        if (!vendorTypeModal) {
             dispatch(getVendorTypes())
         }
-    }, [vendorType]);
-
-    useEffect(() => {
-        if (vendor && success) {
-            router.push('/erp/admin/vendors')
-            dispatch(clearVendorState())
-        }
-    }, [vendor, success]);
-
-    useEffect(() => {
-        if (!id) {
-            dispatch(generateCode(FORM_CODE_TYPE.RAW_MATERIAL));
-            setImagePreview(imagePath(''));
-        }
-        return () => {
-            dispatch(clearVendorState());
-        };
-    }, [id, dispatch]);
-
-    useEffect(() => {
-        if (code) {
-            setFormData(prev => ({ ...prev, item_code: code[FORM_CODE_TYPE.RAW_MATERIAL] }))
-        }
-    }, [code]);
+    }, [vendorTypeModal]);
 
     useEffect(() => {
         if (vendorDetail) {
             console.log(vendorDetail);
 
-            setImagePreview(imagePath(vendorDetail.thumbnail))
+            setImagePreview(serverFilePath(vendorDetail.thumbnail?.path))
             setFormData({
                 ...formData,
                 vendor_number: vendorDetail.vendor_number,
@@ -408,41 +348,90 @@ const VendorForm = ({ id }: IFormProps) => {
                 state_id: vendorDetail.state_id,
                 city_id: vendorDetail.city_id,
                 image: vendorDetail.image,
-                representatives: vendorDetail.representatives,
-                addresses: vendorDetail.address,
-                bank_accounts: vendorDetail.bank_accounts,
+                // representatives: vendorDetail.representatives,
+                // addresses: vendorDetail.address,
+                // bank_accounts: vendorDetail.bank_accounts,
                 is_active: vendorDetail.is_active,
 
             });
+
+            setVendorAddresses(vendorDetail.addresses.map((address: any) => {
+                return {
+                    id: address.id ? address.id : 0,
+                    address_type: address.address_type,
+                    address_type_name: address.address_type_name,
+                    country_id: address.country_id,
+                    country_name: address.country_name,
+                    state_id: address.state_id,
+                    state_name: address.state_name,
+                    city_id: address.city_id,
+                    city_name: address.city_name,
+                    address: address.address,
+                    postal_code: address.postal_code,
+                    is_active: address.is_active
+                }
+            }))
+            setVendorRepresentatives(vendorDetail.representatives.map((representative: any) => {
+                return {
+                    id: representative.id ? representative.id : 0,
+                    name: representative.name,
+                    phone: representative.phone,
+                    email: representative.email,
+                    country_id: representative.country_id,
+                    country_name: representative.country_name,
+                    state_id: representative.state_id,
+                    state_name: representative.state_name,
+                    city_id: representative.city_id,
+                    city_name: representative.city_name,
+                    address: representative.address,
+                    postal_code: representative.postal_code,
+                    is_active: representative.is_active
+                }
+            }))
+
+            setVendorBankAccounts(vendorDetail.bank_accounts.map((bankAccount: any) => {
+                return {
+                    id: bankAccount.id ? bankAccount.id : 0,
+                    bank_id: bankAccount.bank_id,
+                    bank_name: bankAccount.bank.name,
+                    currency_id: bankAccount.currency_id,
+                    currency_name: bankAccount.currency.name,
+                    currency_code: bankAccount.currency.code,
+                    account_name: bankAccount.account_name,
+                    account_number: bankAccount.account_number,
+                    iban: bankAccount.iban,
+                    is_active: bankAccount.is_active
+                }
+            }))
         } else {
-            setImagePreview(imagePath(''))
+            setImagePreview(serverFilePath(''))
         }
     }, [vendorDetail]);
 
 
     return (
         <form className="space-y-5" onSubmit={handleSubmit}>
-            {!isFormValid  && validationMessage &&
-               <Alert
-               alertType="error"
-               message={validationMessage}
-               setMessages={setValidationMessage}
-           />}
-           {vendorRepresentatives.length === 0 &&  VRepresentativeMessage &&
-           <Alert
-           alertType="error"
-           message={VRepresentativeMessage}
-           setMessages={setVRepresentativeMessage}
-           />}
-           {vendorAddresses.length === 0 &&  VAddressMessage &&
-           <Alert
-           alertType="error"
-           message={VAddressMessage}
-           setMessages={setVAddressMessage}
-           />}
+            {!isFormValid && validationMessage &&
+                <Alert
+                    alertType="error"
+                    message={validationMessage}
+                    setMessages={setValidationMessage}
+                />}
+            {vendorRepresentatives.length === 0 && VRepresentativeMessage &&
+                <Alert
+                    alertType="error"
+                    message={VRepresentativeMessage}
+                    setMessages={setVRepresentativeMessage}
+                />}
+            {vendorAddresses.length === 0 && VAddressMessage &&
+                <Alert
+                    alertType="error"
+                    message={VAddressMessage}
+                    setMessages={setVAddressMessage}
+                />}
 
             <div className="flex justify-center items-center">
-                <ImageUploader image={image} setImage={setImage} existingImage={imagePreview} />
+                <ImageUploader image={image} setImage={setImage} existingImage={imagePreview}/>
             </div>
             <div className="flex justify-start flex-col items-start space-y-3">
                 <div className='flex justify-center items-end gap-2 w-full md:w-1/3'>
@@ -453,30 +442,12 @@ const VendorForm = ({ id }: IFormProps) => {
                         options={vendorTypeOptions}
                         value={formData.vendor_type_id}
                         required={true}
-                        errorMessage={ errorMessages.vendor_type_id}
-                        onChange={(e: any,required:any) => {
-                            if (e && e.value && typeof e !== 'undefined') {
-                                setFormData(prev => ({ ...prev, vendor_type_id: e.value }))
-                                if (required) {
-                                    setErrorMessages({ ...errorMessages, vendor_type_id: '' });
-                                }
-                            } else {
-                                setFormData(prev => ({ ...prev, vendor_type_id: 0 }))
-                                if (required) {
-                                    setErrorMessages({ ...errorMessages, vendor_type_id: 'This field is required.'});
-                                }
-                            }
-                        }}
+                        errorMessage={errorMessages.vendor_type_id}
+                        onChange={(e: any) => handleChange('vendor_type_id', e, true)}
                     />
                     <Button
                         type={ButtonType.button}
-                        text={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                            className="h-5 w-5 ltr:mr-2 rtl:ml-2"
-                            fill="none">
-                            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
-                            <path d="M15 12L12 12M12 12L9 12M12 12L12 9M12 12L12 15" stroke="currentColor"
-                                strokeWidth="1.5" strokeLinecap="round" />
-                        </svg>}
+                        text={getIcon(IconType.add)}
                         variant={ButtonVariant.primary}
                         onClick={() => setVendorTypeModal(true)}
                     />
@@ -488,12 +459,10 @@ const VendorForm = ({ id }: IFormProps) => {
                     type='text'
                     name='vendor_number'
                     value={formData.vendor_number}
-                    onChange={handleChange}
+                    onChange={(e: any) => handleChange(e.target.name, e.target.value, e.target.required)}
                     placeholder="Enter Vendor Code"
                     isMasked={false}
                     disabled={true}
-                    required={true}
-                    // errorMessage={errorMessages.vendor_number}
                 />
 
                 <Input
@@ -502,10 +471,10 @@ const VendorForm = ({ id }: IFormProps) => {
                     type='text'
                     name='name'
                     value={formData.name}
-                    onChange={handleChange}
+                    onChange={(e: any) => handleChange(e.target.name, e.target.value, e.target.required)}
                     placeholder="Enter Vendor Name"
                     isMasked={false}
-                    styles={{ height: 45 }}
+                    styles={{height: 45}}
                     required={true}
                     errorMessage={errorMessages.name}
                 />
@@ -517,7 +486,7 @@ const VendorForm = ({ id }: IFormProps) => {
                         type='number'
                         name='opening_balance'
                         value={formData.opening_balance.toString()}
-                        onChange={handleChange}
+                        onChange={(e: any) => handleChange(e.target.name, e.target.value, e.target.required)}
                         placeholder="Enter Opening Balance"
                         isMasked={false}
                         required={true}
@@ -530,7 +499,7 @@ const VendorForm = ({ id }: IFormProps) => {
                         type='text'
                         name='phone'
                         value={formData.phone}
-                        onChange={handleChange}
+                        onChange={(e: any) => handleChange(e.target.name, e.target.value, e.target.required)}
                         placeholder={MaskConfig.phone.placeholder}
                         isMasked={true}
                         maskPattern={MaskConfig.phone.pattern}
@@ -544,7 +513,7 @@ const VendorForm = ({ id }: IFormProps) => {
                         type='email'
                         name='email'
                         value={formData.email}
-                        onChange={handleChange}
+                        onChange={(e: any) => handleChange(e.target.name, e.target.value, e.target.required)}
                         placeholder="Enter email address"
                         isMasked={false}
                         required={true}
@@ -559,7 +528,7 @@ const VendorForm = ({ id }: IFormProps) => {
                         type='text'
                         name='due_in_days'
                         value={formData.due_in_days.toString()}
-                        onChange={handleChange}
+                        onChange={(e: any) => handleChange(e.target.name, e.target.value, e.target.required)}
                         placeholder="Enter due in days"
                         isMasked={false}
                         required={true}
@@ -572,7 +541,7 @@ const VendorForm = ({ id }: IFormProps) => {
                         type='text'
                         name='website_url'
                         value={formData.website_url}
-                        onChange={handleChange}
+                        onChange={(e: any) => handleChange(e.target.name, e.target.value, e.target.required)}
                         placeholder="Enter Vendor Website"
                         isMasked={false}
                         required={true}
@@ -585,7 +554,7 @@ const VendorForm = ({ id }: IFormProps) => {
                         type='text'
                         name='tax_reg_no'
                         value={formData.tax_reg_no}
-                        onChange={handleChange}
+                        onChange={(e: any) => handleChange(e.target.name, e.target.value, e.target.required)}
                         placeholder="Enter tax regiration no"
                         isMasked={false}
                         required={true}
@@ -601,9 +570,7 @@ const VendorForm = ({ id }: IFormProps) => {
                         name='country_id'
                         options={countryOptions}
                         value={formData.country_id}
-                        onChange={(e: any) => handleCountryChange(e)}
-                        // required={true}
-                        // errorMessage={errorMessages.country_id}
+                        onChange={(e: any) => handleChange('country_id', e, false)}
                     />
 
                     <Dropdown
@@ -612,32 +579,16 @@ const VendorForm = ({ id }: IFormProps) => {
                         name='state_id'
                         options={stateOptions}
                         value={formData.state_id}
-                        onChange={(e: any) => handleStateChange(e)}
-                        // required={true}
-                        // errorMessage={errorMessages.state_id}
+                        onChange={(e: any) => handleChange('state_id', e, false)}
                     />
 
                     <Dropdown
                         divClasses='w-full'
                         label='City'
                         name='city_id'
-                        options={stateOptions}
+                        options={cityOptions}
                         value={formData.city_id}
-                        onChange={(e: any,required:any) => {
-                            if (e && e.value && typeof e !== 'undefined') {
-                                setFormData(prev => ({ ...prev, city_id: e.value }))
-                                // if (required) {
-                                //     setErrorMessages({ ...errorMessages, city_id: '' });
-                                // }
-                            } else {
-                                setFormData(prev => ({ ...prev, city_id: 0 }))
-                                // if (required) {
-                                //     setErrorMessages({ ...errorMessages, city_id: 'This field is required.'});
-                                // }
-                            }
-                        }}
-                        // required={true}
-                        // errorMessage={errorMessages.city_id}
+                        onChange={(e: any) => handleChange('city_id', e, false)}
                     />
                 </div>
                 <div className="flex flex-col md:flex-row gap-3 w-full">
@@ -647,7 +598,7 @@ const VendorForm = ({ id }: IFormProps) => {
                         type='text'
                         name='postal_code'
                         value={formData.postal_code}
-                        onChange={handleChange}
+                        onChange={(e: any) => handleChange(e.target.name, e.target.value, e.target.required)}
                         placeholder="Enter postal code"
                         isMasked={false}
                         required={true}
@@ -660,7 +611,7 @@ const VendorForm = ({ id }: IFormProps) => {
                         type='text'
                         name='address'
                         value={formData.address}
-                        onChange={handleChange}
+                        onChange={(e: any) => handleChange(e.target.name, e.target.value, e.target.required)}
                         placeholder="Enter address"
                         isMasked={false}
                         required={true}
@@ -681,40 +632,39 @@ const VendorForm = ({ id }: IFormProps) => {
                     </div>
                     <table>
                         <thead>
-                            <tr>
-                                <th>Phone</th>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Country</th>
-                                <th>State</th>
-                                <th>City</th>
-                                <th>Address</th>
-                                <th>Postal Code</th>
-                                <th>Action</th>
-                            </tr>
+                        <tr>
+                            <th>Phone</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Country</th>
+                            <th>State</th>
+                            <th>City</th>
+                            <th>Address</th>
+                            <th>Postal Code</th>
+                            <th>Action</th>
+                        </tr>
                         </thead>
                         <tbody>
-                            {vendorRepresentatives.map((representative, index) => (
-                                <tr key={index}>
-                                    <td>{representative.phone}</td>
-                                    <td>{representative.name}</td>
-                                    <td>{representative.email}</td>
-                                    <td>{representative.country_name}</td>
-                                    <td>{representative.state_name}</td>
-                                    <td>{representative.city_name}</td>
-                                    <td>{representative.address}</td>
-                                    <td>{representative.postal_code}</td>
-                                    <td>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleRepresentativeRowDelete(index)}
-                                            className="btn btn-outline-danger btn-sm"
-                                        >
-                                            Delete
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
+                        {vendorRepresentatives.map((representative, index) => (
+                            <tr key={index}>
+                                <td>{representative.phone}</td>
+                                <td>{representative.name}</td>
+                                <td>{representative.email}</td>
+                                <td>{representative.country_name}</td>
+                                <td>{representative.state_name}</td>
+                                <td>{representative.city_name}</td>
+                                <td>{representative.address}</td>
+                                <td>{representative.postal_code}</td>
+                                <td>
+                                    <IconButton
+                                        icon={IconType.delete}
+                                        color={ButtonVariant.danger}
+                                        tooltip="Delete"
+                                        onClick={() => handleRemoveRow('representative', index)}
+                                    />
+                                </td>
+                            </tr>
+                        ))}
                         </tbody>
                     </table>
                 </div>
@@ -732,36 +682,35 @@ const VendorForm = ({ id }: IFormProps) => {
                     </div>
                     <table>
                         <thead>
-                            <tr>
-                                <th>Address Type</th>
-                                <th>Country</th>
-                                <th>State</th>
-                                <th>City</th>
-                                <th>Address</th>
-                                <th>Postal Code</th>
-                                <th>Action</th>
-                            </tr>
+                        <tr>
+                            <th>Address Type</th>
+                            <th>Country</th>
+                            <th>State</th>
+                            <th>City</th>
+                            <th>Address</th>
+                            <th>Postal Code</th>
+                            <th>Action</th>
+                        </tr>
                         </thead>
                         <tbody>
-                            {vendorAddresses.map((address, index) => (
-                                <tr key={index}>
-                                    <td>{address.address_type_name}</td>
-                                    <td>{address.country_name}</td>
-                                    <td>{address.state_name}</td>
-                                    <td>{address.city_name}</td>
-                                    <td>{address.address}</td>
-                                    <td>{address.postal_code}</td>
-                                    <td>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleAddressRowDelete(index)}
-                                            className="btn btn-outline-danger btn-sm"
-                                        >
-                                            Delete
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
+                        {vendorAddresses.map((address, index) => (
+                            <tr key={index}>
+                                <td>{address.address_type_name}</td>
+                                <td>{address.country_name}</td>
+                                <td>{address.state_name}</td>
+                                <td>{address.city_name}</td>
+                                <td>{address.address}</td>
+                                <td>{address.postal_code}</td>
+                                <td>
+                                    <IconButton
+                                        icon={IconType.delete}
+                                        color={ButtonVariant.danger}
+                                        tooltip="Delete"
+                                        onClick={() => handleRemoveRow('address', index)}
+                                    />
+                                </td>
+                            </tr>
+                        ))}
                         </tbody>
                     </table>
                 </div>
@@ -779,82 +728,82 @@ const VendorForm = ({ id }: IFormProps) => {
                     </div>
                     <table>
                         <thead>
-                            <tr>
-                                <th>Bank</th>
-                                <th>Account No</th>
-                                <th>Account Title</th>
-                                <th>IBAN No</th>
-                                <th>Currency</th>
-                                <th>Action</th>
-                            </tr>
+                        <tr>
+                            <th>Bank</th>
+                            <th>Account No</th>
+                            <th>Account Title</th>
+                            <th>IBAN No</th>
+                            <th>Currency</th>
+                            <th>Action</th>
+                        </tr>
                         </thead>
                         <tbody>
-                            {vendorBankAccounts.map((bankAccount, index) => (
-                                <tr key={index}>
-                                    <td>{bankAccount.bank_name}</td>
-                                    <td>{bankAccount.account_number}</td>
-                                    <td>{bankAccount.account_name}</td>
-                                    <td>{bankAccount.iban}</td>
-                                    <td>
-                                        {
-                                            bankAccount.currency_name + ' (' + bankAccount.currency_code + ')'
-                                        }
-                                    </td>
-                                    <td>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleRemoveBank(index)}
-                                            className="btn btn-outline-danger btn-sm"
-                                        >
-                                            Delete
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
+                        {vendorBankAccounts.map((bankAccount, index) => (
+                            <tr key={index}>
+                                <td>{bankAccount.bank_name}</td>
+                                <td>{bankAccount.account_number}</td>
+                                <td>{bankAccount.account_name}</td>
+                                <td>{bankAccount.iban}</td>
+                                <td>
+                                    {bankAccount.currency_name + ' (' + bankAccount.currency_code + ')'}
+                                </td>
+                                <td>
+                                    <IconButton
+                                        icon={IconType.delete}
+                                        color={ButtonVariant.danger}
+                                        tooltip="Delete"
+                                        onClick={() => handleRemoveRow('bank', index)}
+                                    />
+                                </td>
+                            </tr>
+                        ))}
                         </tbody>
                     </table>
                 </div>
 
                 <div className="w-full">
-                    {isFormValid && vendorRepresentatives.length > 0 && vendorAddresses.length > 0 && ( <button
-                        type="submit"
-                        className="btn btn-primary"
+                    <Button
+                        type={ButtonType.submit}
                         disabled={loading}
-                    >
-                        {loading ? 'Loading...' : id ? 'Update Vendor' : 'Save Vendor'}
-                    </button>)}
+                        text={loading ? 'Loading...' : id ? 'Update Vendor' : 'Save Vendor'}
+                        variant={ButtonVariant.primary}
+                    />
                 </div>
+
+                <VendorTypeFormModal
+                    modalOpen={vendorTypeModal}
+                    setModalOpen={setVendorTypeModal}
+                />
+
+                <VendorAddressModal
+                    modalOpen={vendorAddressModal}
+                    setModalOpen={setVendorAddressModal}
+                    handleSubmit={(value) => {
+                        setVendorAddresses([...vendorAddresses, {id: 0, ...value}])
+                        setVendorAddressModal(false)
+                    }}
+                />
+
+                <VendorRepresentativeModal
+                    modalOpen={vendorRepresentativeModal}
+                    setModalOpen={setVendorRepresentativeModal}
+                    modalFormData={{}}
+                    handleSubmit={(value: any) => {
+                        setVendorRepresentatives([...vendorRepresentatives, {id: 0, ...value}])
+                        setVendorRepresentativeModal(false)
+                    }}
+                />
+
+                <BankDetailModal
+                    title='Vendor'
+                    modalOpen={vendorBankModal}
+                    setModalOpen={setVendorBankModal}
+                    handleSubmit={(value: any) => {
+                        setVendorBankAccounts([...vendorBankAccounts, {id: 0, ...value}])
+                        setVendorBankModal(false)
+                    }}
+                />
             </div>
-            <VendorTypeFormModal
-                modalOpen={vendorTypeModal}
-                setModalOpen={setVendorTypeModal}
-                handleSubmit={(value: any) => handleVendorSubmit(value)}
-            />
-            <VendorAddressModal
-                vendorAddressModal={vendorAddressModal}
-                setVendorAddressModal={setVendorAddressModal}
-                handleAddAddress={(value) => {
-                    setVendorAddresses([...vendorAddresses, value])
-                    setVendorAddressModal(false)
-                }}
-            />
-            <VendorRepresentativeModal
-                vendorRepresentativeModal={vendorRepresentativeModal}
-                setVendorRepresentativeModal={setVendorRepresentativeModal}
-                handleAddRepresentative={(value) => {
-                    setVendorRepresentatives([...vendorRepresentatives, value])
-                    setVendorRepresentativeModal(false)
-                }}
-            />
-            <BankDetailModal
-                title='Vendor'
-                modalOpen={vendorBankModal}
-                setModalOpen={setVendorBankModal}
-                handleSubmit={(value: any) => {
-                    setVendorBankAccounts([...vendorBankAccounts, value])
-                    setVendorBankModal(false)
-                }}
-            />
         </form>
     );
 };

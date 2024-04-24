@@ -105,9 +105,8 @@ export const updateEmployee = createAsyncThunk(
     'employees/update',
     async (data:any, thunkAPI) => {
         try {
-            const {id, rawProductData} = data
-            console.log(id, rawProductData)
-            const response = await API.post('/employee/update/'+id, rawProductData);
+            const {id, employeeData} = data
+            const response = await API.post('/employee/update/'+id, employeeData);
             return response.data;
         } catch (error:any) {
             const message =

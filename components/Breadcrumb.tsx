@@ -7,7 +7,7 @@ interface BreadcrumbProps {
 
 const Breadcrumb = ({items}: BreadcrumbProps) => {
     return (
-        <ul className="flex space-x-2 rtl:space-x-reverse">
+        <ul className="md:flex space-x-2 rtl:space-x-reverse hidden">
             {items.map((item, index) => (
                 <li key={index} className={index !== 0 ? "before:content-['/'] ltr:before:mr-2 rtl:before:ml-2" : ""}>
                     {item.href !== "#" ? (

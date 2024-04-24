@@ -1,19 +1,15 @@
-import React, {FC, Fragment, useEffect, useState} from 'react';
-import {Dialog, Transition} from "@headlessui/react";
+import React, {FC, useEffect, useState} from 'react';
 import {setAuthToken} from "@/configs/api.config";
 import {useDispatch, useSelector} from "react-redux";
 import {ThunkDispatch} from "redux-thunk";
 import {IRootState} from "@/store";
 import {AnyAction} from "redux";
-import Select from "react-select";
 import {clearLocationState, getCities, getCountries, getStates} from "@/store/slices/locationSlice";
 import {MaskConfig} from "@/configs/mask.config";
 import MaskedInput from "react-text-mask";
 import Modal from "@/components/Modal";
 import {Input} from '@/components/form/Input';
-import { errorMonitor } from 'events';
 import {Dropdown} from '@/components/form/Dropdown';
-import Alert from '@/components/Alert';
 
 interface IProps {
     modalOpen: boolean;
@@ -23,11 +19,11 @@ interface IProps {
 }
 
 const BankFormModal: FC<IProps> = ({
-                                                   modalOpen,
-                                                   setModalOpen,
-                                                   handleSubmit,
-                                                   modalFormData
-                                               }) => {
+                                       modalOpen,
+                                       setModalOpen,
+                                       handleSubmit,
+                                       modalFormData
+                                   }) => {
     const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
     const {token} = useSelector((state: IRootState) => state.user);
     const {countries, states, cities} = useSelector((state: IRootState) => state.location);
@@ -47,12 +43,6 @@ const BankFormModal: FC<IProps> = ({
         address: '',
         is_active: true,
     });
-    // const [errorMessages, setErrorMessages] = useState({
-    //     name: "This field is required",
-    //     // country_id: "This field is required",
-    //     // state_id: "This field is required",
-    //     // city_id: "This field is required",
-    // })
     const [isFormValid, setIsFormValid] = useState<boolean>(false);
     const [validationMessage, setValidationMessage] = useState("");
     const [countryOptions, setCountryOptions] = useState([]);
@@ -60,7 +50,7 @@ const BankFormModal: FC<IProps> = ({
     const [cityOptions, setCityOptions] = useState([]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const {name, value,required} = e.target;
+        const {name, value, required} = e.target;
         setFormData((prevFormData: any) => {
             return {...prevFormData, [name]: value};
         });
@@ -75,7 +65,7 @@ const BankFormModal: FC<IProps> = ({
     };
 
     const handleCountryChange = (e: any) => {
-        const { name, value,required } = e.target;
+        const {name, value, required} = e.target;
         if (e && e.value && typeof e !== 'undefined') {
             setFormData((prev: any) => ({...prev, country_id: e ? e.value : 0, country_name: e ? e.label : ''}))
             dispatch(getStates(parseInt(e.value)))
@@ -90,7 +80,7 @@ const BankFormModal: FC<IProps> = ({
     }
 
     const handleStateChange = (e: any) => {
-        const { name, value,required } = e.target;
+        const {name, value, required} = e.target;
         if (e && e.value && typeof e !== 'undefined') {
             setFormData((prev: any) => ({...prev, state_id: e ? e.value : 0, state_name: e ? e.label : ''}))
             dispatch(getCities({countryId: formData.country_id, stateId: parseInt(e.value)}))
@@ -185,23 +175,23 @@ const BankFormModal: FC<IProps> = ({
             }
         >
             {/* {!isFormValid  && validationMessage &&
-                                      <Alert 
-                                       alertType="error" 
-                                       message={validationMessage} 
-                                       setMessages={setValidationMessage} 
+                                      <Alert
+                                       alertType="error"
+                                       message={validationMessage}
+                                       setMessages={setValidationMessage}
                                        />} */}
             <div className="w-full">
                 {/* <label htmlFor="name">Bank Name</label> */}
-            <Input 
-                 label='Bank Name'
-                 type="text" 
-                 name="name" 
-                 placeholder="Enter Bank Name"
-                 isMasked={false}
-                 value={formData.name} onChange={handleChange}
-                //  required={true}
-                //  errorMessage={errorMessages.name}
-            />
+                <Input
+                    label='Bank Name'
+                    type="text"
+                    name="name"
+                    placeholder="Enter Bank Name"
+                    isMasked={false}
+                    value={formData.name} onChange={handleChange}
+                    //  required={true}
+                    //  errorMessage={errorMessages.name}
+                />
             </div>
             <div className="w-full">
                 <label htmlFor="phone">Bank Phone (optional)</label>
@@ -231,70 +221,70 @@ const BankFormModal: FC<IProps> = ({
             <div className="flex flex-col md:flex-row gap-3 w-full">
                 <div className="w-full">
                     {/* <label htmlFor="country_id">Country</label> */}
-                                        <Dropdown
-                                            divClasses='w-full'
-                                            label='Country'
-                                            name='country_id'
-                                            options={countryOptions}
-                                            value={formData.country_id}
-                                            onChange={(e: any) => handleCountryChange(e)}
-                                            // required={true}
-                                            // errorMessage={errorMessages.country_id}
-                                        />
+                    <Dropdown
+                        divClasses='w-full'
+                        label='Country'
+                        name='country_id'
+                        options={countryOptions}
+                        value={formData.country_id}
+                        onChange={(e: any) => handleCountryChange(e)}
+                        // required={true}
+                        // errorMessage={errorMessages.country_id}
+                    />
                 </div>
                 <div className="w-full">
                     {/* <label htmlFor="state_id">State</label> */}
-                                        <Dropdown
-                                            divClasses='w-full'
-                                            label='State'
-                                            name='state_id'
-                                            options={stateOptions}
-                                            value={formData.state_id}
-                                            onChange={(e: any) => handleStateChange(e)}
-                                            // required={true}
-                                            // errorMessage={errorMessages.state_id}
-                                        />
+                    <Dropdown
+                        divClasses='w-full'
+                        label='State'
+                        name='state_id'
+                        options={stateOptions}
+                        value={formData.state_id}
+                        onChange={(e: any) => handleStateChange(e)}
+                        // required={true}
+                        // errorMessage={errorMessages.state_id}
+                    />
                 </div>
 
             </div>
             <div className="flex flex-col md:flex-row gap-3 w-full">
                 <div className="w-full">
                     {/* <label htmlFor="city_id">City</label> */}
-                                        <Dropdown
-                                            divClasses='w-full'
-                                            label='City'
-                                            name='city_id'
-                                            options={stateOptions}
-                                            value={formData.city_id}
-                                            onChange={(e: any) => {
-                                                if (e) {
-                                                    setFormData((prev: any) => ({
-                                                        ...prev,
-                                                        city_id: e.value,
-                                                        city_name: e.label
-                                                    }));
-                                                } else {
-                                                    setFormData((prev: any) => ({
-                                                        ...prev,
-                                                        city_id: 0,
-                                                        city_name: ''
-                                                    }));
-                                                }
-                                            
-                                                // Check for required field validation
-                                                // const { name, value, required } = e.target;
-                                                // if (required) {
-                                                //     if (!value) {
-                                                //         setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
-                                                //     } else {
-                                                //         setErrorMessages({ ...errorMessages, [name]: '' });
-                                                //     }
-                                                // }
-                                            }}
-                                            
-                                            // required={true}
-                                            // errorMessage={errorMessages.city_id}
-                                        />
+                    <Dropdown
+                        divClasses='w-full'
+                        label='City'
+                        name='city_id'
+                        options={stateOptions}
+                        value={formData.city_id}
+                        onChange={(e: any) => {
+                            if (e) {
+                                setFormData((prev: any) => ({
+                                    ...prev,
+                                    city_id: e.value,
+                                    city_name: e.label
+                                }));
+                            } else {
+                                setFormData((prev: any) => ({
+                                    ...prev,
+                                    city_id: 0,
+                                    city_name: ''
+                                }));
+                            }
+
+                            // Check for required field validation
+                            // const { name, value, required } = e.target;
+                            // if (required) {
+                            //     if (!value) {
+                            //         setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
+                            //     } else {
+                            //         setErrorMessages({ ...errorMessages, [name]: '' });
+                            //     }
+                            // }
+                        }}
+
+                        // required={true}
+                        // errorMessage={errorMessages.city_id}
+                    />
                 </div>
                 <div className="w-full">
                     <label htmlFor="postal_code">Bank Postal Code (optional)</label>

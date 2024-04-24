@@ -8,7 +8,7 @@ interface IProps {
     label: string;
     type: string;
     name: string;
-    value: string;
+    value?: string;
     placeholder?: string;
     readonly?: boolean;
     required?: boolean;
@@ -18,6 +18,7 @@ interface IProps {
     isMasked: boolean;
     maskPattern?: any[];
     styles?: any;
+    className?: string;
 }
 
 export const Input: FC<IProps> = ({
@@ -34,7 +35,8 @@ export const Input: FC<IProps> = ({
                                       readonly = false,
                                       required = false,
                                       disabled = false,
-                                      styles
+                                      styles,
+                                      className
                                   }) => {
     return (
         <div className={divClasses}>
@@ -87,7 +89,7 @@ export const Input: FC<IProps> = ({
                             value={value}
                             onChange={onChange}
                             placeholder={placeholder}
-                            className={`form-input ${errorMessage ? 'border-red-500' : ''}`}
+                            className={`form-input ${className} ${errorMessage ? 'border-red-500' : ''}`}
                             disabled={disabled}
                             required={required}
                             readOnly={readonly}

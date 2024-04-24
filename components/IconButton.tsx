@@ -15,6 +15,17 @@ interface IProps {
     disabled?: boolean;
 }
 
+const arePropsEqual = (prevProps:any, nextProps:any) => {
+    // Implement a custom comparison of all props that might change
+    // For example:
+    return prevProps.icon === nextProps.icon &&
+        prevProps.color === nextProps.color &&
+        prevProps.disabled === nextProps.disabled &&
+        prevProps.classes === nextProps.classes &&
+        prevProps.link === nextProps.link &&
+        prevProps.tooltip === nextProps.tooltip;
+}
+
 const IconButton: FC<IProps> = ({
                                     icon,
                                     color,
@@ -22,8 +33,10 @@ const IconButton: FC<IProps> = ({
                                     classes = '',
                                     link,
                                     tooltip,
-                                    disabled
+                                    disabled=false
                                 }) => {
+    // console.log("icon button refreshing")
+
     const WithTooltip = ({children, tooltip}: { children: any; tooltip: string }) => (
         <Tippy content={tooltip}>
             <span>{children}</span>
@@ -65,4 +78,7 @@ const IconButton: FC<IProps> = ({
     );
 };
 
+// const MemoizedIconButton = React.memo(IconButton, arePropsEqual);
+
+// export default MemoizedIconButton;
 export default IconButton;

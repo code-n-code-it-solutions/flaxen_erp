@@ -1,11 +1,8 @@
 import React, {useEffect, useState} from 'react';
 import ImageUploader from "@/components/form/ImageUploader";
-import {useDispatch, useSelector} from "react-redux";
-import {IRootState} from "@/store";
+import {useAppDispatch, useAppSelector} from "@/store";
 import {getUnits} from "@/store/slices/unitSlice";
 import {clearRawProductState, storeRawProduct, updateRawProduct} from "@/store/slices/rawProductSlice";
-import {ThunkDispatch} from "redux-thunk";
-import {AnyAction} from "redux";
 import {setAuthToken, setContentType} from "@/configs/api.config";
 import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
 import {ButtonType, ButtonVariant, FORM_CODE_TYPE} from "@/utils/enums";
@@ -13,8 +10,7 @@ import {Dropdown} from "@/components/form/Dropdown";
 import {Input} from "@/components/form/Input";
 import Textarea from "@/components/form/Textarea";
 import Button from "@/components/Button";
-import {imagePath} from "@/utils/helper";
-import {router} from 'next/client';
+import {serverFilePath} from "@/utils/helper";
 import Alert from "@/components/Alert";
 
 interface IFormData {
@@ -39,11 +35,11 @@ interface IFormProps {
 }
 
 const ProductForm = ({id}: IFormProps) => {
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
-    const {units} = useSelector((state: IRootState) => state.unit);
-    const {code} = useSelector((state: IRootState) => state.util);
-    const {loading, rawProductDetail} = useSelector((state: IRootState) => state.rawProduct);
-    const {token} = useSelector((state: IRootState) => state.user);
+    const dispatch = useAppDispatch();
+    const {units} = useAppSelector(state => state.unit);
+    const {code} = useAppSelector(state => state.util);
+    const {loading, rawProductDetail} = useAppSelector((state) => state.rawProduct);
+    const {token} = useAppSelector(state => state.user);
     const [image, setImage] = useState<File | null>(null);
     const [isFormValid, setIsFormValid] = useState<boolean>(false)
     const [errorMessages, setErrorMessages] = useState<any>({})
@@ -82,35 +78,50 @@ const ProductForm = ({id}: IFormProps) => {
         {value: 'packing-material', label: 'Packing Material'},
     ]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const {name, value, required} = e.target;
-        setFormData((prevFormData) => {
-            // Start with the current form data.
-            let updatedFormData = {...prevFormData, [name]: value};
-
-            // Calculate the new values based on the change.
-            if (name === 'opening_stock') {
-                const openingStock = Number(value);
-                updatedFormData.opening_stock_total_balance = openingStock * prevFormData.opening_stock_unit_balance;
-            } else if (name === 'opening_stock_unit_balance') {
-                const openingStockUnitBalance = Number(value);
-                updatedFormData.opening_stock_total_balance = prevFormData.opening_stock * openingStockUnitBalance;
-            }
-
-            return updatedFormData;
-        });
+    const handleChange = (name: string, value: any, required: boolean) => {
 
         if (required) {
-            if (!value) {
+            if (!value || value == '0') {
                 setErrorMessages({...errorMessages, [name]: "This is required"})
+                return
             } else {
-                setErrorMessages({...errorMessages, [name]: ""});
+                setErrorMessages((prev: any) => {
+                    delete prev[name];
+                    return prev;
+                });
             }
         }
-        if (name === 'opening_stock' || name === 'opening_stock_unit_balance') {
-            if (value == '0') {
-                setErrorMessages({...errorMessages, [name]: 'This field is required.'});
-            }
+
+        switch (name) {
+            case 'product_type':
+            case 'unit_id':
+            case 'valuation_method':
+            case 'sub_unit_id':
+                if (value && typeof value !== 'undefined') {
+                    setFormData((prevFormData) => ({...prevFormData, [name]: value.value}));
+                } else {
+                    setFormData((prevFormData) => ({...prevFormData, [name]: ''}));
+                }
+                break;
+            case 'opening_stock':
+                const openingStock = Number(value);
+                setFormData((prevFormData) => ({
+                    ...prevFormData,
+                    opening_stock: openingStock,
+                    opening_stock_total_balance: openingStock * (prevFormData.opening_stock_unit_balance ?? 0)
+                }));
+                break
+            case 'opening_stock_unit_balance':
+                const openingStockUnitBalance = Number(value);
+                setFormData((prevFormData) => ({
+                    ...prevFormData,
+                    opening_stock_unit_balance: openingStockUnitBalance,
+                    opening_stock_total_balance: (prevFormData.opening_stock ?? 0) * openingStockUnitBalance
+                }));
+                break
+            default:
+                setFormData((prevFormData) => ({...prevFormData, [name]: value}));
+                break
         }
     };
 
@@ -128,10 +139,6 @@ const ProductForm = ({id}: IFormProps) => {
         setValidationMessage('')
     };
 
-    const allUnitOptions = () => {
-        dispatch(getUnits());
-    };
-
     useEffect(() => {
         dispatch(getUnits());
         dispatch(clearUtilState());
@@ -142,7 +149,7 @@ const ProductForm = ({id}: IFormProps) => {
     useEffect(() => {
         if (!id) {
             dispatch(generateCode(FORM_CODE_TYPE.RAW_MATERIAL));
-            setImagePreview(imagePath(''));
+            setImagePreview(serverFilePath(''));
         }
         return () => {
             dispatch(clearRawProductState());
@@ -161,9 +168,10 @@ const ProductForm = ({id}: IFormProps) => {
 
     useEffect(() => {
         if (rawProductDetail) {
-            setImagePreview(imagePath(rawProductDetail.thumbnail));
+            setImagePreview(serverFilePath(rawProductDetail.thumbnail?.path));
             setFormData({
                 ...formData,
+                product_type: rawProductDetail.product_type,
                 item_code: rawProductDetail.item_code,
                 title: rawProductDetail.title,
                 unit_id: rawProductDetail.unit_id,
@@ -178,7 +186,7 @@ const ProductForm = ({id}: IFormProps) => {
                 sale_description: rawProductDetail.sale_description,
             });
         } else {
-            setImagePreview(imagePath(''));
+            setImagePreview(serverFilePath(''));
         }
     }, [rawProductDetail]);
 
@@ -196,8 +204,6 @@ const ProductForm = ({id}: IFormProps) => {
     useEffect(() => {
         const isValid = Object.values(errorMessages).some(message => message !== '');
         setIsFormValid(!isValid);
-        // console.log('Error Messages:', errorMessages);
-        // console.log('isFormValid:', !isValid);
         if (isValid) {
             setValidationMessage("Please fill all the required fields.");
         }
@@ -222,12 +228,11 @@ const ProductForm = ({id}: IFormProps) => {
                     type="text"
                     name="item_code"
                     value={formData.item_code}
-                    onChange={handleChange}
+                    onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
                     isMasked={false}
                     placeholder="Enter Item code"
                     disabled={true}
-                    required={true}
-                    // errorMessage={errorMessages?.item_code}
+                    required={false}
                 />
 
                 <Input
@@ -236,7 +241,7 @@ const ProductForm = ({id}: IFormProps) => {
                     type="text"
                     name="title"
                     value={formData.title}
-                    onChange={handleChange}
+                    onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
                     isMasked={false}
                     styles={{height: 45}}
                     required={true}
@@ -251,22 +256,7 @@ const ProductForm = ({id}: IFormProps) => {
                     name='product_type'
                     options={productTypeOptions}
                     value={formData.product_type}
-                    onChange={(e: any) => {
-                        if (e && typeof e !== 'undefined') {
-                            setFormData({
-                                ...formData,
-                                product_type: e.value
-                            })
-                            setErrorMessages({...errorMessages, product_type: ''})
-                        } else {
-                            setFormData({
-                                ...formData,
-                                product_type: ''
-                            })
-                            setErrorMessages({...errorMessages, product_type: 'Please select a Product Type.'})
-                        }
-
-                    }}
+                    onChange={(e) => handleChange('product_type', e, true)}
                     required={true}
                     errorMessage={errorMessages?.product_type}
                 />
@@ -276,21 +266,7 @@ const ProductForm = ({id}: IFormProps) => {
                     name='valuation_method'
                     options={valuationMethodOptions}
                     value={formData.valuation_method}
-                    onChange={(e: any) => {
-                        if (e && typeof e !== 'undefined') {
-                            setFormData({
-                                ...formData,
-                                valuation_method: e.value
-                            })
-                            setErrorMessages({...errorMessages, valuation_method: ''})
-                        } else {
-                            setFormData({
-                                ...formData,
-                                valuation_method: ''
-                            })
-                            setErrorMessages({...errorMessages, valuation_method: 'Valuation Method Required'})
-                        }
-                    }}
+                    onChange={(e) => handleChange('valuation_method', e, true)}
                     required={true}
                     errorMessage={errorMessages?.valuation_method}
                 />
@@ -303,21 +279,7 @@ const ProductForm = ({id}: IFormProps) => {
                     name="unit_id"
                     options={unitOptions}
                     value={formData.unit_id}
-                    onChange={(e: any, required: any) => {
-                        if (e && typeof e !== 'undefined') {
-                            setFormData({
-                                ...formData,
-                                unit_id: e.value
-                            })
-                            setErrorMessages({...errorMessages, unit_id: ''})
-                        } else {
-                            setFormData({
-                                ...formData,
-                                unit_id: ''
-                            })
-                            setErrorMessages({...errorMessages, unit_id: 'Please select a Unit.'})
-                        }
-                    }}
+                    onChange={(e) => handleChange('unit_id', e, true)}
                     required={true}
                     errorMessage={errorMessages?.unit_id}
                 />
@@ -328,22 +290,7 @@ const ProductForm = ({id}: IFormProps) => {
                     name="sub_unit_id"
                     options={subUnitOptions}
                     value={formData.sub_unit_id}
-                    onChange={(e: any, required: any) => {
-                        if (e && typeof e !== 'undefined') {
-                            setFormData({
-                                ...formData,
-                                sub_unit_id: e.value
-
-                            })
-                            setErrorMessages({...errorMessages, sub_unit_id: ''})
-                        } else {
-                            setFormData({
-                                ...formData,
-                                sub_unit_id: ''
-                            })
-                            setErrorMessages({...errorMessages, sub_unit_id: 'Please select a Unit.'})
-                        }
-                    }}
+                    onChange={(e) => handleChange('sub_unit_id', e, true)}
                     required={true}
                     errorMessage={errorMessages?.sub_unit_id}
                 />
@@ -353,7 +300,7 @@ const ProductForm = ({id}: IFormProps) => {
                     type="number"
                     name="value_per_unit"
                     value={formData.value_per_unit}
-                    onChange={handleChange}
+                    onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
                     isMasked={false}
                     placeholder="Enter weight per main unit"
                     required={true}
@@ -367,7 +314,7 @@ const ProductForm = ({id}: IFormProps) => {
                     type="number"
                     name="min_stock_level"
                     value={formData.min_stock_level}
-                    onChange={handleChange}
+                    onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
                     isMasked={false}
                     placeholder="Set min stock level"
                     required={true}
@@ -380,7 +327,7 @@ const ProductForm = ({id}: IFormProps) => {
                     type="number"
                     name="opening_stock"
                     value={formData.opening_stock.toString()}
-                    onChange={handleChange}
+                    onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
                     isMasked={false}
                     placeholder="Enter Opening Stock Count"
                     required={true}
@@ -394,7 +341,7 @@ const ProductForm = ({id}: IFormProps) => {
                         type="number"
                         name="opening_stock_unit_balance"
                         value={formData.opening_stock_unit_balance.toString()}
-                        onChange={handleChange}
+                        onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
                         isMasked={false}
                         placeholder="Enter Opening Stock Unit Balance"
                         required={true}
@@ -406,7 +353,7 @@ const ProductForm = ({id}: IFormProps) => {
                         type="number"
                         name="opening_stock_total_balance"
                         value={formData.opening_stock_total_balance.toString()}
-                        onChange={handleChange}
+                        onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
                         isMasked={false}
                         disabled={true}
                         placeholder="Enter Opening Stock Total Balance"
@@ -422,7 +369,7 @@ const ProductForm = ({id}: IFormProps) => {
                     label="Purchase Description"
                     name="purchase_description"
                     value={formData.purchase_description}
-                    onChange={handleChange}
+                    onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
                     isReactQuill={false}
                     rows={3}
                     placeholder='Enter description for purchase'
@@ -434,7 +381,7 @@ const ProductForm = ({id}: IFormProps) => {
                     label="Sale Description"
                     name="sale_description"
                     value={formData.sale_description}
-                    onChange={handleChange}
+                    onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
                     isReactQuill={false}
                     rows={3}
                     placeholder='Enter description for sales'
@@ -442,8 +389,14 @@ const ProductForm = ({id}: IFormProps) => {
                     errorMessage={errorMessages?.sale_description}
                 />
             </div>
-            {isFormValid && <Button type={ButtonType.submit} text={loading ? 'Loading...' : id ? 'Update' : 'Create'}
-                                    variant={ButtonVariant.info} disabled={loading} classes="!mt-6"/>}
+            {isFormValid && (
+                <Button
+                    type={ButtonType.submit}
+                    text={loading ? 'Loading...' : id ? 'Update' : 'Create'}
+                    variant={ButtonVariant.info}
+                    disabled={loading}
+                    classes="!mt-6"/>
+            )}
         </form>
     );
 };

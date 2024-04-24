@@ -1,9 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {setAuthToken, setContentType} from "@/configs/api.config";
-import {useDispatch, useSelector} from "react-redux";
-import {ThunkDispatch} from "redux-thunk";
-import {IRootState} from "@/store";
-import {AnyAction} from "redux";
+import {useAppDispatch, useAppSelector} from "@/store";
 import {
     clearPurchaseRequisitionState,
     storePurchaseRequest,
@@ -53,10 +50,10 @@ interface IFormProps {
 }
 
 const PurchaseRequestForm = ({id}: IFormProps) => {
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
-    const {token, user} = useSelector((state: IRootState) => state.user);
-    const {purchaseRequestDetail, loading} = useSelector((state: IRootState) => state.purchaseRequisition);
-    const {code} = useSelector((state: IRootState) => state.util);
+    const dispatch = useAppDispatch();
+    const {token, user} = useAppSelector(state => state.user);
+    const {purchaseRequestDetail, loading} = useAppSelector(state => state.purchaseRequisition);
+    const {code} = useAppSelector(state => state.util);
 
     const [showItemDetail, setShowItemDetail] = useState<any>({
         show: false,
@@ -64,6 +61,10 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
     });
     const [rawProducts, setRawProducts] = useState<IRawProduct[]>([]);
     const [serviceItems, setServiceItems] = useState<IServiceItems[]>([]);
+    const [errorMessages, setErrorMessages] = useState<any>({})
+    const [formError, setFormError] = useState<string>('')
+    const [isFormValid, setIsFormValid] = useState<boolean>(false)
+
     const [formData, setFormData] = useState<IFormData>({
         pr_title: '',
         pr_code: '',
@@ -88,39 +89,64 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
         {value: 'Service', label: 'Service'},
     ]);
 
-    const handleChange = (name: string, value: any) => {
-        setFormData(prevFormData => {
-            return {...prevFormData, [name]: value};
-        });
-    };
+    const handleChange = (name: string, value: any, required: boolean) => {
 
-    const handleRequisitionTypeChange = (e: any) => {
-
-        if (e && typeof e !== 'undefined') {
-            setFormData(prev => ({
-                ...prev,
-                type: e.value
-            }))
-            setShowItemDetail({
-                show: true,
-                type: e.value
-            })
-        } else {
-            setShowItemDetail({
-                show: false,
-                type: null
-            })
-            setFormData(prev => ({
-                ...prev,
-                type: ''
-            }))
+        if (required) {
+            if (!value) {
+                setErrorMessages((prev: any) => ({...prev, [name]: 'This field is required'}))
+                return;
+            } else {
+                setErrorMessages((prev: any) => {
+                    delete prev[name]
+                    return prev
+                })
+            }
         }
-    }
+
+        switch (name) {
+                case 'type':
+                    if (value && typeof value !== 'undefined') {
+                        setFormData(prev => ({
+                            ...prev,
+                        type: value.value
+                    }))
+                    setShowItemDetail({
+                        show: true,
+                        type: value.value
+                    })
+                } else {
+                    setShowItemDetail({
+                        show: false,
+                        type: null
+                    })
+                    setFormData(prev => ({
+                        ...prev,
+                        type: ''
+                    }))
+                }
+                break;
+            case 'status':
+                if (value && typeof value !== 'undefined') {
+                    setFormData(prev => ({
+                        ...prev,
+                        status: value.value
+                    }))
+                } else {
+                    setFormData(prev => ({
+                        ...prev,
+                        status: ''
+                    }))
+                }
+                break
+            default:
+                setFormData(prevFormData => ({...prevFormData, [name]: value}));
+                break;
+        }
+    };
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setAuthToken(token)
-        setContentType('multipart/form-data')
         dispatch(generateCode(FORM_CODE_TYPE.PURCHASE_REQUISITION))
         let finalData = {
             ...formData,
@@ -149,11 +175,9 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
                     })
                     : []
         }
-        console.log(finalData);
         if (id) {
             dispatch(updatePurchaseRequisition({id, purchaseRequestData: finalData}));
         } else {
-            // console.log(finalData)
             dispatch(storePurchaseRequest(finalData));
         }
     };
@@ -172,62 +196,6 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
     }, [])
 
     useEffect(() => {
-        // Check if purchaseRequestDetail exists and is not empty
-        if (purchaseRequestDetail && Object.keys(purchaseRequestDetail).length !== 0) {
-            const {
-                pr_title,
-                pr_code,
-                description,
-                user_id,
-                type,
-                department_id,
-                designation_id,
-                requisition_date,
-                status,
-                items
-            } = purchaseRequestDetail;
-
-            // Set the form data with the fetched requisition details
-            setFormData({
-                pr_title,
-                pr_code,
-                description,
-                user_id,
-                type,
-                department_id,
-                designation_id,
-                requisition_date,
-                status,
-                items
-            });
-
-            // Check if the requisition type is Material or Service and set corresponding state
-            if (type === 'Material') {
-                console.log(purchaseRequestDetail.items)
-                setRawProducts(purchaseRequestDetail.items.map((item: any) => ({
-                    raw_product_id: item.raw_product_id,
-                    quantity: item.quantity,
-                    unit_id: item.unit_id,
-                    unit_price: item.unit_price,
-                    sub_total: item.quantity * item.unit_price,
-                    description: item.description
-
-                }))); // Set rawProducts state with fetched items
-                setShowItemDetail({
-                    show: true,
-                    type: 'Material'
-                });
-            } else if (type === 'Service') {
-                setServiceItems(purchaseRequestDetail.items); // Set serviceItems state with fetched items
-                setShowItemDetail({
-                    show: true,
-                    type: 'Service'
-                });
-            }
-        }
-    }, [purchaseRequestDetail]); // Trigger useEffect when purchaseRequestDetail changes
-
-    useEffect(() => {
         if (code) {
             setFormData(prev => ({
                 ...prev,
@@ -236,103 +204,107 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
         }
     }, [code]);
 
-    // console.log(formData);
-
-
     return (
         <form className="space-y-5" onSubmit={handleSubmit}>
-            <div className="flex justify-start flex-col items-start space-y-3">
-                <Dropdown
-                    divClasses='w-full md:w-1/3'
-                    label='Requistion Type'
-                    name='type'
-                    options={requisitionTypeOptions}
-                    value={formData.type}
-                    onChange={(e: any) => handleRequisitionTypeChange(e)}
-                />
-                <Input
-                    divClasses='w-full md:w-1/3'
-                    label='Purchase Request Code'
-                    type='text'
-                    name='pr_code'
-                    placeholder="Enter Purchase Request Code"
-                    value={formData.pr_code}
-                    onChange={(e: any) => handleChange(e.target.name, e.target.value)}
-                    disabled={true}
-                    isMasked={false}
-                />
-
-                <Input
-                    divClasses='w-full md:w-1/3'
-                    label='Requisition Date'
-                    type='date'
-                    name='requisition_date'
-                    placeholder="Select Date"
-                    value={formData.pr_code}
-                    onChange={(e: any) => handleChange('requisition_date', e[0].toLocaleDateString())}
-                    isMasked={false}
-                />
-
-                <Dropdown
-                    divClasses='w-full md:w-1/3'
-                    label='Status'
-                    name='status_id'
-                    options={requisitionStatusOptions}
-                    value={formData.status}
-                    onChange={(e: any) => {
-                        if (e && typeof e !== 'undefined') {
-                            setFormData(prev => ({
-                                ...prev,
-                                status: e.value
-                            }))
-                        } else {
-                            setFormData(prev => ({
-                                ...prev,
-                                status: ''
-                            }))
-                        }
-                    }}
-                />
-
-                <Input
-                    divClasses='w-full md:w-1/2'
-                    label='Purchase Request Name (Optional)'
-                    type='text'
-                    name='pr_title'
-                    placeholder="Enter Purchase Request Name"
-                    value={formData.pr_title}
-                    onChange={(e: any) => handleChange(e.target.name, e.target.value)}
-                    isMasked={false}
-                    styles={{height: 45}}
-                />
-
-                <div className="table-responsive w-full">
-                    {showItemDetail.show && showItemDetail.type === 'Material' && (
-                        <RawProductItemListing
-                            rawProducts={rawProducts}
-                            setRawProducts={setRawProducts}
-                            type={RAW_PRODUCT_LIST_TYPE.PURCHASE_REQUISITION}
+            <div className="flex justify-between items-start gap-5">
+                <div className="flex justify-start flex-col items-start space-y-3 w-full">
+                    <div className="flex flex-col md:flex-row justify-between items-center gap-3 w-full">
+                        <Dropdown
+                            divClasses='w-full'
+                            label='Requistion Type'
+                            name='type'
+                            options={requisitionTypeOptions}
+                            value={formData.type}
+                            onChange={(e: any) => handleChange('type', e, true)}
+                            required={true}
+                            errorMessage={errorMessages.type}
                         />
-                    )}
-
-                    {showItemDetail.show && showItemDetail.type === 'Service' && (
-                        <ServiceItemListing
-                            serviceItems={serviceItems}
-                            setServiceItems={setServiceItems}
-                            type={RAW_PRODUCT_LIST_TYPE.PURCHASE_REQUISITION}
+                        <Dropdown
+                            divClasses='w-full'
+                            label='Status'
+                            name='status'
+                            options={requisitionStatusOptions}
+                            value={formData.status}
+                            onChange={(e: any) => handleChange('status', e, true)}
+                            required={true}
+                            errorMessage={errorMessages.status}
                         />
-                    )}
+                    </div>
+                    <div className="flex flex-col md:flex-row justify-between items-center gap-3 w-full">
+                        <Input
+                            divClasses='w-full'
+                            label='Purchase Request Code'
+                            type='text'
+                            name='pr_code'
+                            placeholder="Enter Purchase Request Code"
+                            value={formData.pr_code}
+                            onChange={(e: any) => handleChange(e.target.name, e.target.value, e.target.required)}
+                            disabled={true}
+                            isMasked={false}
+                        />
 
-                </div>
+                        <Input
+                            divClasses='w-full'
+                            label='Requisition Date'
+                            type='date'
+                            name='requisition_date'
+                            placeholder="Select Date"
+                            value={formData.requisition_date}
+                            onChange={(e: any) => handleChange('requisition_date', e[0].toLocaleDateString(), true)}
+                            isMasked={false}
+                            required={true}
+                            errorMessage={errorMessages.requisition_date}
+                        />
+                    </div>
 
-                <div className="w-full">
-                    <Button
-                        type={ButtonType.submit}
-                        text={loading ? 'Loading...' : id ? 'Update Purchase Request' : 'Save Purchase Request'}
-                        variant={ButtonVariant.primary}
-                        disabled={loading}
+                    <Input
+                        divClasses='w-full'
+                        label='Purchase Request Name (Optional)'
+                        type='text'
+                        name='pr_title'
+                        placeholder="Enter Purchase Request Name"
+                        value={formData.pr_title}
+                        onChange={(e: any) => handleChange(e.target.name, e.target.value, e.target.required)}
+                        isMasked={false}
+                        styles={{height: 45}}
+                        required={true}
+                        errorMessage={errorMessages.pr_title}
                     />
                 </div>
+                <div className="w-full p-5 border rounded hidden md:block">
+                    <h1 className="font-bold text-lg mb-3">Instructions</h1>
+                    <ul className="list-inside list-decimal space-y-2">
+                        <li>Choose the type of requisition you want to create</li>
+                        <li>Fill in the required fields</li>
+                        <li>Click on the 'Add Item' button to add items to the requisition</li>
+                        <li>Click on the 'Save Purchase Request' button to save the requisition</li>
+                    </ul>
+                </div>
+            </div>
+
+            {showItemDetail.show && showItemDetail.type === 'Material' && (
+                <RawProductItemListing
+                    rawProducts={rawProducts}
+                    setRawProducts={setRawProducts}
+                    type={RAW_PRODUCT_LIST_TYPE.PURCHASE_REQUISITION}
+                />
+            )}
+
+            {showItemDetail.show && showItemDetail.type === 'Service' && (
+                <ServiceItemListing
+                    serviceItems={serviceItems}
+                    setServiceItems={setServiceItems}
+                    type={RAW_PRODUCT_LIST_TYPE.PURCHASE_REQUISITION}
+                />
+            )}
+
+            <div className="w-full">
+                <Button
+                    type={ButtonType.submit}
+                    text={loading ? 'Loading...' : id ? 'Update Purchase Request' : 'Save Purchase Request'}
+                    variant={ButtonVariant.primary}
+                    disabled={loading}
+                />
             </div>
         </form>
     );
