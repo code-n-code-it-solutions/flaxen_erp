@@ -1,26 +1,18 @@
 import React, {useEffect, useState} from 'react';
-import Swal from 'sweetalert2';
-import {useDispatch, useSelector} from 'react-redux';
 import {setPageTitle} from '@/store/slices/themeConfigSlice';
-import {ThunkDispatch} from 'redux-thunk';
-import {IRootState} from '@/store';
-import {AnyAction} from 'redux';
+import {useAppDispatch, useAppSelector} from '@/store';
 import {setAuthToken, setContentType} from '@/configs/api.config';
 import GenericTable from '@/components/GenericTable';
 import IconButton from '@/components/IconButton';
-import {ButtonSize, ButtonType, ButtonVariant, IconType} from '@/utils/enums';
-import {generatePDF, getIcon} from '@/utils/helper';
-import Preview from '@/pages/erp/inventory/fillings/preview';
-import Button from "@/components/Button";
+import {ButtonType, ButtonVariant, IconType} from '@/utils/enums';
+import {getIcon} from '@/utils/helper';
 import PageWrapper from "@/components/PageWrapper";
-import {deleteFilling, getFillings} from "@/store/slices/fillingSlice";
+import {getFillings} from "@/store/slices/fillingSlice";
 
 const Index = () => {
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
-    const {token} = useSelector((state: IRootState) => state.user);
-    const {fillings, loading, success} = useSelector((state: IRootState) => state.filling);
-    const [deleteLoading, setDeleteLoading] = useState(false);
-    const [printLoading, setPrintLoading] = useState<boolean>(false);
+    const dispatch = useAppDispatch();
+    const {token} = useAppSelector(state => state.user);
+    const {fillings, loading, success} = useAppSelector(state => state.filling);
     const [rowData, setRowData] = useState([]);
 
     const breadcrumbItems = [
@@ -38,14 +30,10 @@ const Index = () => {
         },
     ];
 
-    const getRowItems = () => {
+    useEffect(() => {
         setAuthToken(token);
         setContentType('application/json');
         dispatch(getFillings());
-    };
-
-    useEffect(() => {
-        getRowItems();
         dispatch(setPageTitle('All Fillings'));
     }, []);
 
@@ -55,66 +43,23 @@ const Index = () => {
         }
     }, [fillings]);
 
-    const colName = ['id', 'filling_code', 'production_code', 'no_of_quantity', 'filling_date', 'filling_time', 'filling_shift', 'is_active'];
-    const header = ['Id', 'Filling Code', 'Production Code', '# of Qty (KG)', 'Filling Date', 'Filling Time', 'Filling Shift', 'Status'];
-
-    const handleDelete = (id: number) => {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Are you sure?',
-            text: "You won't be able to revert this!",
-            showCancelButton: true,
-            confirmButtonText: 'Delete',
-            padding: '2em',
-            customClass: 'sweet-alerts',
-        }).then((result) => {
-            if (result.value) {
-                dispatch(deleteFilling(id));
-                setDeleteLoading(true);
-            }
-        });
-    };
-
-    useEffect(() => {
-        if (!deleteLoading) return;
-        if (success) {
-            getRowItems();
-            setDeleteLoading(false);
-            Swal.fire({
-                title: 'Deleted!',
-                text: 'Your file has been deleted.',
-                icon: 'success',
-                customClass: 'sweet-alerts',
-            });
-        } else {
-            Swal.fire({title: 'Failed!', text: 'Something went wrong.', icon: 'error', customClass: 'sweet-alerts'});
-        }
-    }, [success]);
-
     return (
         <PageWrapper
             embedLoader={true}
             breadCrumbItems={breadcrumbItems}
             loading={loading}
+            title="All Fillings"
+            buttons={[
+                {
+                    text: 'Create New',
+                    type: ButtonType.link,
+                    variant: ButtonVariant.primary,
+                    icon: IconType.add,
+                    link: '/erp/inventory/fillings/create'
+                }
+            ]}
         >
-            <div className="mb-5 flex items-center justify-between">
-                <h5 className="text-lg font-semibold dark:text-white-light">All Fillings</h5>
-                <Button
-                    type={ButtonType.link}
-                    text={
-                        <span className="flex items-center">
-                            {getIcon(IconType.add)}
-                            Add New
-                        </span>
-                    }
-                    variant={ButtonVariant.primary}
-                    link="/inventory/fillings/create"
-                    size={ButtonSize.small}
-                />
-            </div>
             <GenericTable
-                colName={colName}
-                header={header}
                 rowData={rowData}
                 loading={loading}
                 exportTitle={'all-fillings-' + Date.now()}
@@ -207,7 +152,7 @@ const Index = () => {
                                     icon={IconType.print}
                                     color={ButtonVariant.secondary}
                                     tooltip="Print"
-                                    onClick={() => generatePDF(<Preview content={row}/>, setPrintLoading)}
+                                    link={`/erp/inventory/fillings/print/${row.id}`}
                                 />
 
                                 <IconButton
@@ -216,15 +161,13 @@ const Index = () => {
                                     tooltip="View"
                                     link={`/erp/inventory/fillings/view/${row.id}`}
                                 />
-                                {row.is_active ? (
-                                    <IconButton
-                                        icon={IconType.edit}
-                                        color={ButtonVariant.primary}
-                                        tooltip="Edit"
-                                        link={`/erp/inventory/fillings/edit/${row.id}`}
-                                    />
-                                ) : <></>}
 
+                                {/*<IconButton*/}
+                                {/*    icon={IconType.edit}*/}
+                                {/*    color={ButtonVariant.primary}*/}
+                                {/*    tooltip="Edit"*/}
+                                {/*    link={`/erp/inventory/fillings/edit/${row.id}`}*/}
+                                {/*/>*/}
 
                             </div>
                         ),

@@ -3,7 +3,7 @@ import React, {useEffect, useState} from 'react';
 import {setAuthToken, setContentType} from "@/configs/api.config";
 import {useDispatch, useSelector} from "react-redux";
 import {ThunkDispatch} from "redux-thunk";
-import {IRootState} from "@/store";
+import {IRootState, useAppDispatch, useAppSelector} from "@/store";
 import {AnyAction} from "redux";
 import {
     clearPurchaseRequisitionState,
@@ -24,7 +24,7 @@ import RawProductItemListing from "@/components/listing/RawProductItemListing";
 import {Dropdown} from "@/components/form/Dropdown";
 import {Input} from "@/components/form/Input";
 import Button from "@/components/Button";
-import {getIcon, imagePath} from "@/utils/helper";
+import {getIcon, serverFilePath} from "@/utils/helper";
 import Textarea from "@/components/form/Textarea";
 
 interface IFormData {
@@ -56,16 +56,16 @@ interface IFormProps {
 }
 
 const LPOForm = ({id}: IFormProps) => {
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
-    const {token, user} = useSelector((state: IRootState) => state.user);
-    const {code} = useSelector((state: IRootState) => state.util);
-    const {purchaseRequests} = useSelector((state: IRootState) => state.purchaseRequisition);
-    const {loading} = useSelector((state: IRootState) => state.localPurchaseOrder);
-    const {allVendors, representatives} = useSelector((state: IRootState) => state.vendor);
-    const {currencies} = useSelector((state: IRootState) => state.currency);
-    const {vehicle, success, vehicles} = useSelector((state: IRootState) => state.vehicle);
-    const {employees} = useSelector((state: IRootState) => state.employee);
-    const {taxCategories} = useSelector((state: IRootState) => state.taxCategory);
+    const dispatch = useAppDispatch();
+    const {token, user} = useAppSelector(state => state.user);
+    const {code} = useAppSelector(state => state.util);
+    const {purchaseRequests} = useAppSelector(state => state.purchaseRequisition);
+    const {loading} = useAppSelector(state => state.localPurchaseOrder);
+    const {allVendors, representatives} = useAppSelector(state => state.vendor);
+    const {currencies} = useAppSelector(state => state.currency);
+    const {vehicle, success, vehicles} = useAppSelector(state => state.vehicle);
+    const {employees} = useAppSelector(state => state.employee);
+    const {taxCategories} = useAppSelector(state => state.taxCategory);
     const [showVendorDetail, setShowVendorDetail] = useState<boolean>(false);
     const [vendorDetail, setVendorDetail] = useState<any>({});
     const [rawProducts, setRawProducts] = useState<any[]>([]);
@@ -452,24 +452,6 @@ const LPOForm = ({id}: IFormProps) => {
         }
     }, [vehicles])
 
-    useEffect(() => {
-        if (employees) {
-            setReceivedByEmployeeOptions(employees.map((employee: any) => ({
-                value: employee.user.id,
-                label: employee.user.name + ' (' + employee.employee_code + ')',
-                employee: employee
-            })))
-
-            setPurchasedByEmployeeOptions(employees.map((employee: any) => ({
-                value: employee.user.id,
-                label: employee.user.name + ' (' + employee.employee_code + ')',
-                employee: employee
-            })))
-
-            console.log(receivedByEmployeeOptions, purchasedByEmployeeOptions)
-        }
-    }, [employees]);
-
     return (
         <form className="space-y-5" onSubmit={(e) => handleSubmit(e)}>
             <div className="flex justify-start flex-col items-start space-y-3">
@@ -623,7 +605,7 @@ const LPOForm = ({id}: IFormProps) => {
                             <div className="w-full" hidden={!showVehicleDetail}>
                                 <h4 className="font-bold text-lg">Vehicle Details</h4>
                                 <div className="flex flex-col gap-3 justify-center items-center">
-                                    <Image src={imagePath(vehicleDetail.thumbnail)} alt="Vehicle Image"
+                                    <Image priority={true} src={serverFilePath(vehicleDetail.thumbnail)} alt="Vehicle Image"
                                            height={100} width={100}/>
                                     <table>
                                         <thead>
@@ -757,7 +739,6 @@ const LPOForm = ({id}: IFormProps) => {
                     isReactQuill={true}
                 />
 
-                {/*<div className="table-responsive w-full">*/}
                 {showItemDetail.show && (
                     <>
                         {showItemDetail.type === 'Material'

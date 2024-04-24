@@ -82,6 +82,20 @@ export const storeVendorBill = createAsyncThunk(
     }
 );
 
+export const getVendorBillDetail = createAsyncThunk(
+    'vendor-bill/show',
+    async (id: number, thunkAPI) => {
+        try {
+            const response = await API.get('/vendor-bill/' + id);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 export const deleteVendorBill = createAsyncThunk(
     'vendor-bill/delete',
     async (id: number, thunkAPI) => {
@@ -193,6 +207,18 @@ export const vendorBillSlice = createSlice({
                 state.success = action.payload.success;
             })
             .addCase(storeBillPayments.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(getVendorBillDetail.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getVendorBillDetail.fulfilled, (state, action) => {
+                state.loading = false;
+                state.vendorBillDetail = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getVendorBillDetail.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })

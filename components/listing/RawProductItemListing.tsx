@@ -14,22 +14,6 @@ import GenericTable from "@/components/GenericTable";
 import {getIcon} from "@/utils/helper";
 import Button from "@/components/Button";
 
-interface IRawProduct {
-    type: string | 'add';
-    id: number;
-    raw_product_id: number;
-    lpo_quantity: number;
-    quantity: number;
-    unit_id: number;
-    unit_price: number;
-    total: number;
-    tax_category_id: string;
-    tax_rate: number;
-    tax_amount: number;
-    row_total: number
-    description: string;
-}
-
 interface IProps {
     rawProducts: any[];
     setRawProducts: Dispatch<SetStateAction<any[]>>;
@@ -43,43 +27,43 @@ interface Totals {
 const tableStructure = [
     {
         listingFor: RAW_PRODUCT_LIST_TYPE.PRODUCT_ASSEMBLY,
-        header: ['Product', 'Desc', 'Unit', 'Qty (KG)', 'Unit Price (KG)', 'Total'],
+        header: ['Product', 'Desc', 'Unit', 'Qty', 'Unit Price', 'Total'],
         columns: ['raw_product_id', 'description', 'unit_id', 'quantity', 'unit_price', 'sub_total'],
         numericColumns: ['quantity', 'unit_price', 'sub_total']
     },
     {
         listingFor: RAW_PRODUCT_LIST_TYPE.PRODUCTION,
-        header: ['Product', 'Desc', 'Unit', 'Unit Price (KG)', 'Qty (KG)', 'Available Qty (KG)', 'Required Qty (KG)', 'Total'],
+        header: ['Product', 'Desc', 'Unit', 'Unit Price', 'Qty', 'Available Qty', 'Required Qty', 'Total'],
         columns: ['raw_product_id', 'description', 'unit_id', 'unit_price', 'quantity', 'available_quantity', 'required_quantity', 'sub_total'],
         numericColumns: ['quantity', 'unit_price', 'available_quantity', 'required_quantity', 'sub_total']
     },
     {
         listingFor: RAW_PRODUCT_LIST_TYPE.FILLING,
-        header: ['Product', 'Desc', 'Unit', 'Unit Price (KG)', 'Qty (KG)', 'Available Qty (KG)', 'Required Qty (KG)', 'Total'],
+        header: ['Product', 'Desc', 'Unit', 'Unit Price', 'Qty', 'Available Qty', 'Required Qty', 'Total'],
         columns: ['raw_product_id', 'description', 'unit_id', 'unit_price', 'quantity', 'available_quantity', 'required_quantity', 'sub_total'],
         numericColumns: ['quantity', 'unit_price', 'available_quantity', 'required_quantity', 'sub_total']
     },
     {
         listingFor: RAW_PRODUCT_LIST_TYPE.PURCHASE_REQUISITION,
-        header: ['Product', 'Desc', 'Unit', 'Qty (KG)', 'Unit Price (KG)', 'Total'],
+        header: ['Product', 'Desc', 'Unit', 'Qty', 'Unit Price', 'Total'],
         columns: ['raw_product_id', 'description', 'unit_id', 'quantity', 'unit_price', 'sub_total'],
         numericColumns: ['quantity', 'unit_price', 'sub_total']
     },
     {
         listingFor: RAW_PRODUCT_LIST_TYPE.LOCAL_PURCHASE_ORDER,
-        header: ['Product', 'Desc', 'Unit', 'Qty (KG)', 'Unit Price (KG)', 'Sub Total', 'Tax Category', 'Tax Rate', 'Tax Amount', 'Total'],
+        header: ['Product', 'Desc', 'Unit', 'Qty', 'Unit Price', 'Sub Total', 'Tax Category', 'Tax Rate', 'Tax Amount', 'Total'],
         columns: ['raw_product_id', 'description', 'unit_id', 'quantity', 'unit_price', 'sub_total', 'tax_category_id', 'tax_rate', 'tax_amount', 'grand_total'],
         numericColumns: ['quantity', 'unit_price', 'sub_total', 'tax_rate', 'tax_amount', 'grand_total']
     },
     {
         listingFor: RAW_PRODUCT_LIST_TYPE.GOOD_RECEIVE_NOTE,
-        header: ['Product', 'Desc', 'Unit', 'Qty (KG)', 'R. Qty (KG)', 'Unit Price (KG)', 'Sub Total', 'Tax Category', 'Tax Rate', 'Tax Amount', 'Total'],
+        header: ['Product', 'Desc', 'Unit', 'Qty', 'R. Qty', 'Unit Price', 'Sub Total', 'Tax Category', 'Tax Rate', 'Tax Amount', 'Total'],
         columns: ['raw_product_id', 'description', 'unit_id', 'quantity', 'received_quantity', 'unit_price', 'sub_total', 'tax_category_id', 'tax_rate', 'tax_amount', 'grand_total'],
         numericColumns: ['quantity', 'received_quantity', 'unit_price', 'sub_total', 'tax_rate', 'tax_amount', 'grand_total']
     },
     {
         listingFor: RAW_PRODUCT_LIST_TYPE.VENDOR_BILL,
-        header: ['Product', 'Desc', 'Unit', 'Qty (KG)', 'R. Qty (KG)', 'Unit Price (KG)', 'Sub Total', 'Tax Category', 'Tax Rate', 'Tax Amount', 'Total'],
+        header: ['Product', 'Desc', 'Unit', 'Qty', 'R. Qty', 'Unit Price', 'Sub Total', 'Tax Category', 'Tax Rate', 'Tax Amount', 'Total'],
         columns: ['raw_product_id', 'description', 'unit_id', 'quantity', 'received_quantity', 'unit_price', 'sub_total', 'tax_category_id', 'tax_rate', 'tax_amount', 'grand_total'],
         numericColumns: ['quantity', 'received_quantity', 'unit_price', 'sub_total', 'tax_rate', 'tax_amount', 'grand_total']
     }
@@ -158,8 +142,9 @@ const RawProductItemListing: FC<IProps> = ({
             let rawProductOptions = allRawProducts.map((rawProduct: any) => {
                 return {
                     value: rawProduct.id,
-                    label: rawProduct.title + ' (' + rawProduct.item_code + ') - ' + rawProduct.valuation_method,
-                    unit_price: rawProduct.opening_stock_unit_balance
+                    label: rawProduct.title,
+                    unit_price: rawProduct.opening_stock_unit_balance,
+                    product: rawProducts
                 };
             })
             // console.log('rawProductOptions', rawProductOptions)
@@ -200,7 +185,15 @@ const RawProductItemListing: FC<IProps> = ({
                     table.numericColumns.includes(column)
                         ? <>{parseFloat(row[column]).toFixed(2)}</>
                         : column === 'raw_product_id'
-                            ? <>{productOptions.find((item: any) => item.value === row[column])?.label}</>
+                            ? (
+                                <span className="flex flex-col items-start justify-center gap-1">
+                                    <span
+                                        style={{fontSize: 8}}>Code: {allRawProducts?.find((item: any) => item.id === row[column])?.item_code}</span>
+                                    <span>{productOptions.find((item: any) => item.value === row[column])?.label}</span>
+                                    <span
+                                        style={{fontSize: 8}}>VM: {allRawProducts?.find((item: any) => item.id === row[column])?.valuation_method}</span>
+                                </span>
+                            )
                             : column === 'unit_id'
                                 ? <>{unitOptions.find((item: any) => item.value === row[column])?.label}</>
                                 : column === 'tax_category_id'
@@ -238,12 +231,14 @@ const RawProductItemListing: FC<IProps> = ({
                             }}
                             tooltip="Edit"
                         />
-                        <IconButton
-                            icon={IconType.delete}
-                            color={ButtonVariant.danger}
-                            onClick={() => handleRemove(index)}
-                            tooltip="Remove"
-                        />
+                        {type !== RAW_PRODUCT_LIST_TYPE.GOOD_RECEIVE_NOTE && (
+                            <IconButton
+                                icon={IconType.delete}
+                                color={ButtonVariant.danger}
+                                onClick={() => handleRemove(index)}
+                                tooltip="Remove"
+                            />
+                        )}
                     </div>
                 )
             })
@@ -272,9 +267,7 @@ const RawProductItemListing: FC<IProps> = ({
             </div>
             <GenericTable
                 isAdvanced={false}
-                colName={tableStructure.filter(table => table.listingFor === type).flatMap(table => table.columns)}
                 rowData={rawProducts.length > 0 ? rawProducts : []}
-                header={tableStructure.filter(table => table.listingFor === type).flatMap(table => table.header)}
                 loading={isAdding}
                 rowStyle={(row: any) => (theme: any) => ({backgroundColor: row.required_quantity && row.required_quantity > row.available_quantity ? theme.colors.red[4] : 'auto'})}
                 columns={tableColumns()}

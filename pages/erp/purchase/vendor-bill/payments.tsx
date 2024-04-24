@@ -1,9 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import PageWrapper from "@/components/PageWrapper";
-import {useDispatch, useSelector} from "react-redux";
-import {ThunkDispatch} from "redux-thunk";
-import {IRootState} from "@/store";
-import {AnyAction} from "redux";
+import {useAppDispatch, useAppSelector} from "@/store";
 import {setAuthToken, setContentType} from "@/configs/api.config";
 import {setPageTitle} from "@/store/slices/themeConfigSlice";
 import GenericTable from "@/components/GenericTable";
@@ -15,24 +12,20 @@ import IconButton from "@/components/IconButton";
 import Modal from "@/components/Modal";
 import {Input} from "@/components/form/Input";
 import {Dropdown} from "@/components/form/Dropdown";
-import {generatePDF} from "@/utils/helper";
-import BillHistory from "@/pages/erp/purchase/vendor-bill/bill-history";
 
 const Payments = () => {
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
-    const {token} = useSelector((state: IRootState) => state.user);
-    const {payments, loading, success, payment} = useSelector((state: IRootState) => state.vendorBill);
+    const dispatch = useAppDispatch();
+    const {token} = useAppSelector(state => state.user);
+    const {payments, loading, success, payment} = useAppSelector(state => state.vendorBill);
     const [rowData, setRowData] = useState([]);
     const [open, setOpen] = useState(false);
     const [formData, setFormData] = useState<any>({});
-    const [printLoading, setPrintLoading] = useState<boolean>(false);
-    const [paymentMethodOptions, setPaymentMethodOptions] = useState<any[]>([
+    const [paymentMethodOptions] = useState<any[]>([
         {label: 'Cash', value: 'cash'},
         {label: 'Bank', value: 'bank'},
         {label: 'Cheque', value: 'cheque'},
     ]);
     const [billDetail, setBillDetail] = useState<any>({});
-
     const breadCrumbItems = [
         {
             title: 'Home',
@@ -66,9 +59,6 @@ const Payments = () => {
             setRowData(payments)
         }
     }, [payments]);
-
-    const colName = ['id', 'bill_number', 'vendor_bill.invoice_number', 'vendor_bill.good_receive_note.grn_number', 'bill_amount', 'paid_amount', 'balance'];
-    const header = ['ID', 'Bill Number', 'Invoice Number', 'GRN Number', 'Bill Amount', 'Paid Amount', 'Balance'];
 
     const handleChange = (name: string, value: any, required: boolean) => {
         if (required && value === '') {
@@ -112,12 +102,9 @@ const Payments = () => {
         <PageWrapper
             embedLoader={false}
             breadCrumbItems={breadCrumbItems}
+            title="All Bill Payments"
         >
-            <h5 className="text-lg font-semibold dark:text-white-light">All Bill Payments</h5>
-
             <GenericTable
-                colName={colName}
-                header={header}
                 rowData={rowData}
                 loading={loading}
                 exportTitle={'all-payments-' + Date.now()}
@@ -128,11 +115,11 @@ const Payments = () => {
                         accessor: 'bill_number',
                         sortable: true,
                     },
-                    {
-                        title: 'Invoice Number',
-                        accessor: 'invoice_number',
-                        sortable: true,
-                    },
+                    // {
+                    //     title: 'Invoice Number',
+                    //     accessor: 'invoice_number',
+                    //     sortable: true,
+                    // },
                     {
                         title: 'GRN Number',
                         accessor: 'good_receive_note.grn_number',
@@ -183,7 +170,7 @@ const Payments = () => {
                                     icon={IconType.print}
                                     color={ButtonVariant.secondary}
                                     tooltip="Print"
-                                    onClick={() => generatePDF(<BillHistory content={row}/>, setPrintLoading)}
+                                    link={'/erp/purchase/vendor-bill/bill-history/' + row.id}
                                 />
                                 {(row.status === 'pending' || row.status === 'partial') && (
                                     <IconButton

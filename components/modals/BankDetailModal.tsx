@@ -1,18 +1,19 @@
-import React, {Fragment, useEffect, useState} from 'react';
-import {Dialog, Transition} from "@headlessui/react";
+import React, {useEffect, useState} from 'react';
 import {setAuthToken} from "@/configs/api.config";
 import {useDispatch, useSelector} from "react-redux";
 import {ThunkDispatch} from "redux-thunk";
 import {IRootState} from "@/store";
 import {AnyAction} from "redux";
-import Select from "react-select";
 import BankFormModal from "@/components/modals/BankFormModal";
 import {getBanks, storeBank} from "@/store/slices/bankSlice";
 import {getCurrencies} from "@/store/slices/currencySlice";
 import Modal from "@/components/Modal";
 import {Input} from '@/components/form/Input'
-import { Dropdown } from '../form/Dropdown';
+import {Dropdown} from '../form/Dropdown';
 import Alert from '@/components/Alert';
+import Button from "@/components/Button";
+import {ButtonSize, ButtonType, ButtonVariant, IconType} from "@/utils/enums";
+import {getIcon} from "@/utils/helper";
 
 interface IProps {
     modalOpen: boolean;
@@ -27,19 +28,12 @@ const BankDetailModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData, 
     const {token} = useSelector((state: IRootState) => state.user);
     const {banks, bank, success} = useSelector((state: IRootState) => state.bank);
     const {currencies} = useSelector((state: IRootState) => state.currency);
-    const [currencyId, setCurrencyId] = useState('');
-
     const [bankFormModal, setBankFormModal] = useState<boolean>(false);
-    const [errorMessages, setErrorMessages] = useState({
-        iban: "This field is required",
-        account_number:"This field is required",
-        account_name: "This field is required",
-        currency_id: "This field is required",
-        bank_id: "This field is required",
-    })
+    const [errorMessages, setErrorMessages] = useState<any>({})
     const [isFormValid, setIsFormValid] = useState<boolean>(false);
     const [validationMessage, setValidationMessage] = useState("");
     const [formData, setFormData] = useState<any>({
+        id: 0,
         bank_id: 0,
         bank_name: '',
         currency_id: 0,
@@ -115,7 +109,7 @@ const BankDetailModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData, 
     }, [bank, success]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { value,required,name } = e.target;
+        const {value, required, name} = e.target;
         const UpFormData = {
             ...formData,
             [name]: value,
@@ -124,9 +118,9 @@ const BankDetailModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData, 
 
         if (required) {
             if (!value) {
-                setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
+                setErrorMessages({...errorMessages, [name]: 'This field is required.'});
             } else {
-                setErrorMessages({ ...errorMessages, [name]: '' });
+                setErrorMessages({...errorMessages, [name]: ''});
             }
         }
     };
@@ -134,9 +128,7 @@ const BankDetailModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData, 
     useEffect(() => {
         const isValid = Object.values(errorMessages).some(message => message !== '');
         setIsFormValid(!isValid);
-        // console.log('Error Messages:', errorMessages);
-        // console.log('isFormValid:', !isValid);
-        if(isValid){
+        if (isValid) {
             setValidationMessage("Please fill the required field.");
         }
     }, [errorMessages]);
@@ -147,26 +139,32 @@ const BankDetailModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData, 
             setShow={setModalOpen}
             title='Add Bank Detail'
             footer={
-                <div className="mt-8 flex items-center justify-end">
-                    <button type="button" className="btn btn-outline-danger"
-                            onClick={() => setModalOpen(false)}>
-                        Discard
-                    </button>
-                    {isFormValid && <button type="button" className="btn btn-primary ltr:ml-4 rtl:mr-4"
-                            onClick={() => handleSubmit(formData)}>
-                        {modalFormData ? 'Update' : 'Add'}
-                    </button>}
+                <div className="mt-8 gap-3 flex items-center justify-end">
+                    <Button
+                        type={ButtonType.button}
+                        text="Discard"
+                        variant={ButtonVariant.secondary}
+                        onClick={() => setModalOpen(false)}
+                    />
+                    {isFormValid && (
+                        <Button
+                            type={ButtonType.button}
+                            text={modalFormData ? 'Update' : 'Add'}
+                            variant={ButtonVariant.primary}
+                            onClick={() => handleSubmit(formData)}
+                        />
+                    )}
                 </div>
             }
         >
-            {!isFormValid  && validationMessage &&
-               <Alert 
-               alertType="error" 
-               message={validationMessage} 
-               setMessages={setValidationMessage} 
-           />}
+            {!isFormValid && validationMessage &&
+                <Alert
+                    alertType="error"
+                    message={validationMessage}
+                    setMessages={setValidationMessage}
+                />}
 
-            <div className="w-full flex justify-center items-center gap-3">
+            <div className="w-full flex justify-center items-end gap-3">
                 <div className="w-full">
                     {/* <label htmlFor="bank_id">Bank</label> */}
                     <Dropdown
@@ -174,7 +172,7 @@ const BankDetailModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData, 
                         options={bankOptions}
                         name='currency_id'
                         value={formData.bank_id}
-                        onChange={(e: any,required:any) => {
+                        onChange={(e: any, required: any) => {
                             if (e && typeof e !== 'undefined') {
                                 // const { value, label, required, name } = e;
                                 setFormData((prev: any) => ({
@@ -183,7 +181,7 @@ const BankDetailModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData, 
                                     bank_name: e.label || 0
                                 }));
                                 if (required) {
-                                    setErrorMessages({ ...errorMessages, bank_id: '' });
+                                    setErrorMessages({...errorMessages, bank_id: ''});
                                 }
                             } else {
                                 setFormData((prev: any) => ({
@@ -191,60 +189,54 @@ const BankDetailModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData, 
                                     bank_id: ''
                                 }));
                                 if (required) {
-                                    setErrorMessages({ ...errorMessages, bank_id: 'This field is required.' });
+                                    setErrorMessages({...errorMessages, bank_id: 'This field is required.'});
                                 }
                             }
                         }}
-                        
+
                         required={true}
                         errorMessage={errorMessages.bank_id}
                     />
                 </div>
-
-                <button className="btn btn-primary btn-sm flex justify-center items-center"
-                        onClick={() => setBankFormModal(true)}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                         viewBox="0 0 24 24"
-                         className="h-5 w-5 ltr:mr-2 rtl:ml-2"
-                         fill="none">
-                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
-                        <path d="M15 12L12 12M12 12L9 12M12 12L12 9M12 12L12 15"
-                              stroke="currentColor"
-                              strokeWidth="1.5" strokeLinecap="round"/>
-                    </svg>
-                </button>
+                <Button
+                    type={ButtonType.button}
+                    text={getIcon(IconType.add)}
+                    variant={ButtonVariant.primary}
+                    onClick={() => setBankFormModal(true)}
+                    size={ButtonSize.small}
+                />
             </div>
 
             <div className="w-full">
                 {/* <label htmlFor="currency_id">Currency</label> */}
                 <Dropdown
-                label='Currency'
-                name='currency_id'
-                value={formData.currency_id}
-                options={currencyOptions}
-                onChange={(e: any, required: any) => {
-                    if (e && typeof e !== 'undefined') {
-                        setFormData((prev: any) => ({
-                            ...prev,
-                            currency_id: e.value || 0,
-                            currency_name: e.label || 0
-                        }));
-                        if (required) {
-                            setErrorMessages({ ...errorMessages, currency_id: '' });
+                    label='Currency'
+                    name='currency_id'
+                    value={formData.currency_id}
+                    options={currencyOptions}
+                    onChange={(e: any, required: any) => {
+                        if (e && typeof e !== 'undefined') {
+                            setFormData((prev: any) => ({
+                                ...prev,
+                                currency_id: e.value || 0,
+                                currency_name: e.label || 0
+                            }));
+                            if (required) {
+                                setErrorMessages({...errorMessages, currency_id: ''});
+                            }
+                        } else {
+                            setFormData((prev: any) => ({
+                                ...prev,
+                                currency_id: ''
+                            }));
+                            if (required) {
+                                setErrorMessages({...errorMessages, currency_id: 'This field is required.'});
+                            }
                         }
-                    } else {
-                        setFormData((prev: any) => ({
-                            ...prev,
-                            currency_id: ''
-                        }));
-                        if (required) {
-                            setErrorMessages({ ...errorMessages, currency_id: 'This field is required.' });
-                        }
-                    }
-                }}
-                required={true}
-                errorMessage={errorMessages.currency_id}
-/>
+                    }}
+                    required={true}
+                    errorMessage={errorMessages.currency_id}
+                />
 
             </div>
 
@@ -282,7 +274,7 @@ const BankDetailModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData, 
             <div className="w-full">
                 {/* <label htmlFor="iban">IBAN</label> */}
                 <Input
-                    label= 'IBAN'
+                    label='IBAN'
                     type="text"
                     name="iban"
                     placeholder='Enter IBAN Number'

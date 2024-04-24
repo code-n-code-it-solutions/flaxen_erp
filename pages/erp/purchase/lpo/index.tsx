@@ -1,28 +1,20 @@
 import {useEffect, useState} from 'react';
 import Swal from 'sweetalert2';
-import {useDispatch, useSelector} from 'react-redux';
 import {setPageTitle} from '@/store/slices/themeConfigSlice';
-import {ThunkDispatch} from "redux-thunk";
-import {IRootState} from "@/store";
-import {AnyAction} from "redux";
+import {useAppDispatch, useAppSelector} from "@/store";
 import {setAuthToken, setContentType} from "@/configs/api.config";
 import GenericTable from "@/components/GenericTable";
-import Image from "next/image";
 import {deleteLPO, getLPO} from "@/store/slices/localPurchaseOrderSlice";
-import Preview from "@/pages/erp/purchase/lpo/preview";
 import IconButton from "@/components/IconButton";
 import {ButtonType, ButtonVariant, IconType} from "@/utils/enums";
-import {generatePDF, getIcon, imagePath} from "@/utils/helper";
 import PageWrapper from "@/components/PageWrapper";
-import Button from "@/components/Button";
-import {isNull} from "lodash";
+import {capitalize, isNull} from "lodash";
 
 const Index = () => {
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
-    const {token} = useSelector((state: IRootState) => state.user);
-    const {allLPOs, loading, success} = useSelector((state: IRootState) => state.localPurchaseOrder);
+    const dispatch = useAppDispatch();
+    const {token} = useAppSelector(state => state.user);
+    const {allLPOs, loading, success} = useAppSelector(state => state.localPurchaseOrder);
     const [deleteLoading, setDeleteLoading] = useState(false);
-    const [printLoading, setPrintLoading] = useState<boolean>(false);
     const [rowData, setRowData] = useState([]);
     const breadCrumbItems = [
         {
@@ -51,10 +43,6 @@ const Index = () => {
             setRowData(allLPOs)
         }
     }, [allLPOs]);
-
-    const colName = ['id', 'lpo_number', 'internal_document_number', 'user_id', 'vendor_id', 'vendor_representative_id', 'vehicle_id', 'purchased_by_id', 'received_by_id', 'delivery_due_date'];
-    const header = ['Id', 'LPO #', 'ID #', 'User', 'Vendor', 'Representative', 'Vehicle', 'Purchased By', 'Received By', 'Delivery Due Date'];
-
 
     const handleDelete = (id: number) => {
         Swal.fire({
@@ -94,143 +82,117 @@ const Index = () => {
             embedLoader={true}
             loading={loading}
             breadCrumbItems={breadCrumbItems}
+            title={'All LPOs'}
+            buttons={[
+                {
+                    text: 'Add New',
+                    type: ButtonType.link,
+                    variant: ButtonVariant.primary,
+                    icon: IconType.add,
+                    link: '/erp/purchase/lpo/create'
+                }
+            ]}
         >
-            <div>
-                <div className="mb-5 flex items-center justify-between">
-                    <h5 className="text-lg font-semibold dark:text-white-light">All LPOs</h5>
-                    <Button
-                        type={ButtonType.link}
-                        text={
-                            <span className="flex items-center">
-                                {getIcon(IconType.add)}
-                                Add New
-                            </span>
-                        }
-                        variant={ButtonVariant.primary}
-                        link={'/purchase/lpo/create'}
-                    />
-                </div>
-                <GenericTable
-                    colName={colName}
-                    header={header}
-                    rowData={rowData}
-                    loading={loading}
-                    exportTitle={'all-lpo-' + Date.now()}
-                    columns={[
-                        {
-                            accessor: 'lpo_number',
-                            title: 'LPO #',
-                            sortable: true
-                        },
-                        {
-                            accessor: 'purchase_requisition.pr_code',
-                            title: 'Requisition Code',
-                            sortable: true
-                        },
-                        {
-                            accessor: 'generation_type',
-                            title: 'Generation Type',
-                            sortable: true
-                        },
-                        {
-                            accessor: 'type',
-                            title: 'Type',
-                            sortable: true
-                        },
-                        {
-                            accessor: 'internal_document_number',
-                            title: 'ID #',
-                            sortable: true
-                        },
-                        {
-                            accessor: 'user.name',
-                            title: 'Created By',
-                            sortable: true
-                        },
-                        {
-                            accessor: 'vendor.name',
-                            title: 'Vendor',
-                            render: (row: any) => (
-                                <div className="flex flex-col items-center gap-3">
-                                    <Image src={imagePath(row.vendor?.thumbnail)} alt={row.vendor.name}
-                                           width={50} height={50} className="rounded"/>
-                                    <span>{row.vendor?.name}</span>
-                                </div>
-                            ),
-                            sortable: true
-                        },
-                        {
-                            accessor: 'vendor_representative.name',
-                            title: 'V Representative',
-                            render: (row: any) => (
-                                <div className="flex flex-col items-center gap-3">
-                                    <Image src={imagePath(row.vendor_representative?.thumbnail)}
-                                           alt={row.vendor_representative.name} width={50} height={50}
-                                           className="rounded"/>
-                                    <span>{row.vendor_representative?.name}</span>
-                                </div>
-                            ),
-                            sortable: true
-                        },
-                        {
-                            accessor: 'vehicle.make',
-                            title: 'Vehicle',
-                            render: (row: any) => (
-                                row.vehicle === null ? 'N/A' :
-                                    <div className="flex flex-col items-center gap-3">
-                                        <Image src={imagePath(row.vehicle?.thumbnail)} alt={row.vehicle?.make}
-                                               width={50} height={50} className="rounded"/>
-                                        <span>{row.vehicle?.make + '-' + row.vehicle?.model + ' (' + row.vehicle?.number_plate + ')'}</span>
-                                    </div>
-                            ),
-                            sortable: true
-                        },
-                        {
-                            accessor: 'delivery_due_date',
-                            title: 'Due Date',
-                            sortable: true
-                        },
-                        {
-                            accessor: 'actions',
-                            title: 'Actions',
-                            render: (row: any) => (
-                                <div className="flex items-center gap-3">
+            <GenericTable
+                rowData={rowData}
+                loading={loading}
+                exportTitle={'all-lpo-' + Date.now()}
+                columns={[
+                    {
+                        accessor: 'lpo_number',
+                        title: 'LPO #',
+                        sortable: true
+                    },
+                    {
+                        accessor: 'purchase_requisition.pr_code',
+                        title: 'Requisition Code',
+                        sortable: true
+                    },
+                    {
+                        accessor: 'generation_type',
+                        title: 'Generation Type',
+                        render: (row: any) => (
+                            <span>{capitalize(row.generation_type)}</span>
+                        ),
+                        sortable: true
+                    },
+                    {
+                        accessor: 'type',
+                        title: 'Type',
+                        sortable: true
+                    },
+                    {
+                        accessor: 'internal_document_number',
+                        title: 'ID #',
+                        sortable: true
+                    },
+                    {
+                        accessor: 'vendor.name',
+                        title: 'Vendor',
+                        render: (row: any) => (
+                            <span>{row.vendor?.name}</span>
+                        ),
+                        sortable: true
+                    },
+                    {
+                        accessor: 'vendor_representative.name',
+                        title: 'V Representative',
+                        render: (row: any) => (
+                            <span>{row.vendor_representative?.name}</span>
+                        ),
+                        sortable: true
+                    },
+
+                    {
+                        accessor: 'delivery_due_date',
+                        title: 'Due Date',
+                        sortable: true
+                    },
+                    {
+                        accessor: 'status',
+                        title: 'Status',
+                        sortable: true
+                    },
+                    {
+                        accessor: 'actions',
+                        title: 'Actions',
+                        render: (row: any) => (
+                            <div className="flex items-center gap-3">
+                                <IconButton
+                                    icon={IconType.print}
+                                    color={ButtonVariant.secondary}
+                                    tooltip="Print"
+                                    link={`/erp/purchase/lpo/print/${row.id}`}
+                                />
+
+                                <IconButton
+                                    icon={IconType.view}
+                                    color={ButtonVariant.info}
+                                    tooltip="View"
+                                    link={`/erp/purchase/lpo/view/${row.id}`}
+                                />
+
+                                {/*<IconButton*/}
+                                {/*    icon={IconType.edit}*/}
+                                {/*    color={ButtonVariant.primary}*/}
+                                {/*    tooltip="Edit"*/}
+                                {/*    link={`/purchase/lpo/edit/${row.id}`}*/}
+                                {/*/>*/}
+
+                                {isNull(row.good_receive_note) &&
                                     <IconButton
-                                        icon={IconType.print}
-                                        color={ButtonVariant.secondary}
-                                        tooltip="Print"
-                                        onClick={() => generatePDF(<Preview content={row}/>, setPrintLoading)}
+                                        icon={IconType.delete}
+                                        color={ButtonVariant.danger}
+                                        tooltip="Delete"
+                                        onClick={() => handleDelete(row.id)}
                                     />
+                                }
 
-                                    <IconButton
-                                        icon={IconType.view}
-                                        color={ButtonVariant.info}
-                                        tooltip="View"
-                                        link={`/purchase/lpo/view/${row.id}`}
-                                    />
-
-                                    <IconButton
-                                        icon={IconType.edit}
-                                        color={ButtonVariant.primary}
-                                        tooltip="Edit"
-                                        link={`/purchase/lpo/edit/${row.id}`}
-                                    />
-
-                                    {isNull(row.good_receive_note) &&
-                                        <IconButton
-                                            icon={IconType.delete}
-                                            color={ButtonVariant.danger}
-                                            tooltip="Delete"
-                                            onClick={() => handleDelete(row.id)}
-                                        />
-                                    }
-
-                                </div>
-                            )
-                        }
-                    ]}
-                />
-            </div>
+                            </div>
+                        )
+                    }
+                ]}
+            />
         </PageWrapper>
     );
 };

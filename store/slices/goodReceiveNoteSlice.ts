@@ -28,7 +28,21 @@ export const getGRN = createAsyncThunk(
         try {
             const response = await API.get('/good-receive-note');
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const getGRNDetail = createAsyncThunk(
+    'good-receive-note/show',
+    async (id: number, thunkAPI) => {
+        try {
+            const response = await API.get('/good-receive-note/' + id);
+            return response.data;
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -42,7 +56,7 @@ export const storeGRN = createAsyncThunk(
         try {
             const response = await API.post('/good-receive-note', data);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -52,11 +66,11 @@ export const storeGRN = createAsyncThunk(
 
 export const deleteGRN = createAsyncThunk(
     'good-receive-note/delete',
-    async (id:number, thunkAPI) => {
+    async (id: number, thunkAPI) => {
         try {
-            const response = await API.delete('/good-receive-note/'+id);
+            const response = await API.delete('/good-receive-note/' + id);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -66,11 +80,11 @@ export const deleteGRN = createAsyncThunk(
 
 export const getGRNByStatuses = createAsyncThunk(
     'good-receive-note/by-statuses',
-    async (statuses:any, thunkAPI) => {
+    async (statuses: any, thunkAPI) => {
         try {
             const response = await API.post('/good-receive-note/by-statuses', statuses);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -139,8 +153,20 @@ export const goodReceiveNoteSlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message;
             })
+            .addCase(getGRNDetail.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getGRNDetail.fulfilled, (state, action) => {
+                state.loading = false;
+                state.GRNDetail = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getGRNDetail.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
     },
 });
-export const { clearGoodReceiveNoteState } = goodReceiveNoteSlice.actions;
+export const {clearGoodReceiveNoteState} = goodReceiveNoteSlice.actions;
 
 export const goodReceiveNoteSliceConfig = configureSlice(goodReceiveNoteSlice, false);

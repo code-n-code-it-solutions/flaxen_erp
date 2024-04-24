@@ -10,7 +10,6 @@ import {AnyAction} from "redux";
 import {clearAssetState, getAssetStatuses} from "@/store/slices/assetSlice";
 import Select from "react-select";
 import Modal from "@/components/Modal";
-import { log } from 'console';
 
 interface IProps {
     modalOpen: boolean;
@@ -32,19 +31,19 @@ const AssetFormModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData}: 
     const {code} = useSelector((state: IRootState) => state.util);
     const {loading, statuses} = useSelector((state: IRootState) => state.asset);
 
-    
+
 
     useEffect(() => {
         if (modalOpen) {
             console.log("hello");
-            
+
             setName('');
             setDescription('');
             setStatus('')
             setImage(null);
             setAssetCode('')
             setSelectedStatus({})
-            dispatch(clearAssetState());   
+            dispatch(clearAssetState());
             dispatch(getAssetStatuses());
             if (modalFormData && Object.keys(modalFormData).length>0){
                 setName(modalFormData.name);

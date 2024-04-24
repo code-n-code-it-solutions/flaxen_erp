@@ -13,7 +13,7 @@ import {Dropdown} from "@/components/form/Dropdown";
 import {Input} from "@/components/form/Input";
 import {clearLocationState, getCountries} from "@/store/slices/locationSlice";
 import Option from "@/components/form/Option";
-import {imagePath} from "@/utils/helper";
+import {serverFilePath} from "@/utils/helper";
 
 interface IProps {
     modalOpen: boolean;
@@ -69,7 +69,7 @@ const CategoryModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData}: I
             if (modalFormData) {
                 console.log(modalFormData)
                 setFormData(modalFormData)
-                setExistingImage(imagePath(modalFormData.thumbnail))
+                setExistingImage(serverFilePath(modalFormData.thumbnail))
             } else {
                 setExistingImage('')
             }

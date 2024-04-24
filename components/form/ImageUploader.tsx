@@ -40,7 +40,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ image, setImage, label, e
         <div className="mx-auto p-4 flex flex-col justify-center items-center">
             <div className={styles.imageContainer} onClick={handleClick}>
                 {preview && (
-                    <Image height={96} width={96} src={preview} alt="Preview" className={styles.image}/>
+                    <Image height={96} width={96} src={preview} priority={true} alt="Preview" className={styles.image}/>
                 )}
                 <div className={styles.overlay}>
                     <div className={styles.plusIcon}>+</div>

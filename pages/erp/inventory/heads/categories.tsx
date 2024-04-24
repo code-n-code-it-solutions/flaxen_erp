@@ -1,17 +1,10 @@
 import React, {useEffect, useState} from 'react';
 import PageWrapper from "@/components/PageWrapper";
-import {useDispatch, useSelector} from "react-redux";
-import {ThunkDispatch} from "redux-thunk";
-import {IRootState} from "@/store";
-import {AnyAction} from "redux";
-import Link from "next/link";
+import {useAppDispatch, useAppSelector} from "@/store";
 import GenericTable from "@/components/GenericTable";
-import {uniqBy} from "lodash";
-import {generatePDF, getIcon, imagePath} from "@/utils/helper";
-import {ButtonVariant, IconType} from "@/utils/enums";
+import {serverFilePath} from "@/utils/helper";
+import {ButtonType, ButtonVariant, IconType} from "@/utils/enums";
 import IconButton from "@/components/IconButton";
-import Preview from "@/pages/erp/inventory/product-assembly/preview";
-import Button from "@/components/Button";
 import {setPageTitle} from "@/store/slices/themeConfigSlice";
 import {
     clearCategoryState,
@@ -24,9 +17,9 @@ import CategoryModal from "@/components/modals/CategoryModal";
 import {setAuthToken, setContentType} from "@/configs/api.config";
 
 const Categories = () => {
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
-    const {token} = useSelector((state: IRootState) => state.user);
-    const {allProductCategory, loading, success, productCategory} = useSelector((state: IRootState) => state.productCategory);
+    const dispatch = useAppDispatch();
+    const {token} = useAppSelector(state => state.user);
+    const {allProductCategory, loading, success, productCategory} = useAppSelector(state => state.productCategory);
     const [rowData, setRowData] = useState([]);
     const [modalOpen, setModalOpen] = useState<boolean>(false);
     const [detail, setDetail] = useState<any>({});
@@ -46,18 +39,15 @@ const Categories = () => {
         },
     ];
 
-    const handleSubmit = (formData:any) => {
+    const handleSubmit = (formData: any) => {
         setAuthToken(token)
         setContentType('multipart/form-data')
-        if(Object.keys(detail).length>0) {
+        if (Object.keys(detail).length > 0) {
             dispatch(updateProductCategory({data: formData, id: detail.id}))
         } else {
             dispatch(storeProductCategory(formData))
         }
     }
-
-    const colName = ['id', 'thumbnail.path', 'name', 'country.name', 'is_active'];
-    const header = ['Id', 'Thumbnail', 'Name', 'Country', 'Status'];
 
     useEffect(() => {
         setAuthToken(token)
@@ -87,26 +77,21 @@ const Categories = () => {
             embedLoader={false}
             loading={false}
             breadCrumbItems={breadCrumbItems}
-        >
-            <div className="mb-5 flex items-center justify-between">
-                <h5 className="text-lg font-semibold dark:text-white-light">All Categories</h5>
-                <Button
-                    text={
-                        <span className="flex items-center">
-                            {getIcon(IconType.add)}
-                            Add New
-                        </span>
-                    }
-                    variant={ButtonVariant.primary}
-                    onClick={() => {
-                        setModalOpen(true)
+            title="All Categories"
+            buttons={[
+                {
+                    text: 'Add New',
+                    type: ButtonType.link,
+                    variant: ButtonVariant.primary,
+                    icon: IconType.back,
+                    onClick: () => {
+                        setModalOpen(false)
                         setDetail({})
-                    }}
-                />
-            </div>
+                    }
+                }
+            ]}
+        >
             <GenericTable
-                colName={colName}
-                header={header}
                 rowData={rowData}
                 loading={loading}
                 exportTitle={'all-categories-' + Date.now()}
@@ -116,7 +101,7 @@ const Categories = () => {
                         accessor: 'thumbnail.path',
                         title: 'Thumbnail',
                         render: (row: any) => (
-                            <Image src={imagePath(row.thumbnail)} alt={row.name}
+                            <Image priority={true} src={serverFilePath(row.thumbnail?.path)} alt={row.name}
                                    width={50} height={50} className="rounded"/>
                         ),
                         sortable: true,

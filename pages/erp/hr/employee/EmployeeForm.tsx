@@ -3,14 +3,14 @@ import ImageUploader from "@/components/form/ImageUploader";
 import {setAuthToken, setContentType} from "@/configs/api.config";
 import {useDispatch, useSelector} from "react-redux";
 import {ThunkDispatch} from "redux-thunk";
-import {IRootState} from "@/store";
+import {IRootState, useAppDispatch, useAppSelector} from "@/store";
 import {AnyAction} from "redux";
 import {clearLocationState, getCities, getCountries, getStates} from "@/store/slices/locationSlice";
 import {useRouter} from "next/router";
 import BankDetailModal from "@/components/modals/BankDetailModal";
-import {clearEmployeeState, storeEmployee} from "@/store/slices/employeeSlice";
-import {clearDesignationState, getDesignationByDepartmentID, storeDesignation} from "@/store/slices/designationSlice";
-import {clearDepartmentState, getDepartments, storeDepartment} from "@/store/slices/departmentSlice";
+import {clearEmployeeState, storeEmployee, updateEmployee} from "@/store/slices/employeeSlice";
+import {getDesignationByDepartmentID} from "@/store/slices/designationSlice";
+import {getDepartments, storeDepartment} from "@/store/slices/departmentSlice";
 import DepartmentFormModal from "@/components/modals/DepartmentFormModal";
 import DesignationFormModal from "@/components/modals/DesignationFormModal";
 import DocumentFormModal from "@/components/modals/DocumentFormModal";
@@ -20,49 +20,49 @@ import {MaskConfig} from "@/configs/mask.config";
 import {Input} from "@/components/form/Input";
 import {Dropdown} from "@/components/form/Dropdown";
 import Button from "@/components/Button";
-import {createBlobUrl, getIcon, imagePath} from "@/utils/helper";
+import {createBlobUrl, getIcon, serverFilePath} from "@/utils/helper";
 import FileDownloader from "@/components/FileDownloader";
 import {clearRawProductState} from "@/store/slices/rawProductSlice";
-import  Alert  from "@/components/Alert";
+import Alert from "@/components/Alert";
 
-interface IFormData {
-    employee_code: string;
-    name: string;
-    phone: string,
-    email: string,
-    password: string,
-    postal_code: string,
-    address: string,
-    date_of_joining: string,
-    passport_number: string,
-    id_number: string,
-    department_id: number,
-    designation_id: number,
-    country_id: number,
-    state_id: number,
-    city_id: number,
-    image: File | null;
-    bank_accounts: any[];
-    documents: any[];
-    is_active: boolean;
-}
-
-interface IBankAccount {
-    bank_id: number;
-    bank_name: string;
-    currency_id: number;
-    currency_name: string;
-    currency_code: string;
-    account_name: string;
-    account_number: string;
-    iban: string;
-}
-
-interface IDocuments {
-    document: File | null;
-    name: string;
-    description: string;
-}
+// interface IFormData {
+//     employee_code: string;
+//     name: string;
+//     phone: string,
+//     email: string,
+//     password: string,
+//     postal_code: string,
+//     address: string,
+//     date_of_joining: string,
+//     passport_number: string,
+//     id_number: string,
+//     department_id: number,
+//     designation_id: number,
+//     country_id: number,
+//     state_id: number,
+//     city_id: number,
+//     image: File | null;
+//     bank_accounts: any[];
+//     documents: any[];
+//     is_active: boolean;
+// }
+//
+// interface IBankAccount {
+//     bank_id: number;
+//     bank_name: string;
+//     currency_id: number;
+//     currency_name: string;
+//     currency_code: string;
+//     account_name: string;
+//     account_number: string;
+//     iban: string;
+// }
+//
+// interface IDocuments {
+//     document: File | null;
+//     name: string;
+//     description: string;
+// }
 
 interface IFormProps {
     id?: any
@@ -70,55 +70,24 @@ interface IFormProps {
 
 const EmployeeForm = ({id}: IFormProps) => {
     const router = useRouter();
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
-    const {token} = useSelector((state: IRootState) => state.user);
-    const {countries, states, cities} = useSelector((state: IRootState) => state.location);
-    const designation = useSelector((state: IRootState) => state.designation);
-    const department = useSelector((state: IRootState) => state.department);
-    const employee = useSelector((state: IRootState) => state.employee);
-    const {code} = useSelector((state: IRootState) => state.util);
-    const [errors, setErrors] = useState<Record<string, string>>({});
+    const dispatch = useAppDispatch();
+
+    const {token} = useAppSelector((state) => state.user);
+    const {countries, states, cities} = useAppSelector((state) => state.location);
+    const {designation, designations, loading: designationLoading} = useAppSelector((state) => state.designation);
+    const {department, departments} = useAppSelector((state) => state.department);
+    const {employeeDetail, loading, success} = useAppSelector((state) => state.employee);
+    const {code} = useAppSelector((state) => state.util);
+
     const [bankModalOpen, setBankModalOpen] = useState<boolean>(false);
     const [image, setImage] = useState<File | null>(null);
-    const [employeeBankAccounts, setEmployeeBankAccounts] = useState<IBankAccount[]>([]);
-    const [employeeDocuments, setEmployeeDocuments] = useState<IDocuments[]>([]);
+    const [employeeBankAccounts, setEmployeeBankAccounts] = useState<any[]>([]);
+    const [employeeDocuments, setEmployeeDocuments] = useState<any[]>([]);
     const [isFormValid, setIsFormValid] = useState<boolean>(false);
     const [validationMessage, setValidationMessage] = useState("");
-    // const [VAddressMessage, setVAddressMessage] = useState('');
-    // const [VRepresentativeMessage, setVRepresentativeMessage] = useState('');
 
-    const [errorMessages, setErrorMessages] = useState({
-        department_id: 'This field is required',
-        designation_id: 'This field is required',
-        name: 'This field is required',
-        password: 'This field is required',
-        phone: 'This field is required',
-        email: 'This field is required',
-        id_number: 'This field is required',
-        passport_number: 'This field is required',
-    });
-
-    const [formData, setFormData] = useState<IFormData>({
-        employee_code: '',
-        name: '',
-        phone: '+971',
-        email: '',
-        password: '',
-        postal_code: '',
-        address: '',
-        date_of_joining: '',
-        passport_number: '',
-        id_number: '',
-        department_id: 0,
-        designation_id: 0,
-        country_id: 0,
-        state_id: 0,
-        city_id: 0,
-        image: null,
-        bank_accounts: [],
-        documents: [],
-        is_active: true
-    });
+    const [errorMessages, setErrorMessages] = useState<any>({});
+    const [formData, setFormData] = useState<any>({});
     const [imagePreview, setImagePreview] = useState('');
     const [departmentModalOpen, setDepartmentModalOpen] = useState(false);
     const [documentModalOpen, setDocumentModalOpen] = useState(false);
@@ -129,113 +98,128 @@ const EmployeeForm = ({id}: IFormProps) => {
     const [departmentOptions, setDepartmentOptions] = useState<any[]>([]);
     const [designationOptions, setDesignationOptions] = useState<any[]>([]);
 
-    const handleChange = (name: string, value: any,required:any) => {
-        // const {required} = e.target;
-        setFormData(prevFormData => {
-            return {...prevFormData, [name]: value};
-        });
+    const handleChange = (name: string, value: any, required: any) => {
+        if (name === 'department_id' || name === 'designation_id' || name === 'country_id' || name === 'state_id' || name === 'city_id') {
+            if (value && typeof value !== 'undefined') {
+                setFormData((prev: any) => ({...prev, [name]: value.value}));
+                if (name === 'department_id') {
+                    dispatch(getDesignationByDepartmentID(parseInt(value.value)))
+                }
+
+                if (name === 'country_id') {
+                    dispatch(getStates(parseInt(value.value)))
+                }
+
+                if (name === 'state_id') {
+                    dispatch(getCities({countryId: formData.country_id, stateId: parseInt(value.value)}))
+                }
+
+            } else {
+                setFormData((prev: any) => ({...prev, [name]: ''}));
+
+                if (name === 'department_id') {
+                    setDesignationOptions([])
+                    setFormData((prev: any) => ({...prev, designation_id: ''}))
+                }
+
+                if (name === 'country_id') {
+                    setFormData((prev: any) => ({...prev, state_id: ''}))
+                    setFormData((prev: any) => ({...prev, city_id: ''}))
+                    setStateOptions([])
+                    setCityOptions([])
+                }
+
+                if (name === 'state_id') {
+                    setFormData((prev: any) => ({...prev, city_id: ''}))
+                    setCityOptions([])
+                }
+            }
+        } else {
+            setFormData((prev: any) => ({...prev, [name]: value}));
+        }
+
         if (required) {
             if (!value) {
-                setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
+                setErrorMessages({...errorMessages, [name]: 'This field is required.'});
             } else {
-                setErrorMessages({ ...errorMessages, [name]: '' });
-            }
-        }
-        if (name === 'phone') {
-            if (value === '(+971) __-__-____') {
-                setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
+                setErrorMessages((prev: any) => {
+                    delete prev[name];
+                    return prev;
+                });
             }
         }
     };
 
-    const handleDepartmentChange = (e: any,required:any) => {
-        // const [name,value,required] = e.target;
-        if (e && e.value && typeof e !== 'undefined') {
-            setFormData(prev => ({...prev, department_id: e.value}))
-            dispatch(getDesignationByDepartmentID(parseInt(e.value)))
-            if (required) {
-                setErrorMessages({ ...errorMessages, department_id: '' });
-            }
+    const handleRemove = (index: number, type: string) => {
+        if (type === 'document') {
+            setEmployeeDocuments(employeeDocuments.filter((_, i) => i !== index))
         } else {
-            setDesignationOptions([])
-            setFormData(prev => ({...prev, department_id: 0}))
-            setFormData(prev => ({...prev, designation_id: 0}))
-            if (required) {
-                setErrorMessages({ ...errorMessages, department_id: 'This field is required.' });
-            }
+            setEmployeeBankAccounts(employeeBankAccounts.filter((_, i) => i !== index))
         }
-    }
-
-    const handleCountryChange = (e: any) => {
-        if (e && e.value && typeof e !== 'undefined') {
-            setFormData(prev => ({...prev, country_id: e.value}))
-            dispatch(getStates(parseInt(e.value)))
-        } else {
-            setFormData(prev => ({...prev, country_id: 0}))
-            setFormData(prev => ({...prev, state_id: 0}))
-            setStateOptions([])
-            setCityOptions([])
-        }
-    }
-
-    const handleStateChange = (e: any) => {
-        if (e && e.value && typeof e !== 'undefined') {
-            setFormData(prev => ({...prev, state_id: e.value}))
-            dispatch(getCities({countryId: formData.country_id, stateId: parseInt(e.value)}))
-        } else {
-            setFormData(prev => ({...prev, state_id: 0}))
-            setFormData(prev => ({...prev, city_id: 0}))
-            setCityOptions([])
-        }
-    }
-
-    const handleRemoveBank = (index: number) => {
-        const newEmployeeBankAccounts = employeeBankAccounts.filter((address, i) => i !== index);
-        setEmployeeBankAccounts(newEmployeeBankAccounts);
-    }
-
-    const handleRemoveDocument = (index: number) => {
-        const newEmployeeDocuments: any = employeeDocuments.filter((address, i) => i !== index);
-        setEmployeeDocuments(newEmployeeDocuments);
     }
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setAuthToken(token)
         setContentType('multipart/form-data')
-        setFormData(prev => ({
-            ...prev,
+        let finalData = {
+            ...formData,
             image: image,
-            bank_accounts: employeeBankAccounts.map((bankAccount: any) => {
-                return {
-                    bank_id: bankAccount.bank_id,
-                    currency_id: bankAccount.currency_id,
-                    account_name: bankAccount.account_name,
-                    account_number: bankAccount.account_number,
-                    iban: bankAccount.iban,
-                    is_active: true
-                }
-            }),
-            documents: employeeDocuments
-        }))
+            bank_accounts: employeeBankAccounts.map((bankAccount: any) => ({
+                id: bankAccount.id ? bankAccount.id : 0,
+                bank_id: bankAccount.bank_id,
+                currency_id: bankAccount.currency_id,
+                account_name: bankAccount.account_name,
+                account_number: bankAccount.account_number,
+                iban: bankAccount.iban,
+                is_active: true
+            })),
+            documents: employeeDocuments.map((documentDetail: any) => ({
+                id: documentDetail.id ? documentDetail.id : 0,
+                document: typeof documentDetail.document === 'string' ? null : documentDetail.document,
+                document_id: documentDetail.document_id,
+                name: documentDetail.name,
+                description: documentDetail.description,
+                is_active: true
+            })),
+        }
         if (id) {
-            // dispatch(updateRawProduct(id, formData));
+            console.log(finalData)
+            dispatch(updateEmployee({id, employeeData: finalData}));
         } else {
-            dispatch(storeEmployee(formData));
+            dispatch(storeEmployee(finalData));
         }
     };
 
     useEffect(() => {
-        if (employee.employeeDetail) {
-            const employeeDetail = employee.employeeDetail;
-            console.log(employeeDetail)
-            setImagePreview(imagePath(employeeDetail.thumbnail))
+        if (employeeDetail) {
+            setImagePreview(serverFilePath(employeeDetail.thumbnail?.path))
+            dispatch(getDesignationByDepartmentID(employeeDetail.department_id))
+            setEmployeeBankAccounts(employeeDetail.bank_accounts.map((account: any) => ({
+                id: account.id,
+                bank_id: account.bank.id,
+                bank_name: account.bank.name,
+                currency_id: account.currency_id,
+                currency_name: account.currency.name,
+                currency_code: account.currency.code,
+                account_name: account.account_name,
+                account_number: account.account_number,
+                iban: account.iban
+            })))
+            setEmployeeDocuments(employeeDetail.documents.map((document: any) => ({
+                id: document.id,
+                document_id: document.document_id,
+                document: document.document?.path,
+                name: document.name,
+                description: document.description
+            })))
+
             setFormData({
                 ...formData,
                 employee_code: employeeDetail.employee_code,
                 name: employeeDetail.user.name,
                 phone: employeeDetail.phone,
-                email: employeeDetail.user.email,
+                // email: employeeDetail.user.email,
                 postal_code: employeeDetail.postal_code,
                 address: employeeDetail.address,
                 date_of_joining: employeeDetail.date_of_joining,
@@ -246,15 +230,15 @@ const EmployeeForm = ({id}: IFormProps) => {
                 country_id: employeeDetail.country_id,
                 state_id: employeeDetail.state_id,
                 city_id: employeeDetail.city_id,
-                bank_accounts: employeeDetail.bank_accounts,
-                documents: employeeDetail.documents,
+                bank_accounts: employeeBankAccounts,
+                documents: employeeDocuments,
             });
-            setEmployeeBankAccounts(employeeDetail.bank_accounts)
-            setEmployeeDocuments(employeeDetail.documents)
+
+            setImagePreview(serverFilePath(employeeDetail.thumbnail?.path))
         } else {
-            setImagePreview(imagePath(''))
+            setImagePreview(serverFilePath(''))
         }
-    }, [employee.employeeDetail]);
+    }, [employeeDetail]);
 
     useEffect(() => {
         dispatch(clearLocationState())
@@ -269,7 +253,7 @@ const EmployeeForm = ({id}: IFormProps) => {
     useEffect(() => {
         if (!id) {
             dispatch(generateCode(FORM_CODE_TYPE.EMPLOYEE))
-            setImagePreview(imagePath(''));
+            setImagePreview(serverFilePath(''));
         }
         return () => {
             dispatch(clearRawProductState());
@@ -278,7 +262,7 @@ const EmployeeForm = ({id}: IFormProps) => {
 
     useEffect(() => {
         if (code) {
-            setFormData(prev => ({...prev, employee_code: code[FORM_CODE_TYPE.EMPLOYEE]}))
+            setFormData((prev: any) => ({...prev, employee_code: code[FORM_CODE_TYPE.EMPLOYEE]}))
         }
     }, [code])
 
@@ -307,82 +291,62 @@ const EmployeeForm = ({id}: IFormProps) => {
     }, [cities]);
 
     useEffect(() => {
-        if (designation.designations) {
-            const options = designation.designations.map((designation: any) => ({
-                value: designation.id,
-                label: designation.name
-            }));
-            setDesignationOptions(options);
-            // setDesignationModalOpen(false)
-        }
-    }, [designation.designations]);
-
-    useEffect(() => {
-        if (designation.designation) {
-            setDesignationModalOpen(false)
-            if (formData.department_id !== 0) {
-                dispatch(getDesignationByDepartmentID(formData.department_id))
-            }
-            dispatch(clearDesignationState())
-        }
-    }, [designation.designation]);
-
-    useEffect(() => {
-        if (department.departments) {
-            const options = department.departments.map((department: any) => ({
+        if (departments) {
+            const options = departments.map((department: any) => ({
                 value: department.id,
                 label: department.name
             }));
             setDepartmentOptions([{value: '', label: 'Select Department'}, ...options]);
         }
-    }, [department.departments]);
+    }, [departments]);
 
     useEffect(() => {
-        if (department.department) {
-            setDepartmentModalOpen(false)
+        if (designations) {
+            const options = designations.map((designation: any) => ({
+                value: designation.id,
+                label: designation.name
+            }));
+            setDesignationOptions([{value: '', label: 'Select Designations'}, ...options]);
+        }
+    }, [designations]);
+
+    useEffect(() => {
+        if (designation) {
+            if (formData.department_id !== 0) {
+                dispatch(getDesignationByDepartmentID(formData.department_id))
+            }
+        }
+    }, [designation]);
+
+    useEffect(() => {
+        if (department) {
             dispatch(getDepartments())
             if (formData.department_id !== 0) {
                 dispatch(getDesignationByDepartmentID(formData.department_id))
             }
-            dispatch(clearDepartmentState())
         }
-    }, [department.department]);
+    }, [department]);
 
     useEffect(() => {
         const isValid = Object.values(errorMessages).some(message => message !== '');
         setIsFormValid(!isValid);
-        console.log('Error Messages:', errorMessages);
-        console.log('isFormValid:', !isValid);
-        if(isValid){
+        if (isValid) {
             setValidationMessage("Please fill all the required fields.");
         }
-        // if (vendorRepresentatives.length === 0) {
-        //     setVRepresentativeMessage('Vendor must have atleast one representative added.')
-        // } else {
-        //     setVRepresentativeMessage('');
-        // }
-        // if (vendorAddresses.length === 0) {
-        //     setVAddressMessage('Vendor must have atleast one Address added.')
-        // } else {
-        //     setVAddressMessage('');
-        // }
-
     }, [errorMessages]);
 
 
-
-
     return (
-        <form className="space-y-5"  onSubmit={(e) => handleSubmit(e)}>
+        <form className="space-y-5" onSubmit={(e) => handleSubmit(e)}>
             <div className="flex justify-center items-center">
                 <ImageUploader image={image} setImage={setImage} existingImage={imagePreview}/>
             </div>
-            {!isFormValid  && validationMessage &&
-               <Alert
-               alertType="error"
-               message={validationMessage}
-               setMessages={setValidationMessage}
-           />}
+            {!isFormValid && validationMessage &&
+                <Alert
+                    alertType="error"
+                    message={validationMessage}
+                    setMessages={setValidationMessage}
+                />}
             <div className="flex justify-start flex-col items-start space-y-3">
                 <Input
                     divClasses='w-full md:w-1/3'
@@ -390,20 +354,20 @@ const EmployeeForm = ({id}: IFormProps) => {
                     type='text'
                     name='employee_code'
                     value={formData.employee_code}
-                    onChange={(e) => handleChange(e.target.name, e.target.value,e.target.required)}
+                    onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
                     isMasked={false}
                     disabled={true}
                     placeholder='Enter Employee Code'
-                    required= {true}
+                    required={true}
                 />
                 <div className="w-full md:w-1/2 flex justify-center items-end gap-3">
                     <Dropdown
                         divClasses='w-full'
                         label='Departments'
-                        name='deparment_id'
+                        name='department_id'
                         options={departmentOptions}
                         value={formData.department_id}
-                        onChange={(e: any,required:any) => handleDepartmentChange(e,required)}
+                        onChange={(e: any, required: any) => handleChange('department_id', e, true)}
                         required={true}
                         errorMessage={errorMessages.department_id}
                     />
@@ -422,25 +386,9 @@ const EmployeeForm = ({id}: IFormProps) => {
                         name='designation_id'
                         options={designationOptions}
                         value={formData.designation_id}
-                        onChange={(e: any,required:any) => {
-                            if (e && typeof e !== 'undefined') {
-                                setFormData(prev => ({
-                                    ...prev,
-                                    designation_id: e.value
-                                }))
-                                if (required) {
-                                    setErrorMessages({ ...errorMessages, designation_id: '' });
-                                }
-                            } else {
-                                setFormData(prev => ({
-                                    ...prev,
-                                    designation_id: 0
-                                }))
-                                if (required) {
-                                    setErrorMessages({ ...errorMessages, designation_id: 'This field is required.' });
-                                }
-                            }
-                        }}
+                        onChange={(e: any) => handleChange('designation_id', e, true)}
+                        isLoading={designationLoading}
+                        isDisabled={designationLoading}
                         required={true}
                         errorMessage={errorMessages.designation_id}
                     />
@@ -458,7 +406,7 @@ const EmployeeForm = ({id}: IFormProps) => {
                     type='text'
                     name='name'
                     value={formData.name}
-                    onChange={(e) => handleChange('name', e.target.value,true)}
+                    onChange={(e) => handleChange(e.target.name, e.target.value, true)}
                     isMasked={false}
                     styles={{height: 45}}
                     placeholder='Enter Employee Name'
@@ -472,7 +420,7 @@ const EmployeeForm = ({id}: IFormProps) => {
                         type='text'
                         name='phone'
                         value={formData.phone}
-                        onChange={(e) => handleChange('phone', e.target.value,true)}
+                        onChange={(e) => handleChange('phone', e.target.value, true)}
                         isMasked={true}
                         placeholder={MaskConfig.phone.placeholder}
                         maskPattern={MaskConfig.phone.pattern}
@@ -480,31 +428,34 @@ const EmployeeForm = ({id}: IFormProps) => {
                         required={true}
                     />
 
-                    <Input
-                        divClasses='w-full'
-                        label='Email Address'
-                        type='email'
-                        name='email'
-                        value={formData.email}
-                        onChange={(e) => handleChange('email', e.target.value,true)}
-                        isMasked={false}
-                        placeholder='Enter email address'
-                        errorMessage={errorMessages.email}
-                        required={true}
-                    />
+
                     {!router.query.id && (
-                        <Input
-                            divClasses='w-full'
-                            label='Password'
-                            type='password'
-                            name='password'
-                            value={formData.password}
-                            onChange={(e) => handleChange('password', e.target.value,true)}
-                            isMasked={false}
-                            placeholder='Enter login password'
-                            errorMessage={errorMessages.password}
-                            required={true}
-                        />
+                        <>
+                            <Input
+                                divClasses='w-full'
+                                label='Email Address'
+                                type='email'
+                                name='email'
+                                value={formData.email}
+                                onChange={(e) => handleChange('email', e.target.value, true)}
+                                isMasked={false}
+                                placeholder='Enter email address'
+                                errorMessage={errorMessages.email}
+                                required={true}
+                            />
+                            <Input
+                                divClasses='w-full'
+                                label='Password'
+                                type='password'
+                                name='password'
+                                value={formData.password}
+                                onChange={(e) => handleChange('password', e.target.value, true)}
+                                isMasked={false}
+                                placeholder='Enter login password'
+                                errorMessage={errorMessages.password}
+                                required={true}
+                            />
+                        </>
                     )}
 
 
@@ -516,7 +467,7 @@ const EmployeeForm = ({id}: IFormProps) => {
                         type='text'
                         name='id_number'
                         value={formData.id_number}
-                        onChange={(e) => handleChange('id_number', e.target.value,true)}
+                        onChange={(e) => handleChange('id_number', e.target.value, true)}
                         isMasked={true}
                         placeholder={MaskConfig.identityNumber.placeholder}
                         maskPattern={MaskConfig.identityNumber.pattern}
@@ -530,7 +481,7 @@ const EmployeeForm = ({id}: IFormProps) => {
                         type='text'
                         name='passport_number'
                         value={formData.passport_number}
-                        onChange={(e) => handleChange('passport_number', e.target.value,true)}
+                        onChange={(e) => handleChange('passport_number', e.target.value, true)}
                         isMasked={false}
                         placeholder='Enter passport number'
                         errorMessage={errorMessages.passport_number}
@@ -542,11 +493,11 @@ const EmployeeForm = ({id}: IFormProps) => {
                         type='date'
                         name='date_of_joining'
                         value={formData.date_of_joining}
-                        onChange={(date) => handleChange('date_of_joining', date.target.value, true)}
+                        onChange={(date) => handleChange('date_of_joining', date[0].toLocaleDateString(), true)}
                         isMasked={false}
                         placeholder='Enter date of joining'
-                        // errorMessage={errorMessages.date_of_joining}
-                        // required={true}
+                        errorMessage={errorMessages.date_of_joining}
+                        required={true}
                     />
 
                 </div>
@@ -558,7 +509,7 @@ const EmployeeForm = ({id}: IFormProps) => {
                         name='country_id'
                         options={countryOptions}
                         value={formData.country_id}
-                        onChange={(e: any) => handleCountryChange(e)}
+                        onChange={(e: any) => handleChange('country_id', e, false)}
                     />
 
                     <Dropdown
@@ -567,7 +518,7 @@ const EmployeeForm = ({id}: IFormProps) => {
                         name='state_id'
                         options={stateOptions}
                         value={formData.state_id}
-                        onChange={(e: any) => handleStateChange(e)}
+                        onChange={(e: any) => handleChange('state_id', e, false)}
                     />
 
                     <Dropdown
@@ -576,16 +527,7 @@ const EmployeeForm = ({id}: IFormProps) => {
                         name='city_id'
                         options={cityOptions}
                         value={formData.city_id}
-                        onChange={(e: any) => {
-                            if (e && typeof e !== 'undefined') {
-                                handleChange('city_id', e.value,true)
-                            } else {
-                                setFormData(prev => ({
-                                    ...prev,
-                                    city_id: 0
-                                }))
-                            }
-                        }}
+                        onChange={(e: any) => handleChange('city_id', e, false)}
                     />
                 </div>
                 <div className="flex flex-col md:flex-row gap-3 w-full">
@@ -595,11 +537,9 @@ const EmployeeForm = ({id}: IFormProps) => {
                         type='text'
                         name='postal_code'
                         value={formData.postal_code}
-                        onChange={(e) => handleChange('postal_code', e.target.value,true)}
+                        onChange={(e) => handleChange('postal_code', e.target.value, true)}
                         isMasked={false}
                         placeholder='Enter postal code'
-                        // errorMessage={errorMessages.postal_code}
-                        // required={true}
                     />
                     <Input
                         divClasses='w-full'
@@ -607,11 +547,11 @@ const EmployeeForm = ({id}: IFormProps) => {
                         type='text'
                         name='address'
                         value={formData.address}
-                        onChange={(e) => handleChange('address', e.target.value,true)}
+                        onChange={(e) => handleChange('address', e.target.value, e.target.required)}
                         isMasked={false}
                         placeholder='Enter street address'
-                        // errorMessage={errorMessages.address}
-                        // required={true}
+                        required={true}
+                        errorMessage={errorMessages.address}
                     />
                 </div>
 
@@ -640,16 +580,20 @@ const EmployeeForm = ({id}: IFormProps) => {
                         {employeeDocuments.map((document, index) => (
                             <tr key={index}>
                                 <td>
-                                    {document.document && createBlobUrl(document.document)
+                                    {document.document
                                         ? <span className="flex gap-2 items-center text-primary">
                                             <FileDownloader
                                                 file={document.document}
-                                                title='Preview'
+                                                title={
+                                                    <span className="flex justify-center items-center gap-3">
+                                                        {getIcon(IconType.download)}
+                                                        <span>Preview</span>
+                                                    </span>
+                                                }
                                                 buttonVariant={ButtonVariant.primary}
                                                 size={ButtonSize.small}
-                                                buttonType={ButtonType.icon}
+                                                buttonType={ButtonType.link}
                                             />
-                                            <span>Download</span>
                                         </span>
                                         : <span>No Preview</span>
                                     }
@@ -660,7 +604,7 @@ const EmployeeForm = ({id}: IFormProps) => {
                                 <td>
                                     <button
                                         type="button"
-                                        onClick={() => handleRemoveDocument(index)}
+                                        onClick={() => handleRemove(index, 'document')}
                                         className="btn btn-outline-danger btn-sm"
                                     >
                                         Delete
@@ -709,7 +653,7 @@ const EmployeeForm = ({id}: IFormProps) => {
                                 <td>
                                     <button
                                         type="button"
-                                        onClick={() => handleRemoveBank(index)}
+                                        onClick={() => handleRemove(index, 'bank')}
                                         className="btn btn-outline-danger btn-sm"
                                     >
                                         Delete
@@ -723,7 +667,7 @@ const EmployeeForm = ({id}: IFormProps) => {
 
                 <div className="w-full">
                     {isFormValid && <Button
-                        text={employee.loading ? 'Loading...' : router.query.id ? 'Update Employee' : 'Save Employee'}
+                        text={loading ? 'Loading...' : router.query.id ? 'Update Employee' : 'Save Employee'}
                         variant={ButtonVariant.primary}
                         type={ButtonType.submit}
                     />}
@@ -741,27 +685,11 @@ const EmployeeForm = ({id}: IFormProps) => {
                 modalOpen={departmentModalOpen}
                 departments={departmentOptions}
                 setModalOpen={setDepartmentModalOpen}
-                handleAddition={(value: any) => {
-                    dispatch(storeDepartment({
-                        name: value.name,
-                        parent_id: value.parentId,
-                        description: value.description,
-                        is_active: true
-                    }))
-                }}
             />
             <DesignationFormModal
                 modalOpen={designationModalOpen}
                 departments={departmentOptions}
                 setModalOpen={setDesignationModalOpen}
-                handleSubmit={(value: any) => {
-                    dispatch(storeDesignation({
-                        name: value.name,
-                        department_id: value.departmentId,
-                        description: value.description,
-                        is_active: true
-                    }))
-                }}
             />
 
             <BankDetailModal

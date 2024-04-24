@@ -1,28 +1,19 @@
 import React, {useEffect, useState} from 'react';
-import Swal from 'sweetalert2';
-import {useDispatch, useSelector} from 'react-redux';
 import {setPageTitle} from '@/store/slices/themeConfigSlice';
-import {ThunkDispatch} from 'redux-thunk';
-import {IRootState} from '@/store';
-import {AnyAction} from 'redux';
+import {useAppDispatch, useAppSelector} from '@/store';
 import {setAuthToken, setContentType} from '@/configs/api.config';
 import GenericTable from '@/components/GenericTable';
-import 'tippy.js/dist/tippy.css';
-import {deleteProduction, getProductions} from '@/store/slices/productionSlice';
+import {getProductions} from '@/store/slices/productionSlice';
 import IconButton from '@/components/IconButton';
-import {ButtonSize, ButtonType, ButtonVariant, IconType} from '@/utils/enums';
-import {generatePDF, getIcon} from '@/utils/helper';
-import Preview from '@/pages/erp/inventory/productions/preview';
+import {ButtonType, ButtonVariant, IconType} from '@/utils/enums';
+import {getIcon} from '@/utils/helper';
 import {uniqBy} from "lodash";
-import Button from "@/components/Button";
 import PageWrapper from "@/components/PageWrapper";
 
 const Index = () => {
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
-    const {token} = useSelector((state: IRootState) => state.user);
-    const {allProductions, loading, success} = useSelector((state: IRootState) => state.production);
-    const [deleteLoading, setDeleteLoading] = useState(false);
-    const [printLoading, setPrintLoading] = useState<boolean>(false);
+    const dispatch = useAppDispatch();
+    const {token} = useAppSelector(state => state.user);
+    const {allProductions, loading, success} = useAppSelector(state => state.production);
     const [rowData, setRowData] = useState([]);
 
     const breadcrumbItems = [
@@ -40,14 +31,10 @@ const Index = () => {
         },
     ];
 
-    const getRawItems = () => {
+    useEffect(() => {
         setAuthToken(token);
         setContentType('application/json');
         dispatch(getProductions());
-    };
-
-    useEffect(() => {
-        getRawItems();
         dispatch(setPageTitle('All Productions'));
     }, []);
 
@@ -57,66 +44,23 @@ const Index = () => {
         }
     }, [allProductions]);
 
-    const colName = ['id', 'production_code', 'production_name', 'product_assembly', 'is_active'];
-    const header = ['Id', 'Production Code', 'Production Name', 'Product Assembly', 'Status'];
-
-    const handleDelete = (id: number) => {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Are you sure?',
-            text: "You won't be able to revert this!",
-            showCancelButton: true,
-            confirmButtonText: 'Delete',
-            padding: '2em',
-            customClass: 'sweet-alerts',
-        }).then((result) => {
-            if (result.value) {
-                dispatch(deleteProduction(id));
-                setDeleteLoading(true);
-            }
-        });
-    };
-
-    useEffect(() => {
-        if (!deleteLoading) return;
-        if (success) {
-            getRawItems();
-            setDeleteLoading(false);
-            Swal.fire({
-                title: 'Deleted!',
-                text: 'Your file has been deleted.',
-                icon: 'success',
-                customClass: 'sweet-alerts',
-            });
-        } else {
-            Swal.fire({title: 'Failed!', text: 'Something went wrong.', icon: 'error', customClass: 'sweet-alerts'});
-        }
-    }, [success]);
-
     return (
         <PageWrapper
             embedLoader={true}
             breadCrumbItems={breadcrumbItems}
             loading={loading}
+            title="All Productions"
+            buttons={[
+                {
+                    text: 'Create New',
+                    type: ButtonType.link,
+                    variant: ButtonVariant.primary,
+                    icon: IconType.add,
+                    link: '/erp/inventory/productions/create'
+                }
+            ]}
         >
-            <div className="mb-5 flex items-center justify-between">
-                <h5 className="text-lg font-semibold dark:text-white-light">All Productions</h5>
-                <Button
-                    type={ButtonType.link}
-                    text={
-                        <span className="flex items-center">
-                            {getIcon(IconType.add)}
-                            Add New
-                        </span>
-                    }
-                    variant={ButtonVariant.primary}
-                    link="/erp/inventory/productions/create"
-                    size={ButtonSize.small}
-                />
-            </div>
             <GenericTable
-                colName={colName}
-                header={header}
                 rowData={rowData}
                 loading={loading}
                 exportTitle={'all-production-' + Date.now()}
@@ -196,7 +140,7 @@ const Index = () => {
                                     icon={IconType.print}
                                     color={ButtonVariant.secondary}
                                     tooltip="Print"
-                                    onClick={() => generatePDF(<Preview content={row}/>, setPrintLoading)}
+                                    link={`/erp/inventory/productions/print/${row.id}`}
                                 />
 
                                 <IconButton
@@ -206,23 +150,12 @@ const Index = () => {
                                     link={`/erp/inventory/productions/view/${row.id}`}
                                 />
 
-
-                                {row.is_active ? (
-                                    <>
-                                        <IconButton
-                                            icon={IconType.edit}
-                                            color={ButtonVariant.primary}
-                                            tooltip="Edit"
-                                            link={`/erp/inventory/productions/edit/${row.id}`}
-                                        />
-                                        <IconButton
-                                            icon={IconType.delete}
-                                            color={ButtonVariant.danger}
-                                            tooltip="Delete"
-                                            onClick={() => handleDelete(row.id)}
-                                        />
-                                    </>
-                                ) : <></>}
+                                {/*<IconButton*/}
+                                {/*    icon={IconType.edit}*/}
+                                {/*    color={ButtonVariant.primary}*/}
+                                {/*    tooltip="Edit"*/}
+                                {/*    link={`/erp/inventory/productions/edit/${row.id}`}*/}
+                                {/*/>*/}
 
                             </div>
                         ),

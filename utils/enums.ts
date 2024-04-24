@@ -63,6 +63,9 @@ export enum IconType {
     cancel = 'cancel',
     sum = 'sum',
     back = 'back',
+    simpleFile = 'simpleFile',
+    fileWithData = 'fileWithData',
+    fileWithCode = 'fileWithCode',
 }
 
 export enum ListingType {

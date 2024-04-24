@@ -1,22 +1,17 @@
 import React, {useEffect, useState} from 'react';
-import {useDispatch, useSelector} from "react-redux";
-import {ThunkDispatch} from "redux-thunk";
-import {IRootState} from "@/store";
-import {AnyAction} from "redux";
+import {useAppDispatch, useAppSelector} from "@/store";
 import {useRouter} from "next/router";
 import {setPageTitle} from "@/store/slices/themeConfigSlice";
 import {clearRawProductState, showDetails} from "@/store/slices/rawProductSlice";
 import PageWrapper from "@/components/PageWrapper";
-import {generatePDF, getIcon, imagePath} from "@/utils/helper";
+import {serverFilePath} from "@/utils/helper";
 import Image from "next/image";
-import Button from "@/components/Button";
-import {ButtonSize, ButtonType, ButtonVariant, IconType} from "@/utils/enums";
-import Preview from "@/pages/erp/inventory/products/preview";
+import {ButtonType, ButtonVariant, IconType} from "@/utils/enums";
 
 const View = () => {
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
+    const dispatch = useAppDispatch();
     const router = useRouter();
-    const {loading, rawProductDetail} = useSelector((state: IRootState) => state.rawProduct);
+    const {loading, rawProductDetail} = useAppSelector((state) => state.rawProduct);
     const [printLoading, setPrintLoading] = useState<boolean>(false)
     const breadCrumbItems = [
         {
@@ -40,12 +35,8 @@ const View = () => {
     useEffect(() => {
         dispatch(setPageTitle('Details Raw Material'));
         dispatch(clearRawProductState());
-
         const productId = router.query.id;
-        // console.log('Product ID:', productId);
-
         if (productId) {
-            // If the productId is an array (with catch-all routes), take the first element.
             const id = Array.isArray(productId) ? productId[0] : productId;
             dispatch(showDetails(parseInt(id)));
         }
@@ -57,46 +48,37 @@ const View = () => {
             loading={loading}
             breadCrumbItems={breadCrumbItems}
             embedLoader={true}
+            title="Details Raw Material"
+            buttons={[
+                {
+                    text: 'Edit',
+                    type: ButtonType.link,
+                    variant: ButtonVariant.info,
+                    icon: IconType.edit,
+                    link: '/erp/inventory/products/edit/' + router.query.id
+                },
+                {
+                    text: 'Print',
+                    type: ButtonType.link,
+                    variant: ButtonVariant.success,
+                    icon: IconType.print,
+                    link: '/erp/inventory/products/print/' + router.query.id
+                },
+                {
+                    text: 'Back',
+                    type: ButtonType.link,
+                    variant: ButtonVariant.primary,
+                    icon: IconType.back,
+                    link: '/erp/inventory/products'
+                }
+            ]}
         >
             <div>
-                <div className="mb-5 flex items-center justify-between">
-                    <h5 className="text-lg font-semibold dark:text-white-light">
-                        Details of Raw Materials
-                    </h5>
-                    <div className="flex justify-end gap-3">
-                        <Button
-                            text={
-                                printLoading
-                                    ? 'Generating...'
-                                    : <span className="flex items-center">
-                                        {getIcon(IconType.print, 0, 0, 'h-5 w-5 ltr:mr-2 rtl:ml-2')}
-                                        Print
-                                    </span>
-                            }
-                            type={ButtonType.button}
-                            variant={ButtonVariant.success}
-                            size={ButtonSize.small}
-                            disabled={printLoading}
-                            onClick={() => generatePDF(<Preview content={rawProductDetail}/>, setPrintLoading)}
-                        />
-                        <Button
-                            text={
-                                <span className="flex items-center">
-                                    {getIcon(IconType.back)}
-                                    Back
-                                </span>
-                            }
-                            type={ButtonType.link}
-                            variant={ButtonVariant.primary}
-                            link="/erp/inventory/products"
-                            size={ButtonSize.small}
-                        />
-                    </div>
-                </div>
+
                 {rawProductDetail && (
                     <div className='flex w-full flex-col justify-center items-center'>
                         <div className='w-full flex justify-center items-center'>
-                            <Image width={24} height={24} src={imagePath(rawProductDetail?.thumbnail)}
+                            <Image priority={true} width={24} height={24} src={serverFilePath(rawProductDetail?.thumbnail?.path)}
                                    alt="product image"
                                    className="w-24 h-24 object-cover"/>
                         </div>
@@ -110,7 +92,7 @@ const View = () => {
                                 <span>{rawProductDetail.title}</span>
                             </div>
                             <div className="flex flex-col md:flex-row justify-start items-center gap-3">
-                                <strong>Valuation Mehtod: </strong>
+                                <strong>Valuation Method: </strong>
                                 <span>{rawProductDetail.valuation_method}</span>
                             </div>
                             <div className="flex flex-col md:flex-row justify-start items-center gap-3">
@@ -154,7 +136,6 @@ const View = () => {
                         </div>
                     </div>
                 )}
-
             </div>
         </PageWrapper>
     );

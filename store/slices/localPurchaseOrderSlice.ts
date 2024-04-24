@@ -6,6 +6,7 @@ interface ILPOState {
     LPO: any;
     LPODetail: any
     allLPOs: any;
+    items: any;
     loading: boolean;
     error: any;
     success: boolean;
@@ -16,6 +17,7 @@ const initialState: ILPOState = {
     LPO: null,
     LPODetail: null,
     allLPOs: null,
+    items: [],
     loading: false,
     error: null,
     success: false,
@@ -28,7 +30,7 @@ export const getLPO = createAsyncThunk(
         try {
             const response = await API.get('/local-purchase-order');
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -42,7 +44,7 @@ export const storeLPO = createAsyncThunk(
         try {
             const response = await API.post('/local-purchase-order', data);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -52,11 +54,11 @@ export const storeLPO = createAsyncThunk(
 
 export const showDetails = createAsyncThunk(
     'local-purchase-order/show',
-    async (id:number, thunkAPI) => {
+    async (id: number, thunkAPI) => {
         try {
-            const response = await API.get('/local-purchase-order/'+id);
+            const response = await API.get('/local-purchase-order/' + id);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -65,14 +67,13 @@ export const showDetails = createAsyncThunk(
 );
 
 
-
 export const deleteLPO = createAsyncThunk(
     'local-purchase-order/delete',
-    async (id:number, thunkAPI) => {
+    async (id: number, thunkAPI) => {
         try {
-            const response = await API.delete('/local-purchase-order/'+id);
+            const response = await API.delete('/local-purchase-order/' + id);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -82,11 +83,25 @@ export const deleteLPO = createAsyncThunk(
 
 export const getLPOByStatuses = createAsyncThunk(
     'local-purchase-order/by-statuses',
-    async (statuses:any, thunkAPI) => {
+    async (statuses: any, thunkAPI) => {
         try {
             const response = await API.post('/local-purchase-order/by-statuses', statuses);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const getLPOItems = createAsyncThunk(
+    'local-purchase-order/items',
+    async (id: number, thunkAPI) => {
+        try {
+            const response = await API.get('/local-purchase-order/items/' + id);
+            return response.data;
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -104,6 +119,7 @@ export const localPurchaseOrderSlice = createSlice({
             state.error = null;
             state.success = false;
             state.LPODetail = null;
+            state.items = []
         },
     },
     extraReducers: (builder) => {
@@ -167,8 +183,20 @@ export const localPurchaseOrderSlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message;
             })
+            .addCase(getLPOItems.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getLPOItems.fulfilled, (state, action) => {
+                state.loading = false;
+                state.items = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getLPOItems.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
     },
 });
-export const { clearLocalPurchaseOrderState } = localPurchaseOrderSlice.actions;
+export const {clearLocalPurchaseOrderState} = localPurchaseOrderSlice.actions;
 
 export const localPurchaseOrderSliceConfig = configureSlice(localPurchaseOrderSlice, false);

@@ -112,9 +112,15 @@ const QuotationForm = () => {
                 }
                 break;
             case 'product_assembly_id':
+                if (value && typeof value !=='undefined') {
+                    setFormData((prev: any) => ({...prev, [name]: value.value}));
+                } else {
+                    setFormData((prev: any) => ({...prev, [name]: ''}));
+                }
                 handleFormulaChange(value);
                 break;
             case 'no_of_quantity':
+                setFormData((prev: any) => ({...prev, [name]: value}));
                 setFillingRemaining(value);
                 break;
             default:
@@ -140,12 +146,10 @@ const QuotationForm = () => {
     const handleFormulaChange = (e: any) => {
         if (formData.no_of_quantity > 0) {
             if (e && typeof e !== 'undefined') {
-                setFormData({...formData, product_assembly_id: e.value})
                 setAuthToken(token);
                 dispatch(clearProductAssemblyState());
                 dispatch(getAssemblyItems(e.value));
             } else {
-                setFormData({...formData, product_assembly_id: ''})
                 setRawProducts([]);
             }
         } else {
@@ -160,6 +164,10 @@ const QuotationForm = () => {
     const hasInsufficientQuantity = () => {
         return rawProducts.some((row) => row.available_quantity < row.required_quantity);
     };
+
+    useEffect(() => {
+        console.log(formData)
+    }, [formData]);
 
     const handleFillingChange = (value: any) => {
 
@@ -470,23 +478,13 @@ const QuotationForm = () => {
                             name='salesman_id'
                             options={salesmanOptions}
                             value={formData.salesman_id}
-                            onChange={(e: any) => handleChange('salesman_id', e && typeof e !== 'undefined' ? e.value : '', true)}
+                            onChange={(e: any) => handleChange('salesman_id', e, true)}
                             required={true}
                             errorMessage={validations.salesman_id}
                         />
 
                         {formData.filling_id === 0 && (
                             <>
-                                <Dropdown
-                                    divClasses='w-full'
-                                    label='Formula'
-                                    name='product_assembly_id'
-                                    options={productAssemblyOptions}
-                                    value={formData.product_assembly_id}
-                                    onChange={(e: any) => handleChange('product_assembly_id', e && typeof e !== 'undefined' ? e.value : '', true)}
-                                    required={false}
-                                    errorMessage={validations.product_assembly_id}
-                                />
                                 <Input
                                     divClasses='w-full'
                                     label='Production Quantity (KG)'
@@ -498,6 +496,16 @@ const QuotationForm = () => {
                                     placeholder="Production Quantity (KG)"
                                     required={true}
                                     errorMessage={validations.no_of_quantity}
+                                />
+                                <Dropdown
+                                    divClasses='w-full'
+                                    label='Formula'
+                                    name='product_assembly_id'
+                                    options={productAssemblyOptions}
+                                    value={formData.product_assembly_id}
+                                    onChange={(e: any) => handleChange('product_assembly_id', e, true)}
+                                    required={false}
+                                    errorMessage={validations.product_assembly_id}
                                 />
                             </>
                         )}
