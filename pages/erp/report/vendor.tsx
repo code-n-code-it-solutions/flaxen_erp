@@ -113,9 +113,6 @@ const VendorReport = () => {
         }
     }, [representatives])
 
-    const colName = ['id', 'good_receive_note.local_purchase_order.vendor.name', 'good_receive_note.local_purchase_order.vendor.phone', 'good_receive_note.local_purchase_order.vendor.email', 'bill_number', 'bill_amount', 'paid_amount', 'balance'];
-    const header = ['ID', 'Vendor', 'Phone', 'Email', 'Bill Number', 'Bill Amount', 'Paid Amount', 'Balance'];
-
     return (
         <div>
             <Breadcrumb items={[
@@ -196,8 +193,6 @@ const VendorReport = () => {
                     </div>
                     <div className="my-5" hidden={!showReport}>
                         <GenericTable
-                            colName={colName}
-                            header={header}
                             rowData={rowData}
                             loading={loading}
                             exportTitle={'vendor-report-' + Date.now()}

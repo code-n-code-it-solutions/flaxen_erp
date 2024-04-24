@@ -33,9 +33,6 @@ const StockReport = () => {
         }
     }, [stock]);
 
-    const colName = ['id', 'product', 'main_uom', 'sub_uom', 'total_purchases', 'available_stock', 'used_stock'];
-    const header = ['ID', 'Product', 'Main UOM', 'Sub UOM', 'Total Purchases', 'Available Stock', 'Used Stock'];
-
     return (
         <div>
             <Breadcrumb items={[
@@ -93,8 +90,6 @@ const StockReport = () => {
                     {/*    </div>*/}
                     {/*</div>*/}
                     <GenericTable
-                        colName={colName}
-                        header={header}
                         rowData={rowData}
                         loading={loading}
                         exportTitle={'stock-report-' + Date.now()}
