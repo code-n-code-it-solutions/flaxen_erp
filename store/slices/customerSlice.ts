@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {API} from "@/configs/api.config";
 import {configureSlice} from "@/utils/helper";
 
@@ -6,7 +6,7 @@ interface ICustomerState {
     customer: any;
     customerDetail: any
     customers: any;
-    customerTypes:any;
+    customerTypes: any;
     loading: boolean;
     error: any;
     success: boolean;
@@ -30,7 +30,7 @@ export const getCustomers = createAsyncThunk(
         try {
             const response = await API.get('/customer');
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -40,13 +40,56 @@ export const getCustomers = createAsyncThunk(
 
 export const storeCustomer = createAsyncThunk(
     'customer/store',
-    async (data:any, thunkAPI) => {
+    async (data: any, thunkAPI) => {
         try {
             const response = await API.post('/customer', data);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to store';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const showDetails = createAsyncThunk(
+    'customer/show',
+    async (id: number, thunkAPI) => {
+        try {
+            const response = await API.get('/customer/' + id);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const editCustomer = createAsyncThunk(
+    'customer/edit',
+    async (id: number, thunkAPI) => {
+        try {
+            const response = await API.get('/customer/edit/' + id);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const updateCustomer = createAsyncThunk(
+    'customer/update',
+    async (data: any, thunkAPI) => {
+        try {
+            const {id, formData} = data
+            const response = await API.post('/customer/update/' + id, formData);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to update';
             return thunkAPI.rejectWithValue(message);
         }
     }
@@ -58,7 +101,7 @@ export const getCustomerTypes = createAsyncThunk(
         try {
             const response = await API.get('/customer-type');
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -117,8 +160,32 @@ export const customerSlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message;
             })
+            .addCase(showDetails.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(showDetails.fulfilled, (state, action) => {
+                state.loading = false;
+                state.customerDetail = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(showDetails.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(updateCustomer.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(updateCustomer.fulfilled, (state, action) => {
+                state.loading = false;
+                state.customer = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(updateCustomer.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
     },
 });
-export const { clearCustomerState } = customerSlice.actions;
+export const {clearCustomerState} = customerSlice.actions;
 export const customerSliceConfig = configureSlice(customerSlice, false);
 

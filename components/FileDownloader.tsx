@@ -2,16 +2,21 @@ import React from "react";
 import IconButton from "@/components/IconButton";
 import {ButtonSize, ButtonType, ButtonVariant, IconType} from "@/utils/enums";
 import Button from "@/components/Button";
+import {BASE_URL} from "@/configs/server.config";
 
 const FileDownloader = ({file, title, buttonType, buttonVariant, size}: {
-    file: File,
-    title: string,
+    file: File | string,
+    title: any,
     buttonType: ButtonType,
     buttonVariant: ButtonVariant,
     size: ButtonSize
 }) => {
     const downloadFile = () => {
         if (file) {
+            if (typeof file === 'string') {
+                window.open(BASE_URL + '/' + file, '_blank');
+                return;
+            }
             const blobUrl = URL.createObjectURL(file);
             const link = document.createElement('a');
             link.href = blobUrl;

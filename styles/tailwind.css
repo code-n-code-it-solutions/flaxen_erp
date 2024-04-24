@@ -36,7 +36,7 @@
 /* markdown-editor css */
 @import './file-upload-with-preview.min.css';
 
-/* file upload with preview */
+/* file upload with print */
 @import './file-upload-preview.css';
 
 /* dragndrop*/
@@ -102,7 +102,7 @@
     .sidebar ul.sub-menu li button,
     .sidebar ul.sub-menu li a {
         @apply flex items-center px-9 py-2.5 before:h-0.5 before:w-2 before:rounded before:bg-gray-300 hover:bg-gray-100
-      hover:text-primary hover:before:!bg-primary ltr:before:mr-2 rtl:before:ml-2 dark:before:bg-gray-500 dark:hover:bg-gray-900 dark:hover:text-primary;
+        hover:text-primary hover:before:!bg-primary ltr:before:mr-2 rtl:before:ml-2 dark:before:bg-gray-500 dark:hover:bg-gray-900 dark:hover:text-primary;
     }
     .sidebar ul.sub-menu li button.active,
     .sidebar ul.sub-menu li a.active {
@@ -424,7 +424,7 @@
     .form-radio,
     .form-checkbox {
         @apply h-5 w-5 cursor-pointer rounded border-2 border-white-light bg-transparent text-primary !shadow-none !outline-none !ring-0 !ring-offset-0 checked:bg-[length:90%_90%] disabled:cursor-not-allowed disabled:bg-[#eee] ltr:mr-1.5 rtl:ml-1.5
-      dark:border-[#253b5c] dark:checked:border-transparent dark:disabled:bg-[#1b2e4b];
+        dark:border-[#253b5c] dark:checked:border-transparent dark:disabled:bg-[#1b2e4b];
     }
 
     .form-checkbox.outline-primary:checked {
@@ -705,4 +705,45 @@ pre.hljs {
 }
 [class*="-menu"] {
     z-index: 999 !important;
+}
+
+
+@media print {
+
+    body, html {
+        margin: 0;
+        padding: 0;
+        background: #ffffff;
+    }
+    .print-container {
+        width: 200mm;
+        /*min-height: 297mm;*/
+        /* Adjust these values if necessary */
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+        /*page-break-inside: avoid;*/
+        /*page-break-before: auto;*/
+        /*page-break-after: auto;*/
+    }
+
+    .no-print {
+        display: none;
+    }
+
+    @page {
+        margin: 0; /* Adjust if necessary, some printers require a small margin */
+    }
+
+    .page-break-after-always {
+        page-break-after: auto;
+    }
+
+    .page-break-inside-avoid {
+        page-break-inside: avoid;
+    }
+
+    /*.print:justify-start {*/
+    /*    justify-content: flex-start;*/
+    /*}*/
 }

@@ -1,11 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import Swal from 'sweetalert2';
-import {useDispatch, useSelector} from 'react-redux';
 import {setPageTitle} from '@/store/slices/themeConfigSlice';
-import Link from "next/link";
-import {ThunkDispatch} from "redux-thunk";
-import {IRootState} from "@/store";
-import {AnyAction} from "redux";
+import {useAppDispatch, useAppSelector} from "@/store";
 import {setAuthToken, setContentType} from "@/configs/api.config";
 import GenericTable from "@/components/GenericTable";
 import {deleteProductAssembly, getProductAssemblies} from "@/store/slices/productAssemblySlice";
@@ -13,18 +9,15 @@ import 'tippy.js/dist/tippy.css';
 import IconButton from "@/components/IconButton";
 import {ButtonType, ButtonVariant, IconType} from "@/utils/enums";
 import PageWrapper from "@/components/PageWrapper";
-import {generatePDF, getIcon} from "@/utils/helper";
-import Preview from "@/pages/erp/inventory/product-assembly/preview";
+import {getIcon} from "@/utils/helper";
 import {uniqBy} from "lodash";
-import Button from "@/components/Button";
 
 const Index = () => {
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
-    const {token} = useSelector((state: IRootState) => state.user);
-    const {allProductAssemblies, loading, success} = useSelector((state: IRootState) => state.productAssembly);
+    const dispatch = useAppDispatch();
+    const {token} = useAppSelector((state) => state.user);
+    const {allProductAssemblies, loading, success} = useAppSelector((state) => state.productAssembly);
     const [deleteLoading, setDeleteLoading] = useState(false);
     const [rowData, setRowData] = useState([]);
-    const [printLoading, setPrintLoading] = useState<boolean>(false)
     const breadCrumbItems = [
         {
             title: 'Home',
@@ -56,9 +49,6 @@ const Index = () => {
             setRowData(allProductAssemblies)
         }
     }, [allProductAssemblies]);
-
-    const colName = ['id', 'formula_code', 'formula_name', 'product_category', 'is_active'];
-    const header = ['Id', 'Formula Code', 'Formula Name', 'Product Category', 'Items', 'Status'];
 
 
     const handleDelete = (id: number) => {
@@ -98,24 +88,18 @@ const Index = () => {
         <PageWrapper
             breadCrumbItems={breadCrumbItems}
             embedLoader={false}
+            title="All Formulas"
+            buttons={[
+                {
+                    text: 'Create New',
+                    type: ButtonType.link,
+                    variant: ButtonVariant.primary,
+                    icon: IconType.add,
+                    link: '/erp/inventory/product-assembly/create'
+                }
+            ]}
         >
-            <div className="mb-5 flex items-center justify-between">
-                <h5 className="text-lg font-semibold dark:text-white-light">All Formula</h5>
-                <Button
-                    type={ButtonType.link}
-                    text={
-                        <span className="flex items-center">
-                            {getIcon(IconType.add)}
-                            Add New
-                        </span>
-                    }
-                    variant={ButtonVariant.primary}
-                    link="/erp/inventory/product-assembly/create"
-                />
-            </div>
             <GenericTable
-                colName={colName}
-                header={header}
                 rowData={rowData.length > 0 ? rowData : []}
                 loading={loading}
                 exportTitle={'all-formula-' + Date.now()}
@@ -238,8 +222,7 @@ const Index = () => {
                                     icon={IconType.print}
                                     color={ButtonVariant.secondary}
                                     tooltip='Print'
-                                    onClick={() => generatePDF(<Preview content={row}/>, setPrintLoading)
-                                    }
+                                    link={`/erp/inventory/product-assembly/print/${row.id}`}
                                 />
 
                                 <IconButton
@@ -249,12 +232,12 @@ const Index = () => {
                                     link={`/erp/inventory/product-assembly/view/${row.id}`}
                                 />
 
-                                <IconButton
-                                    icon={IconType.edit}
-                                    color={ButtonVariant.primary}
-                                    tooltip='Edit'
-                                    link={`/erp/inventory/product-assembly/edit/${row.id}`}
-                                />
+                                {/*<IconButton*/}
+                                {/*    icon={IconType.edit}*/}
+                                {/*    color={ButtonVariant.primary}*/}
+                                {/*    tooltip='Edit'*/}
+                                {/*    link={`/erp/inventory/product-assembly/edit/${row.id}`}*/}
+                                {/*/>*/}
 
                                 {!row.is_used && (
                                     <IconButton
@@ -270,6 +253,7 @@ const Index = () => {
                     }
                 ]}
             />
+
         </PageWrapper>
     );
 };

@@ -1,62 +1,85 @@
-import React, {Fragment, useEffect, useState} from 'react';
-import {Dialog, Transition} from "@headlessui/react";
-import Select from "react-select";
+import React, {useEffect, useState} from 'react';
 import Modal from "@/components/Modal";
 import {Input} from '@/components/form/Input'
-import  Alert  from "@/components/Alert";
+import Alert from "@/components/Alert";
+import {Dropdown} from "@/components/form/Dropdown";
+import Button from "@/components/Button";
+import {ButtonType, ButtonVariant} from "@/utils/enums";
+import Textarea from "@/components/form/Textarea";
+import Option from "@/components/form/Option";
+import {clearDesignationState, storeDesignation} from "@/store/slices/designationSlice";
+import {useAppDispatch, useAppSelector} from "@/store";
 
 interface IProps {
     modalOpen: boolean;
     setModalOpen: (value: boolean) => void;
-    handleSubmit: (value: any) => void;
     departments: any[];
     modalFormData?: any;
 }
 
-const DesignationFormModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData, departments}: IProps) => {
-    const [name, setName] = useState<string>('');
-    const [departmentId, setDepartmentId] = useState<number>(0);
-    const [description, setDescription] = useState<string>('');
-    const [isActive, setIsActive] = useState<boolean>(true);
-    const [errorMessages, setErrorMessages] = useState({
-        name: "This field is required",
-    })
+const DesignationFormModal = ({modalOpen, setModalOpen, modalFormData, departments}: IProps) => {
+    const dispatch = useAppDispatch()
+    const {designation, loading, success} = useAppSelector((state) => state.designation);
+    const [formData, setFormData] = useState<any>({})
+    const [errorMessages, setErrorMessages] = useState<any>({})
     const [isFormValid, setIsFormValid] = useState<boolean>(false);
     const [validationMessage, setValidationMessage] = useState("");
 
     useEffect(() => {
         if (modalOpen) {
-            setName('');
-            setDepartmentId(0);
-            setDescription('');
-            setIsActive(true)
+            setValidationMessage("")
+            setFormData({is_active: 1})
         }
     }, [modalOpen]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { value,required,name } = e.target;
-        if(name === 'name'){
-            setName(value);
+    const handleChange = (name: string, value: any, required: boolean) => {
+        if (name === 'department_id') {
+            if (value && typeof value !== 'undefined') {
+                setFormData({...formData, [name]: value.value})
+            } else {
+                setFormData({...formData, [name]: ''})
+            }
+        } else if (name === 'is_active') {
+            setFormData({...formData, [name]: value ? 1 : 0})
+        } else {
+            setFormData({...formData, [name]: value})
         }
         if (required) {
+            console.log(value)
             if (!value) {
-                setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
+                setErrorMessages({...errorMessages, [name]: 'This field is required.'});
             } else {
-                setErrorMessages({ ...errorMessages, [name]: '' });
+                setErrorMessages((prev: any) => {
+                    delete prev[name];
+                    return prev;
+                })
             }
         }
     };
 
+    const handleSubmit = () => {
+        if (isFormValid) {
+            dispatch(storeDesignation(formData))
+        } else {
+            setValidationMessage("Please fill the required field.");
+        }
+    }
+
     useEffect(() => {
         const isValid = Object.values(errorMessages).some(message => message !== '');
         setIsFormValid(!isValid);
-        // console.log('Error Messages:', errorMessages);
-        // console.log('isFormValid:', !isValid);
-        if(isValid){
+        if (isValid) {
             setValidationMessage("Please fill the required field.");
         }
+        console.log(isValid, errorMessages)
     }, [errorMessages]);
 
+    useEffect(() => {
+        if (designation && success) {
+            dispatch(clearDesignationState())
+            setModalOpen(false)
+        }
+    }, [success, designation]);
 
     return (
         <Modal
@@ -64,66 +87,87 @@ const DesignationFormModal = ({modalOpen, setModalOpen, handleSubmit, modalFormD
             setShow={setModalOpen}
             title='Add New Designation'
             footer={
-                <div className="mt-8 flex items-center justify-end">
-                    <button type="button" className="btn btn-outline-danger"
-                            onClick={() => setModalOpen(false)}>
-                        Discard
-                    </button>
-                    {isFormValid && <button type="button" className="btn btn-primary ltr:ml-4 rtl:mr-4"
-                            onClick={() => handleSubmit({
-                                name,
-                                departmentId,
-                                description,
-                                isActive
-                            })}>
-                        {modalFormData ? 'Update' : 'Add'}
-                    </button>}
+                <div className="mt-8 flex items-center gap-3 justify-end">
+                    <Button
+                        type={ButtonType.button}
+                        text="Discard"
+                        variant={ButtonVariant.secondary}
+                        onClick={() => setModalOpen(false)}
+                    />
+                    <Button
+                        type={ButtonType.button}
+                        text={modalFormData ? 'Update' : 'Add'}
+                        variant={ButtonVariant.primary}
+                        onClick={() => handleSubmit()}
+                    />
+                    {/*{isFormValid && (*/}
+                    {/*    <Button*/}
+                    {/*        type={ButtonType.button}*/}
+                    {/*        text={modalFormData ? 'Update' : 'Add'}*/}
+                    {/*        variant={ButtonVariant.primary}*/}
+                    {/*        onClick={() => handleSubmit()}*/}
+                    {/*    />*/}
+                    {/*)}*/}
                 </div>
             }
         >
-            {!isFormValid  && validationMessage &&
-               <Alert 
-               alertType="error" 
-               message={validationMessage} 
-               setMessages={setValidationMessage} 
-           />}
+            {!isFormValid && validationMessage &&
+                <Alert
+                    alertType="error"
+                    message={validationMessage}
+                    setMessages={setValidationMessage}
+                />
+            }
 
-            <div className="w-full">
-                {/* <label htmlFor="name">Designation Name</label> */}
-                <Input
+            <Input
+                divClasses="w-full"
                 label='Designation Name'
-                    type="text"
-                    name="name"
-                    placeholder='Enter designation name'
-                    value={name}
-                    onChange={handleChange}
-                    required={true}
-                    isMasked={false}
-                    errorMessage={errorMessages.name}
+                type="text"
+                name="name"
+                placeholder='Enter designation name'
+                value={formData.name}
+                onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
+                required={true}
+                isMasked={false}
+                errorMessage={errorMessages.name}
+            />
+
+            <Dropdown
+                label="Department"
+                name='department_id'
+                options={departments}
+                value={formData.department_id}
+                onChange={(e) => handleChange('department_id', e, true)}
+                required={true}
+                errorMessage={errorMessages.department_id}
+            />
+
+            <Textarea
+                label="Description"
+                name="description"
+                placeholder='Department description'
+                value={formData.description}
+                onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
+                isReactQuill={false}
+            />
+
+            <div className="flex gap-3 items-center justify-start w-full">
+                <Option
+                    label="Is Final Approval"
+                    type="checkbox"
+                    name="is_final_approver"
+                    value={formData.is_final_approver}
+                    defaultChecked={false}
+                    onChange={(e) => handleChange(e.target.name, e.target.checked, e.target.required)}
                 />
-            </div>
-            <div className="w-full">
-                <label htmlFor="parent_id">Department (Optional) </label>
-                <Select
-                    defaultValue={departments[0]}
-                    options={departments}
-                    isSearchable={true}
-                    isClearable={true}
-                    placeholder={'Select Parent Department'}
-                    onChange={(e: any) => setDepartmentId(e && typeof e !== 'undefined' ? e.value : 0)}
-                    required= {true}
+                <Option
+                    label="Is Active"
+                    type="checkbox"
+                    name="is_active"
+                    value={formData.is_active}
+                    defaultChecked={true}
+                    onChange={(e) => handleChange(e.target.name, e.target.checked, e.target.required)}
                 />
-            </div>
-            <div className="w-full">
-                <label htmlFor="description">Description (Optional)</label>
-                <textarea
-                    name="description"
-                    id="description"
-                    className="form-input"
-                    placeholder='Department description'
-                    value={description}
-                    onChange={e => setDescription(e.target.value)}
-                ></textarea>
             </div>
         </Modal>
     );

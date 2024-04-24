@@ -13,6 +13,7 @@ interface IProps {
     onChange: (e: any,required: any) => void;
     errorMessage?: string;
     isDisabled?: boolean;
+    isLoading?: boolean;
 }
 
 export const Dropdown: FC<IProps> = ({
@@ -26,7 +27,8 @@ export const Dropdown: FC<IProps> = ({
                                          otherOptions,
                                          onChange,
                                          errorMessage,
-                                         isDisabled
+                                         isDisabled=false,
+                                         isLoading=false
                                      }) => {
     const customStyles = {
         menuPortal: (base: any) => ({...base, zIndex: 9999}), // Adjust zIndex as needed
@@ -48,6 +50,7 @@ export const Dropdown: FC<IProps> = ({
                 placeholder={'Select ' + label}
                 onChange={onChange}
                 isDisabled={isDisabled}
+                isLoading={isLoading}
                 // menuPortalTarget={document.body}
                 {...otherOptions}
             />

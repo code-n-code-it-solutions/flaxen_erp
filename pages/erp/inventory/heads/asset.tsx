@@ -1,24 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import PageWrapper from "@/components/PageWrapper";
-import { useDispatch, useSelector } from "react-redux";
-import { ThunkDispatch } from "redux-thunk";
-import { IRootState } from "@/store";
-import { AnyAction } from "redux";
+import {useAppDispatch, useAppSelector} from "@/store";
 import GenericTable from "@/components/GenericTable";
-import { generatePDF, getIcon, imagePath } from "@/utils/helper";
-import { ButtonVariant, IconType } from "@/utils/enums";
+import {serverFilePath} from "@/utils/helper";
+import {ButtonType, ButtonVariant, IconType} from "@/utils/enums";
 import IconButton from "@/components/IconButton";
-import Button from "@/components/Button";
-import { setPageTitle } from "@/store/slices/themeConfigSlice";
-import { storeAssets, getAssets, clearAssetState } from "@/store/slices/assetSlice";
+import {setPageTitle} from "@/store/slices/themeConfigSlice";
+import {storeAssets, getAssets, clearAssetState} from "@/store/slices/assetSlice";
 import Image from "next/image";
 import AssetFormModal from "@/components/modals/AssetFormModal";
-import { setAuthToken, setContentType } from "@/configs/api.config";
+import {setAuthToken, setContentType} from "@/configs/api.config";
 
 const Assets = () => {
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
-    const { token } = useSelector((state: IRootState) => state.user);
-    const { assets, loading, success, asset } = useSelector((state: IRootState) => state.asset);
+    const dispatch = useAppDispatch();
+    const {token} = useAppSelector(state => state.user);
+    const {assets, loading, success, asset} = useAppSelector(state => state.asset);
     const [rowData, setRowData] = useState([]);
     const [modalOpen, setModalOpen] = useState<boolean>(false);
     const [detail, setDetail] = useState<any>({});
@@ -42,14 +38,11 @@ const Assets = () => {
         setAuthToken(token)
         setContentType('multipart/form-data')
         if (Object.keys(detail).length > 0) {
-            dispatch(storeAssets({ data: formData, id: detail.id }))
+            dispatch(storeAssets({data: formData, id: detail.id}))
         } else {
             dispatch(storeAssets(formData))
         }
     }
-
-    const colName = ['id', 'thumbnail.path', 'name', 'code', 'description', 'status', 'is_active'];
-    const header = ['Id', 'thumbnail', 'Name', 'Country', 'Code', 'Description', 'Status'];
 
     useEffect(() => {
         setAuthToken(token)
@@ -80,26 +73,21 @@ const Assets = () => {
             embedLoader={false}
             loading={false}
             breadCrumbItems={breadCrumbItems}
-        >
-            <div className="mb-5 flex items-center justify-between">
-                <h5 className="text-lg font-semibold dark:text-white-light">All Assets</h5>
-                <Button
-                    text={
-                        <span className="flex items-center">
-                            {getIcon(IconType.add)}
-                            Add New
-                        </span>
-                    }
-                    variant={ButtonVariant.primary}
-                    onClick={() => {
-                        setModalOpen(true)
+            title="Assets"
+            buttons={[
+                {
+                    text: 'Add New',
+                    type: ButtonType.link,
+                    variant: ButtonVariant.primary,
+                    icon: IconType.back,
+                    onClick: () => {
+                        setModalOpen(false)
                         setDetail({})
-                    }}
-                />
-            </div>
+                    }
+                }
+            ]}
+        >
             <GenericTable
-                colName={colName}
-                header={header}
                 rowData={rowData}
                 loading={loading}
                 exportTitle={'assets' + Date.now()}
@@ -109,8 +97,8 @@ const Assets = () => {
                         accessor: 'row.thumbnail',
                         title: 'Thumbnail',
                         render: (row: any) => (
-                            <Image src={imagePath(row.thumbnail)} alt={row.name}
-                                width={50} height={50} className="rounded" />
+                            <Image priority={true} src={serverFilePath(row.thumbnail)} alt={row.name}
+                                   width={50} height={50} className="rounded"/>
                         ),
                         sortable: true,
                     },

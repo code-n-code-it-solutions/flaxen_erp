@@ -1,22 +1,16 @@
 import React, {useEffect} from 'react';
-import Breadcrumb from "@/components/Breadcrumb";
-import Link from "next/link";
-import {useDispatch, useSelector} from "react-redux";
-import {ThunkDispatch} from "redux-thunk";
-import {IRootState} from "@/store";
-import {AnyAction} from "redux";
+import {useAppDispatch, useAppSelector} from "@/store";
 import {useRouter} from "next/router";
 import {setPageTitle} from "@/store/slices/themeConfigSlice";
 import ProductForm from "@/pages/erp/inventory/products/ProductForm";
 import {clearRawProductState, editRawProduct} from "@/store/slices/rawProductSlice";
 import PageWrapper from "@/components/PageWrapper";
-import {ButtonSize, ButtonType, ButtonVariant} from "@/utils/enums";
-import Button from "@/components/Button";
+import {ButtonType, ButtonVariant, IconType} from "@/utils/enums";
 
 const Edit = () => {
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
+    const dispatch = useAppDispatch();
     const router = useRouter();
-    const {rawProduct, loading} = useSelector((state: IRootState) => state.rawProduct);
+    const {rawProduct, loading} = useAppSelector(state => state.rawProduct);
 
     const breadCrumbItems = [
         {
@@ -57,29 +51,25 @@ const Edit = () => {
             breadCrumbItems={breadCrumbItems}
             embedLoader={true}
             loading={loading}
+            title="Edit Raw Material"
+            buttons={[
+                {
+                    text: 'Print',
+                    type: ButtonType.link,
+                    variant: ButtonVariant.success,
+                    icon: IconType.print,
+                    link: '/erp/inventory/products/print/' + router.query.id
+                },
+                {
+                    text: 'Back',
+                    type: ButtonType.link,
+                    variant: ButtonVariant.primary,
+                    icon: IconType.back,
+                    link: '/erp/inventory/products'
+                }
+            ]}
         >
-            <div>
-                <div className="mb-5 flex items-center justify-between">
-                    <h5 className="text-lg font-semibold dark:text-white-light">Enter Details of Raw Materials</h5>
-                    <Button
-                        text={
-                            <span className="flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ltr:mr-2 rtl:ml-2" width="24"
-                                     height="24" viewBox="0 0 24 24" fill="none">
-                                    <path d="M15 5L9 12L15 19" stroke="currentColor" strokeWidth="1.5"
-                                          strokeLinecap="round" strokeLinejoin="round"/>
-                                </svg>
-                                Back
-                            </span>
-                        }
-                        type={ButtonType.link}
-                        variant={ButtonVariant.primary}
-                        link="/erp/inventory/products"
-                        size={ButtonSize.small}
-                    />
-                </div>
-                <ProductForm id={router.query.id}/>
-            </div>
+            <ProductForm id={router.query.id}/>
         </PageWrapper>
     );
 };

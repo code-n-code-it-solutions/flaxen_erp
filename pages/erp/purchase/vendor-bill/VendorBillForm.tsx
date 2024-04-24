@@ -1,11 +1,7 @@
 "use client";
 import React, {useEffect, useState} from 'react';
 import {setAuthToken, setContentType} from "@/configs/api.config";
-import {useDispatch, useSelector} from "react-redux";
-import {ThunkDispatch} from "redux-thunk";
-import {IRootState} from "@/store";
-import {AnyAction} from "redux";
-import Select from "react-select";
+import {useAppDispatch, useAppSelector} from "@/store";
 import {getGRN} from "@/store/slices/goodReceiveNoteSlice";
 import {clearVendorBillState, storeVendorBill} from "@/store/slices/vendorBillSlice";
 import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
@@ -22,11 +18,11 @@ interface IFormProps {
 }
 
 const VendorBillForm = ({id}: IFormProps) => {
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
-    const {code} = useSelector((state: IRootState) => state.util);
-    const {token, user} = useSelector((state: IRootState) => state.user);
-    const {loading} = useSelector((state: IRootState) => state.vendorBill);
-    const {allGRNs} = useSelector((state: IRootState) => state.goodReceiveNote);
+    const dispatch = useAppDispatch();
+    const {code} = useAppSelector(state => state.util);
+    const {token, user} = useAppSelector(state => state.user);
+    const {loading} = useAppSelector(state => state.vendorBill);
+    const {allGRNs} = useAppSelector(state => state.goodReceiveNote);
     const [rawProducts, setRawProducts] = useState<any[]>([]);
     const [serviceItems, setServiceItems] = useState<any[]>([]);
     const [formData, setFormData] = useState<any>({});
@@ -196,16 +192,16 @@ const VendorBillForm = ({id}: IFormProps) => {
                         isMasked={false}
                         disabled={true}
                     />
-                    <Input
-                        divClasses='w-full'
-                        label='Invoice Number (Ref#)'
-                        type='text'
-                        name='invoice_number'
-                        value={formData.invoice_number}
-                        onChange={(e: any) => handleChange(e.target.name, e.target.value, e.target.required)}
-                        placeholder="Invoice number from vendor invoice"
-                        isMasked={false}
-                    />
+                    {/*<Input*/}
+                    {/*    divClasses='w-full'*/}
+                    {/*    label='Invoice Number (Ref#)'*/}
+                    {/*    type='text'*/}
+                    {/*    name='invoice_number'*/}
+                    {/*    value={formData.invoice_number}*/}
+                    {/*    onChange={(e: any) => handleChange(e.target.name, e.target.value, e.target.required)}*/}
+                    {/*    placeholder="Invoice number from vendor invoice"*/}
+                    {/*    isMasked={false}*/}
+                    {/*/>*/}
 
                 </div>
                 <div className="w-full border rounded p-5 hidden md:block">
@@ -229,7 +225,7 @@ const VendorBillForm = ({id}: IFormProps) => {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full my-5">
                         <div className="w-full">
                             <strong>Requisition Number: </strong>
-                            <span>{grnDetails.purchase_requisition?.pr_code}</span>
+                            <span>{grnDetails?.local_purchase_order?.purchase_requisition?.pr_code}</span>
                         </div>
 
                         <div className="w-full">
@@ -243,9 +239,10 @@ const VendorBillForm = ({id}: IFormProps) => {
                         </div>
 
                         <div className="w-full">
-                            <strong>Purchase By: </strong>
-                            <span>{grnDetails.local_purchase_order?.purchased_by?.name}</span>
+                            <strong>GRN #: </strong>
+                            <span>{grnDetails.grn_number}</span>
                         </div>
+
                         <div className="w-full">
                             <strong>Received By: </strong>
                             <span>{grnDetails.received_by?.name}</span>
