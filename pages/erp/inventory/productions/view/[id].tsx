@@ -145,10 +145,10 @@ const View = () => {
                                         <td>{index + 1}</td>
                                         <td>
                                             <div className="flex justify-start flex-col items-start">
-                                                <span style={{fontSize: 8}}>Code: {item.product?.item_code}</span>
+                                                <span style={{fontSize: 8}}>{item.product?.item_code}</span>
                                                 <span>{item.product?.title}</span>
                                                 <span
-                                                    style={{fontSize: 8}}>VM: {item.product?.valuation_method}</span>
+                                                    style={{fontSize: 8}}>{item.product?.valuation_method}</span>
                                             </div>
                                         </td>
                                         <td>{item.unit?.name}</td>
