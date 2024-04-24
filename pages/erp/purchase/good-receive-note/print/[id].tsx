@@ -49,7 +49,7 @@ const Print = () => {
                                 </span>
                                 <span>
                                     <strong>Requisition Code:</strong>
-                                    {GRNDetail.local_purchase_order?.purchase_requisition?.pr_code}
+                                    {GRNDetail?.local_purchase_order?.purchase_requisition?.pr_code}
                                 </span>
                                 <span>
                                     <strong>Internal Document
@@ -120,10 +120,10 @@ const Print = () => {
                                         <td>{index + 1}</td>
                                         <td>
                                             <div className="flex justify-start flex-col items-start">
-                                                <span style={{fontSize: 8}}>Code: {item.raw_product?.item_code}</span>
+                                                <span style={{fontSize: 8}}>{item.raw_product?.item_code}</span>
                                                 <span>{item.raw_product?.title}</span>
                                                 <span
-                                                    style={{fontSize: 8}}>VM: {item.raw_product?.valuation_method}</span>
+                                                    style={{fontSize: 8}}>{item.raw_product?.valuation_method}</span>
                                             </div>
                                         </td>
                                         <td>{item.unit?.name}</td>
