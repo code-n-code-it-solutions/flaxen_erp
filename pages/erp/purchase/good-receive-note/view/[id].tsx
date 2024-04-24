@@ -143,8 +143,8 @@ const View = () => {
                                 <th>Item</th>
                                 <th>Unit</th>
                                 {/*<th>Description</th>*/}
-                                <th>Quantity</th>
-                                <th>Received Quantity</th>
+                                <th>Qty</th>
+                                <th>R. Qty</th>
                                 <th>Unit Price</th>
                                 <th>Tax Category</th>
                                 <th>Tax Rate</th>
