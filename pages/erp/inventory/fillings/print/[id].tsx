@@ -74,71 +74,111 @@ const Print = () => {
                                 </span>
                             </div>
                         </div>
-                        <h5 className="text-lg font-semibold dark:text-white-light pt-10">Item Details</h5>
-                        <div className="table-responsive">
-                            <table>
-                                <thead>
-                                <tr>
-                                    <th>Sr.No</th>
-                                    <th>Product</th>
-                                    <th>Unit</th>
-                                    <th>Unit Price</th>
-                                    <th>Qty</th>
-                                    <th>Available Qty</th>
-                                    <th>Req Qty</th>
-                                    <th>Total Cost</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-
-                                {fillingDetail?.filling_items.map((item: any, index: any) => (
-
-                                    <tr key={index}>
-                                        <td>{index + 1}</td>
-                                        <td>
-                                            <div className="flex justify-start flex-col items-start">
-                                                <span style={{fontSize: 8}}>{item.product?.item_code}</span>
-                                                <span>{item.product?.title}</span>
-                                                <span
-                                                    style={{fontSize: 8}}>{item.product?.valuation_method}</span>
-                                            </div>
-                                        </td>
-                                        <td>{item.unit?.name}</td>
-                                        <td>{item.unit_cost}</td>
-                                        <td>{item.quantity}</td>
-                                        <td>{item.available_quantity}</td>
-                                        <td>{item.required_quantity}</td>
-
-                                        <td>{(parseFloat(item.unit_cost) * parseFloat(item.quantity)).toFixed(2)}</td>
-
-                                    </tr>
-                                ))}
-                                </tbody>
-                                <tfoot>
-                                <tr>
-                                    <td colSpan={3} className="text-center">Total</td>
-                                    <td>
-                                        {fillingDetail?.filling_items?.reduce((totalCost: number, item: any) => totalCost + parseFloat(item.unit_cost), 0).toFixed(2)}
-                                    </td>
-                                    <td>
-                                        {fillingDetail?.filling_items?.reduce((totalQuantity: number, item: any) => totalQuantity + parseFloat(item.quantity), 0).toFixed(2)}
-                                    </td>
-                                    <td>
-                                        {fillingDetail?.filling_items?.reduce((total_available_quntity: number, item: any) => total_available_quntity + parseFloat(item.available_quantity), 0).toFixed(2)}
-                                    </td>
-                                    <td>
-                                        {fillingDetail?.filling_items?.reduce((total_require_quntity: number, item: any) => total_require_quntity + parseFloat(item.required_quantity), 0).toFixed(2)}
-                                    </td>
-                                    <td>
-                                        {fillingDetail?.filling_items
-                                            ?.reduce((total: number, item: any) => total + parseFloat(item.unit_cost) * parseFloat(item.quantity), 0)
-                                            .toFixed(2)}
-                                    </td>
-                                </tr>
-                                </tfoot>
-                            </table>
-                        </div>
+                        {/*<h5 className="text-lg font-semibold dark:text-white-light pt-10">Item Details</h5>*/}
+                        {/*<div className="table-responsive">*/}
+                        {/*    <table>*/}
+                        {/*        <thead>*/}
+                        {/*        <tr>*/}
+                        {/*            <th>Sr.No</th>*/}
+                        {/*            <th>Product</th>*/}
+                        {/*            <th>Unit</th>*/}
+                        {/*            <th>Unit Price</th>*/}
+                        {/*            <th>Qty</th>*/}
+                        {/*            <th>Available Qty</th>*/}
+                        {/*            <th>Req Qty</th>*/}
+                        {/*            <th>Total Cost</th>*/}
+                        {/*        </tr>*/}
+                        {/*        </thead>*/}
+                        {/*        <tbody>*/}
+                        {/*        {fillingDetail?.filling_items.map((item: any, index: any) => (*/}
+                        {/*            <tr key={index}>*/}
+                        {/*                <td>{index + 1}</td>*/}
+                        {/*                <td>*/}
+                        {/*                    <div className="flex justify-start flex-col items-start">*/}
+                        {/*                        <span style={{fontSize: 8}}>Code: {item.product?.item_code}</span>*/}
+                        {/*                        <span>{item.product?.title}</span>*/}
+                        {/*                        <span*/}
+                        {/*                            style={{fontSize: 8}}>VM: {item.product?.valuation_method}</span>*/}
+                        {/*                    </div>*/}
+                        {/*                </td>*/}
+                        {/*                <td>{item.unit?.name}</td>*/}
+                        {/*                <td>{item.quantity}</td>*/}
+                        {/*                <td>{(item.unit_cost * item.quantity).toFixed(2)}</td>*/}
+                        {/*                <td>{item.available_quantity}</td>*/}
+                        {/*                <td>{item.required_quantity}</td>*/}
+                        {/*                <td>{(parseFloat(item.unit_cost) * parseFloat(item.quantity) * parseFloat(item.required_quantity)).toFixed(2)}</td>*/}
+                        {/*            </tr>*/}
+                        {/*        ))}*/}
+                        {/*        </tbody>*/}
+                        {/*        <tfoot>*/}
+                        {/*        <tr>*/}
+                        {/*            <td colSpan={3} className="text-center">Total</td>*/}
+                        {/*            <td>*/}
+                        {/*                {fillingDetail?.filling_items?.reduce((total: number, item: any) => total + parseFloat(item.quantity), 0).toFixed(2)}*/}
+                        {/*            </td>*/}
+                        {/*            <td>*/}
+                        {/*                {fillingDetail?.filling_items?.reduce((total: number, item: any) => total + (parseFloat(item.unit_cost) * parseFloat(item.quantity)), 0).toFixed(2)}*/}
+                        {/*            </td>*/}
+                        {/*            <td>*/}
+                        {/*                {fillingDetail?.filling_items?.reduce((total: number, item: any) => total + parseFloat(item.available_quantity), 0).toFixed(2)}*/}
+                        {/*            </td>*/}
+                        {/*            <td>*/}
+                        {/*                {fillingDetail?.filling_items?.reduce((total: number, item: any) => total + parseFloat(item.required_quantity), 0).toFixed(2)}*/}
+                        {/*            </td>*/}
+                        {/*            <td>*/}
+                        {/*                {fillingDetail?.filling_items*/}
+                        {/*                    ?.reduce((total: number, item: any) => total + parseFloat(item.unit_cost) * parseFloat(item.quantity) *parseFloat(item.required_quantity), 0)*/}
+                        {/*                    .toFixed(2)}*/}
+                        {/*            </td>*/}
+                        {/*        </tr>*/}
+                        {/*        </tfoot>*/}
+                        {/*    </table>*/}
+                        {/*</div>*/}
                         {/* Filling Calculation */}
+                        <div className="mt-5">
+                            <div className="table-responsive">
+                                <h5 className="text-lg font-semibold dark:text-white-light mb-3">Final Calculation</h5>
+                                <table>
+                                    <thead>
+                                    <tr>
+                                        <th>Filling</th>
+                                        <th>No of Fillings</th>
+                                        <th>Per Filling Cost</th>
+                                        <th>Total Cost</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {fillingDetail?.filling_calculations.length > 0
+                                        ? (fillingDetail?.filling_calculations.map((item: any, index: number) => {
+
+                                                const totalMaterialCost = fillingDetail?.filling_items.reduce((acc: number, item: any) => acc + ((parseFloat(item.unit_cost) * parseFloat(item.quantity) * parseFloat(fillingDetail?.production?.no_of_quantity)) / parseFloat(item.quantity)), 0);
+                                                const perFillingCost = (totalMaterialCost / fillingDetail?.production.no_of_quantity * item.capacity) + item.unit_price;
+                                                const totalFillingCost = perFillingCost * item.required_quantity;
+                                                return (
+                                                    <tr key={index}>
+                                                        <td>
+                                                            <span>{item.product?.item_code}</span>
+                                                            {/*<div className="flex justify-start flex-col items-start">*/}
+                                                            {/*<span style={{fontSize: 8}}>Code: {item.product?.item_code}</span>*/}
+                                                            {/*<span style={{fontSize: 8}}>VM: {item.product?.valuation_method}</span>*/}
+                                                            {/*</div>*/}
+                                                        </td>
+                                                        <td>{item.filling_quantity + '(Kg) / ' + item.required_quantity}</td>
+                                                        <td>{perFillingCost.toFixed(2)}</td>
+                                                        <td>{totalFillingCost.toFixed(2)}</td>
+                                                    </tr>
+                                                );
+                                            })
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={4} className='text-center'>No data found</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
                         <h5 className="text-lg font-semibold dark:text-white-light pt-10">Filling Calculation</h5>
                         <div className="table-responsive">
                             <table>
@@ -161,12 +201,11 @@ const Print = () => {
                                     <tr key={index}>
                                         <td>{index + 1}</td>
                                         <td>
-                                            <div className="flex justify-start flex-col items-start">
-                                                <span style={{fontSize: 8}}>{item.product?.item_code}</span>
-                                                <span>{item.product?.title}</span>
-                                                <span
-                                                    style={{fontSize: 8}}>{item.product?.valuation_method}</span>
-                                            </div>
+                                            <span>{item.product?.item_code}</span>
+                                            {/*<div className="flex justify-start flex-col items-start">*/}
+                                            {/*<span style={{fontSize: 8}}>{item.product?.item_code}</span>*/}
+                                            {/*<span style={{fontSize: 8}}>{item.product?.valuation_method}</span>*/}
+                                            {/*</div>*/}
                                         </td>
                                         <td>{item.unit?.name}</td>
                                         <td>{item.unit_price}</td>
@@ -174,7 +213,7 @@ const Print = () => {
                                         <td>{item.capacity}</td>
                                         <td>{item.required_quantity.toFixed(2)}</td>
 
-                                        <td>{(parseFloat(item.unit_price) * parseFloat(item.filling_quantity)).toFixed(2)}</td>
+                                        <td>{(parseFloat(item.unit_price) * parseFloat(item.required_quantity)).toFixed(2)}</td>
 
                                     </tr>
                                 ))}
@@ -197,13 +236,15 @@ const Print = () => {
                                     </td>
                                     <td>
                                         {fillingDetail?.filling_calculations
-                                            ?.reduce((total: number, item: any) => total + parseFloat(item.unit_price) * parseFloat(item.filling_quantity), 0)
+                                            ?.reduce((total: number, item: any) => total + parseFloat(item.unit_price) * parseFloat(item.required_quantity), 0)
                                             .toFixed(2)}
                                     </td>
                                 </tr>
                                 </tfoot>
                             </table>
                         </div>
+
+
                     </div>
                 )}
         </div>

@@ -86,42 +86,41 @@ const Print = () => {
                         <tr key={index}>
                             <td>{index + 1}</td>
                             <td>
-                                <div className="flex justify-start flex-col items-start">
-                                    <span style={{fontSize: 8}}>Code: {item.product?.item_code}</span>
-                                    <span>{item.product?.title}</span>
-                                    <span style={{fontSize: 8}}>VM: {item.product?.valuation_method}</span>
-                                </div>
+                                <span>{item.product?.item_code}</span>
+                                {/*<div className="flex justify-start flex-col items-start">*/}
+                                    {/*<span style={{fontSize: 8}}>Code: {item.product?.item_code}</span>*/}
+                                    {/*<span style={{fontSize: 8}}>VM: {item.product?.valuation_method}</span>*/}
+                                {/*</div>*/}
                             </td>
                             <td>{item.unit?.name}</td>
                             <td>{item.unit_cost}</td>
                             <td>{item.quantity}</td>
                             <td>{item.available_quantity}</td>
                             <td>{item.required_quantity}</td>
-                            <td>
-                                {(parseFloat(item.unit_cost) * parseFloat(item.quantity) * parseFloat(item.required_quantity)).toFixed(2)}
-                            </td>
+                            <td>{((parseFloat(item.unit_cost) * parseFloat(item.quantity) * parseFloat(productionDetail.no_of_quantity)) / parseFloat(item.quantity)).toFixed(2)}</td>
                         </tr>
                     ))}
                     </tbody>
                     <tfoot>
                     <tr>
-                        <th colSpan={3}>Total</th>
-                        <th>
+                        <td colSpan={3}>Total</td>
+                        <td>
                             {content?.production_items?.reduce((total: number, item: any) => total + parseFloat(item.unit_cost), 0).toFixed(2)}
-                        </th>
-                        <th>
+                        </td>
+                        <td>
                             {content?.production_items?.reduce((total: number, item: any) => total + parseFloat(item.quantity), 0).toFixed(2)}
-                        </th>
-                        <th>
+                        </td>
+                        <td>
                             {content?.production_items?.reduce((total: number, item: any) => total + parseFloat(item.available_quantity), 0).toFixed(2)}
-                        </th>
-                        <th>
+                        </td>
+                        <td>
                             {content?.production_items?.reduce((total: number, item: any) => total + parseFloat(item.required_quantity), 0).toFixed(2)}
-                        </th>
-                        <th>
-                            {content?.production_items?.reduce((total: number, item: any) => total + parseFloat(item.unit_cost) * parseFloat(item.quantity) * parseFloat(item.required_quantity), 0)
+                        </td>
+                        <td>
+                            {productionDetail?.production_items
+                                .reduce((total: number, item: any) => total + ((parseFloat(item.unit_cost) * parseFloat(item.quantity) * parseFloat(productionDetail.no_of_quantity)) / parseFloat(item.quantity)), 0)
                                 .toFixed(2)}
-                        </th>
+                        </td>
                     </tr>
                     </tfoot>
                 </table>

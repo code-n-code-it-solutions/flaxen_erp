@@ -6,6 +6,7 @@ import {ButtonType, ButtonVariant, IconType} from "@/utils/enums";
 import PageWrapper from "@/components/PageWrapper";
 import {clearFillingState} from "@/store/slices/fillingSlice";
 import FillingForm from "@/pages/erp/inventory/fillings/FillingForm";
+import Swal from "sweetalert2";
 
 const Create = () => {
     const dispatch = useAppDispatch();
@@ -27,15 +28,23 @@ const Create = () => {
     useEffect(() => {
         if (filling && success) {
             dispatch(clearFillingState());
-            router.push('/erp/inventory/fillings');
+            Swal.fire({
+                title: 'Form Submitted!',
+                text: 'Your data has been added/updated successfully.',
+                icon: 'success',
+                customClass: 'sweet-alerts'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    router.push('/erp/inventory/fillings');
+                }
+            })
         }
     }, [filling, success]);
 
     return (
         <PageWrapper
             breadCrumbItems={breadCrumbItems}
-            embedLoader={true}
-            loading={loading}
+            embedLoader={false}
             title="Create Filling"
             buttons={[
                 {

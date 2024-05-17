@@ -6,6 +6,8 @@ interface IFillingState {
     filling: any;
     fillingDetail: any;
     fillings: any;
+    lastFillingCalculations: any;
+    finishedGoods: any;
     loading: boolean;
     error: any;
     success: boolean;
@@ -16,6 +18,8 @@ const initialState: IFillingState = {
     filling: null,
     fillingDetail: null,
     fillings: null,
+    lastFillingCalculations: null,
+    finishedGoods: null,
     loading: false,
     error: null,
     success: false,
@@ -37,11 +41,11 @@ export const getFillings = createAsyncThunk(
 );
 export const showDetails = createAsyncThunk(
     'fillings/show',
-    async (id:number, thunkAPI) => {
+    async (id: number, thunkAPI) => {
         try {
-            const response = await API.get('/filling/'+id);
+            const response = await API.get('/filling/' + id);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -121,6 +125,34 @@ export const pendingFillings = createAsyncThunk(
     }
 );
 
+export const getLatestFillingCalculation = createAsyncThunk(
+    'fillings/latest-retail-price',
+    async (_, thunkAPI) => {
+        try {
+            const response = await API.post('/filling/latest-retail-price');
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const getFinishedGoodStock = createAsyncThunk(
+    'fillings/list/by-product-assembly',
+    async (assemblyId: number, thunkAPI) => {
+        try {
+            const response = await API.get('/filling/list/by-product-assembly/' + assemblyId);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 // Slice
 export const fillingSlice = createSlice({
     name: 'fillings',
@@ -130,6 +162,8 @@ export const fillingSlice = createSlice({
             state.filling = null;
             state.error = null;
             state.success = false;
+            state.lastFillingCalculations = null;
+            state.finishedGoods = null;
             state.fillingDetail = null;
         },
     },
@@ -209,10 +243,34 @@ export const fillingSlice = createSlice({
             })
             .addCase(showDetails.fulfilled, (state, action) => {
                 state.loading = false;
-                state.fillingDetail= action.payload.data;
+                state.fillingDetail = action.payload.data;
                 state.success = action.payload.success;
             })
             .addCase(showDetails.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(getLatestFillingCalculation.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getLatestFillingCalculation.fulfilled, (state, action) => {
+                state.loading = false;
+                state.lastFillingCalculations = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getLatestFillingCalculation.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(getFinishedGoodStock.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getFinishedGoodStock.fulfilled, (state, action) => {
+                state.loading = false;
+                state.finishedGoods = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getFinishedGoodStock.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })

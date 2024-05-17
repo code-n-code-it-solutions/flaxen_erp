@@ -47,7 +47,7 @@ const ProductionForm = ({id}: IFormProps) => {
                 if (formData.no_of_quantity > 0) {
                     if (value && typeof value !== 'undefined') {
                         setAuthToken(token);
-                        dispatch(getAssemblyItems(value));
+                        dispatch(getAssemblyItems(value.value));
                         setFormData((prev: any) => ({
                             ...prev,
                             product_assembly_id: value.value,
@@ -81,18 +81,23 @@ const ProductionForm = ({id}: IFormProps) => {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        setFormData((prev: any) => ({
-            ...prev,
+        // setFormData((prev: any) => ({
+        //     ...prev,
+        //     production_items: rawProducts,
+        // }));
+
+        let finalData = {
+            ...formData,
             production_items: rawProducts,
-        }));
+        }
 
         setAuthToken(token);
         setContentType('application/json');
         dispatch(clearProductAssemblyState());
         if (id) {
-            dispatch(updateProduction({id, productionData: formData}));
+            dispatch(updateProduction({id, productionData: finalData}));
         } else {
-            dispatch(storeProduction(formData));
+            dispatch(storeProduction(finalData));
         }
     };
 
@@ -116,8 +121,8 @@ const ProductionForm = ({id}: IFormProps) => {
                 unit_price: parseFloat(item.unit_cost),
                 quantity: parseFloat(item.quantity),
                 available_quantity: parseFloat(item.available_quantity),
-                required_quantity: item.quantity * productionDetail.no_of_quantity,
-                sub_total: item.product.opening_stock_unit_balance * item.quantity * productionDetail.no_of_quantity,
+                required_quantity: parseFloat(item.quantity) * parseFloat(productionDetail.no_of_quantity),
+                sub_total: (parseFloat(item.unit_cost) * parseFloat(item.quantity) * parseFloat(productionDetail.no_of_quantity)) / parseFloat(item.quantity),
             }))
 
             setFormData((prev: any) => ({
@@ -137,8 +142,8 @@ const ProductionForm = ({id}: IFormProps) => {
             let updatedRawProducts = rawProducts.map((row) => {
                 return {
                     ...row,
-                    required_quantity: row.quantity * formData.no_of_quantity,
-                    sub_total: row.available_quantity * row.quantity * formData.no_of_quantity,
+                    required_quantity: parseFloat(row.quantity) * parseFloat(formData.no_of_quantity),
+                    sub_total: (parseFloat(row.unit_price) * parseFloat(row.quantity) * parseFloat(formData.no_of_quantity)) / parseFloat(row.quantity),
                 };
             });
             setRawProducts(updatedRawProducts);
@@ -159,6 +164,7 @@ const ProductionForm = ({id}: IFormProps) => {
 
     useEffect(() => {
         if (assemblyItems) {
+            console.log(assemblyItems)
             let rawProducts = assemblyItems.map((item: any) => {
                 return {
                     raw_product_id: item.raw_product_id,
@@ -167,8 +173,8 @@ const ProductionForm = ({id}: IFormProps) => {
                     unit_price: parseFloat(item.cost),
                     quantity: parseFloat(item.quantity),
                     available_quantity: parseFloat(item.available_stock),
-                    required_quantity: item.quantity * formData.no_of_quantity,
-                    sub_total: item.product.opening_stock_unit_balance * item.quantity * formData.no_of_quantity,
+                    required_quantity: parseFloat(item.quantity) * parseFloat(formData.no_of_quantity),
+                    sub_total: (parseFloat(item.cost) * parseFloat(item.quantity) * parseFloat(formData.no_of_quantity)) / parseFloat(item.quantity),
                 };
             });
             setRawProducts(rawProducts);

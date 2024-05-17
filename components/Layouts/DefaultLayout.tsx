@@ -10,23 +10,20 @@ import Portals from '@/components/Portals';
 import {useRouter} from 'next/router';
 import {checkServerSideAuth} from "@/utils/authCheck";
 import {logoutUser} from "@/store/slices/userSlice";
-import {ThunkDispatch} from "redux-thunk";
-import {AnyAction} from "redux";
 import {clearMenuState} from "@/store/slices/menuSlice";
 import WelcomeModule from "@/components/WelcomeModule";
-import {IRootState, useAppSelector} from "@/store";
-import {RootState} from "@reduxjs/toolkit/query";
+import {IRootState, useAppDispatch, useAppSelector} from "@/store";
 
 const DefaultLayout = ({children}: PropsWithChildren) => {
     const router = useRouter();
+    const dispatch = useAppDispatch();
     const [showLoader, setShowLoader] = useState(true);
     const [showTopButton, setShowTopButton] = useState(false);
     const themeConfig = useAppSelector((state: IRootState) => state.themeConfig);
     const [animation, setAnimation] = useState(themeConfig.animation);
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
 
-    const {token, isLoggedIn} = useSelector((state: IRootState) => state.user);
-    const {activeModule} = useSelector((state: IRootState) => state.menu);
+    const {token, isLoggedIn} = useAppSelector((state) => state.user);
+    const {activeModule} = useAppSelector((state) => state.menu);
     const [moduleChanged, setModuleChanged] = useState<boolean>(false);
 
     // Detect changes in activeModule and update the state accordingly
@@ -77,21 +74,6 @@ const DefaultLayout = ({children}: PropsWithChildren) => {
     useEffect(() => {
         setAnimation(themeConfig.animation);
     }, [themeConfig.animation]);
-
-    // useEffect(() => {
-    //     if (activeModule) {
-    //         setModuleChanged(true)
-    //     }
-    //     return () => {
-    //         setModuleChanged(false)
-    //     }
-    // }, [])
-    //
-    // useEffect(() => {
-    //     if(router.pathname && !moduleChanged) {
-    //         setModuleChanged(false)
-    //     }
-    // }, [router.pathname]);
 
     useEffect(() => {
         setTimeout(() => {

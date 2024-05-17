@@ -1,9 +1,6 @@
 import React, {Dispatch, FC, SetStateAction, useEffect, useState} from 'react';
 import {getRawProducts} from "@/store/slices/rawProductSlice";
-import {useDispatch, useSelector} from "react-redux";
-import {ThunkDispatch} from "redux-thunk";
-import {IRootState} from "@/store";
-import {AnyAction} from "redux";
+import {useAppDispatch, useAppSelector} from "@/store";
 import {setAuthToken} from "@/configs/api.config";
 import {getUnits} from "@/store/slices/unitSlice";
 import {getTaxCategories} from "@/store/slices/taxCategorySlice";
@@ -13,9 +10,13 @@ import IconButton from "@/components/IconButton";
 import GenericTable from "@/components/GenericTable";
 import {getIcon} from "@/utils/helper";
 import Button from "@/components/Button";
+import {getAccountList} from "@/store/slices/accountSlice";
+import {getPurchaseRequisitionByStatuses} from "@/store/slices/purchaseRequisitionSlice";
+import Option from "@/components/form/Option";
 
 interface IProps {
     rawProducts: any[];
+    originalProducts?: any[];
     setRawProducts: Dispatch<SetStateAction<any[]>>;
     type: RAW_PRODUCT_LIST_TYPE;
 }
@@ -51,14 +52,14 @@ const tableStructure = [
     },
     {
         listingFor: RAW_PRODUCT_LIST_TYPE.LOCAL_PURCHASE_ORDER,
-        header: ['Product', 'Desc', 'Unit', 'Qty', 'Unit Price', 'Sub Total', 'Tax Category', 'Tax Rate', 'Tax Amount', 'Total'],
-        columns: ['raw_product_id', 'description', 'unit_id', 'quantity', 'unit_price', 'sub_total', 'tax_category_id', 'tax_rate', 'tax_amount', 'grand_total'],
+        header: ['PR', 'Product', 'Desc', 'Unit', 'Qty', 'Unit Price', 'Sub Total', 'Tax Category', 'Tax Rate', 'Tax Amount', 'Total'],
+        columns: ['purchase_requisition_id', 'raw_product_id', 'description', 'unit_id', 'quantity', 'unit_price', 'sub_total', 'tax_category_id', 'tax_rate', 'tax_amount', 'grand_total'],
         numericColumns: ['quantity', 'unit_price', 'sub_total', 'tax_rate', 'tax_amount', 'grand_total']
     },
     {
         listingFor: RAW_PRODUCT_LIST_TYPE.GOOD_RECEIVE_NOTE,
-        header: ['Product', 'Desc', 'Unit', 'Qty', 'R. Qty', 'Unit Price', 'Sub Total', 'Tax Category', 'Tax Rate', 'Tax Amount', 'Total'],
-        columns: ['raw_product_id', 'description', 'unit_id', 'quantity', 'received_quantity', 'unit_price', 'sub_total', 'tax_category_id', 'tax_rate', 'tax_amount', 'grand_total'],
+        header: ['Product', 'Unit', 'Qty', 'R. Qty', 'Unit Price', 'Sub Total', 'Tax Category', 'Tax Rate', 'Tax Amount', 'Total'],
+        columns: ['raw_product_id', 'unit_id', 'quantity', 'received_quantity', 'unit_price', 'sub_total', 'tax_category_id', 'tax_rate', 'tax_amount', 'grand_total'],
         numericColumns: ['quantity', 'received_quantity', 'unit_price', 'sub_total', 'tax_rate', 'tax_amount', 'grand_total']
     },
     {
@@ -66,45 +67,112 @@ const tableStructure = [
         header: ['Product', 'Desc', 'Unit', 'Qty', 'R. Qty', 'Unit Price', 'Sub Total', 'Tax Category', 'Tax Rate', 'Tax Amount', 'Total'],
         columns: ['raw_product_id', 'description', 'unit_id', 'quantity', 'received_quantity', 'unit_price', 'sub_total', 'tax_category_id', 'tax_rate', 'tax_amount', 'grand_total'],
         numericColumns: ['quantity', 'received_quantity', 'unit_price', 'sub_total', 'tax_rate', 'tax_amount', 'grand_total']
+    },
+    {
+        listingFor: RAW_PRODUCT_LIST_TYPE.EXPENSE,
+        header: ['Account', 'Desc', 'Qty', 'Amount', 'Sub Total', 'Tax Cat', 'Tax Rate', 'Tax Amount', 'Disc Type', 'D. Rate/Amount', 'Total'],
+        columns: ['account_id', 'description', 'quantity', 'amount', 'sub_total', 'tax_category_id', 'tax_rate', 'tax_amount', 'discount_type', 'discount_amount_rate', 'grand_total'],
+        numericColumns: ['quantity', 'amount', 'sub_total', 'tax_amount', 'grand_total']
     }
 ]
 
 const RawProductItemListing: FC<IProps> = ({
                                                rawProducts,
+                                               originalProducts,
                                                setRawProducts,
                                                type
                                            }) => {
+    const dispatch = useAppDispatch();
+    const {token} = useAppSelector((state) => state.user);
+    const {units} = useAppSelector((state) => state.unit);
+    const {allRawProducts} = useAppSelector((state) => state.rawProduct);
+    const {taxCategories} = useAppSelector((state) => state.taxCategory);
+    const {accountList} = useAppSelector(state => state.account);
+    const {purchaseRequests} = useAppSelector(state => state.purchaseRequisition);
+
     const [modalOpen, setModalOpen] = useState(false);
     const [productDetail, setProductDetail] = useState({});
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
     const [unitOptions, setUnitOptions] = useState<any>([]);
     const [productOptions, setProductOptions] = useState<any>([]);
+    const [accountOptions, setAccountOptions] = useState<any>([]);
     const [taxCategoryOptions, setTaxCategoryOptions] = useState<any>([]);
     const [isAdding, setIsAdding] = useState(false);
-    const {token} = useSelector((state: IRootState) => state.user);
-    const {units} = useSelector((state: IRootState) => state.unit);
-    const {allRawProducts} = useSelector((state: IRootState) => state.rawProduct);
-    const {taxCategories} = useSelector((state: IRootState) => state.taxCategory);
     // console.log(rawProducts)
+
     const handleAdd = (value: any) => {
         setIsAdding(true);
         setRawProducts((prev) => {
-            let maxId = 0;
-            prev.forEach(item => {
-                if (item.id > maxId) {
-                    maxId = item.id;
+            // This is your mutable current state.
+            if (type === RAW_PRODUCT_LIST_TYPE.LOCAL_PURCHASE_ORDER) {
+                const index = prev.findIndex(row => row.raw_product_id === value.raw_product_id && row.purchase_requisition_id === value.purchase_requisition_id);
+                if (index !== -1) {
+                    // Fetch the original quantity from originalProducts.
+                    const originalRow = originalProducts?.find(row => row.raw_product_id === value.raw_product_id && row.purchase_requisition_id === value.purchase_requisition_id);
+                    const updatedRow = {
+                        ...prev[index],
+                        ...value,
+                        status: originalRow && originalRow.quantity > value.quantity ? 'pending' : 'completed'
+                    };
+                    return [
+                        ...prev.slice(0, index),
+                        updatedRow,
+                        ...prev.slice(index + 1)
+                    ];
+                } else {
+                    return [...prev, {...value, status: 'completed'}];  // Assuming a new addition defaults to completed
                 }
-            });
-            const existingRow = prev.find(row => row.raw_product_id === value.raw_product_id);
-            if (existingRow) {
-                return prev.map(row => row.raw_product_id === value.raw_product_id ? value : row);
             } else {
-                return [...prev, {...value, id: maxId + 1}];
+                const existingRow = prev.find(row => row.raw_product_id === value.raw_product_id);
+                if (existingRow) {
+                    return prev.map(row => row.raw_product_id === value.raw_product_id ? value : row);
+                } else {
+                    return [...prev, value];
+                }
             }
         });
         setModalOpen(false);
         setIsAdding(false);
     }
+
+
+    // const handleAdd = (value: any) => {
+    //     setIsAdding(true);
+    //     setRawProducts((prev) => {
+    //         if (type === RAW_PRODUCT_LIST_TYPE.LOCAL_PURCHASE_ORDER) {
+    //             const existingRow = prev.find(row => row.raw_product_id === value.raw_product_id && row.purchase_requistion_id === value.purchase_requistion_id);
+    //             const originalState = originalProducts?.find(row => row.raw_product_id === value.raw_product_id && row.purchase_requistion_id === value.purchase_requistion_id);
+    //             // console.log('existingRow', existingRow)
+    //             // console.log('originalState', originalState)
+    //             if (existingRow && originalState) {
+    //                 let newValues = {}
+    //                 if (originalState.quantity > value.quantity) {
+    //                     newValues = {
+    //                         ...value,
+    //                         status: 'pending'
+    //                     }
+    //                 } else {
+    //                     newValues = {
+    //                         ...value,
+    //                         status: 'completed'
+    //                     }
+    //                 }
+    //                 return prev.map(row => row.raw_product_id === value.raw_product_id && row.purchase_requistion_id === value.purchase_requistion_id ? newValues : row);
+    //             } else {
+    //                 return [...prev, value];
+    //             }
+    //         } else {
+    //             const existingRow = prev.find(row => row.raw_product_id === value.raw_product_id);
+    //             if (existingRow) {
+    //                 return prev.map(row => row.raw_product_id === value.raw_product_id ? value : row);
+    //             } else {
+    //                 return [...prev, value];
+    //             }
+    //         }
+    //
+    //     });
+    //     setModalOpen(false);
+    //     setIsAdding(false);
+    // }
 
     const handleRemove = (id: number) => {
         setRawProducts(rawProducts.filter((row: any, index: number) => index !== id));
@@ -113,8 +181,15 @@ const RawProductItemListing: FC<IProps> = ({
 
     useEffect(() => {
         setAuthToken(token)
-        dispatch(getUnits());
-        dispatch(getRawProducts([]));
+        dispatch(getPurchaseRequisitionByStatuses({type: 'Material', statuses: ['Pending', 'Partial']}))
+
+        if (type === RAW_PRODUCT_LIST_TYPE.EXPENSE) {
+            dispatch(getAccountList(0))
+        } else {
+            dispatch(getRawProducts([]));
+            dispatch(getUnits());
+        }
+
         dispatch(getTaxCategories());
     }, []);
 
@@ -152,6 +227,21 @@ const RawProductItemListing: FC<IProps> = ({
         }
     }, [allRawProducts]);
 
+    useEffect(() => {
+        if (accountList) {
+            setAccountOptions([
+                {value: '', label: 'Select Account'},
+                ...accountList.map((account: any) => (
+                    {
+                        value: account.id,
+                        label: account.account_code + ' - ' + account.name + ' (' + account.current_balance + '/-)',
+                        current_balance: account.current_balance
+                    }
+                ))]
+            )
+        }
+    }, [accountList]);
+
     const calculateTotals = (type: RAW_PRODUCT_LIST_TYPE) => {
         const tableConfig = tableStructure.find(table => table.listingFor === type);
         const totals: Totals = {};
@@ -184,21 +274,25 @@ const RawProductItemListing: FC<IProps> = ({
                 render: (row: any, index: number) => (
                     table.numericColumns.includes(column)
                         ? <>{parseFloat(row[column]).toFixed(2)}</>
-                        : column === 'raw_product_id'
-                            ? (
-                                <span className="flex flex-col items-start justify-center gap-1">
-                                    <span
-                                        style={{fontSize: 8}}>Code: {allRawProducts?.find((item: any) => item.id === row[column])?.item_code}</span>
-                                    <span>{productOptions.find((item: any) => item.value === row[column])?.label}</span>
-                                    <span
-                                        style={{fontSize: 8}}>VM: {allRawProducts?.find((item: any) => item.id === row[column])?.valuation_method}</span>
-                                </span>
-                            )
-                            : column === 'unit_id'
-                                ? <>{unitOptions.find((item: any) => item.value === row[column])?.label}</>
-                                : column === 'tax_category_id'
-                                    ? <>{taxCategoryOptions.find((item: any) => item.value === row[column])?.label}</>
-                                    : <>{row[column]}</>
+                        : column === 'purchase_requisition_id'
+                            ? <>{purchaseRequests?.find((item: any) => item.id === row[column])?.pr_code}</>
+                            : column === 'raw_product_id'
+                                ? (
+                                    <span className="flex flex-col items-start justify-center gap-1">
+                                        <span
+                                            style={{fontSize: 8}}>Code: {allRawProducts?.find((item: any) => item.id === row[column])?.item_code}</span>
+                                        <span>{productOptions.find((item: any) => item.value === row[column])?.label}</span>
+                                        <span
+                                            style={{fontSize: 8}}>VM: {allRawProducts?.find((item: any) => item.id === row[column])?.valuation_method}</span>
+                                    </span>
+                                )
+                                : column === 'account_id'
+                                    ? <>{accountOptions?.find((item: any) => item.value === row[column])?.label}</>
+                                    : column === 'unit_id'
+                                        ? <>{unitOptions.find((item: any) => item.value === row[column])?.label}</>
+                                        : column === 'tax_category_id'
+                                            ? <>{taxCategoryOptions.find((item: any) => item.value === row[column])?.label}</>
+                                            : <>{row[column]}</>
                 ),
             })));
         if (rawProducts.length > 0) {
@@ -246,6 +340,10 @@ const RawProductItemListing: FC<IProps> = ({
 
         return columns
     };
+
+    // useEffect(() => {
+    //     console.log('rawProducts', rawProducts)
+    // }, [rawProducts]);
 
     return (
         <div className="table-responsive w-full">

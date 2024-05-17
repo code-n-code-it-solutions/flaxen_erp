@@ -30,7 +30,7 @@ export const getPurchaseRequisitions = createAsyncThunk(
         try {
             const response = await API.get('/purchase-requisition');
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -40,11 +40,11 @@ export const getPurchaseRequisitions = createAsyncThunk(
 
 export const showDetails = createAsyncThunk(
     'purchase-requisition/show',
-    async (id:number, thunkAPI) => {
+    async (id: number, thunkAPI) => {
         try {
-            const response = await API.get('/purchase-requisition/'+id);
+            const response = await API.get('/purchase-requisition/' + id);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -58,7 +58,7 @@ export const storePurchaseRequest = createAsyncThunk(
         try {
             const response = await API.post('/purchase-requisition', data);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -68,11 +68,11 @@ export const storePurchaseRequest = createAsyncThunk(
 
 export const deletePurchaseRequisition = createAsyncThunk(
     'purchase-requisition/delete',
-    async (id:number, thunkAPI) => {
+    async (id: number, thunkAPI) => {
         try {
-            const response = await API.delete('/purchase-requisition/'+id);
+            const response = await API.delete('/purchase-requisition/' + id);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -86,7 +86,7 @@ export const getRequisitionStatues = createAsyncThunk(
         try {
             const response = await API.get('/purchase-requisition/statuses');
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -96,39 +96,41 @@ export const getRequisitionStatues = createAsyncThunk(
 
 export const getPurchaseRequisitionByStatuses = createAsyncThunk(
     'purchase-requisition/by-statuses',
-    async (statuses:any, thunkAPI) => {
+    async (statuses: any, thunkAPI) => {
         try {
             const response = await API.post('/purchase-requisition/by-statuses', statuses);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
         }
     }
 );
+
 export const editPurchaseRequisition = createAsyncThunk(
     'purchaseRquisition/edit',
-    async (id:number, thunkAPI) => {
+    async (id: number, thunkAPI) => {
         try {
-            const response = await API.get('/purchase-requisition/edit/'+id);
+            const response = await API.get('/purchase-requisition/edit/' + id);
             console.log(response)
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to edit';
             return thunkAPI.rejectWithValue(message);
         }
     }
 );
+
 export const updatePurchaseRequisition = createAsyncThunk(
     'purchaseRequisition/update',
-    async (data:any, thunkAPI) => {
+    async (data: any, thunkAPI) => {
         try {
             const {id, purchaseRequisitionData} = data
-            const response = await API.post('/purchase-requisition/update/'+id, purchaseRequisitionData);
+            const response = await API.post('/purchase-requisition/update/' + id, purchaseRequisitionData);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to login';
             return thunkAPI.rejectWithValue(message);
@@ -136,7 +138,21 @@ export const updatePurchaseRequisition = createAsyncThunk(
     }
 );
 
-// Slicee
+export const markRequisitionItemComplete = createAsyncThunk(
+    'purchaseRequisition/items/mark-complete',
+    async (ids: any[], thunkAPI) => {
+        try {
+            const response = await API.post('/purchase-requisition/items/mark-complete', {ids});
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to update';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+// Slice
 export const purchaseRequisitionSlice = createSlice({
     name: 'purchase-requisition',
     initialState,
@@ -245,9 +261,21 @@ export const purchaseRequisitionSlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message;
             })
+            .addCase(markRequisitionItemComplete.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(markRequisitionItemComplete.fulfilled, (state, action) => {
+                state.loading = false;
+                state.purchaseRequests = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(markRequisitionItemComplete.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
 
     },
 });
-export const { clearPurchaseRequisitionState } = purchaseRequisitionSlice.actions;
+export const {clearPurchaseRequisitionState} = purchaseRequisitionSlice.actions;
 
 export const purchaseRequisitionSliceConfig = configureSlice(purchaseRequisitionSlice, false);

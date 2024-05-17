@@ -5,6 +5,7 @@ interface IProps {
     show: boolean;
     setShow: (value: boolean) => void;
     title: string;
+    size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | '7xl' | '8xl' | '9xl' | 'full';
     children: React.ReactNode;
     footer?: React.ReactNode;
 }
@@ -13,6 +14,7 @@ const Modal: FC<IProps> = ({
                                show,
                                setShow,
                                title,
+                               size = 'lg',
                                children,
                                footer
                            }) => {
@@ -42,7 +44,7 @@ const Modal: FC<IProps> = ({
                             leaveTo="opacity-0 scale-95"
                         >
                             <Dialog.Panel as="div"
-                                          className="panel my-8 w-full max-w-lg overflow-hidden rounded-lg border-0 p-0 text-black dark:text-white-dark">
+                                          className={`panel my-8 w-full max-w-${size} overflow-hidden rounded-lg border-0 p-0 text-black dark:text-white-dark`}>
                                 <div
                                     className="flex items-center justify-between bg-[#fbfbfb] px-5 py-3 dark:bg-[#121c2c]">
                                     <div className="text-lg font-bold">{title}</div>

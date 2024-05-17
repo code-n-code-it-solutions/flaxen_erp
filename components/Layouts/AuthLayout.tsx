@@ -1,18 +1,15 @@
 import {PropsWithChildren, useEffect} from 'react';
 import App from '../../App';
-import {useDispatch, useSelector} from "react-redux";
-import {IRootState} from "@/store";
+import {useAppDispatch, useAppSelector} from "@/store";
 import {useRouter} from "next/router";
 import {checkServerSideAuth} from "@/utils/authCheck";
-import {ThunkDispatch} from "redux-thunk";
-import {AnyAction} from "redux";
 import {logoutUser} from "@/store/slices/userSlice";
 import {clearMenuState} from "@/store/slices/menuSlice";
 
 const AuthLayout = ({children}: PropsWithChildren) => {
-    const {token, isLoggedIn} = useSelector((state: IRootState) => state.user);
+    const {token, isLoggedIn} = useAppSelector((state) => state.user);
     const router = useRouter();
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
+    const dispatch = useAppDispatch();
 
     useEffect(() => {
         if (token) {
@@ -21,7 +18,7 @@ const AuthLayout = ({children}: PropsWithChildren) => {
                 .then(r => {
                         // console.log('r', r)
                     if (r) {
-                        router.push('/erp/main');
+                        router.push('/workspace');
                     } else {
                         dispatch(logoutUser());
                         dispatch(clearMenuState());

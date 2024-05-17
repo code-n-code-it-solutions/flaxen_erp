@@ -192,16 +192,16 @@ const VendorBillForm = ({id}: IFormProps) => {
                         isMasked={false}
                         disabled={true}
                     />
-                    {/*<Input*/}
-                    {/*    divClasses='w-full'*/}
-                    {/*    label='Invoice Number (Ref#)'*/}
-                    {/*    type='text'*/}
-                    {/*    name='invoice_number'*/}
-                    {/*    value={formData.invoice_number}*/}
-                    {/*    onChange={(e: any) => handleChange(e.target.name, e.target.value, e.target.required)}*/}
-                    {/*    placeholder="Invoice number from vendor invoice"*/}
-                    {/*    isMasked={false}*/}
-                    {/*/>*/}
+                    <Input
+                        divClasses='w-full'
+                        label='Invoice Number (Ref#)'
+                        type='text'
+                        name='invoice_number'
+                        value={formData.invoice_number}
+                        onChange={(e: any) => handleChange(e.target.name, e.target.value, e.target.required)}
+                        placeholder="Invoice number from vendor invoice"
+                        isMasked={false}
+                    />
 
                 </div>
                 <div className="w-full border rounded p-5 hidden md:block">

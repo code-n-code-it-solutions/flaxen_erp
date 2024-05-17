@@ -39,11 +39,11 @@ export const getQuotations = createAsyncThunk(
 );
 export const showDetails = createAsyncThunk(
     'quotation/show',
-    async (id:number, thunkAPI) => {
+    async (id: number, thunkAPI) => {
         try {
-            const response = await API.get('/quotation/'+id);
+            const response = await API.get('/quotation/' + id);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -53,9 +53,9 @@ export const showDetails = createAsyncThunk(
 
 export const storeQuotation = createAsyncThunk(
     'quotation/store',
-    async (productionData: any, thunkAPI) => {
+    async (data: any, thunkAPI) => {
         try {
-            const response = await API.post('/quotation', productionData);
+            const response = await API.post('/quotation', data);
             return response.data;
         } catch (error: any) {
             const message =
@@ -81,12 +81,12 @@ export const editQuotation = createAsyncThunk(
 
 export const updateQuotation = createAsyncThunk(
     'quotation/update',
-    async (data:any, thunkAPI) => {
+    async (data: any, thunkAPI) => {
         try {
             const {id, productionData} = data
-            const response = await API.post('/quotation/update/'+id, productionData);
+            const response = await API.post('/quotation/update/' + id, productionData);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to update';
             return thunkAPI.rejectWithValue(message);
@@ -137,6 +137,34 @@ export const pendingFillings = createAsyncThunk(
     }
 );
 
+export const pendingQuotations = createAsyncThunk(
+    'quotation/pending-quotation',
+    async (_, thunkAPI) => {
+        try {
+            const response = await API.post('/quotation/pending');
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const getQuotationByProductAssembly = createAsyncThunk(
+    'quotation/list/by-product-assembly',
+    async (productAssemblyId: number, thunkAPI) => {
+        try {
+            const response = await API.post('/quotation/list/by-product-assembly/' + productAssemblyId);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 // Slice
 export const quotationSlice = createSlice({
     name: 'quotation',
@@ -168,7 +196,7 @@ export const quotationSlice = createSlice({
             })
             .addCase(showDetails.fulfilled, (state, action) => {
                 state.loading = false;
-                state.quotationDetail= action.payload.data;
+                state.quotationDetail = action.payload.data;
                 state.success = action.payload.success;
             })
             .addCase(showDetails.rejected, (state, action) => {
@@ -192,7 +220,7 @@ export const quotationSlice = createSlice({
             })
             .addCase(editQuotation.fulfilled, (state, action) => {
                 state.loading = false;
-                state.quotationDetail= action.payload.data;
+                state.quotationDetail = action.payload.data;
                 state.success = action.payload.success;
             })
             .addCase(editQuotation.rejected, (state, action) => {
@@ -204,7 +232,7 @@ export const quotationSlice = createSlice({
             })
             .addCase(updateQuotation.fulfilled, (state, action) => {
                 state.loading = false;
-                state.quotation= action.payload.data;
+                state.quotation = action.payload.data;
                 state.success = action.payload.success;
             })
             .addCase(updateQuotation.rejected, (state, action) => {
@@ -234,15 +262,27 @@ export const quotationSlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message;
             })
-            .addCase(pendingFillings.pending, (state) => {
+            .addCase(pendingQuotations.pending, (state) => {
                 state.loading = true;
             })
-            .addCase(pendingFillings.fulfilled, (state, action) => {
+            .addCase(pendingQuotations.fulfilled, (state, action) => {
                 state.loading = false;
                 state.quotations = action.payload.data;
                 state.success = action.payload.success;
             })
-            .addCase(pendingFillings.rejected, (state, action) => {
+            .addCase(pendingQuotations.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(getQuotationByProductAssembly.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getQuotationByProductAssembly.fulfilled, (state, action) => {
+                state.loading = false;
+                state.quotations = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getQuotationByProductAssembly.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })

@@ -6,6 +6,7 @@ import {configureSlice} from "@/utils/helper";
 // Define a type for the slice state
 interface IUserState {
     user: any;
+    permissions: any;
     token: string;
     isLoggedIn: boolean;
     loading: boolean;
@@ -15,6 +16,7 @@ interface IUserState {
 // Initial state
 const initialState: IUserState = {
     user: null,
+    permissions: null,
     token: '',
     isLoggedIn: false,
     loading: false,
@@ -67,6 +69,7 @@ export const userSlice = createSlice({
                 state.isLoggedIn = true;
                 state.token = action.payload.token;
                 state.user = action.payload.user;
+                state.permissions = action.payload.permissions;
             })
             .addCase(loginUser.rejected, (state, action) => {
                 state.loading = false;

@@ -6,7 +6,7 @@ import {useAppDispatch, useAppSelector} from '@/store';
 import {toggleLocale, toggleTheme} from '@/store/slices/themeConfigSlice';
 import {useTranslation} from 'react-i18next';
 import {toggleSidebar} from '@/store/slices/themeConfigSlice';
-import Dropdown from '../Dropdown';
+import Dropdown from '@/components/Dropdown';
 import {logoutUser} from "@/store/slices/userSlice";
 import {clearMenuState, getPermittedMenu, setActiveModule, setModuleMenus} from "@/store/slices/menuSlice";
 import {setAuthToken} from "@/configs/api.config";

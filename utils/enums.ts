@@ -13,6 +13,9 @@ export enum FORM_CODE_TYPE {
     SERVICE = 'service',
     FILLING = 'filling',
     QUOTATION = 'quotation',
+    EXPENSE = 'general_payment_voucher',
+    DELIVERY_NOTE = 'delivery_note',
+    SALE_INVOICE = 'sale_invoice',
 }
 
 export enum RAW_PRODUCT_LIST_TYPE {
@@ -24,6 +27,7 @@ export enum RAW_PRODUCT_LIST_TYPE {
     GOOD_RECEIVE_NOTE = 'good_receive_note',
     VENDOR_BILL = 'vendor_bill',
     QUOTATION = 'quotation',
+    EXPENSE = 'expense',
 }
 
 export enum ButtonType {

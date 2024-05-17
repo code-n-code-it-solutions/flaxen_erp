@@ -1,10 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import ImageUploader from "@/components/form/ImageUploader";
 import {setAuthToken, setContentType} from "@/configs/api.config";
-import {useDispatch, useSelector} from "react-redux";
-import {ThunkDispatch} from "redux-thunk";
-import {IRootState, useAppDispatch, useAppSelector} from "@/store";
-import {AnyAction} from "redux";
+import {useAppDispatch, useAppSelector} from "@/store";
 import {clearLocationState, getCities, getCountries, getStates} from "@/store/slices/locationSlice";
 import {useRouter} from "next/router";
 import BankDetailModal from "@/components/modals/BankDetailModal";
@@ -20,49 +17,10 @@ import {MaskConfig} from "@/configs/mask.config";
 import {Input} from "@/components/form/Input";
 import {Dropdown} from "@/components/form/Dropdown";
 import Button from "@/components/Button";
-import {createBlobUrl, getIcon, serverFilePath} from "@/utils/helper";
+import {getIcon, serverFilePath} from "@/utils/helper";
 import FileDownloader from "@/components/FileDownloader";
 import {clearRawProductState} from "@/store/slices/rawProductSlice";
 import Alert from "@/components/Alert";
-
-// interface IFormData {
-//     employee_code: string;
-//     name: string;
-//     phone: string,
-//     email: string,
-//     password: string,
-//     postal_code: string,
-//     address: string,
-//     date_of_joining: string,
-//     passport_number: string,
-//     id_number: string,
-//     department_id: number,
-//     designation_id: number,
-//     country_id: number,
-//     state_id: number,
-//     city_id: number,
-//     image: File | null;
-//     bank_accounts: any[];
-//     documents: any[];
-//     is_active: boolean;
-// }
-//
-// interface IBankAccount {
-//     bank_id: number;
-//     bank_name: string;
-//     currency_id: number;
-//     currency_name: string;
-//     currency_code: string;
-//     account_name: string;
-//     account_number: string;
-//     iban: string;
-// }
-//
-// interface IDocuments {
-//     document: File | null;
-//     name: string;
-//     description: string;
-// }
 
 interface IFormProps {
     id?: any

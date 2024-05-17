@@ -156,7 +156,7 @@ const View = () => {
                                         <td>{item.quantity}</td>
                                         <td>{item.available_quantity}</td>
                                         <td>{item.required_quantity}</td>
-                                        <td>{(parseFloat(item.unit_cost) * parseFloat(item.quantity)).toFixed(2)}</td>
+                                        <td>{((parseFloat(item.unit_cost) * parseFloat(item.quantity) * parseFloat(productionDetail.no_of_quantity))/parseFloat(item.quantity)).toFixed(2)}</td>
 
                                     </tr>
                                 ))}
@@ -178,7 +178,7 @@ const View = () => {
                                     </td>
                                     <td>
                                         {productionDetail?.production_items
-                                            .reduce((total: number, item: any) => total + parseFloat(item.unit_cost) * parseFloat(item.quantity), 0)
+                                            .reduce((total: number, item: any) => total + ((parseFloat(item.unit_cost) * parseFloat(item.quantity) * parseFloat(productionDetail.no_of_quantity))/parseFloat(item.quantity)), 0)
                                             .toFixed(2)}
                                     </td>
                                 </tr>

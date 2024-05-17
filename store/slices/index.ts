@@ -30,6 +30,12 @@ import {quotationSliceConfig} from "@/store/slices/quotationSlice";
 import {reportSliceConfig} from "@/store/slices/reportSlice";
 import {themeConfigSliceConfig} from "@/store/slices/themeConfigSlice";
 import {customerSliceConfig} from "@/store/slices/customerSlice";
+import {accountSliceConfig} from "@/store/slices/accountSlice";
+import {transactionSliceConfig} from "@/store/slices/transactionSlice";
+import {expenseSliceConfig} from "@/store/slices/expenseSlice";
+import {deliveryNoteSliceConfig} from "@/store/slices/deliveryNoteSlice";
+import {saleInvoiceSliceConfig} from "@/store/slices/saleInvoiceSlice";
+import {companySliceConfig} from "@/store/slices/companySlice";
 
 
 export const slices = {
@@ -64,7 +70,13 @@ export const slices = {
     quotation: quotationSliceConfig,
     report: reportSliceConfig,
     themeConfig: themeConfigSliceConfig,
-    customer: customerSliceConfig
+    customer: customerSliceConfig,
+    account: accountSliceConfig,
+    transaction: transactionSliceConfig,
+    expense: expenseSliceConfig,
+    deliveryNote: deliveryNoteSliceConfig,
+    saleInvoice: saleInvoiceSliceConfig,
+    company: companySliceConfig
 }
 
 
@@ -100,5 +112,11 @@ export const reducers = {
     quotation: quotationSliceConfig.reducer,
     report: reportSliceConfig.reducer,
     themeConfig: themeConfigSliceConfig.reducer,
-    customer: customerSliceConfig.reducer
+    customer: customerSliceConfig.reducer,
+    account: accountSliceConfig.reducer,
+    transaction: transactionSliceConfig.reducer,
+    expense: expenseSliceConfig.reducer,
+    deliveryNote: deliveryNoteSliceConfig.reducer,
+    saleInvoice: saleInvoiceSliceConfig.reducer,
+    company: companySliceConfig.reducer
 }

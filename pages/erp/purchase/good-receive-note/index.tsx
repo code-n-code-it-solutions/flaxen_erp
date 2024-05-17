@@ -64,39 +64,24 @@ const Index = () => {
                 exportTitle={'all-lpo-' + Date.now()}
                 columns={[
                     {
+                        accessor: 'purchase_requisitions',
+                        title: 'PRs',
+                        render: (row: any) => (
+                            <span>{row.purchase_requisitions?.map((item: any) => item.pr_code).join(", ")}</span>
+                        ),
+                        sortable: true
+                    },
+                    {
+                        accessor: 'local_purchase_orders',
+                        title: 'LPOs',
+                        render: (row: any) => (
+                            <span>{row.local_purchase_orders?.map((item: any) => item.lpo_number).join(", ")}</span>
+                        ),
+                        sortable: true
+                    },
+                    {
                         accessor: 'grn_number',
                         title: 'GRN #',
-                        sortable: true
-                    },
-                    {
-                        accessor: 'local_purchase_order.lpo_number',
-                        title: 'LPO #',
-                        sortable: true
-                    },
-                    {
-                        accessor: 'local_purchase_order.purchase_requisition.pr_code',
-                        title: 'Requisition Code',
-                        sortable: true
-                    },
-                    {
-                        accessor: 'local_purchase_order.internal_document_number',
-                        title: 'ID #',
-                        sortable: true
-                    },
-                    {
-                        accessor: 'vendor.name',
-                        title: 'Vendor',
-                        render: (row: any) => (
-                            <span>{row.local_purchase_order.vendor.name}</span>
-                        ),
-                        sortable: true
-                    },
-                    {
-                        accessor: 'vendor_representative.name',
-                        title: 'V Representative',
-                        render: (row: any) => (
-                            <span>{row.local_purchase_order.vendor_representative.name}</span>
-                        ),
                         sortable: true
                     },
                     {

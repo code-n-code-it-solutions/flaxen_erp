@@ -97,15 +97,18 @@ const Index = () => {
                 rowData={rowData}
                 loading={loading}
                 exportTitle={'all-lpo-' + Date.now()}
+                rowStyle={(row: any) => (theme: any) => {
+                    let status = row.raw_materials?.filter((item: any) => item.status === 'Pending' || item.status === 'Partial').length > 0
+                    return {
+                        backgroundColor: status
+                            ? theme.colors.yellow[1]
+                            : 'auto'
+                    }
+                }}
                 columns={[
                     {
                         accessor: 'lpo_number',
                         title: 'LPO #',
-                        sortable: true
-                    },
-                    {
-                        accessor: 'purchase_requisition.pr_code',
-                        title: 'Requisition Code',
                         sortable: true
                     },
                     {
@@ -119,11 +122,6 @@ const Index = () => {
                     {
                         accessor: 'type',
                         title: 'Type',
-                        sortable: true
-                    },
-                    {
-                        accessor: 'internal_document_number',
-                        title: 'ID #',
                         sortable: true
                     },
                     {
@@ -146,11 +144,6 @@ const Index = () => {
                     {
                         accessor: 'delivery_due_date',
                         title: 'Due Date',
-                        sortable: true
-                    },
-                    {
-                        accessor: 'status',
-                        title: 'Status',
                         sortable: true
                     },
                     {

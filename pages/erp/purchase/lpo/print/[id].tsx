@@ -36,32 +36,23 @@ const Print = () => {
                     </div>
                 ) : (
                     <div className="my-5">
-                        <div className="flex justify-center items-center">
+                        <div className="flex flex-col justify-center items-center">
                             <h1 className="text-lg font-bold">
                                 Purchase Order
                             </h1>
+                            <span className="text-sm">{LPODetail?.lpo_number}</span>
+                            <span className="text-sm">{(new Date(LPODetail?.created_at)).toLocaleDateString() + ' ' + (new Date(LPODetail?.created_at)).toLocaleTimeString()}</span>
                         </div>
-                        <div className="flex justify-between items-center mb-5">
-                            <div className="flex flex-col gap-1">
-                                <span>
-                                    <strong>LPO No:</strong> {LPODetail?.lpo_number}
-                                </span>
-                                <span>
-                                    <strong>Date:</strong> {(new Date(LPODetail?.created_at)).toDateString()}
-                                </span>
-                            </div>
-                            <div className="flex flex-col gap-1">
-                                <span>
-                                    <strong>Requisition Code:</strong> {LPODetail?.purchase_requisition?.pr_code}
-                                </span>
-                                <span>
-                                    <strong>Requested By:</strong> {LPODetail?.purchase_requisition?.employee?.name}
-                                </span>
-                                <span>
-                                    <strong>Internal Document No:</strong> {LPODetail?.internal_document_number}
-                                </span>
-                            </div>
-                        </div>
+                        {/*<div className="flex justify-between items-center mb-5">*/}
+                        {/*<span>*/}
+                        {/*    <strong>LPO No: </strong>*/}
+                        {/*    {LPODetail?.lpo_number}*/}
+                        {/*</span>*/}
+                        {/*<span>*/}
+                        {/*    <strong>Requested By: </strong>*/}
+                        {/*    {LPODetail?.purchase_requisition?.employee?.name}*/}
+                        {/*</span>*/}
+                        {/*</div>*/}
                         <div className="flex justify-between items-center mt-5">
                             <div className="flex flex-col">
                                 <span className="uppercase font-bold">TO</span>
@@ -85,70 +76,98 @@ const Print = () => {
                             </div>
                         </div>
                         <div className="my-5">
-                            <table className="w-full">
-                                <thead>
+                            <table className="w-full text-[12px]">
+                                <thead className="text-[12px]">
                                 <tr>
-                                    <th>#</th>
-                                    <th>Item</th>
-                                    <th>Unit</th>
+                                    <th className="text-[12px]">#</th>
+                                    <th className="text-[12px]">PR</th>
+                                    <th className="text-[12px]">Item</th>
+                                    <th className="text-[12px]">Unit</th>
                                     {/*<th>Description</th>*/}
-                                    <th>Qty</th>
-                                    <th>Unit Price</th>
-                                    <th>Tax Category</th>
-                                    <th>Tax Rate</th>
-                                    <th>Tax Amount</th>
-                                    <th>Total</th>
+                                    <th className="text-[12px]">Unit Price</th>
+                                    <th className="text-[12px]">Qty</th>
+                                    <th className="text-[12px]">Tax</th>
+                                    <th className="text-[12px]">Total</th>
                                 </tr>
                                 </thead>
-                                <tbody>
-                                {LPODetail?.items.map((item: any, index: number) => (
+                                <tbody className="text-[12px]">
+                                {LPODetail?.raw_materials?.map((item: any, index: number) => (
                                     <tr key={index}>
-                                        <td>{index + 1}</td>
-                                        <td>
-                                            <div className="flex justify-start flex-col items-start">
-                                                <span style={{fontSize: 8}}>{item.raw_product?.item_code}</span>
-                                                <span>{item.raw_product?.title}</span>
-                                                <span
-                                                    style={{fontSize: 8}}>{item.raw_product?.valuation_method}</span>
+                                        <td className="text-[12px]">{index + 1}</td>
+                                        <td className="text-[12px]">
+                                            <div className="flex flex-col">
+                                                <span>
+                                                    <strong>PR: </strong>
+                                                    {item.purchase_requisition?.pr_code}
+                                                </span>
+                                                <span>
+                                                    <strong>By: </strong>
+                                                    {item.purchase_requisition?.employee?.name}
+                                                </span>
                                             </div>
                                         </td>
-                                        <td>{item.unit?.name}</td>
+                                        <td className="text-[12px]">{item.raw_product?.item_code}</td>
+                                        <td className="text-[12px]">{item.unit?.name}</td>
                                         {/*<td>{item.description}</td>*/}
-                                        <td>{item.quantity}</td>
-                                        <td>{item.unit_price.toFixed(2)}</td>
-                                        <td>{item.tax_category ? item.tax_category.name : 'None'}</td>
-                                        <td>{item.tax_rate.toFixed(2)}</td>
-                                        <td>{item.tax_amount.toFixed(2)}</td>
-                                        <td>{item.grand_total.toFixed(2)}</td>
+                                        <td className="text-[12px]">{item.unit_price.toFixed(2)}</td>
+                                        <td className="text-[12px]">
+                                            <div className="flex flex-col">
+                                                <span>
+                                                    <strong>Requested: </strong>
+                                                    {item.request_quantity}
+                                                </span>
+                                                <span>
+                                                    <strong>Processed: </strong>
+                                                    {item.processed_quantity}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="text-[12px]">
+                                            <div className="flex flex-col">
+                                                <span>
+                                                    <strong>Category: </strong>
+                                                    {item.tax_category ? item.tax_category.name : 'None'}
+                                                </span>
+                                                <span>
+                                                    <strong>Rate: </strong>
+                                                    {item.tax_rate.toFixed(2)}
+                                                </span>
+                                                <span>
+                                                    <strong>Amount: </strong>
+                                                    {item.tax_amount.toFixed(2)}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="text-[12px]">{(parseFloat(item.processed_quantity) * parseFloat(item.unit_price)).toFixed(2)}</td>
                                     </tr>
                                 ))}
                                 </tbody>
-                                <tfoot>
-                                <tr>
-                                    <td colSpan={8} className="text-right">
-                                        Total Without Tax
-                                    </td>
-                                    <td className="text-left ps-5">
-                                        {LPODetail?.items?.reduce((acc: number, item: any) => acc + item.sub_total, 0).toFixed(2)}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td colSpan={8} className="text-right">
-                                        VAT
-                                    </td>
-                                    <td className="text-left ps-5">
-                                        {LPODetail?.items?.reduce((acc: number, item: any) => acc + item.tax_amount, 0).toFixed(2)}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td colSpan={8} className="text-right">
-                                        Grand Total
-                                    </td>
-                                    <td className="text-left ps-5">
-                                        {LPODetail?.items?.reduce((acc: number, item: any) => acc + item.grand_total, 0).toFixed(2)}
-                                    </td>
-                                </tr>
-                                </tfoot>
+                                {/*<tfoot className="text-[12px]">*/}
+                                {/*<tr>*/}
+                                {/*    <td colSpan={8} className="text-right">*/}
+                                {/*        Total Without Tax*/}
+                                {/*    </td>*/}
+                                {/*    <td className="text-left ps-5">*/}
+                                {/*        {LPODetail?.items?.reduce((acc: number, item: any) => acc + item.sub_total, 0).toFixed(2)}*/}
+                                {/*    </td>*/}
+                                {/*</tr>*/}
+                                {/*<tr>*/}
+                                {/*    <td colSpan={8} className="text-right">*/}
+                                {/*        VAT*/}
+                                {/*    </td>*/}
+                                {/*    <td className="text-left ps-5">*/}
+                                {/*        {LPODetail?.items?.reduce((acc: number, item: any) => acc + item.tax_amount, 0).toFixed(2)}*/}
+                                {/*    </td>*/}
+                                {/*</tr>*/}
+                                {/*<tr>*/}
+                                {/*    <td colSpan={8} className="text-right">*/}
+                                {/*        Grand Total*/}
+                                {/*    </td>*/}
+                                {/*    <td className="text-left ps-5">*/}
+                                {/*        {LPODetail?.items?.reduce((acc: number, item: any) => acc + (parseFloat(item.processed_quantity) * parseFloat(item.unit_price)), 0).toFixed(2)}*/}
+                                {/*    </td>*/}
+                                {/*</tr>*/}
+                                {/*</tfoot>*/}
                             </table>
                         </div>
                         <div className="p-2.5">

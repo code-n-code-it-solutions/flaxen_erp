@@ -109,6 +109,14 @@ const Index = () => {
                 rowData={rowData}
                 loading={loading}
                 exportTitle={'all-purchase-request-' + Date.now()}
+                rowStyle={(row: any) => (theme: any) => {
+                    let status = row.purchase_requisition_items?.filter((item: any) => item.status === 'Pending' || item.status === 'Partial').length > 0
+                    return {
+                        backgroundColor: status
+                            ? theme.colors.yellow[1]
+                            : 'auto'
+                    }
+                }}
                 columns={[
                     {
                         accessor: 'pr_title',
@@ -129,11 +137,6 @@ const Index = () => {
                         sortable: true
                     },
                     {
-                        accessor: 'description',
-                        title: 'Description',
-                        sortable: true
-                    },
-                    {
                         accessor: 'employee.name',
                         title: 'Employee',
                         sortable: true
@@ -141,11 +144,21 @@ const Index = () => {
                     {
                         accessor: 'department?.name',
                         title: 'Department',
+                        render: (row: any) => (
+                            <span>
+                                {row.department ? row.department?.name : 'N/A'}
+                            </span>
+                        ),
                         sortable: true
                     },
                     {
                         accessor: 'designation?.name',
                         title: 'Designation',
+                        render: (row: any) => (
+                            <span>
+                                {row.designation ? row.designation?.name : 'N/A'}
+                            </span>
+                        ),
                         sortable: true
                     },
                     {
@@ -156,29 +169,6 @@ const Index = () => {
                     {
                         accessor: 'requisition_date',
                         title: 'Required Date',
-                        sortable: true
-                    },
-                    {
-                        accessor: 'lpo',
-                        title: 'LPO Code',
-                        render: (row: any) => (
-                            <span>{row.lpo ? row.lpo.lpo_number : 'N/A'}</span>
-                        ),
-                        sortable: true
-                    },
-                    {
-                        accessor: 'lpo.goods_received_note.code',
-                        title: 'Goods Received Note',
-                        render: (row: any) => (
-                            <span>
-                                {row.lpo?.goods_received_note ? row.lpo.goods_received_note?.code : 'N/A'}
-                            </span>
-                        ),
-                        sortable: true
-                    },
-                    {
-                        accessor: 'status',
-                        title: 'Status',
                         sortable: true
                     },
                     {

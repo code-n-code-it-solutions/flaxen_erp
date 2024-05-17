@@ -6,7 +6,7 @@ import {setPageTitle} from '@/store/slices/themeConfigSlice';
 import {useRouter} from 'next/router';
 import {loginUser, logoutUser} from '@/store/slices/userSlice';
 import {ThunkDispatch} from "redux-thunk";
-import { AnyAction } from 'redux';
+import {AnyAction} from 'redux';
 import AuthLayout from "@/components/Layouts/AuthLayout";
 import {setActiveModule} from "@/store/slices/menuSlice";
 
@@ -78,11 +78,18 @@ const Login = () => {
                     <button type="submit" className="btn btn-primary w-full" disabled={loading}>
                         {loading ? 'Loading...' : 'Login'}
                     </button>
+                    <p className="text-center">
+                        Do not have an account yet?
+                        <Link href="/auth/signup" className="font-bold text-primary hover:underline ltr:ml-1 rtl:mr-1">
+                            Register here
+                        </Link>
+                    </p>
                 </form>
             </div>
         </div>
     );
 };
+
 Login.getLayout = (page: any) => {
     return <AuthLayout>{page}</AuthLayout>;
 };

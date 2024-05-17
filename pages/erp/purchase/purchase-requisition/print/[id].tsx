@@ -43,49 +43,48 @@ const Print = () => {
                 : (
                     <div>
                         <div className="flex justify-between items-center">
-                            <div className="flex flex-col gap-3">
+                            <div className="flex flex-col">
                                 <span>
-                                    <strong>Requisition Date:</strong> {purchaseRequestDetail.requisition_date}
+                                    <strong>Requisition Date: </strong> {purchaseRequestDetail?.requisition_date}
                                 </span>
                                 <span>
-                                    <strong>Requisition Title:</strong> {purchaseRequestDetail.pr_title}
+                                    <strong>Requisition Title: </strong> {purchaseRequestDetail?.pr_title}
                                 </span>
                                 <span>
-                                    <strong>Requisition Code:</strong> {purchaseRequestDetail.pr_code}
+                                    <strong>Requisition Code: </strong> {purchaseRequestDetail?.pr_code}
                                 </span>
                                 <span>
-                                    <strong>Date:</strong> {(new Date(purchaseRequestDetail.created_at)).toDateString()}
+                                    <strong>Date: </strong> {(new Date(purchaseRequestDetail?.created_at)).toDateString()}
                                 </span>
                             </div>
-                            <div className="flex flex-col gap-3">
+                            <div className="flex flex-col">
                                 <span>
-                                    <strong>Requisition Status:</strong> {purchaseRequestDetail.status}
+                                    <strong>Requisition Status: </strong> {purchaseRequestDetail?.status}
                                 </span>
                                 <span>
-                                    <strong>Requested By:</strong> {purchaseRequestDetail.employee?.name}
+                                    <strong>Requested By: </strong> {purchaseRequestDetail?.employee?.name}
                                 </span>
                                 <span>
-                                    <strong>Department:</strong> {purchaseRequestDetail.department?.name}
+                                    <strong>Department: </strong> {purchaseRequestDetail?.department ? purchaseRequestDetail?.department?.name : 'N/A'}
                                 </span>
                                 <span>
-                                    <strong>Designation:</strong> {purchaseRequestDetail.designation?.name}
+                                    <strong>Designation: </strong> {purchaseRequestDetail?.designation ? purchaseRequestDetail?.designation?.name : 'N/A'}
                                 </span>
                             </div>
                         </div>
-                        <h1 className="text-lg font-bold mt-5">Requested Items</h1>
-                        <table>
-                            <thead>
+                        <h1 className="font-bold mt-5 mb-2">Requested Items</h1>
+                        <table className="text-[12px]">
+                            <thead className="text-[12px]">
                             {purchaseRequestDetail?.type === 'Material'
                                 ? (
-                                    <tr>
-
-                                        <th>#</th>
-                                        <th>Item</th>
-                                        <th>Description</th>
-                                        <th>Unit</th>
-                                        <th>Unit Price</th>
-                                        <th>Quantity</th>
-                                        <th>Total</th>
+                                    <tr className="text-[12px]">
+                                        <th className="text-[12px]">#</th>
+                                        <th className="text-[12px]">Item</th>
+                                        <th className="text-[12px]">Unit</th>
+                                        <th className="text-[12px]">Unit Price</th>
+                                        <th className="text-[12px]">Quantity</th>
+                                        <th className="text-[12px]">Total (Req)</th>
+                                        <th className="text-[12px]">Status</th>
                                     </tr>
                                 ) : (
                                     <tr>
@@ -98,24 +97,28 @@ const Print = () => {
                                 )}
 
                             </thead>
-                            <tbody>
+                            <tbody className="text-[12px]">
                             {purchaseRequestDetail?.type === 'Material'
                                 ? purchaseRequestDetail?.purchase_requisition_items?.map((item: any, index: number) => (
-                                    <tr key={index}>
-                                        <td>{index + 1}</td>
-                                        <td>
-                                            <div className="flex justify-start flex-col items-start">
-                                                <span style={{fontSize: 8}}>{item.raw_product?.item_code}</span>
-                                                <span>{item.raw_product?.title}</span>
-                                                <span
-                                                    style={{fontSize: 8}}>{item.raw_product?.valuation_method}</span>
+                                    <tr key={index} className="text-[12px]">
+                                        <td className="text-[12px]">{index + 1}</td>
+                                        <td className="text-[12px]">{item.raw_product?.item_code}</td>
+                                        <td className="text-[12px]">{item.unit?.name}</td>
+                                        <td className="text-[12px]">{parseFloat(item.unit_price).toFixed(2)}</td>
+                                        <td className="text-[12px]">
+                                            <div className="flex flex-col">
+                                                <span><strong>Requested: </strong>{parseFloat(item.request_quantity).toFixed(2)}</span>
+                                                <span><strong>Processed: </strong>{parseFloat(item.processed_quantity).toFixed(2)}</span>
+                                                <span><strong>Remaining: </strong>{parseFloat(item.remaining_quantity).toFixed(2)}</span>
                                             </div>
                                         </td>
-                                        <td>{item.unit?.name}</td>
-                                        <td>{item.description}</td>
-                                        <td>{item.unit_price}</td>
-                                        <td>{item.quantity}</td>
-                                        <td>{item.total_price}</td>
+                                        <td className="text-[12px]">{(parseFloat(item.request_quantity) * parseFloat(item.unit_price)).toFixed(2)}</td>
+                                        <td className="text-[12px]">
+                                            <span
+                                                className={`badge bg-${item.status === 'Pending' ? 'danger' : item.status === 'Partial' ? 'warning' : 'success'}`}>
+                                                {item.status}
+                                            </span>
+                                        </td>
                                     </tr>
                                 ))
                                 : purchaseRequestDetail?.purchase_requisition_services?.map((item: any, index: number) => (
@@ -139,18 +142,27 @@ const Print = () => {
                             {purchaseRequestDetail?.type === 'Material'
                                 ? (
                                     <tr>
-                                        <td colSpan={4} style={{"textAlign": "center"}}>
+                                        <td colSpan={3} style={{"textAlign": "center"}}>
                                             <strong>Total</strong>
                                         </td>
                                         <td>
                                             {purchaseRequestDetail?.purchase_requisition_items?.reduce((acc: any, item: any) => acc + parseFloat(item.unit_price), 0).toFixed(2)}
                                         </td>
+                                        <td></td>
+                                        {/*<td>*/}
+                                        {/*    {purchaseRequestDetail?.purchase_requisition_items?.reduce((acc: any, item: any) => acc + parseInt(item.request_quantity), 0).toFixed(2)}*/}
+                                        {/*</td>*/}
+                                        {/*<td>*/}
+                                        {/*    {purchaseRequestDetail?.purchase_requisition_items?.reduce((acc: any, item: any) => acc + parseInt(item.processed_quantity), 0).toFixed(2)}*/}
+                                        {/*</td>*/}
+                                        {/*<td>*/}
+                                        {/*    {purchaseRequestDetail?.purchase_requisition_items?.reduce((acc: any, item: any) => acc + parseInt(item.remaining_quantity), 0).toFixed(2)}*/}
+                                        {/*</td>*/}
                                         <td>
-                                            {purchaseRequestDetail?.purchase_requisition_items?.reduce((acc: any, item: any) => acc + parseInt(item.quantity), 0).toFixed(2)}
+                                            {purchaseRequestDetail?.purchase_requisition_items?.reduce((acc: any, item: any) => acc + parseFloat(item.unit_price) * parseFloat(item.request_quantity), 0).toFixed(2)}
                                         </td>
-                                        <td>
-                                            {purchaseRequestDetail?.purchase_requisition_items?.reduce((acc: any, item: any) => acc + parseFloat(item.unit_price) * parseFloat(item.quantity), 0).toFixed(2)}
-                                        </td>
+                                        <td></td>
+                                        <td></td>
                                     </tr>
                                 ) : (
                                     <></>
