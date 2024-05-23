@@ -36,49 +36,13 @@ const Header = () => {
     }
 
     useEffect(() => {
-        setActiveMenu()
-    }, [activeModule]);
-
-    useEffect(() => {
         if (!isLoggedIn) {
             router.push('/auth/signin')
         } else {
             setAuthToken(token)
-            dispatch(getPermittedMenu());
+            // dispatch(getPermittedMenu());
         }
     }, [isLoggedIn, router])
-
-    const setActiveMenu = () => {
-        const selector = document.querySelector('ul.horizontal-menu a[href="' + window?.location?.pathname + '"]');
-        if (selector) {
-            const all: any = document.querySelectorAll('ul.horizontal-menu .nav-link.active');
-            for (let i = 0; i < all.length; i++) {
-                all[0]?.classList.remove('active');
-            }
-
-            let allLinks = document.querySelectorAll('ul.horizontal-menu a.active');
-            for (let i = 0; i < allLinks.length; i++) {
-                const element = allLinks[i];
-                element?.classList.remove('active');
-            }
-            selector?.classList.add('active');
-
-            const ul: any = selector.closest('ul.sub-menu');
-            if (ul) {
-                let ele: any = ul.closest('li.menu').querySelectorAll('.nav-link');
-                if (ele) {
-                    ele = ele[0];
-                    setTimeout(() => {
-                        ele?.classList.add('active');
-                    });
-                }
-            }
-        }
-    }
-
-    useEffect(() => {
-        setActiveMenu()
-    }, [router.pathname]);
 
     useEffect(() => {
         setFlag(localStorage.getItem('i18nextLng') || themeConfig.locale);
@@ -97,8 +61,8 @@ const Header = () => {
                         <Link href="/" className="main-logo flex shrink-0 items-center">
                             {/*<img className="inline w-8 ltr:-ml-1 rtl:-mr-1" src="/assets/images/logo.svg" alt="logo"/>*/}
                             <span
-                                className="hidden align-middle text-2xl  font-semibold  transition-all duration-300 ltr:ml-1.5 rtl:mr-1.5 dark:text-white-light md:inline">
-                                S-ERP
+                                className="hidden align-middle text-2xl font-semibold transition-all duration-300 ltr:ml-1.5 rtl:mr-1.5 dark:text-white-light md:inline">
+                                Workspace
                             </span>
                         </Link>
                         <button
@@ -119,7 +83,19 @@ const Header = () => {
                     <div
                         className="flex items-center space-x-1.5 ltr:ml-auto rtl:mr-auto rtl:space-x-reverse dark:text-[#d0d2d6] sm:flex-1 ltr:sm:ml-0 sm:rtl:mr-0 lg:space-x-2">
                         <div className="sm:ltr:mr-auto sm:rtl:ml-auto">
-
+                            {/* horizontal menu */}
+                            <ul className="top-nav lg:flex hidden py-1.5 px-6 dark:text-white-light font-semibold text-black rtl:space-x-reverse lg:space-x-1.5 xl:space-x-8">
+                                <li className="menu nav-item">
+                                    <Link href='/workspace' className="nav-link">
+                                        <span className="px-1">{t('dashboard')}</span>
+                                    </Link>
+                                </li>
+                                <li className="menu nav-item">
+                                    <Link href='/workspace/companies' className="nav-link">
+                                        <span className="px-1">{t('companies')}</span>
+                                    </Link>
+                                </li>
+                            </ul>
                         </div>
                         <div>
                             <Link href="/workspace/apps/chat"
@@ -314,55 +290,6 @@ const Header = () => {
                         </div>
                     </div>
                 </div>
-
-                {/* horizontal menu */}
-                <ul className="horizontal-menu hidden border-t border-[#ebedf2] bg-white py-1.5 px-6 font-semibold text-black rtl:space-x-reverse dark:border-[#191e3a] dark:bg-black dark:text-white-dark lg:space-x-1.5 xl:space-x-8">
-                    <li className="menu nav-item">
-                        <Link href='/workspace' className="nav-link">
-                            <div className="flex items-center gap-1">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                     xmlns="http://www.w3.org/2000/svg">
-                                    <path
-                                        d="M13.5 15.5C13.5 13.6144 13.5 12.6716 14.0858 12.0858C14.6716 11.5 15.6144 11.5 17.5 11.5C19.3856 11.5 20.3284 11.5 20.9142 12.0858C21.5 12.6716 21.5 13.6144 21.5 15.5V17.5C21.5 19.3856 21.5 20.3284 20.9142 20.9142C20.3284 21.5 19.3856 21.5 17.5 21.5C15.6144 21.5 14.6716 21.5 14.0858 20.9142C13.5 20.3284 13.5 19.3856 13.5 17.5V15.5Z"
-                                        stroke="currentColor" strokeWidth="1.5"/>
-                                    <path
-                                        d="M2 8.5C2 10.3856 2 11.3284 2.58579 11.9142C3.17157 12.5 4.11438 12.5 6 12.5C7.88562 12.5 8.82843 12.5 9.41421 11.9142C10 11.3284 10 10.3856 10 8.5V6.5C10 4.61438 10 3.67157 9.41421 3.08579C8.82843 2.5 7.88562 2.5 6 2.5C4.11438 2.5 3.17157 2.5 2.58579 3.08579C2 3.67157 2 4.61438 2 6.5V8.5Z"
-                                        stroke="currentColor" strokeWidth="1.5"/>
-                                    <path
-                                        d="M13.5 5.5C13.5 4.56812 13.5 4.10218 13.6522 3.73463C13.8552 3.24458 14.2446 2.85523 14.7346 2.65224C15.1022 2.5 15.5681 2.5 16.5 2.5H18.5C19.4319 2.5 19.8978 2.5 20.2654 2.65224C20.7554 2.85523 21.1448 3.24458 21.3478 3.73463C21.5 4.10218 21.5 4.56812 21.5 5.5C21.5 6.43188 21.5 6.89782 21.3478 7.26537C21.1448 7.75542 20.7554 8.14477 20.2654 8.34776C19.8978 8.5 19.4319 8.5 18.5 8.5H16.5C15.5681 8.5 15.1022 8.5 14.7346 8.34776C14.2446 8.14477 13.8552 7.75542 13.6522 7.26537C13.5 6.89782 13.5 6.43188 13.5 5.5Z"
-                                        stroke="currentColor" strokeWidth="1.5"/>
-                                    <path
-                                        d="M2 18.5C2 19.4319 2 19.8978 2.15224 20.2654C2.35523 20.7554 2.74458 21.1448 3.23463 21.3478C3.60218 21.5 4.06812 21.5 5 21.5H7C7.93188 21.5 8.39782 21.5 8.76537 21.3478C9.25542 21.1448 9.64477 20.7554 9.84776 20.2654C10 19.8978 10 19.4319 10 18.5C10 17.5681 10 17.1022 9.84776 16.7346C9.64477 16.2446 9.25542 15.8552 8.76537 15.6522C8.39782 15.5 7.93188 15.5 7 15.5H5C4.06812 15.5 3.60218 15.5 3.23463 15.6522C2.74458 15.8552 2.35523 16.2446 2.15224 16.7346C2 17.1022 2 17.5681 2 18.5Z"
-                                        stroke="currentColor" strokeWidth="1.5"/>
-                                </svg>
-
-                                <span className="px-1">{t('dashboard')}</span>
-                            </div>
-                        </Link>
-                    </li>
-                    <li className="menu nav-item">
-                        <Link href='/workspace/companies' className="nav-link">
-                            <div className="flex items-center gap-1">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                     xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M22 22L2 22" stroke="currentColor" strokeWidth="1.5"
-                                          strokeLinecap="round"/>
-                                    <path
-                                        d="M21 22V6C21 4.11438 21 3.17157 20.4143 2.58579C19.8285 2 18.8857 2 17 2H15C13.1144 2 12.1716 2 11.5858 2.58579C11.1143 3.05733 11.0223 3.76022 11.0044 5"
-                                        stroke="currentColor" strokeWidth="1.5"/>
-                                    <path
-                                        d="M15 22V9C15 7.11438 15 6.17157 14.4142 5.58579C13.8284 5 12.8856 5 11 5H7C5.11438 5 4.17157 5 3.58579 5.58579C3 6.17157 3 7.11438 3 9V22"
-                                        stroke="currentColor" strokeWidth="1.5"/>
-                                    <path d="M9 22V19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                                    <path d="M6 8H12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                                    <path d="M6 11H12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                                    <path d="M6 14H12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                                </svg>
-                                <span className="px-1">{t('companies')}</span>
-                            </div>
-                        </Link>
-                    </li>
-                </ul>
             </div>
         </header>
     );

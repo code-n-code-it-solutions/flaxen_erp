@@ -7,7 +7,7 @@ import {logoutUser} from "@/store/slices/userSlice";
 import {clearMenuState} from "@/store/slices/menuSlice";
 
 const AuthLayout = ({children}: PropsWithChildren) => {
-    const {token, isLoggedIn} = useAppSelector((state) => state.user);
+    const {token, isLoggedIn, user} = useAppSelector((state) => state.user);
     const router = useRouter();
     const dispatch = useAppDispatch();
 
@@ -18,7 +18,12 @@ const AuthLayout = ({children}: PropsWithChildren) => {
                 .then(r => {
                         // console.log('r', r)
                     if (r) {
-                        router.push('/workspace');
+                        if(user.roles.map((role:any) => role.name).includes('Admin')) {
+                            router.push('/workspace');
+                        } else {
+                            router.push('/erp/main');
+                        }
+
                     } else {
                         dispatch(logoutUser());
                         dispatch(clearMenuState());

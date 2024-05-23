@@ -1,6 +1,6 @@
-import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
-import {API} from "@/configs/api.config";
-import {configureSlice} from "@/utils/helper";
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { API } from '@/configs/api.config';
+import { configureSlice } from '@/utils/helper';
 
 interface IMenusState {
     permittedMenus: any;
@@ -18,17 +18,17 @@ const initialState: IMenusState = {
     moduleMenus: null,
     loading: false,
     error: null,
-    success: false,
+    success: false
 };
 
 // Async thunks
 export const getPermittedMenu = createAsyncThunk(
     'menus/permitted',
-    async (_, thunkAPI) => {
+    async (pluginId: number, thunkAPI) => {
         try {
-            const response = await API.get('/menu');
+            const response = await API.get('/menu/by-plugin/' + pluginId);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -53,7 +53,7 @@ export const menuSlice = createSlice({
         },
         setModuleMenus: (state, action) => {
             state.moduleMenus = action.payload;
-        },
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -68,12 +68,13 @@ export const menuSlice = createSlice({
             .addCase(getPermittedMenu.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
-            })
-    },
+            });
+    }
 });
 export const {
     clearMenuState,
     setModuleMenus,
-    setActiveModule } = menuSlice.actions;
+    setActiveModule
+} = menuSlice.actions;
 
 export const menuSliceConfig = configureSlice(menuSlice, true);

@@ -36,6 +36,7 @@ import {expenseSliceConfig} from "@/store/slices/expenseSlice";
 import {deliveryNoteSliceConfig} from "@/store/slices/deliveryNoteSlice";
 import {saleInvoiceSliceConfig} from "@/store/slices/saleInvoiceSlice";
 import {companySliceConfig} from "@/store/slices/companySlice";
+import { pluginSliceConfig } from '@/store/slices/pluginSlice';
 
 
 export const slices = {
@@ -76,7 +77,8 @@ export const slices = {
     expense: expenseSliceConfig,
     deliveryNote: deliveryNoteSliceConfig,
     saleInvoice: saleInvoiceSliceConfig,
-    company: companySliceConfig
+    company: companySliceConfig,
+    plugin: pluginSliceConfig
 }
 
 
@@ -118,5 +120,6 @@ export const reducers = {
     expense: expenseSliceConfig.reducer,
     deliveryNote: deliveryNoteSliceConfig.reducer,
     saleInvoice: saleInvoiceSliceConfig.reducer,
-    company: companySliceConfig.reducer
+    company: companySliceConfig.reducer,
+    plugin: pluginSliceConfig.reducer
 }

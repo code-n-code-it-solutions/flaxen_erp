@@ -6,6 +6,8 @@ interface IStateProps {
     company: any;
     companies: any,
     companyDetail: any
+    selectedCompany: any;
+    selectedBranch: any;
     loading: boolean;
     error: any;
     success: boolean;
@@ -16,6 +18,8 @@ const initialState: IStateProps = {
     company: null,
     companies: null,
     companyDetail: null,
+    selectedCompany: null,
+    selectedBranch: null,
     loading: false,
     error: null,
     success: false,
@@ -103,6 +107,16 @@ export const companySlice = createSlice({
             state.error = null;
             state.success = false;
             state.companyDetail = null;
+            state.selectedCompany = null;
+            state.selectedBranch = null;
+        },
+
+        setSelectedCompany: (state, action) => {
+            state.selectedCompany = action.payload;
+        },
+
+        setSelectedBranch: (state, action) => {
+            state.selectedBranch = action.payload;
         },
     },
     extraReducers: (builder) => {
@@ -169,8 +183,8 @@ export const companySlice = createSlice({
             })
     },
 });
-export const {clearCompanySlice} = companySlice.actions;
+export const {clearCompanySlice, setSelectedCompany, setSelectedBranch} = companySlice.actions;
 
-export const companySliceConfig = configureSlice(companySlice, false);
+export const companySliceConfig = configureSlice(companySlice, true);
 
 

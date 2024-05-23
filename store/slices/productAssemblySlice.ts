@@ -115,9 +115,9 @@ export const updateProductAssembly = createAsyncThunk(
 
 export const deleteProductAssembly = createAsyncThunk(
     'productAssemblies/delete',
-    async (id: number, thunkAPI) => {
+    async (ids: number[], thunkAPI) => {
         try {
-            const response = await API.delete('/product-assemblies/' + id);
+            const response = await API.post('/product-assemblies/delete', {ids});
             return response.data;
         } catch (error: any) {
             const message =

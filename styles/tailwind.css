@@ -77,7 +77,7 @@
         @apply bg-[#fafafa]/90 px-6 pt-4 dark:bg-[#060818]/90;
     }
     .navbar-floating header > div .horizontal-menu {
-        @apply rounded-b-md shadow;
+        @apply rounded-b-md;
     }
 
     /* Sidebar */
@@ -120,7 +120,7 @@
 
     /* Horizontal layouts */
     .horizontal .horizontal-menu {
-        @apply hidden shadow-md lg:flex;
+        @apply hidden  lg:flex;
     }
     .horizontal .horizontal-logo {
         @apply flex;

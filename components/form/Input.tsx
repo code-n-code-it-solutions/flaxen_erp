@@ -5,7 +5,7 @@ import MaskedInput from "react-text-mask";
 
 interface IProps {
     divClasses?: string;
-    label: string;
+    label?: string;
     type: string;
     name: string;
     value?: string;
@@ -40,9 +40,11 @@ export const Input: FC<IProps> = ({
                                   }) => {
     return (
         <div className={divClasses}>
-            <label htmlFor={name} className="form-label flex">
-                {label} {required && <span className="text-sm text-red-500">*</span>}
-            </label>
+            {label && (
+                <label htmlFor={name} className="form-label flex">
+                    {label} {required && <span className="text-sm text-red-500">*</span>}
+                </label>
+            )}
 
             {isMasked
                 ? <MaskedInput
