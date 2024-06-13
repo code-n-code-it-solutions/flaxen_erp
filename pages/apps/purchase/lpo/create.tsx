@@ -2,13 +2,16 @@ import React, { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useRouter } from 'next/router';
 import { setPageTitle } from '@/store/slices/themeConfigSlice';
-import LPOForm from '@/pages/erp/purchase/lpo/LPOForm';
+import LPOForm from '@/pages/apps/purchase/lpo/LPOForm';
 import { clearLocalPurchaseOrderState } from '@/store/slices/localPurchaseOrderSlice';
 import PageWrapper from '@/components/PageWrapper';
-import { ButtonType, ButtonVariant, IconType } from '@/utils/enums';
+import { AppBasePath, ButtonType, ButtonVariant, IconType } from '@/utils/enums';
 import AppLayout from '@/components/Layouts/AppLayout';
+import DetailPageHeader from '@/components/apps/DetailPageHeader';
+import useSetActiveMenu from '@/hooks/useSetActiveMenu';
 
 const Create = () => {
+    useSetActiveMenu(AppBasePath.Local_Purchase_Order);
     const dispatch = useAppDispatch();
     const router = useRouter();
     const { LPO, success, loading } = useAppSelector(state => state.localPurchaseOrder);
@@ -25,23 +28,26 @@ const Create = () => {
     }, [LPO, success]);
 
     return (
-        <PageWrapper
-            embedLoader={false}
-            loading={false}
-            breadCrumbItems={[]}
-            title={'New LPO'}
-            buttons={[
-                {
-                    text: 'Back',
-                    type: ButtonType.link,
-                    variant: ButtonVariant.primary,
-                    icon: IconType.back,
-                    link: '/apps/purchase/lpo'
-                }
-            ]}
-        >
-            <LPOForm />
-        </PageWrapper>
+        <div>
+            <DetailPageHeader
+                appBasePath={AppBasePath.Local_Purchase_Order}
+                title="Create LPO"
+                middleComponent={{
+                    show: false
+                }}
+                backButton={{
+                    show: true,
+                    backLink: '/apps/purchase/lpo'
+                }}
+            />
+            <PageWrapper
+                embedLoader={false}
+                loading={false}
+                breadCrumbItems={[]}
+            >
+                <LPOForm />
+            </PageWrapper>
+        </div>
     );
 };
 

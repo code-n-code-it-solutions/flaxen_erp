@@ -2,33 +2,19 @@ import React, {useEffect} from 'react';
 import {useAppDispatch, useAppSelector} from "@/store";
 import {useRouter} from "next/router";
 import {setPageTitle} from "@/store/slices/themeConfigSlice";
-import VendorForm from "@/pages/erp/admin/vendors/VendorForm";
+import VendorForm from "@/pages/apps/purchase/configuration/vendor/VendorForm";
 import {clearVendorState} from "@/store/slices/vendorSlice";
 import PageWrapper from "@/components/PageWrapper";
-import {ButtonType, ButtonVariant, IconType} from "@/utils/enums";
+import { AppBasePath, ButtonType, ButtonVariant, IconType } from '@/utils/enums';
+import AppLayout from '@/components/Layouts/AppLayout';
+import DetailPageHeader from '@/components/apps/DetailPageHeader';
+import useSetActiveMenu from '@/hooks/useSetActiveMenu';
 
 const Create = () => {
+    useSetActiveMenu(AppBasePath.Vendor);
     const dispatch = useAppDispatch();
     const router = useRouter();
     const {vendor, success, loading} = useAppSelector(state => state.vendor);
-    const breadcrumb = [
-        {
-            title: 'Main Dashboard',
-            href: '/erp/main',
-        },
-        {
-            title: 'Admin Dashboard',
-            href: '/erp/admin',
-        },
-        {
-            title: 'All Vendors',
-            href: '/erp/admin/vendors',
-        },
-        {
-            title: 'Create New',
-            href: '#',
-        },
-    ];
 
     useEffect(() => {
         dispatch(setPageTitle('Create Vendor'));
@@ -37,29 +23,33 @@ const Create = () => {
     useEffect(() => {
         if (vendor && success) {
             dispatch(clearVendorState());
-            router.push('/erp/admin/vendors');
+            router.push('/apps/purchase/configuration/vendor');
         }
     }, [vendor, success]);
 
     return (
-        <PageWrapper
-            loading={false}
-            embedLoader={false}
-            breadCrumbItems={breadcrumb}
-            title="Create Vendor"
-            buttons={[
-                {
-                    text: 'Back',
-                    type: ButtonType.link,
-                    variant: ButtonVariant.primary,
-                    icon: IconType.back,
-                    link: '/erp/admin/vendors'
-                }
-            ]}
-        >
-            <VendorForm/>
-        </PageWrapper>
+        <div>
+            <DetailPageHeader
+                appBasePath={AppBasePath.Vendor}
+                title="Create Vendor"
+                middleComponent={{
+                    show: false
+                }}
+                backButton={{
+                    show: true,
+                    backLink: '/apps/purchase/configuration/vendor'
+                }}
+            />
+            <PageWrapper
+                loading={false}
+                embedLoader={false}
+                breadCrumbItems={[]}
+            >
+                <VendorForm/>
+            </PageWrapper>
+        </div>
     );
 };
 
+Create.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
 export default Create;

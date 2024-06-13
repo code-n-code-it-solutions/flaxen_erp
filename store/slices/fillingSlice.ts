@@ -8,6 +8,7 @@ interface IFillingState {
     fillings: any;
     lastFillingCalculations: any;
     finishedGoods: any;
+    fillingsForPrint: any;
     loading: boolean;
     error: any;
     success: boolean;
@@ -20,6 +21,7 @@ const initialState: IFillingState = {
     fillings: null,
     lastFillingCalculations: null,
     finishedGoods: null,
+    fillingsForPrint: null,
     loading: false,
     error: null,
     success: false,
@@ -153,6 +155,21 @@ export const getFinishedGoodStock = createAsyncThunk(
     }
 );
 
+export const getFillingsForPrint = createAsyncThunk(
+    'fillings/for-print',
+    async (data: any, thunkAPI) => {
+        try {
+            const response = await API.post('/filling/print', data);
+            console.log(response.data);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 // Slice
 export const fillingSlice = createSlice({
     name: 'fillings',
@@ -165,6 +182,7 @@ export const fillingSlice = createSlice({
             state.lastFillingCalculations = null;
             state.finishedGoods = null;
             state.fillingDetail = null;
+            state.fillingsForPrint = null;
         },
     },
     extraReducers: (builder) => {
@@ -271,6 +289,18 @@ export const fillingSlice = createSlice({
                 state.success = action.payload.success;
             })
             .addCase(getFinishedGoodStock.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(getFillingsForPrint.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getFillingsForPrint.fulfilled, (state, action) => {
+                state.loading = false;
+                state.fillingsForPrint = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getFillingsForPrint.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })

@@ -1,11 +1,12 @@
-import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
-import {API} from "@/configs/api.config";
-import {configureSlice} from "@/utils/helper";
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { API } from '@/configs/api.config';
+import { configureSlice } from '@/utils/helper';
 
 interface ILPOState {
     LPO: any;
-    LPODetail: any
+    LPODetail: any;
     allLPOs: any;
+    LPOsForPrint: any;
     items: any;
     loading: boolean;
     error: any;
@@ -17,10 +18,11 @@ const initialState: ILPOState = {
     LPO: null,
     LPODetail: null,
     allLPOs: null,
+    LPOsForPrint: null,
     items: [],
     loading: false,
     error: null,
-    success: false,
+    success: false
 };
 
 // Async thunks
@@ -113,11 +115,25 @@ export const markLPOItemComplete = createAsyncThunk(
     'local-purchase-order/items/mark-complete',
     async (ids: any[], thunkAPI) => {
         try {
-            const response = await API.post('/local-purchase-order/items/mark-complete', {ids});
+            const response = await API.post('/local-purchase-order/items/mark-complete', { ids });
             return response.data;
         } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to update';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const getLPOsForPrint = createAsyncThunk(
+    'local-purchase-order/print',
+    async (data: any, thunkAPI) => {
+        try {
+            const response = await API.post('/local-purchase-order/print', data);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
         }
     }
@@ -133,8 +149,9 @@ export const localPurchaseOrderSlice = createSlice({
             state.error = null;
             state.success = false;
             state.LPODetail = null;
-            state.items = []
-        },
+            state.LPOsForPrint = null;
+            state.items = [];
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -221,8 +238,20 @@ export const localPurchaseOrderSlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message;
             })
-    },
+            .addCase(getLPOsForPrint.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getLPOsForPrint.fulfilled, (state, action) => {
+                state.loading = false;
+                state.LPOsForPrint = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getLPOsForPrint.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            });
+    }
 });
-export const {clearLocalPurchaseOrderState} = localPurchaseOrderSlice.actions;
+export const { clearLocalPurchaseOrderState } = localPurchaseOrderSlice.actions;
 
 export const localPurchaseOrderSliceConfig = configureSlice(localPurchaseOrderSlice, false);

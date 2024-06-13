@@ -75,3 +75,40 @@ export enum IconType {
 export enum ListingType {
 
 }
+
+
+export enum ActionList {
+    CREATE = 'create',
+    VIEW_DETAIL = 'view-detail',
+    UPDATE = 'update',
+    DELETE = 'delete',
+    VIEW_ALL = 'view-all',
+    PRINT = 'print-all',
+    EXPORT = 'export',
+    EMAIL = 'email',
+    PRINT_DETAIL = 'print-detail',
+    ARCHIVE = 'archive',
+    UNARCHIVE = 'unarchive',
+    DUPLICATE = 'duplicate',
+    PRINT_LABEL = 'print-label',
+    COPY = 'copy',
+}
+
+
+export enum AppBasePath {
+    Raw_Product = '/apps/inventory/raw-product',
+    Product_Assembly = '/apps/manufacturing/formula',
+    Production = '/apps/manufacturing/operations/production',
+    Filling = '/apps/manufacturing/operations/fillings',
+    Purchase_Requisition = '/apps/purchase/purchase-requisition',
+    Local_Purchase_Order = '/apps/purchase/lpo',
+    Good_Receive_Note = '/apps/purchase/grn',
+    Vendor = '/apps/purchase/configuration/vendor',
+    Quotation = '/apps/sales/orders/quotations',
+    Delivery_Note = '/apps/sales/orders/delivery-notes',
+    Sale_Invoice = '/apps/sales/orders/sale-invoice',
+    Customer = '/apps/sales/configuration/customers',
+    Invoice = '/apps/invoicing/customers/invoices',
+    Invoice_Payment = '/apps/invoicing/customers/payments',
+    Vendor_Bill = '/apps/invoicing/vendors/bills',
+}

@@ -281,7 +281,7 @@ const ProductAssemblyForm = ({id}: IFormProps) => {
                 setRawProducts={setRawProducts}
                 type={RAW_PRODUCT_LIST_TYPE.PRODUCT_ASSEMBLY}
             />
-            {isFormValid && rawProducts.length > 0 && (
+            {rawProducts.length > 0 && (
                 <Button
                     classes="!mt-6"
                     type={ButtonType.submit}

@@ -43,16 +43,6 @@ const Print = () => {
                             <span className="text-sm">{LPODetail?.lpo_number}</span>
                             <span className="text-sm">{(new Date(LPODetail?.created_at)).toLocaleDateString() + ' ' + (new Date(LPODetail?.created_at)).toLocaleTimeString()}</span>
                         </div>
-                        {/*<div className="flex justify-between items-center mb-5">*/}
-                        {/*<span>*/}
-                        {/*    <strong>LPO No: </strong>*/}
-                        {/*    {LPODetail?.lpo_number}*/}
-                        {/*</span>*/}
-                        {/*<span>*/}
-                        {/*    <strong>Requested By: </strong>*/}
-                        {/*    {LPODetail?.purchase_requisition?.employee?.name}*/}
-                        {/*</span>*/}
-                        {/*</div>*/}
                         <div className="flex justify-between items-center mt-5">
                             <div className="flex flex-col">
                                 <span className="uppercase font-bold">TO</span>

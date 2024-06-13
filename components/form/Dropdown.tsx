@@ -1,5 +1,5 @@
-import Select from "react-select";
-import React, {FC} from "react";
+import Select from 'react-select';
+import React, { FC } from 'react';
 
 interface IProps {
     divClasses?: string | '';
@@ -37,12 +37,12 @@ export const Dropdown: FC<IProps> = ({
                                          formatOptionLabel
                                      }) => {
     const customStyles = {
-        menuPortal: (base: any) => ({...base, zIndex: 9999}), // Adjust zIndex as needed
+        menuPortal: (base: any) => ({ ...base, zIndex: 1 }) // Adjust zIndex as needed
     };
 
     const getSelectedValue = () => {
         if (isMulti) {
-            return value ? value : [];
+            return value ? value.split(',').map((id: any) => options?.find(option => option.value === parseInt(id))) : [];
         } else {
             return options?.find(option => option.value === value) || null;
         }
@@ -56,7 +56,7 @@ export const Dropdown: FC<IProps> = ({
             <Select
                 // defaultValue={options[0]}
                 value={getSelectedValue()}
-                styles={{...styles, customStyles}}
+                styles={{ ...styles, customStyles }}
                 formatOptionLabel={formatOptionLabel}
                 options={options}
                 isSearchable={true}
@@ -65,7 +65,7 @@ export const Dropdown: FC<IProps> = ({
                 onChange={onChange}
                 isDisabled={isDisabled}
                 isLoading={isLoading}
-                // menuPortalTarget={document.body}
+                menuPortalTarget={document.parentElement}
                 {...otherOptions}
                 isMulti={isMulti}
             />

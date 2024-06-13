@@ -1,12 +1,13 @@
-import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
-import {API} from "@/configs/api.config";
-import {configureSlice} from "@/utils/helper";
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { API } from '@/configs/api.config';
+import { configureSlice } from '@/utils/helper';
 
 interface IState {
     quotation: any;
-    quotationDetail: any
+    quotationDetail: any;
     quotations: any;
     quotationItems: any;
+    quotationsForPrint: any;
     loading: boolean;
     error: any;
     success: boolean;
@@ -18,9 +19,10 @@ const initialState: IState = {
     quotationDetail: null,
     quotations: null,
     quotationItems: null,
+    quotationsForPrint: null,
     loading: false,
     error: null,
-    success: false,
+    success: false
 };
 
 // Async thunks
@@ -83,7 +85,7 @@ export const updateQuotation = createAsyncThunk(
     'quotation/update',
     async (data: any, thunkAPI) => {
         try {
-            const {id, productionData} = data
+            const { id, productionData } = data;
             const response = await API.post('/quotation/update/' + id, productionData);
             return response.data;
         } catch (error: any) {
@@ -165,6 +167,20 @@ export const getQuotationByProductAssembly = createAsyncThunk(
     }
 );
 
+export const getQuotationsForPrint = createAsyncThunk(
+    'quotation/print',
+    async (data: any, thunkAPI) => {
+        try {
+            const response = await API.post('/quotation/print', data);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 // Slice
 export const quotationSlice = createSlice({
     name: 'quotation',
@@ -176,7 +192,8 @@ export const quotationSlice = createSlice({
             state.success = false;
             state.quotationDetail = null;
             state.quotationItems = null;
-        },
+            state.quotationsForPrint = null;
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -286,8 +303,20 @@ export const quotationSlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message;
             })
-    },
+            .addCase(getQuotationsForPrint.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getQuotationsForPrint.fulfilled, (state, action) => {
+                state.loading = false;
+                state.quotationsForPrint = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getQuotationsForPrint.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            });
+    }
 });
-export const {clearQuotationState} = quotationSlice.actions;
+export const { clearQuotationState } = quotationSlice.actions;
 
 export const quotationSliceConfig = configureSlice(quotationSlice, false);

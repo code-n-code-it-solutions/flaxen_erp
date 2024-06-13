@@ -49,8 +49,8 @@ const Main = () => {
                                 </Link>
                             );
                         }) : (
-                            <div className="flex justify-center items-center p-2">
-                                <span>No plugins found</span>
+                            <div className="flex justify-center items-center p-2 col-span-8">
+                                <span>No plugins found or have no permission to any plugin. Please do consult with administrator</span>
                             </div>
                         )}
 

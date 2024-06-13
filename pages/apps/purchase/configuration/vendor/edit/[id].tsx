@@ -4,34 +4,19 @@ import {useRouter} from "next/router";
 import {setPageTitle} from "@/store/slices/themeConfigSlice";
 import {clearVendorState, editVendor} from "@/store/slices/vendorSlice";
 import PageWrapper from "@/components/PageWrapper";
-import {ButtonSize, ButtonType, ButtonVariant, IconType} from "@/utils/enums";
+import { AppBasePath, ButtonSize, ButtonType, ButtonVariant, IconType } from '@/utils/enums';
 import Button from "@/components/Button";
-import VendorForm from '@/pages/erp/admin/vendors/VendorForm';
+import VendorForm from '@/pages/apps/purchase/configuration/vendor/VendorForm';
 import {getIcon} from "@/utils/helper";
+import AppLayout from '@/components/Layouts/AppLayout';
+import DetailPageHeader from '@/components/apps/DetailPageHeader';
+import useSetActiveMenu from '@/hooks/useSetActiveMenu';
 
 const Edit = () => {
+    useSetActiveMenu(AppBasePath.Vendor);
     const dispatch = useAppDispatch();
     const router = useRouter();
     const {vendor, loading, success} = useAppSelector(state => state.vendor);
-
-    const breadCrumbItems = [
-        {
-            title: 'Home',
-            href: '/erp/main',
-        },
-        {
-            title: 'Admin Dashboard',
-            href: '/erp/admin',
-        },
-        {
-            title: 'All Vendors ',
-            href: '/erp/vendors',
-        },
-        {
-            title: 'Update vendor',
-            href: '#',
-        },
-    ];
 
     useEffect(() => {
         if (vendor && success) {
@@ -49,31 +34,27 @@ const Edit = () => {
     }, [router.query]);
 
     return (
-        <PageWrapper
-            breadCrumbItems={breadCrumbItems}
-            embedLoader={true}
-            loading={loading}
-            title="Edit Vendor"
-            buttons={[
-                {
-                    text: 'Print',
-                    type: ButtonType.link,
-                    variant: ButtonVariant.success,
-                    icon: IconType.print,
-                    link: '/erp/admin/vendors/print/' + router.query.id
-                },
-                {
-                    text: 'Back',
-                    type: ButtonType.link,
-                    variant: ButtonVariant.primary,
-                    icon: IconType.back,
-                    link: '/erp/admin/vendors'
-                }
-            ]}
-        >
-            <VendorForm id={router.query.id}/>
-        </PageWrapper>
+        <div>
+            <DetailPageHeader
+                appBasePath={AppBasePath.Vendor}
+                title="Edit Vendor"
+                middleComponent={{
+                    show: false,
+                }}
+                backButton={{
+                    show: true,
+                    backLink: '/apps/purchase/configuration/vendor'
+                }}
+            />
+            <PageWrapper
+                embedLoader={true}
+                loading={loading}
+            >
+                <VendorForm id={router.query.id}/>
+            </PageWrapper>
+        </div>
     );
 };
 
+Edit.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
 export default Edit;

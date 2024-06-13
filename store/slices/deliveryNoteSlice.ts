@@ -7,6 +7,7 @@ interface IState {
     deliveryNoteDetail: any
     deliveryNotes: any;
     deliveryNoteItems: any;
+    deliveryNotesForPrint: any;
     loading: boolean;
     error: any;
     success: boolean;
@@ -18,6 +19,7 @@ const initialState: IState = {
     deliveryNoteDetail: null,
     deliveryNotes: null,
     deliveryNoteItems: null,
+    deliveryNotesForPrint: null,
     loading: false,
     error: null,
     success: false,
@@ -93,6 +95,20 @@ export const pendingDeliveryNotes = createAsyncThunk(
     }
 );
 
+export const getDeliveryNotesForPrint = createAsyncThunk(
+    'delivery-note/print',
+    async (data:any, thunkAPI) => {
+        try {
+            const response = await API.post('/delivery-note/print', data);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 // Slice
 export const deliveryNoteSlice = createSlice({
     name: 'delivery-note',
@@ -104,6 +120,7 @@ export const deliveryNoteSlice = createSlice({
             state.success = false;
             state.deliveryNoteDetail = null;
             state.deliveryNoteItems = null;
+            state.deliveryNotesForPrint = null;
         },
     },
     extraReducers: (builder) => {
@@ -164,6 +181,18 @@ export const deliveryNoteSlice = createSlice({
                 state.success = action.payload.success;
             })
             .addCase(pendingDeliveryNotes.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(getDeliveryNotesForPrint.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getDeliveryNotesForPrint.fulfilled, (state, action) => {
+                state.loading = false;
+                state.deliveryNotesForPrint = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getDeliveryNotesForPrint.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })

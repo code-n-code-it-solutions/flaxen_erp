@@ -1,56 +1,71 @@
 import React from 'react';
-import Image from "next/image";
+import { View, Text, Image } from '@react-pdf/renderer';
 
 const Header = () => {
     return (
-        <div>
-            <div
+        <View>
+            <View
                 style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    padding: "0 20px",
-                    borderBottom: "1px solid #22AAA7",
-                    paddingBottom: "5px",
-                    height: "110px",
+                    display: 'flex',
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    // padding: '0 20px',
+                    // marginTop: '5px'
                 }}>
-                <img src="https://flaxenpaints.com/uploads/settings/logo2.png" alt="logo" width={150} height={80}/>
-                <div
+                <Text
                     style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "end",
-                        flexDirection: "column",
-                        color: "#22AAA7",
-                    }}>
-                    <span
+                        fontSize: 8,
+                        color: '#22AAA7'
+                    }}
+                >
+                    <Text style={{ fontWeight: 'bold' }}>Printed At: </Text>
+                    {(new Date()).toLocaleDateString() + ' ' + (new Date()).toLocaleTimeString()}
+                </Text>
+            </View>
+            <View
+                fixed
+                style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    // alignItems: 'center',
+                    // padding: '0 20px',
+                    borderBottom: '1px solid #22AAA7',
+                    // paddingTop: '10px',
+                    paddingBottom: '10px',
+                    // height: '110px'
+                }}>
+                <Image
+                    src="https://flaxenpaints.com/uploads/settings/logo2.png"
+                    style={{
+                        width: '100px',
+                        height: '60px'
+                    }}
+                />
+                <View
+                    style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'flex-end',
+                        flexDirection: 'column',
+                        color: '#22AAA7'
+                    }}
+                >
+                    <Text
                         style={{
-                            fontSize: "20px",
-                            fontWeight: "bold",
+                            fontSize: 12,
+                            fontWeight: 'bold'
                         }}>
                         Flaxen Paints Industry LLC
-                    </span>
-                    <span style={{fontWeight: "bold"}}>info@flaxenpaints.com</span>
-                    <span style={{fontWeight: "bold"}}>+971 4 333 4444</span>
-                    <span
-                        style={{
-                            fontWeight: "bold",
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                        }}>
-                        <span style={{fontWeight: "bold"}}>P.O. Box 12345</span>
-                        <span style={{fontWeight: "bold"}}>Dubai, UAE</span>
-                    </span>
-                </div>
-            </div>
-            <div className="flex justify-end mt-1 px-3">
-                <span className="text-sm">
-                    <strong>Printed At: </strong>
-                    {(new Date()).toLocaleDateString() + ' ' + (new Date()).toLocaleTimeString()}
-                </span>
-            </div>
-        </div>
+                    </Text>
+                    <Text style={{ fontWeight: 'bold', fontSize: 10 }}>info@flaxenpaints.com</Text>
+                    <Text style={{ fontWeight: 'bold', fontSize: 10 }}>+971 4 333 4444</Text>
+                    <Text style={{ fontWeight: 'bold', fontSize: 10 }}>P.O. Box 12345</Text>
+                    <Text style={{ fontWeight: 'bold', fontSize: 10 }}>Dubai, UAE</Text>
+                </View>
+            </View>
+
+        </View>
     );
 };
 

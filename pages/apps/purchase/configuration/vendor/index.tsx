@@ -1,96 +1,76 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import AppLayout from '@/components/Layouts/AppLayout';
 import PageHeader from '@/components/apps/PageHeader';
-import Button from '@/components/Button';
-import { ButtonSize, ButtonType, ButtonVariant } from '@/utils/enums';
 import { setPageTitle } from '@/store/slices/themeConfigSlice';
-import { AgGridReact, CustomLoadingCellRendererProps } from 'ag-grid-react';
+import { AgGridReact } from 'ag-grid-react';
 import { useRouter } from 'next/router';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { capitalize } from 'lodash';
 import { setAuthToken, setContentType } from '@/configs/api.config';
 import { deleteRawProduct, getRawProducts } from '@/store/slices/rawProductSlice';
-import { ModuleRegistry } from '@ag-grid-community/core';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
-import GridLoader from '@/components/apps/GridLoader';
 import AgGridComponent from '@/components/apps/AgGridComponent';
-import Dropdown from '@/components/Dropdown';
-import {
-    ArchiveIcon,
-    CogIcon,
-    CopyIcon,
-    DownloadCloud,
-    KanbanIcon,
-    ListIcon, PrinterIcon,
-    TrashIcon,
-    UploadCloud
-} from 'lucide-react';
-import Link from 'next/link';
-import CustomButton from '@/components/apps/CustomButton';
-import OnRowSelectDropdown from '@/components/apps/OnRowSelectDropdown';
 import DisabledClickRenderer from '@/components/apps/DisabledClickRenderer';
 import Swal from 'sweetalert2';
 import { getVendors } from '@/store/slices/vendorSlice';
-
-ModuleRegistry.registerModules([ClientSideRowModelModule]);
+import { checkPermission, serverFilePath } from '@/utils/helper';
+import Image from 'next/image';
+import { ActionList, AppBasePath } from '@/utils/enums';
+import useSetActiveMenu from '@/hooks/useSetActiveMenu';
 
 const Index = () => {
     const router = useRouter();
-
+    useSetActiveMenu(AppBasePath.Vendor);
     const dispatch = useAppDispatch();
     const { token } = useAppSelector((state) => state.user);
-
+    const { permittedMenus, activeMenu } = useAppSelector((state) => state.menu);
     const { allVendors, loading, success } = useAppSelector(state => state.vendor);
     const [selectedRows, setSelectedRows] = useState<any[]>([]);
     const gridRef = useRef<AgGridReact<any>>(null);
     const [colDefs, setColDefs] = useState<any>([
         {
-            headerName: 'Item Code',
+            headerName: 'Code',
             headerCheckboxSelection: true,
             checkboxSelection: true,
-            field: 'item_code',
+            field: 'vendor_number',
             minWidth: 150,
             cellRenderer: DisabledClickRenderer
         },
         {
-            headerName: 'Title',
-            field: 'title',
-            minWidth: 150
-        },
-        {
-            headerName: 'product_type',
-            field: 'product_type',
-            valueGetter: (row: any) => (
-                capitalize(row.data.product_type)
+            headerName: 'Name',
+            field: 'name',
+            cellRenderer: (params: any) => (
+                <div className="flex gap-1 items-center">
+                    <Image
+                        priority={true}
+                        src={serverFilePath(params.data.thumbnail?.path)}
+                        alt={params.data.name}
+                        width={40}
+                        height={40}
+                        className="h-10 w-10 rounded-md p-1"
+                    />
+                    <span>{params.data.name}</span>
+                </div>
             ),
             minWidth: 150
         },
         {
-            headerName: 'Unit',
-            field: 'retail_price',
-            valueGetter: (row: any) => (
-                capitalize(row.data.sub_unit.name)
+            headerName: 'Phone',
+            field: 'phone',
+            minWidth: 150
+        },
+        {
+            headerName: 'Due in Days',
+            field: 'due_in_days',
+            minWidth: 150
+        },
+        {
+            headerName: 'Address',
+            field: 'address',
+            cellRenderer: (params: any) => (
+                <span>
+                    {params.data.address} {params.data.city?.name} {params.data.state?.name}, <br />
+                    {params.data.country?.name}, {params.data.postal_code}
+                </span>
             ),
-            minWidth: 150
-        },
-        {
-            headerName: 'Valuation Method',
-            field: 'valuation_method',
-            minWidth: 150
-        },
-        {
-            headerName: 'Valuation Price',
-            field: 'valuated_unit_price',
-            minWidth: 150
-        },
-        {
-            headerName: 'Sale Price',
-            field: 'retail_price',
-            minWidth: 150
-        },
-        {
-            headerName: 'On Hand',
-            field: 'stock_quantity',
             minWidth: 150
         }
     ]);
@@ -137,162 +117,6 @@ const Index = () => {
         }
     };
 
-    const onQuickFilterChanged = useCallback(() => {
-        gridRef.current!.api.setGridOption(
-            'quickFilterText',
-            (document.getElementById('quickFilter') as HTMLInputElement).value
-        );
-    }, []);
-
-    const exportAsCSV = useCallback(() => {
-        gridRef.current!.api.exportDataAsCsv();
-    }, []);
-
-    const headerComponentProps = () => {
-        let props: any = {
-            leftComponent: {
-                title: 'Vendors',
-                button: {
-                    show: true,
-                    text: 'New',
-                    link: '/apps/purchase/configuration/vendor/create'
-                },
-                cogIcon: (
-                    <div className="dropdown flex shrink-0">
-                        <Dropdown
-                            // offset={[8, 0]}
-                            placement={`bottom-end`}
-                            btnClassName="relative group block"
-                            button={<CogIcon size={18} />}>
-                            <ul className="w-[230px] border !py-0 font-semibold text-dark dark:text-white-dark dark:text-white-light/90">
-                                <li>
-                                    <Link href="/workspace/user"
-                                          className="flex gap-2 items-center dark:hover:text-white">
-                                        <UploadCloud />
-                                        Import records
-                                    </Link>
-                                </li>
-                                <li>
-                                    <span onClick={() => exportAsCSV()}
-                                          className="flex gap-2 items-center dark:hover:text-white">
-                                        <DownloadCloud />
-                                        Export All
-                                    </span>
-                                </li>
-                            </ul>
-                        </Dropdown>
-                    </div>
-                )
-            },
-            search: {
-                onQuickFilterChanged: onQuickFilterChanged
-            },
-            rightComponent: [
-                {
-                    show: true,
-                    icon: <KanbanIcon size={18} />,
-                    onClick: () => console.log('Upload')
-                },
-                {
-                    show: true,
-                    icon: <ListIcon size={18} />,
-                    onClick: () => console.log('Download')
-                }
-            ]
-        };
-        // console.log(selectedRows);
-        if (selectedRows.length > 0) {
-            props.middleComponent = <OnRowSelectDropdown
-                dropdownButton={{
-                    text: 'Actions',
-                    icon: <CogIcon size={18} />,
-                    variant: 'primary'
-                }}
-                otherButtons={[
-                    <CustomButton
-                        key={0}
-                        isDisabled={true}
-                        isListButton={false}
-                        text={`Selected ${selectedRows.length}`}
-                        // icon={<PrinterIcon size={18} />}
-                        // onClick={() => console.log('Print labels')}
-                    />,
-                    <CustomButton
-                        key={1}
-                        isListButton={false}
-                        text="Print Labels"
-                        icon={<PrinterIcon size={18} />}
-                        onClick={() => console.log('Print labels')}
-                    />
-                ]}
-                dropdownItems={[
-                    {
-                        onClick: () => console.log('Export'),
-                        content: (
-                            <CustomButton
-                                key={0}
-                                isListButton
-                                text="Export"
-                                icon={<DownloadCloud size={18} />}
-                                onClick={() => console.log('Export')}
-                            />
-                        )
-                    },
-                    {
-                        onClick: () => console.log('Archived'),
-                        content: (
-                            <CustomButton
-                                key={0}
-                                isListButton
-                                text="Archive"
-                                icon={<ArchiveIcon size={18} />}
-                                onClick={() => console.log('Archived')}
-                            />
-                        )
-                    },
-                    {
-                        onClick: () => console.log('Unarchived'),
-                        content: (
-                            <CustomButton
-                                key={0}
-                                isListButton
-                                text="Un Archive"
-                                icon={<UploadCloud size={18} />}
-                                onClick={() => console.log('Unarchived')}
-                            />
-                        )
-                    },
-                    {
-                        onClick: () => console.log('Duplicate'),
-                        content: (
-                            <CustomButton
-                                key={0}
-                                isListButton
-                                text="Duplicate"
-                                icon={<CopyIcon size={18} />}
-                                onClick={() => console.log('Duplicate')}
-                            />
-                        )
-                    },
-                    {
-                        onClick: () => handleDelete(),
-                        content: (
-                            <CustomButton
-                                key={0}
-                                isListButton
-                                text="Delete"
-                                icon={<TrashIcon size={18} />}
-                                onClick={() => handleDelete()}
-                            />
-                        )
-                    }
-                ]}
-            />;
-        }
-        // console.log(props);
-        return props;
-    };
-
     useEffect(() => {
         dispatch(setPageTitle('Vendors'));
         setAuthToken(token);
@@ -307,8 +131,31 @@ const Index = () => {
     return (
         <div className="flex flex-col gap-5">
             <PageHeader
+                appBasePath={AppBasePath.Vendor}
                 key={selectedRows.length}
-                {...headerComponentProps()}
+                selectedRows={selectedRows.length}
+                gridRef={gridRef}
+                leftComponent={{
+                    addButton: {
+                        show: true,
+                        type: 'link',
+                        text: 'New',
+                        link: '/apps/purchase/configuration/vendor/create'
+                    },
+                    title: 'Vendors',
+                    showSetting: true
+                }}
+                rightComponent={true}
+                showSearch={true}
+                buttonActions={{
+                    delete: () => console.log('deleted'),
+                    export: () => console.log('exported'),
+                    print: () => router.push('/apps/purchase/configuration/vendor/print/' + selectedRows.map(row => row.id).join('/')),
+                    archive: () => console.log('archived'),
+                    unarchive: () => console.log('unarchived'),
+                    duplicate: () => console.log('duplicated'),
+                    printLabel: () => console.log('print label')
+                }}
             />
             <div>
                 <AgGridComponent
@@ -322,6 +169,7 @@ const Index = () => {
                         // const displayedColumns = params.api.getAllDisplayedColumns();
                         // console.log(displayedColumns, params.column, displayedColumns[0], displayedColumns[0] === params.column);
                         // return displayedColumns[0] === params.column;
+                        checkPermission(permittedMenus, activeMenu.route, ActionList.VIEW_DETAIL, AppBasePath.Vendor) &&
                         router.push(`/apps/purchase/configuration/vendor/view/${params.data.id}`);
                     }}
                 />

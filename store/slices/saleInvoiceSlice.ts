@@ -6,6 +6,7 @@ interface IState {
     saleInvoice: any;
     saleInvoiceDetail: any
     saleInvoices: any;
+    saleInvoicesForPrint: any;
     loading: boolean;
     error: any;
     success: boolean;
@@ -16,6 +17,7 @@ const initialState: IState = {
     saleInvoice: null,
     saleInvoiceDetail: null,
     saleInvoices: null,
+    saleInvoicesForPrint: null,
     loading: false,
     error: null,
     success: false,
@@ -63,6 +65,34 @@ export const storeSaleInvoice = createAsyncThunk(
     }
 );
 
+export const getSaleInvoicesForPrint = createAsyncThunk(
+    'sale-invoice/print',
+    async (data: any, thunkAPI) => {
+        try {
+            const response = await API.post('/sale-invoice/print', data);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const getPendingSaleInvoices = createAsyncThunk(
+    'sale-invoice/pending',
+    async (customerId:number, thunkAPI) => {
+        try {
+            const response = await API.get('/sale-invoice/pending/'+customerId);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 // Slice
 export const saleInvoiceSlice = createSlice({
     name: 'sale-invoice',
@@ -73,6 +103,7 @@ export const saleInvoiceSlice = createSlice({
             state.error = null;
             state.success = false;
             state.saleInvoiceDetail = null;
+            state.saleInvoicesForPrint = null;
         },
     },
     extraReducers: (builder) => {
@@ -109,6 +140,30 @@ export const saleInvoiceSlice = createSlice({
                 state.success = action.payload.success;
             })
             .addCase(storeSaleInvoice.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(getSaleInvoicesForPrint.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getSaleInvoicesForPrint.fulfilled, (state, action) => {
+                state.loading = false;
+                state.saleInvoicesForPrint = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getSaleInvoicesForPrint.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(getPendingSaleInvoices.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getPendingSaleInvoices.fulfilled, (state, action) => {
+                state.loading = false;
+                state.saleInvoices = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getPendingSaleInvoices.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })

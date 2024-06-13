@@ -1,57 +1,59 @@
-import React, {useEffect, useState} from 'react';
-import ImageUploader from "@/components/form/ImageUploader";
-import {useAppDispatch, useAppSelector} from "@/store";
-import {getUnits} from "@/store/slices/unitSlice";
-import {clearRawProductState, storeRawProduct, updateRawProduct} from "@/store/slices/rawProductSlice";
-import {setAuthToken, setContentType} from "@/configs/api.config";
-import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
-import {ButtonType, ButtonVariant, FORM_CODE_TYPE} from "@/utils/enums";
-import {Dropdown} from "@/components/form/Dropdown";
-import {Input} from "@/components/form/Input";
-import Textarea from "@/components/form/Textarea";
-import Button from "@/components/Button";
-import {serverFilePath} from "@/utils/helper";
-import Alert from "@/components/Alert";
+import React, { useEffect, useState } from 'react';
+import ImageUploader from '@/components/form/ImageUploader';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { getUnits } from '@/store/slices/unitSlice';
+import { clearRawProductState, storeRawProduct, updateRawProduct } from '@/store/slices/rawProductSlice';
+import { setAuthToken, setContentType } from '@/configs/api.config';
+import { clearUtilState, generateCode } from '@/store/slices/utilSlice';
+import { ButtonType, ButtonVariant, FORM_CODE_TYPE } from '@/utils/enums';
+import { Dropdown } from '@/components/form/Dropdown';
+import { Input } from '@/components/form/Input';
+import Textarea from '@/components/form/Textarea';
+import Button from '@/components/Button';
+import { serverFilePath } from '@/utils/helper';
+import Alert from '@/components/Alert';
 
 interface IFormProps {
     id?: any;
 }
 
-const ProductForm = ({id}: IFormProps) => {
+const ProductForm = ({ id }: IFormProps) => {
     const dispatch = useAppDispatch();
-    const {units} = useAppSelector(state => state.unit);
-    const {code} = useAppSelector(state => state.util);
-    const {loading, rawProductDetail} = useAppSelector((state) => state.rawProduct);
-    const {token} = useAppSelector(state => state.user);
+    const { units } = useAppSelector(state => state.unit);
+    const { code } = useAppSelector(state => state.util);
+    const { loading, rawProductDetail } = useAppSelector((state) => state.rawProduct);
+    const { branchList } = useAppSelector((state) => state.company);
+    const { token, user } = useAppSelector(state => state.user);
     const [image, setImage] = useState<File | null>(null);
-    const [isFormValid, setIsFormValid] = useState<boolean>(false)
-    const [errorMessages, setErrorMessages] = useState<any>({})
-    const [validationMessage, setValidationMessage] = useState<any>('')
+    const [isFormValid, setIsFormValid] = useState<boolean>(false);
+    const [errorMessages, setErrorMessages] = useState<any>({});
+    const [validationMessage, setValidationMessage] = useState<any>('');
     const [formData, setFormData] = useState<any>({});
 
+    // const [selectedBranches, setSelectedBranches] = useState<any[]>([]);
     const [imagePreview, setImagePreview] = useState('');
     const [unitOptions, setUnitOptions] = useState([]);
     const [subUnitOptions, setSubUnitOptions] = useState([]);
     const [valuationMethodOptions, setValuationMethodOptions] = useState([
-        {value: '', label: 'Select Valuation Method'},
-        {value: 'LIFO', label: 'LIFO'},
-        {value: 'FIFO', label: 'FIFO'},
-        {value: 'Average', label: 'Average'},
+        { value: '', label: 'Select Valuation Method' },
+        { value: 'LIFO', label: 'LIFO' },
+        { value: 'FIFO', label: 'FIFO' },
+        { value: 'Average', label: 'Average' }
     ]);
 
     const [productTypeOptions, setProductTypeOptions] = useState([
-        {value: '', label: 'Select Product Type'},
-        {value: 'raw-material', label: 'Raw Material'},
-        {value: 'filling-material', label: 'Filling Material'},
-        {value: 'packing-material', label: 'Packing Material'},
+        { value: '', label: 'Select Product Type' },
+        { value: 'raw-material', label: 'Raw Material' },
+        { value: 'filling-material', label: 'Filling Material' },
+        { value: 'packing-material', label: 'Packing Material' }
     ]);
 
     const handleChange = (name: string, value: any, required: boolean) => {
 
         if (required) {
             if (!value || value == '0') {
-                setErrorMessages({...errorMessages, [name]: "This is required"})
-                return
+                setErrorMessages({ ...errorMessages, [name]: 'This is required' });
+                return;
             } else {
                 setErrorMessages((prev: any) => {
                     delete prev[name];
@@ -61,35 +63,45 @@ const ProductForm = ({id}: IFormProps) => {
         }
 
         switch (name) {
+            case 'branch_id':
+                // if (value && typeof value !== 'undefined') {
+                //     setFormData((prevFormData: any) => ({
+                //         ...prevFormData,
+                //         branch_id: value.map((v: any) => v.value).join(',')
+                //     }));
+                // } else {
+                //     setFormData((prevFormData: any) => ({ ...prevFormData, branch_id: '' }));
+                // }
+                // break;
             case 'product_type':
             case 'unit_id':
             case 'valuation_method':
             case 'sub_unit_id':
                 if (value && typeof value !== 'undefined') {
-                    setFormData((prevFormData:any) => ({...prevFormData, [name]: value.value}));
+                    setFormData((prevFormData: any) => ({ ...prevFormData, [name]: value.value }));
                 } else {
-                    setFormData((prevFormData:any) => ({...prevFormData, [name]: ''}));
+                    setFormData((prevFormData: any) => ({ ...prevFormData, [name]: '' }));
                 }
                 break;
             case 'opening_stock':
                 const openingStock = Number(value);
-                setFormData((prevFormData:any) => ({
+                setFormData((prevFormData: any) => ({
                     ...prevFormData,
                     opening_stock: openingStock,
                     opening_stock_total_balance: openingStock * (prevFormData.opening_stock_unit_balance ?? 0)
                 }));
-                break
+                break;
             case 'opening_stock_unit_balance':
                 const openingStockUnitBalance = Number(value);
-                setFormData((prevFormData:any) => ({
+                setFormData((prevFormData: any) => ({
                     ...prevFormData,
                     opening_stock_unit_balance: openingStockUnitBalance,
                     opening_stock_total_balance: (prevFormData.opening_stock ?? 0) * openingStockUnitBalance
                 }));
-                break
+                break;
             default:
-                setFormData((prevFormData:any) => ({...prevFormData, [name]: value}));
-                break
+                setFormData((prevFormData: any) => ({ ...prevFormData, [name]: value }));
+                break;
         }
     };
 
@@ -99,12 +111,13 @@ const ProductForm = ({id}: IFormProps) => {
 
         setAuthToken(token);
         setContentType('multipart/form-data');
+        console.log(formData);
         if (id) {
-            dispatch(updateRawProduct({id, rawProductData: formData}));
+            dispatch(updateRawProduct({ id, rawProductData: formData }));
         } else {
             dispatch(storeRawProduct(formData));
         }
-        setValidationMessage('')
+        setValidationMessage('');
     };
 
     useEffect(() => {
@@ -125,12 +138,12 @@ const ProductForm = ({id}: IFormProps) => {
     }, [id, dispatch]);
 
     useEffect(() => {
-        setValidationMessage('')
+        setValidationMessage('');
     }, []);
 
     useEffect(() => {
         if (code) {
-            setFormData((prev:any) => ({...prev, item_code: code[FORM_CODE_TYPE.RAW_MATERIAL]}));
+            setFormData((prev: any) => ({ ...prev, item_code: code[FORM_CODE_TYPE.RAW_MATERIAL] }));
         }
     }, [code]);
 
@@ -139,6 +152,9 @@ const ProductForm = ({id}: IFormProps) => {
             setImagePreview(serverFilePath(rawProductDetail.thumbnail?.path));
             setFormData({
                 ...formData,
+                // company_id: rawProductDetail.company_id,
+                retail_price: rawProductDetail.retail_price,
+                branch_id: rawProductDetail.branch_id,
                 product_type: rawProductDetail.product_type,
                 item_code: rawProductDetail.item_code,
                 title: rawProductDetail.title,
@@ -151,7 +167,7 @@ const ProductForm = ({id}: IFormProps) => {
                 opening_stock: rawProductDetail.opening_stock,
                 opening_stock_unit_balance: rawProductDetail.opening_stock_unit_balance,
                 opening_stock_total_balance: rawProductDetail.opening_stock_total_balance,
-                sale_description: rawProductDetail.sale_description,
+                sale_description: rawProductDetail.sale_description
             });
         } else {
             setImagePreview(serverFilePath(''));
@@ -159,8 +175,8 @@ const ProductForm = ({id}: IFormProps) => {
     }, [rawProductDetail]);
 
     useEffect(() => {
-        const parentUnits = ['BAG', 'DRUM', 'GLN', 'BOTTLE', 'QTR']
-        const childUnits = ['KG', 'LTR', 'GRM', 'QTY']
+        const parentUnits = ['BAG', 'DRUM', 'GLN', 'BOTTLE', 'QTR'];
+        const childUnits = ['KG', 'LTR', 'GRM', 'QTY'];
         if (units) {
             let mainUnits = units.filter((unit: any) => parentUnits.includes(unit.label));
             let subUnits = units.filter((unit: any) => childUnits.includes(unit.label));
@@ -173,9 +189,13 @@ const ProductForm = ({id}: IFormProps) => {
         const isValid = Object.values(errorMessages).some(message => message !== '');
         setIsFormValid(!isValid);
         if (isValid) {
-            setValidationMessage("Please fill all the required fields.");
+            setValidationMessage('Please fill all the required fields.');
         }
     }, [errorMessages]);
+
+    useEffect(() => {
+        console.log(formData);
+    }, [formData]);
 
     return (
         <form className="space-y-5" onSubmit={handleSubmit}>
@@ -188,7 +208,7 @@ const ProductForm = ({id}: IFormProps) => {
             }
 
             <div className="flex items-center justify-center">
-                <ImageUploader image={image} setImage={setImage} existingImage={imagePreview}/>
+                <ImageUploader image={image} setImage={setImage} existingImage={imagePreview} />
             </div>
             <div className="flex flex-col items-start justify-start space-y-3">
                 <Input
@@ -202,6 +222,18 @@ const ProductForm = ({id}: IFormProps) => {
                     disabled={true}
                     required={false}
                 />
+                {user && user.roles.find((role: any) => role.name === 'Allow Company Wise Entry') && (
+                    <Dropdown
+                        // divClasses="w-full"
+                        label="Company Branch"
+                        name="branch_id"
+                        options={branchList && branchList.map((branch: any) => ({ value: branch.id, label: branch.name })) || []}
+                        value={formData.branch_id}
+                        onChange={(e) => handleChange('branch_id', e, true)}
+                        required={true}
+                        errorMessage={'If non select it will store as logged in employee registered branch'}
+                    />
+                )}
 
                 <Input
                     divClasses="w-full md:w-1/2"
@@ -211,17 +243,17 @@ const ProductForm = ({id}: IFormProps) => {
                     value={formData.title}
                     onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
                     isMasked={false}
-                    styles={{height: 45}}
+                    styles={{ height: 45 }}
                     required={true}
                     errorMessage={errorMessages.title}
                 />
             </div>
 
-            <div className="w-full flex justify-between items-center flex-col md:flex-row gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <Dropdown
-                    divClasses='w-full'
-                    label='Product Type'
-                    name='product_type'
+                    divClasses="w-full"
+                    label="Product Type"
+                    name="product_type"
                     options={productTypeOptions}
                     value={formData.product_type}
                     onChange={(e) => handleChange('product_type', e, true)}
@@ -229,9 +261,9 @@ const ProductForm = ({id}: IFormProps) => {
                     errorMessage={errorMessages?.product_type}
                 />
                 <Dropdown
-                    divClasses='w-full'
-                    label='Valuation Method'
-                    name='valuation_method'
+                    divClasses="w-full"
+                    label="Valuation Method"
+                    name="valuation_method"
                     options={valuationMethodOptions}
                     value={formData.valuation_method}
                     onChange={(e) => handleChange('valuation_method', e, true)}
@@ -250,9 +282,7 @@ const ProductForm = ({id}: IFormProps) => {
                     required={true}
                     errorMessage={errorMessages?.retail_price}
                 />
-            </div>
 
-            <div className='flex justify-between items-center flex-col md:flex-row gap-3'>
                 <Dropdown
                     divClasses="w-full"
                     label="Unit"
@@ -274,6 +304,7 @@ const ProductForm = ({id}: IFormProps) => {
                     required={true}
                     errorMessage={errorMessages?.sub_unit_id}
                 />
+
                 <Input
                     divClasses="w-full"
                     label="Value per Unit (According to sub unit)"
@@ -286,8 +317,7 @@ const ProductForm = ({id}: IFormProps) => {
                     required={true}
                     errorMessage={errorMessages?.value_per_unit}
                 />
-            </div>
-            <div className="flex flex-col items-center justify-between gap-3 md:flex-row">
+
                 <Input
                     divClasses="w-full"
                     label="Min Stock Level (Main Unit)"
@@ -341,6 +371,28 @@ const ProductForm = ({id}: IFormProps) => {
                         // errorMessage={errorMessages?.opening_stock_total_balance}
                     />
                 </div>
+
+                {/*<Dropdown*/}
+                {/*    divClasses="w-full"*/}
+                {/*    label="Account Receivable"*/}
+                {/*    name="account_receivable_id"*/}
+                {/*    options={unitOptions}*/}
+                {/*    value={formData.account_receivable_id}*/}
+                {/*    onChange={(e) => handleChange('account_receivable_id', e, true)}*/}
+                {/*    required={true}*/}
+                {/*    errorMessage={errorMessages?.account_receivable_id}*/}
+                {/*/>*/}
+                {/*<Dropdown*/}
+                {/*    divClasses="w-full"*/}
+                {/*    label="Account Payable"*/}
+                {/*    name="account_payable_id"*/}
+                {/*    options={unitOptions}*/}
+                {/*    value={formData.account_payable_id}*/}
+                {/*    onChange={(e) => handleChange('account_payable_id', e, true)}*/}
+                {/*    required={true}*/}
+                {/*    errorMessage={errorMessages?.account_payable_id}*/}
+                {/*/>*/}
+
             </div>
 
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
@@ -352,7 +404,7 @@ const ProductForm = ({id}: IFormProps) => {
                     onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
                     isReactQuill={false}
                     rows={3}
-                    placeholder='Enter description for purchase'
+                    placeholder="Enter description for purchase"
                     required={true}
                     errorMessage={errorMessages?.purchase_description}
                 />
@@ -364,18 +416,18 @@ const ProductForm = ({id}: IFormProps) => {
                     onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
                     isReactQuill={false}
                     rows={3}
-                    placeholder='Enter description for sales'
+                    placeholder="Enter description for sales"
                     required={true}
                     errorMessage={errorMessages?.sale_description}
                 />
             </div>
             {/*{isFormValid && (*/}
-                <Button
-                    type={ButtonType.submit}
-                    text={loading ? 'Loading...' : id ? 'Update' : 'Create'}
-                    variant={ButtonVariant.info}
-                    disabled={loading}
-                    classes="!mt-6"/>
+            <Button
+                type={ButtonType.submit}
+                text={loading ? 'Loading...' : id ? 'Update' : 'Create'}
+                variant={ButtonVariant.info}
+                disabled={loading}
+                classes="!mt-6" />
             {/*)}*/}
         </form>
     );

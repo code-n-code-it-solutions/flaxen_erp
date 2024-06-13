@@ -1,17 +1,19 @@
-import React, {useEffect} from 'react';
-import {useAppDispatch, useAppSelector} from "@/store";
-import {useRouter} from "next/router";
-import {setPageTitle} from "@/store/slices/themeConfigSlice";
-import ProductForm from "@/pages/apps/inventory/products/ProductForm";
-import {clearRawProductState} from "@/store/slices/rawProductSlice";
-import PageWrapper from "@/components/PageWrapper";
-import {ButtonType, ButtonVariant, IconType} from "@/utils/enums";
+import React, { useEffect } from 'react';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { useRouter } from 'next/router';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
+import ProductForm from '@/pages/apps/inventory/products/ProductForm';
+import { clearRawProductState } from '@/store/slices/rawProductSlice';
+import PageWrapper from '@/components/PageWrapper';
+import { AppBasePath, ButtonType, ButtonVariant, IconType } from '@/utils/enums';
 import AppLayout from '@/components/Layouts/AppLayout';
+import useSetActiveMenu from '@/hooks/useSetActiveMenu';
 
 const Create = () => {
+    useSetActiveMenu(AppBasePath.Raw_Product);
     const dispatch = useAppDispatch();
     const router = useRouter();
-    const {rawProduct} = useAppSelector(state => state.rawProduct);
+    const { rawProduct } = useAppSelector(state => state.rawProduct);
 
     useEffect(() => {
         dispatch(setPageTitle('New'));
@@ -35,14 +37,14 @@ const Create = () => {
                     type: ButtonType.link,
                     variant: ButtonVariant.primary,
                     icon: IconType.back,
-                    link: '/erp/inventory/products'
+                    link: '/apps/inventory/products'
                 }
             ]}
         >
-            <ProductForm/>
+            <ProductForm />
         </PageWrapper>
     );
 };
 
-Create.getLayout = (page: any) => <AppLayout>{page}</AppLayout>
+Create.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
 export default Create;

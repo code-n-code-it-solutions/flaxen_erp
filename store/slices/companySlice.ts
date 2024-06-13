@@ -1,6 +1,6 @@
-import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
-import {API} from "@/configs/api.config";
-import {configureSlice} from "@/utils/helper";
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { API } from '@/configs/api.config';
+import { configureSlice } from '@/utils/helper';
 
 interface IStateProps {
     company: any;
@@ -8,6 +8,8 @@ interface IStateProps {
     companyDetail: any
     selectedCompany: any;
     selectedBranch: any;
+    branchList: any;
+    branchTypes: any;
     loading: boolean;
     error: any;
     success: boolean;
@@ -20,9 +22,11 @@ const initialState: IStateProps = {
     companyDetail: null,
     selectedCompany: null,
     selectedBranch: null,
+    branchList: null,
+    branchTypes: null,
     loading: false,
     error: null,
-    success: false,
+    success: false
 };
 
 // Async thunks
@@ -86,12 +90,40 @@ export const updateCompany = createAsyncThunk(
     'company/update',
     async (data: any, thunkAPI) => {
         try {
-            const {id, companyData} = data
+            const { id, companyData } = data;
             const response = await API.post('/company/' + id, companyData);
             return response.data;
         } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to update';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const getBranches = createAsyncThunk(
+    'company/branch/list',
+    async (id: number, thunkAPI) => {
+        try {
+            const response = await API.get('/company/branch/list/' + id);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const getBranchTypes = createAsyncThunk(
+    'company/branch/types',
+    async (_, thunkAPI) => {
+        try {
+            const response = await API.get('/company/branch/types/');
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
         }
     }
@@ -106,6 +138,7 @@ export const companySlice = createSlice({
             state.company = null;
             state.error = null;
             state.success = false;
+            state.branchList = null;
             state.companyDetail = null;
             state.selectedCompany = null;
             state.selectedBranch = null;
@@ -117,7 +150,7 @@ export const companySlice = createSlice({
 
         setSelectedBranch: (state, action) => {
             state.selectedBranch = action.payload;
-        },
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -181,9 +214,33 @@ export const companySlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message;
             })
-    },
+            .addCase(getBranches.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getBranches.fulfilled, (state, action) => {
+                state.loading = false;
+                state.branchList = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getBranches.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(getBranchTypes.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getBranchTypes.fulfilled, (state, action) => {
+                state.loading = false;
+                state.branchTypes = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getBranchTypes.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            });
+    }
 });
-export const {clearCompanySlice, setSelectedCompany, setSelectedBranch} = companySlice.actions;
+export const { clearCompanySlice, setSelectedCompany, setSelectedBranch } = companySlice.actions;
 
 export const companySliceConfig = configureSlice(companySlice, true);
 

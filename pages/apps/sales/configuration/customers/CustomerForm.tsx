@@ -381,25 +381,25 @@ const CustomerForm = ({id}: IFormProps) => {
                     <Option
                         type="checkbox"
                         label='allow invoices more than credit limit'
-                        value={"1"}
-                        defaultChecked={formData.allow_invoice_more_than_credit === '1'}
+                        value={1}
+                        defaultChecked={formData.allow_invoice_more_than_credit === 1}
                         name='allow_invoice_more_than_credit'
                         onChange={(e) => handleChange(e.target.name, e.target.checked ? 1 : 0, e.target.required)}
                     />
                     <Option
                         type="checkbox"
                         label='Is Vendor'
-                        value={"1"}
+                        value={1}
                         name='is_vendor'
-                        defaultChecked={formData.is_vendor === '1'}
+                        defaultChecked={formData.is_vendor === 1}
                         onChange={(e) => handleChange(e.target.name, e.target.checked ? 1 : 0, e.target.required)}
                     />
                     <Option
                         type="checkbox"
                         label='Status'
-                        value={"1"}
+                        value={1}
                         name='status'
-                        defaultChecked={formData.status === '1'}
+                        defaultChecked={formData.status === 1}
                         onChange={(e) => handleChange(e.target.name, e.target.checked ? 1 : 0, e.target.required)}
                     />
                 </div>

@@ -7,6 +7,7 @@ interface IProductionState {
     productionDetail: any
     allProductions: any;
     productionItems: any;
+    productionsForPrint: any;
     loading: boolean;
     error: any;
     success: boolean;
@@ -18,6 +19,7 @@ const initialState: IProductionState = {
     productionDetail: null,
     allProductions: null,
     productionItems: null,
+    productionsForPrint: null,
     loading: false,
     error: null,
     success: false,
@@ -137,6 +139,21 @@ export const pendingProductions = createAsyncThunk(
     }
 );
 
+export const getProductionsForPrint = createAsyncThunk(
+    'productions/for-print',
+    async (data: any, thunkAPI) => {
+        try {
+            const response = await API.post('/formula-production/print', data);
+            console.log(response.data);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 // Slice
 export const productionSlice = createSlice({
     name: 'productions',
@@ -148,6 +165,7 @@ export const productionSlice = createSlice({
             state.success = false;
             state.productionDetail = null;
             state.productionItems = null;
+            state.productionsForPrint = null;
         },
     },
     extraReducers: (builder) => {
@@ -243,6 +261,18 @@ export const productionSlice = createSlice({
                 state.success = action.payload.success;
             })
             .addCase(pendingProductions.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(getProductionsForPrint.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getProductionsForPrint.fulfilled, (state, action) => {
+                state.loading = false;
+                state.productionsForPrint = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getProductionsForPrint.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })

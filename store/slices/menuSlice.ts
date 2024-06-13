@@ -6,6 +6,7 @@ interface IMenusState {
     permittedMenus: any;
     activeModule: any;
     moduleMenus: any;
+    activeMenu: any;
     loading: boolean;
     error: any;
     success: boolean;
@@ -16,6 +17,7 @@ const initialState: IMenusState = {
     permittedMenus: null,
     activeModule: null,
     moduleMenus: null,
+    activeMenu: null,
     loading: false,
     error: null,
     success: false
@@ -45,6 +47,7 @@ export const menuSlice = createSlice({
             state.permittedMenus = null;
             state.activeModule = null;
             state.moduleMenus = null;
+            state.activeMenu = null;
             state.error = null;
             state.success = false;
         },
@@ -53,6 +56,9 @@ export const menuSlice = createSlice({
         },
         setModuleMenus: (state, action) => {
             state.moduleMenus = action.payload;
+        },
+        setActiveMenu: (state, action) => {
+            state.activeMenu = action.payload;
         }
     },
     extraReducers: (builder) => {
@@ -74,7 +80,8 @@ export const menuSlice = createSlice({
 export const {
     clearMenuState,
     setModuleMenus,
-    setActiveModule
+    setActiveModule,
+    setActiveMenu
 } = menuSlice.actions;
 
 export const menuSliceConfig = configureSlice(menuSlice, true);

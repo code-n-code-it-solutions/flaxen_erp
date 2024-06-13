@@ -7,6 +7,7 @@ interface IPRState {
     purchaseRequest: any;
     purchaseRequestDetail: any
     purchaseRequests: any;
+    purchaseRequestsForPrint: any;
     loading: boolean;
     error: any;
     success: boolean;
@@ -18,6 +19,7 @@ const initialState: IPRState = {
     purchaseRequest: null,
     purchaseRequestDetail: null,
     purchaseRequests: null,
+    purchaseRequestsForPrint: null,
     loading: false,
     error: null,
     success: false,
@@ -152,6 +154,21 @@ export const markRequisitionItemComplete = createAsyncThunk(
     }
 );
 
+export const getRequisitionsForPrint = createAsyncThunk(
+    'purchaseRequisition/for-print',
+    async (data: any, thunkAPI) => {
+        try {
+            const response = await API.post('/purchase-requisition/print', data);
+            console.log(response.data);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 // Slice
 export const purchaseRequisitionSlice = createSlice({
     name: 'purchase-requisition',
@@ -162,6 +179,7 @@ export const purchaseRequisitionSlice = createSlice({
             state.error = null;
             state.success = false;
             state.purchaseRequestDetail = null;
+            state.purchaseRequestsForPrint
         },
     },
     extraReducers: (builder) => {
@@ -270,6 +288,18 @@ export const purchaseRequisitionSlice = createSlice({
                 state.success = action.payload.success;
             })
             .addCase(markRequisitionItemComplete.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(getRequisitionsForPrint.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getRequisitionsForPrint.fulfilled, (state, action) => {
+                state.loading = false;
+                state.purchaseRequestsForPrint = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getRequisitionsForPrint.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })

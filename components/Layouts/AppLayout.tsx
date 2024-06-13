@@ -18,6 +18,7 @@ interface AppLayoutProps extends PropsWithChildren {
 
 const AppLayout = ({ children }:PropsWithChildren) => {
     // console.log("Its app layout");
+    // console.log(children);
     const router = useRouter();
     const dispatch = useAppDispatch();
     const [showLoader, setShowLoader] = useState(true);

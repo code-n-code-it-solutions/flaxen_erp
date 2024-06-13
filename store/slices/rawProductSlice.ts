@@ -6,6 +6,7 @@ interface IRawProductState {
     rawProduct: any;
     rawProductDetail: any;
     allRawProducts: any;
+    rawProductsForPrint: any;
     fillingProducts: any;
     loading: boolean;
     error: any;
@@ -17,6 +18,7 @@ const initialState: IRawProductState = {
     rawProduct: null,
     rawProductDetail: null,
     allRawProducts: null,
+    rawProductsForPrint: null,
     fillingProducts: null,
     loading: false,
     error: null,
@@ -65,6 +67,21 @@ export const showDetails = createAsyncThunk(
     async (id: number, thunkAPI) => {
         try {
             const response = await API.get('/raw-products/' + id);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const getProductsForPrint = createAsyncThunk(
+    'rawProducts/for-print',
+    async (data: any, thunkAPI) => {
+        try {
+            const response = await API.post('/raw-products/print', data);
+            console.log(response.data);
             return response.data;
         } catch (error: any) {
             const message =
@@ -143,6 +160,7 @@ export const rawProductSlice = createSlice({
             state.error = null;
             state.success = false;
             state.rawProductDetail = null;
+            state.rawProductsForPrint = null;
         }
     },
     extraReducers: (builder) => {
@@ -225,6 +243,18 @@ export const rawProductSlice = createSlice({
                 state.success = action.payload.success;
             })
             .addCase(deleteRawProduct.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(getProductsForPrint.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getProductsForPrint.fulfilled, (state, action) => {
+                state.loading = false;
+                state.rawProductsForPrint = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getProductsForPrint.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             });

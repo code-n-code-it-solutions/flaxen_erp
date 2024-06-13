@@ -37,6 +37,8 @@ import {deliveryNoteSliceConfig} from "@/store/slices/deliveryNoteSlice";
 import {saleInvoiceSliceConfig} from "@/store/slices/saleInvoiceSlice";
 import {companySliceConfig} from "@/store/slices/companySlice";
 import { pluginSliceConfig } from '@/store/slices/pluginSlice';
+import { customerPaymentSliceConfig } from '@/store/slices/customerPayment';
+import { paymentMethodSliceConfig } from '@/store/slices/paymentMethodSlice';
 
 
 export const slices = {
@@ -78,7 +80,9 @@ export const slices = {
     deliveryNote: deliveryNoteSliceConfig,
     saleInvoice: saleInvoiceSliceConfig,
     company: companySliceConfig,
-    plugin: pluginSliceConfig
+    plugin: pluginSliceConfig,
+    customerPayment: customerPaymentSliceConfig,
+    paymentMethod: paymentMethodSliceConfig
 }
 
 
@@ -121,5 +125,7 @@ export const reducers = {
     deliveryNote: deliveryNoteSliceConfig.reducer,
     saleInvoice: saleInvoiceSliceConfig.reducer,
     company: companySliceConfig.reducer,
-    plugin: pluginSliceConfig.reducer
+    plugin: pluginSliceConfig.reducer,
+    customerPayment: customerPaymentSliceConfig.reducer,
+    paymentMethod: paymentMethodSliceConfig.reducer
 }

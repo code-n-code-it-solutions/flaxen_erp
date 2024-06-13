@@ -1,10 +1,10 @@
-import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
-import {API} from "@/configs/api.config";
-import {configureSlice} from "@/utils/helper";
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { API } from '@/configs/api.config';
+import { configureSlice } from '@/utils/helper';
 
 interface IEmployeeState {
     employee: any;
-    employeeDetail: any
+    employeeDetail: any;
     employees: any;
     loading: boolean;
     error: any;
@@ -18,7 +18,7 @@ const initialState: IEmployeeState = {
     employees: null,
     loading: false,
     error: null,
-    success: false,
+    success: false
 };
 
 interface IEmployeeForm {
@@ -48,7 +48,7 @@ export const getEmployees = createAsyncThunk(
         try {
             const response = await API.get('/employee');
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -57,14 +57,13 @@ export const getEmployees = createAsyncThunk(
 );
 
 
-
 export const storeEmployee = createAsyncThunk(
     'employees/store',
     async (data: IEmployeeForm, thunkAPI) => {
         try {
             const response = await API.post('/employee', data);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -74,11 +73,11 @@ export const storeEmployee = createAsyncThunk(
 
 export const showDetails = createAsyncThunk(
     'employees/show',
-    async (id:number, thunkAPI) => {
+    async (id: number, thunkAPI) => {
         try {
-            const response = await API.get('/employee/'+id);
+            const response = await API.get('/employee/' + id);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -88,12 +87,12 @@ export const showDetails = createAsyncThunk(
 
 export const editEmployee = createAsyncThunk(
     'employees/edit',
-    async (id:number, thunkAPI) => {
+    async (id: number, thunkAPI) => {
         try {
-            const response = await API.get('/employee/edit/'+id);
-            console.log(response)
+            const response = await API.get('/employee/edit/' + id);
+            console.log(response);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to edit';
             return thunkAPI.rejectWithValue(message);
@@ -103,12 +102,12 @@ export const editEmployee = createAsyncThunk(
 
 export const updateEmployee = createAsyncThunk(
     'employees/update',
-    async (data:any, thunkAPI) => {
+    async (data: any, thunkAPI) => {
         try {
-            const {id, employeeData} = data
-            const response = await API.post('/employee/update/'+id, employeeData);
+            const { id, employeeData } = data;
+            const response = await API.post('/employee/update/' + id, employeeData);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to login';
             return thunkAPI.rejectWithValue(message);
@@ -118,11 +117,11 @@ export const updateEmployee = createAsyncThunk(
 
 export const deleteEmployee = createAsyncThunk(
     'employees/delete',
-    async (id:number, thunkAPI) => {
+    async (ids: any[] | any, thunkAPI) => {
         try {
-            const response = await API.delete('/employee/'+id);
+            const response = await API.post('/employee/delete', { ids });
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -140,7 +139,7 @@ export const employeeSlice = createSlice({
             state.error = null;
             state.success = false;
             state.employeeDetail = null;
-        },
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -214,8 +213,8 @@ export const employeeSlice = createSlice({
             .addCase(deleteEmployee.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
-            })
-    },
+            });
+    }
 });
 export const { clearEmployeeState } = employeeSlice.actions;
 

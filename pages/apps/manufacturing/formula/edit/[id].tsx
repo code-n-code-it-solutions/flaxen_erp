@@ -7,13 +7,15 @@ import {
     editProductAssembly
 } from '@/store/slices/productAssemblySlice';
 import PageWrapper from '@/components/PageWrapper';
-import { ButtonSize, ButtonType, ButtonVariant, IconType } from '@/utils/enums';
+import { AppBasePath, ButtonSize, ButtonType, ButtonVariant, IconType } from '@/utils/enums';
 import { getIcon } from '@/utils/helper';
 import Button from '@/components/Button';
-import ProductAssemblyForm from '@/pages/erp/inventory/product-assembly/ProductAssemblyForm';
+import ProductAssemblyForm from '@/pages/apps/manufacturing/formula/ProductAssemblyForm';
 import AppLayout from '@/components/Layouts/AppLayout';
+import useSetActiveMenu from '@/hooks/useSetActiveMenu';
 
 const Edit = () => {
+    useSetActiveMenu(AppBasePath.Product_Assembly);
     const dispatch = useAppDispatch();
     const router = useRouter();
     const { productAssembly, loading, productAssemblyDetail } = useAppSelector(state => state.productAssembly);

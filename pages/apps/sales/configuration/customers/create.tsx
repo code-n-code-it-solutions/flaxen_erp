@@ -1,18 +1,21 @@
-import React, {useEffect} from 'react';
-import {useAppDispatch, useAppSelector} from "@/store";
-import {useRouter} from "next/router";
-import {setPageTitle} from "@/store/slices/themeConfigSlice";
-import PageWrapper from "@/components/PageWrapper";
-import {ButtonSize, ButtonType, ButtonVariant, IconType} from "@/utils/enums";
-import Button from "@/components/Button";
+import React, { useEffect } from 'react';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { useRouter } from 'next/router';
+import { setPageTitle } from '@/store/slices/themeConfigSlice';
+import PageWrapper from '@/components/PageWrapper';
+import { AppBasePath, ButtonSize, ButtonType, ButtonVariant, IconType } from '@/utils/enums';
+import Button from '@/components/Button';
 import CustomerForm from './CustomerForm';
-import {clearCustomerState} from '@/store/slices/customerSlice';
-import {getIcon} from "@/utils/helper";
+import { clearCustomerState } from '@/store/slices/customerSlice';
+import { getIcon } from '@/utils/helper';
 import AppLayout from '@/components/Layouts/AppLayout';
+import useSetActiveMenu from '@/hooks/useSetActiveMenu';
+import DetailPageHeader from '@/components/apps/DetailPageHeader';
 
 const Create = () => {
+    useSetActiveMenu(AppBasePath.Customer);
     const dispatch = useAppDispatch();
-    const {customer, success} = useAppSelector((state) => state.customer);
+    const { customer, success } = useAppSelector((state) => state.customer);
     const router = useRouter();
 
     useEffect(() => {
@@ -21,28 +24,32 @@ const Create = () => {
 
     useEffect(() => {
         if (customer && success) {
-          router.push('/apps/sales/configuration/customers')
-          dispatch(clearCustomerState())
+            router.push('/apps/sales/configuration/customers');
+            dispatch(clearCustomerState());
         }
-      }, [customer, success]);
+    }, [customer, success]);
 
     return (
-        <PageWrapper
-            embedLoader={false}
-            breadCrumbItems={[]}
-            title="Create Customer"
-            buttons={[
-                {
-                    text: 'Back',
-                    type: ButtonType.link,
-                    variant: ButtonVariant.primary,
-                    icon: IconType.back,
-                    link: '/apps/sales/configuration/customers'
-                }
-            ]}
-        >
-            <CustomerForm />
-        </PageWrapper>
+        <div>
+            <DetailPageHeader
+                appBasePath={AppBasePath.Customer}
+                title="Register Customer"
+                middleComponent={{
+                    show: false
+                }}
+                backButton={{
+                    show: true,
+                    backLink: '/apps/sales/configuration/customers'
+                }}
+            />
+            <PageWrapper
+                breadCrumbItems={[]}
+                embedLoader={true}
+                loading={false}
+            >
+                <CustomerForm />
+            </PageWrapper>
+        </div>
     );
 };
 

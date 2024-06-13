@@ -2,36 +2,19 @@ import React, { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useRouter } from 'next/router';
 import { setPageTitle } from '@/store/slices/themeConfigSlice';
-import ProductForm from '@/pages/erp/inventory/products/ProductForm';
+import ProductForm from '@/pages/apps/inventory/products/ProductForm';
 import { clearRawProductState, editRawProduct } from '@/store/slices/rawProductSlice';
 import PageWrapper from '@/components/PageWrapper';
-import { ButtonType, ButtonVariant, IconType } from '@/utils/enums';
+import { AppBasePath, ButtonType, ButtonVariant, IconType } from '@/utils/enums';
 import AppLayout from '@/components/Layouts/AppLayout';
 import View from '@/pages/apps/inventory/products/view/[id]';
+import useSetActiveMenu from '@/hooks/useSetActiveMenu';
 
 const Edit = () => {
+    useSetActiveMenu(AppBasePath.Raw_Product);
     const dispatch = useAppDispatch();
     const router = useRouter();
     const { rawProduct, loading } = useAppSelector(state => state.rawProduct);
-
-    const breadCrumbItems = [
-        {
-            title: 'Home',
-            href: '/erp/main'
-        },
-        {
-            title: 'Inventory Dashboard',
-            href: '/erp/inventory'
-        },
-        {
-            title: 'All Raw Materials',
-            href: '/erp/inventory/products'
-        },
-        {
-            title: 'Create New',
-            href: '#'
-        }
-    ];
 
     useEffect(() => {
         if (rawProduct) {
@@ -50,9 +33,8 @@ const Edit = () => {
 
     return (
         <PageWrapper
-            breadCrumbItems={breadCrumbItems}
-            embedLoader={true}
-            loading={loading}
+            breadCrumbItems={[]}
+            embedLoader={false}
             title="Edit Raw Material"
             buttons={[
                 {

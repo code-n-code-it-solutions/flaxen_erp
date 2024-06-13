@@ -7,14 +7,15 @@ import {useRouter} from 'next/router';
 import {checkServerSideAuth} from "@/utils/authCheck";
 import {logoutUser} from "@/store/slices/userSlice";
 import {clearMenuState} from "@/store/slices/menuSlice";
-import {IRootState, useAppDispatch, useAppSelector} from "@/store";
+import {useAppDispatch, useAppSelector} from "@/store";
 
 const DefaultLayout = ({children}: PropsWithChildren) => {
     const router = useRouter();
     const dispatch = useAppDispatch();
+    const themeConfig = useAppSelector((state) => state.themeConfig);
+    const {user} = useAppSelector((state) => state.user);
     const [showLoader, setShowLoader] = useState(true);
     const [showTopButton, setShowTopButton] = useState(false);
-    const themeConfig = useAppSelector((state: IRootState) => state.themeConfig);
     const [animation, setAnimation] = useState(themeConfig.animation);
 
     const {token, isLoggedIn} = useAppSelector((state) => state.user);

@@ -7,13 +7,17 @@ import { ColumnsToolPanelModule } from '@ag-grid-enterprise/column-tool-panel';
 import { FiltersToolPanelModule } from '@ag-grid-enterprise/filter-tool-panel';
 import { MenuModule } from '@ag-grid-enterprise/menu';
 import { SetFilterModule } from '@ag-grid-enterprise/set-filter';
+import { MasterDetailModule } from "@ag-grid-enterprise/master-detail";
+import { RangeSelectionModule } from "@ag-grid-enterprise/range-selection";
 
 ModuleRegistry.registerModules([
     ClientSideRowModelModule,
     ColumnsToolPanelModule,
     FiltersToolPanelModule,
     MenuModule,
-    SetFilterModule
+    SetFilterModule,
+    MasterDetailModule,
+    RangeSelectionModule
 ]);
 
 interface IProps {
@@ -27,6 +31,9 @@ interface IProps {
     rowMultiSelectWithClick?: boolean;
     rowSelection?: any;
     onSelectionChangedRows?: (rows: any) => void;
+    detailCellRendererParams?: any;
+    autoGroupColumnDef?: any;
+    onFirstDataRendered?: (params: any) => void;
     gridRef?: any;
 }
 
@@ -41,12 +48,15 @@ const AgGridComponent = ({
                              rowMultiSelectWithClick = false,
                              rowSelection,
                              onSelectionChangedRows,
+                             detailCellRendererParams,
+                             autoGroupColumnDef,
+                             onFirstDataRendered,
                              gridRef
                          }: IProps) => {
 
     const themeConfig = useAppSelector((state) => state.themeConfig);
     const [rowData, setRowData] = useState([]);
-    const gridStyle = useMemo(() => ({ height: 400, width: '100%' }), []);
+    const gridStyle = useMemo(() => ({ height: 600, width: '100%' }), []);
     const defaultColDef = useMemo<any>(() => {
         return {
             initialWidth: 100,
@@ -131,6 +141,9 @@ const AgGridComponent = ({
                 rowMultiSelectWithClick={rowMultiSelectWithClick}
                 rowSelection={rowSelection}
                 onSelectionChanged={onSelectionChanged}
+                detailCellRendererParams={detailCellRendererParams}
+                autoGroupColumnDef={autoGroupColumnDef}
+                onFirstDataRendered={onFirstDataRendered}
                 sideBar={'filters'}
             />
         </div>

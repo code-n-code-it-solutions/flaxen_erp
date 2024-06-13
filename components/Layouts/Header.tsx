@@ -1,24 +1,24 @@
-"use client";
-import {useEffect, useState} from 'react';
+'use client';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import {useRouter} from 'next/router';
-import {useAppDispatch, useAppSelector} from '@/store';
-import {toggleLocale, toggleSidebar, toggleTheme} from '@/store/slices/themeConfigSlice';
-import {useTranslation} from 'react-i18next';
+import { useRouter } from 'next/router';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { toggleLocale, toggleSidebar, toggleTheme } from '@/store/slices/themeConfigSlice';
+import { useTranslation } from 'react-i18next';
 import Dropdown from '@/components/Dropdown';
-import {logoutUser} from "@/store/slices/userSlice";
-import {clearMenuState, getPermittedMenu} from "@/store/slices/menuSlice";
-import {setAuthToken} from "@/configs/api.config";
-import {getIcon} from "@/utils/helper";
-import {IconType} from "@/utils/enums";
-import {useHistory} from "@/context/history.context";
+import { logoutUser } from '@/store/slices/userSlice';
+import { clearMenuState, getPermittedMenu } from '@/store/slices/menuSlice';
+import { setAuthToken } from '@/configs/api.config';
+import { getIcon } from '@/utils/helper';
+import { IconType } from '@/utils/enums';
+import { useHistory } from '@/context/history.context';
 
 const Header = () => {
     const router = useRouter();
     const dispatch = useAppDispatch();
-    const {t, i18n} = useTranslation();
-    const {isLoggedIn, token} = useAppSelector((state) => state.user);
-    const {permittedMenus, moduleMenus, activeModule} = useAppSelector((state) => state.menu);
+    const { t, i18n } = useTranslation();
+    const { isLoggedIn, token, user } = useAppSelector((state) => state.user);
+    const { permittedMenus, moduleMenus, activeModule } = useAppSelector((state) => state.menu);
     const isRtl = useAppSelector((state) => state.themeConfig.rtlClass) === 'rtl';
     const themeConfig = useAppSelector((state) => state.themeConfig);
     const [flag, setFlag] = useState('');
@@ -27,29 +27,29 @@ const Header = () => {
             id: 1,
             profile: 'user-profile.jpeg',
             message: '<strong class="text-sm mr-1">John Doe</strong>invite you to <strong>Prototyping</strong>',
-            time: '45 min ago',
-        },
+            time: '45 min ago'
+        }
     ]);
 
     // console.log(history)
     const handleLogout = () => {
-        setAuthToken(token)
+        setAuthToken(token);
         dispatch(clearMenuState());
         dispatch(logoutUser());
-    }
+    };
 
     useEffect(() => {
-        setActiveMenu()
+        setActiveMenu();
     }, [activeModule]);
 
     useEffect(() => {
         if (!isLoggedIn) {
-            router.push('/auth/signin')
+            router.push('/auth/signin');
         } else {
-            setAuthToken(token)
+            setAuthToken(token);
             // dispatch(getPermittedMenu());
         }
-    }, [isLoggedIn, router])
+    }, [isLoggedIn, router]);
 
     const setActiveMenu = () => {
         const selector = document.querySelector('ul.horizontal-menu a[href="' + window?.location?.pathname + '"]');
@@ -77,10 +77,10 @@ const Header = () => {
                 }
             }
         }
-    }
+    };
 
     useEffect(() => {
-        setActiveMenu()
+        setActiveMenu();
     }, [router.pathname]);
 
     useEffect(() => {
@@ -96,9 +96,11 @@ const Header = () => {
         <header className={themeConfig.semidark && themeConfig.menu === 'horizontal' ? 'dark' : ''}>
             <div className="relative flex w-full items-center px-5 py-2.5">
                 <div className="horizontal-logo flex items-center justify-between ltr:mr-2 rtl:ml-2 lg:hidden">
-                    <button onClick={() => router.back()} className="btn btn-primary btn-sm">
-                        {getIcon(IconType.back)}
-                    </button>
+                    {user.roles.map((role: any) => role.name).includes('Admin') && (
+                        <button onClick={() => router.push('/workspace/companies')} className="btn btn-primary btn-sm">
+                            {getIcon(IconType.back)}
+                        </button>
+                    )}
                     <button
                         type="button"
                         className="collapse-icon flex flex-none rounded-full bg-white-light/40 p-2 hover:bg-white-light/90 hover:text-primary ltr:ml-2 rtl:mr-2 dark:bg-dark/40 dark:text-[#d0d2d6] dark:hover:bg-dark/60 dark:hover:text-primary lg:hidden"
@@ -106,10 +108,10 @@ const Header = () => {
                     >
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                              xmlns="http://www.w3.org/2000/svg">
-                            <path d="M20 7L4 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                            <path d="M20 7L4 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                             <path opacity="0.5" d="M20 12L4 12" stroke="currentColor" strokeWidth="1.5"
-                                  strokeLinecap="round"/>
-                            <path d="M20 17L4 17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                                  strokeLinecap="round" />
+                            <path d="M20 17L4 17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                         </svg>
                     </button>
                 </div>
@@ -130,23 +132,23 @@ const Header = () => {
                             >
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                                      xmlns="http://www.w3.org/2000/svg">
-                                    <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="1.5"/>
+                                    <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="1.5" />
                                     <path d="M12 2V4" stroke="currentColor" strokeWidth="1.5"
-                                          strokeLinecap="round"/>
+                                          strokeLinecap="round" />
                                     <path d="M12 20V22" stroke="currentColor" strokeWidth="1.5"
-                                          strokeLinecap="round"/>
+                                          strokeLinecap="round" />
                                     <path d="M4 12L2 12" stroke="currentColor" strokeWidth="1.5"
-                                          strokeLinecap="round"/>
+                                          strokeLinecap="round" />
                                     <path d="M22 12L20 12" stroke="currentColor" strokeWidth="1.5"
-                                          strokeLinecap="round"/>
+                                          strokeLinecap="round" />
                                     <path opacity="0.5" d="M19.7778 4.22266L17.5558 6.25424" stroke="currentColor"
-                                          strokeWidth="1.5" strokeLinecap="round"/>
+                                          strokeWidth="1.5" strokeLinecap="round" />
                                     <path opacity="0.5" d="M4.22217 4.22266L6.44418 6.25424" stroke="currentColor"
-                                          strokeWidth="1.5" strokeLinecap="round"/>
+                                          strokeWidth="1.5" strokeLinecap="round" />
                                     <path opacity="0.5" d="M6.44434 17.5557L4.22211 19.7779" stroke="currentColor"
-                                          strokeWidth="1.5" strokeLinecap="round"/>
+                                          strokeWidth="1.5" strokeLinecap="round" />
                                     <path opacity="0.5" d="M19.7778 19.7773L17.5558 17.5551" stroke="currentColor"
-                                          strokeWidth="1.5" strokeLinecap="round"/>
+                                          strokeWidth="1.5" strokeLinecap="round" />
                                 </svg>
                             </button>
                         ) : (
@@ -185,9 +187,9 @@ const Header = () => {
                                         strokeWidth="1.5"
                                     />
                                     <path opacity="0.5" d="M22 21H2" stroke="currentColor" strokeWidth="1.5"
-                                          strokeLinecap="round"/>
+                                          strokeLinecap="round" />
                                     <path opacity="0.5" d="M15 15H9" stroke="currentColor" strokeWidth="1.5"
-                                          strokeLinecap="round"/>
+                                          strokeLinecap="round" />
                                 </svg>
                             </button>
                         )}
@@ -199,7 +201,7 @@ const Header = () => {
                             btnClassName="block p-2 rounded-full bg-white-light/40 dark:bg-dark/40 hover:text-primary hover:bg-white-light/90 dark:hover:bg-dark/60"
                             button={flag && <img className="h-5 w-5 rounded-full object-cover"
                                                  src={`/assets/images/flags/${flag.toUpperCase()}.svg`}
-                                                 alt="flag"/>}
+                                                 alt="flag" />}
                         >
                             <ul className="grid w-[280px] grid-cols-2 gap-2 !px-2 font-semibold text-dark dark:text-white-dark dark:text-white-light/90">
                                 {themeConfig.languageList.map((item: any) => {
@@ -215,7 +217,7 @@ const Header = () => {
                                                 }}
                                             >
                                                 <img src={`/assets/images/flags/${item.code.toUpperCase()}.svg`}
-                                                     alt="flag" className="h-5 w-5 rounded-full object-cover"/>
+                                                     alt="flag" className="h-5 w-5 rounded-full object-cover" />
                                                 <span className="ltr:ml-3 rtl:mr-3">{t(item.translation_key)}</span>
                                             </button>
                                         </li>
@@ -232,13 +234,13 @@ const Header = () => {
                             btnClassName="relative group block"
                             button={<img
                                 className="h-9 w-9 rounded-full object-cover saturate-50 group-hover:saturate-100"
-                                src="/assets/images/user-profile.jpeg" alt="userProfile"/>}
+                                src="/assets/images/user-profile.jpeg" alt="userProfile" />}
                         >
                             <ul className="w-[230px] !py-0 font-semibold text-dark dark:text-white-dark dark:text-white-light/90">
                                 <li>
                                     <div className="flex items-center px-4 py-4">
                                         <img className="h-10 w-10 rounded-md object-cover"
-                                             src="/assets/images/user-profile.jpeg" alt="userProfile"/>
+                                             src="/assets/images/user-profile.jpeg" alt="userProfile" />
                                         <div className="ltr:pl-4 rtl:pr-4">
                                             <h4 className="text-base">
                                                 John Doe
@@ -256,7 +258,7 @@ const Header = () => {
                                     <Link href="/users/profile" className="dark:hover:text-white">
                                         <svg className="ltr:mr-2 rtl:ml-2" width="18" height="18"
                                              viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <circle cx="12" cy="6" r="4" stroke="currentColor" strokeWidth="1.5"/>
+                                            <circle cx="12" cy="6" r="4" stroke="currentColor" strokeWidth="1.5" />
                                             <path
                                                 opacity="0.5"
                                                 d="M20 17.5C20 19.9853 20 22 12 22C4 22 4 19.9853 4 17.5C4 15.0147 7.58172 13 12 13C16.4183 13 20 15.0147 20 17.5Z"
@@ -298,11 +300,11 @@ const Header = () => {
                                             />
                                             <path opacity="0.5"
                                                   d="M6 10V8C6 4.68629 8.68629 2 12 2C15.3137 2 18 4.68629 18 8V10"
-                                                  stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                                                  stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                                             <g opacity="0.5">
                                                 <path
                                                     d="M9 16C9 16.5523 8.55228 17 8 17C7.44772 17 7 16.5523 7 16C7 15.4477 7.44772 15 8 15C8.55228 15 9 15.4477 9 16Z"
-                                                    fill="currentColor"/>
+                                                    fill="currentColor" />
                                                 <path
                                                     d="M13 16C13 16.5523 12.5523 17 12 17C11.4477 17 11 16.5523 11 16C11 15.4477 11.4477 15 12 15C12.5523 15 13 15.4477 13 16Z"
                                                     fill="currentColor"
@@ -328,7 +330,7 @@ const Header = () => {
                                                 strokeLinecap="round"
                                             />
                                             <path d="M12 15L12 2M12 2L15 5.5M12 2L9 5.5" stroke="currentColor"
-                                                  strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                                  strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>
                                         Sign Out
                                     </button>

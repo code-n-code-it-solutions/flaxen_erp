@@ -1,29 +1,28 @@
 import Link from 'next/link';
-import {useDispatch, useSelector} from 'react-redux';
-import {IRootState, AppDispatch} from '@/store';
+import { useAppSelector, useAppDispatch } from '@/store';
 import {useEffect, useState} from 'react';
 import {setPageTitle} from '@/store/slices/themeConfigSlice';
-import {useRouter} from 'next/router';
 import {loginUser, logoutUser} from '@/store/slices/userSlice';
-import {ThunkDispatch} from "redux-thunk";
-import {AnyAction} from 'redux';
 import AuthLayout from "@/components/Layouts/AuthLayout";
-import {setActiveModule} from "@/store/slices/menuSlice";
+import { clearMenuState } from '@/store/slices/menuSlice';
+import { clearCompanySlice } from '@/store/slices/companySlice';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
 
-    const {isLoggedIn, loading} = useSelector((state: IRootState) => state.user);
+    const {isLoggedIn, loading} = useAppSelector((state) => state.user);
 
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
+    const dispatch = useAppDispatch();
     useEffect(() => {
         dispatch(setPageTitle('Login'));
     }, []);
 
     const submitForm = (e: any) => {
         e.preventDefault();
+        dispatch(clearMenuState())
+        dispatch(clearCompanySlice())
         dispatch(loginUser({email, password, rememberMe}));
         // router.push('/');
     };

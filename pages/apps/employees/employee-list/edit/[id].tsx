@@ -6,6 +6,7 @@ import PageWrapper from '@/components/PageWrapper';
 import { ButtonType, ButtonVariant, IconType } from '@/utils/enums';
 import EmployeeForm from '@/pages/apps/employees/employee-list/EmployeeForm';
 import AppLayout from '@/components/Layouts/AppLayout';
+import DetailPageHeader from '@/components/apps/DetailPageHeader';
 
 const Edit = () => {
     const dispatch = useAppDispatch();
@@ -27,30 +28,28 @@ const Edit = () => {
     }, [router.query]);
 
     return (
-        <PageWrapper
-            // loading={loading}
-            embedLoader={false}
-            breadCrumbItems={[]}
-            title="Edit Employee"
-            buttons={[
-                {
-                    text: 'Print',
-                    type: ButtonType.link,
-                    variant: ButtonVariant.success,
-                    icon: IconType.print,
-                    link: '/apps/employees/employee-list/print/' + router.query.id
-                },
-                {
-                    text: 'Back',
-                    type: ButtonType.link,
-                    variant: ButtonVariant.primary,
-                    icon: IconType.back,
-                    link: '/apps/employees/employee-list'
-                }
-            ]}
-        >
-            <EmployeeForm id={router.query.id} />
-        </PageWrapper>
+        <div>
+            <DetailPageHeader
+                title="Edit Employee"
+                middleComponent={{
+                    show: true,
+                    edit: false,
+                    print: true,
+                    printLabel: true,
+                    delete: true,
+                    duplicate: true,
+                    email: true
+                }}
+                backButton={{
+                    show: true,
+                    backLink: '/apps/employees/employee-list'
+                }}
+            />
+            <PageWrapper>
+                <EmployeeForm id={router.query.id} />
+            </PageWrapper>
+        </div>
+
     );
 };
 

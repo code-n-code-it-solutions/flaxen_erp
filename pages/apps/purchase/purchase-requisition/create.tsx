@@ -3,12 +3,15 @@ import {useAppDispatch, useAppSelector} from "@/store";
 import {useRouter} from "next/router";
 import {setPageTitle} from "@/store/slices/themeConfigSlice";
 import {clearPurchaseRequisitionState} from "@/store/slices/purchaseRequisitionSlice";
-import PurchaseRequestForm from "@/pages/erp/purchase/purchase-requisition/PurchaseRequestForm";
+import PurchaseRequestForm from "@/pages/apps/purchase/purchase-requisition/PurchaseRequestForm";
 import PageWrapper from "@/components/PageWrapper";
-import {ButtonType, ButtonVariant, IconType} from "@/utils/enums";
+import { AppBasePath, ButtonType, ButtonVariant, IconType } from '@/utils/enums';
 import AppLayout from '@/components/Layouts/AppLayout';
+import DetailPageHeader from '@/components/apps/DetailPageHeader';
+import useSetActiveMenu from '@/hooks/useSetActiveMenu';
 
 const Create = () => {
+    useSetActiveMenu(AppBasePath.Purchase_Requisition);
     const dispatch = useAppDispatch();
     const router = useRouter();
     const {purchaseRequest, statuses, success, loading} = useAppSelector(state => state.purchaseRequisition);
@@ -25,23 +28,25 @@ const Create = () => {
     }, [purchaseRequest, success]);
 
     return (
-        <PageWrapper
-            title={'Create New Purchase Requisition'}
-            embedLoader={false}
-            loading={false}
-            breadCrumbItems={[]}
-            buttons={[
-                {
-                    text: 'Back',
-                    type: ButtonType.link,
-                    variant: ButtonVariant.primary,
-                    icon: IconType.back,
-                    link: '/apps/purchase/purchase-requisition'
-                }
-            ]}
-        >
-            <PurchaseRequestForm/>
-        </PageWrapper>
+        <div>
+            <DetailPageHeader
+                appBasePath={AppBasePath.Purchase_Requisition}
+                title="Create PR"
+                middleComponent={{
+                    show: false
+                }}
+                backButton={{
+                    show: true,
+                    backLink: '/apps/purchase/purchase-requisition'
+                }}
+            />
+            <PageWrapper
+                embedLoader={false}
+                loading={false}
+            >
+                <PurchaseRequestForm/>
+            </PageWrapper>
+        </div>
     );
 };
 

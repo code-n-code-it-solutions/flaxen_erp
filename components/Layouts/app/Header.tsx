@@ -7,23 +7,23 @@ import { toggleLocale, toggleSidebar, toggleTheme } from '@/store/slices/themeCo
 import { useTranslation } from 'react-i18next';
 import Dropdown from '@/components/Dropdown';
 import { logoutUser } from '@/store/slices/userSlice';
-import { clearMenuState } from '@/store/slices/menuSlice';
+import { clearMenuState, setActiveMenu } from '@/store/slices/menuSlice';
 import { setAuthToken } from '@/configs/api.config';
 import { getIcon } from '@/utils/helper';
 import { IconType } from '@/utils/enums';
 import IconCaretDown from '@/components/Icon/IconCaretDown';
 
 const Header = ({ menus }: { menus: any[] }) => {
-    // console.log('this is app header');
     const router = useRouter();
     const dispatch = useAppDispatch();
     const { t, i18n } = useTranslation();
+    const { activeMenu } = useAppSelector((state) => state.menu);
     const { isLoggedIn, token, user } = useAppSelector((state) => state.user);
     const { selectedPlugin } = useAppSelector((state) => state.plugin);
-    const { permittedMenus, moduleMenus, activeModule } = useAppSelector((state) => state.menu);
     const isRtl = useAppSelector((state) => state.themeConfig.rtlClass) === 'rtl';
     const themeConfig = useAppSelector((state) => state.themeConfig);
     const [flag, setFlag] = useState('');
+    // console.log(router);
     const [notifications, setNotifications] = useState([
         {
             id: 1,
@@ -63,7 +63,7 @@ const Header = ({ menus }: { menus: any[] }) => {
                 <div className="relative flex w-full items-center bg-white px-5 py-2.5 dark:bg-black">
                     <div className="horizontal-logo flex items-center justify-between ltr:mr-2 rtl:ml-2 lg:hidden">
                         <Link href={'/erp/main'}
-                                className="main-logo flex shrink-0 items-center cursor-pointer">
+                              className="main-logo flex shrink-0 items-center cursor-pointer">
                             {/*<img className="inline w-8 ltr:-ml-1 rtl:-mr-1" src="/assets/images/logo.svg" alt="logo"/>*/}
                             <span
                                 className="hidden align-middle text-2xl font-semibold transition-all duration-300 ltr:ml-1.5 rtl:mr-1.5 dark:text-white-light md:inline">
@@ -94,51 +94,61 @@ const Header = ({ menus }: { menus: any[] }) => {
                             {/* horizontal menu */}
                             <ul className="top-nav horizontal-menu lg:flex hidden py-1.5 px-6 dark:text-white-light font-semibold text-black rtl:space-x-reverse lg:space-x-1.5 xl:space-x-8">
                                 {menus && menus.map((menu: any, index: number) => (
-                                    menu.children.length > 0
-                                        ? (
-                                            <li className="menu nav-item relative" key={index}>
-                                                <button type="button" className="nav-link">
-                                                    <span className="px-1">{t(menu.translation_key)}</span>
-                                                    <div className="right_arrow">
-                                                        <IconCaretDown />
-                                                    </div>
-                                                </button>
-                                                <ul className="sub-menu">
-                                                    {menu.children.map((child: any, childIndex: number) => (
-                                                        child.children.length > 0
-                                                            ? (
-                                                                <li className="relative" key={childIndex}>
-                                                                    <button type="button">
-                                                                        {t(child.translation_key)}
-                                                                        <div
-                                                                            className="-rotate-90 ltr:ml-auto rtl:mr-auto rtl:rotate-90">
-                                                                            <IconCaretDown />
-                                                                        </div>
-                                                                    </button>
-                                                                    <ul className="absolute top-0 z-[10] hidden min-w-[180px] rounded bg-white p-0 py-2 text-dark shadow ltr:left-[95%] rtl:right-[95%] dark:bg-[#1b2e4b] dark:text-white-dark">
-                                                                        {child.children.map((subChild: any, subChildIndex: number) => (
-                                                                            <li key={subChildIndex}>
-                                                                                <Link
-                                                                                    href={subChild.route || ''}>{t(subChild.translation_key)}</Link>
-                                                                            </li>
-                                                                        ))}
-                                                                    </ul>
-                                                                </li>
-                                                            ) : (
-                                                                <li key={childIndex}>
-                                                                    <Link href={child.route || ''}>{t(child.translation_key)}</Link>
-                                                                </li>
-                                                            )
-                                                    ))}
-                                                </ul>
-                                            </li>
-                                        ) : (
-                                            <li className="menu nav-item" key={index}>
-                                                <Link href={menu.route || ''} className="nav-link">
-                                                    <span className="px-1">{t(menu.translation_key)}</span>
-                                                </Link>
-                                            </li>
-                                        )
+                                    // menu.actions.length > 0 && (
+                                        menu.children.length > 0
+                                            ? (
+                                                <li className="menu nav-item relative" key={index}>
+                                                    <button type="button" className="nav-link">
+                                                        <span className="px-1">{t(menu.translation_key)}</span>
+                                                        <div className="right_arrow">
+                                                            <IconCaretDown />
+                                                        </div>
+                                                    </button>
+                                                    <ul className="sub-menu">
+                                                        {menu.children.map((child: any, childIndex: number) => (
+                                                            // child.actions.length > 0 && (
+                                                                child.children.length > 0
+                                                                    ? (
+                                                                        <li className="relative" key={childIndex}>
+                                                                            <button type="button">
+                                                                                {t(child.translation_key)}
+                                                                                <div
+                                                                                    className="-rotate-90 ltr:ml-auto rtl:mr-auto rtl:rotate-90">
+                                                                                    <IconCaretDown />
+                                                                                </div>
+                                                                            </button>
+                                                                            <ul className="absolute top-0 z-[10] hidden min-w-[180px] rounded bg-white p-0 py-2 text-dark shadow ltr:left-[95%] rtl:right-[95%] dark:bg-[#1b2e4b] dark:text-white-dark">
+                                                                                {child.children.map((subChild: any, subChildIndex: number) => (
+                                                                                    // subChild.actions.length > 0 && (
+                                                                                        <li key={subChildIndex}
+                                                                                            onClick={() => dispatch(setActiveMenu(subChild))}>
+                                                                                            <Link
+                                                                                                href={subChild.route || ''}>{t(subChild.translation_key)}</Link>
+                                                                                        </li>
+                                                                                    // )
+                                                                                ))}
+                                                                            </ul>
+                                                                        </li>
+                                                                    ) : (
+                                                                        <li key={childIndex}
+                                                                            onClick={() => dispatch(setActiveMenu(child))}>
+                                                                            <Link
+                                                                                href={child.route || ''}>{t(child.translation_key)}</Link>
+                                                                        </li>
+                                                                    )
+                                                            // )
+                                                        ))}
+                                                    </ul>
+                                                </li>
+                                            ) : (
+                                                <li className="menu nav-item" key={index}
+                                                    onClick={() => dispatch(setActiveMenu(menu))}>
+                                                    <Link href={menu.route || ''} className="nav-link">
+                                                        <span className="px-1">{t(menu.translation_key)}</span>
+                                                    </Link>
+                                                </li>
+                                            )
+                                    // )
                                 ))}
                             </ul>
                         </div>
