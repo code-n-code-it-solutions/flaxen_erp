@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import { clearLocalPurchaseOrderState, markLPOItemComplete, showDetails } from '@/store/slices/localPurchaseOrderSlice';
 import PageWrapper from '@/components/PageWrapper';
-import { AppBasePath, ButtonSize, ButtonType, ButtonVariant, IconType } from '@/utils/enums';
+import { AppBasePath, ButtonSize, ButtonType, ButtonVariant } from '@/utils/enums';
 import Button from '@/components/Button';
 import { setAuthToken } from '@/configs/api.config';
 import Option from '@/components/form/Option';

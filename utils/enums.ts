@@ -111,4 +111,11 @@ export enum AppBasePath {
     Invoice = '/apps/invoicing/customers/invoices',
     Invoice_Payment = '/apps/invoicing/customers/payments',
     Vendor_Bill = '/apps/invoicing/vendors/bills',
+    Vendor_Payment = '/apps/invoicing/vendors/payments',
+    Raw_Material_Stock = '/apps/reporting/stocks/raw-materials',
+    Finish_Good_Stock = '/apps/reporting/stocks/finish-goods',
+    Stock_Ageing_Report = '/apps/reporting/stocks/stock-ageing',
+    Sales_Reporting = '/apps/reporting/sales',
+    Purchases_Reporting = '/apps/reporting/purchases',
+    Invoicing_Reporting = '/apps/reporting/invoicing',
 }

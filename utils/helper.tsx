@@ -343,11 +343,33 @@ export const truncatePathname = (pathname: string, basePath: string) => {
     return pathname;
 };
 
-export const checkPermission = (menus: any[], pathname: string, permission: string, basePath:string) => {
+export const checkPermission = (menus: any[], pathname: string, permission: string, basePath: string) => {
     const truncatedPath = truncatePathname(pathname, basePath);
     const activeMenu = findActiveMenu(menus, truncatedPath);
     if (activeMenu) {
         return activeMenu.actions.find((action: any) => action.name === permission);
     }
     return null;
+};
+
+
+export function calculateDateFromDays(days: number, date?: any) {
+    const resultDate = date && typeof date !== 'undefined' ? new Date(date) : new Date();
+    resultDate.setDate(resultDate.getDate() + days ? days : 0);
+    return resultDate ? resultDate.toISOString().split('T')[0] : new Date(); // Returns date in YYYY-MM-DD format
+}
+
+export const transformAccountsToSelectOptions = (accounts: any) => {
+    // console.log(accounts);
+    return accounts?.map((account: any) => {
+        const transformed: any = {
+            label: account.code + ' - ' + account.name,
+            value: account.id,
+            accounts
+        };
+        if (account.accounts || account.children_recursive) {
+            transformed.options = transformAccountsToSelectOptions(account.accounts ?? account.children_recursive);
+        }
+        return transformed;
+    });
 };

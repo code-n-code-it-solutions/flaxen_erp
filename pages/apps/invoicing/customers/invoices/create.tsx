@@ -8,6 +8,7 @@ import useSetActiveMenu from '@/hooks/useSetActiveMenu';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import { useRouter } from 'next/router';
+import { clearSaleInvoiceState } from '@/store/slices/saleInvoiceSlice';
 
 const Create = () => {
     useSetActiveMenu(AppBasePath.Invoice)
@@ -17,6 +18,7 @@ const Create = () => {
     const {saleInvoice, success} = useAppSelector(state => state.saleInvoice);
 
     useEffect(() => {
+        dispatch(clearSaleInvoiceState())
         dispatch(setPageTitle('New Invoice'));
     }, []);
 

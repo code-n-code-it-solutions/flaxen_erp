@@ -8,6 +8,7 @@ import { AppBasePath, ButtonType, ButtonVariant, IconType } from '@/utils/enums'
 import AppLayout from '@/components/Layouts/AppLayout';
 import DetailPageHeader from '@/components/apps/DetailPageHeader';
 import useSetActiveMenu from '@/hooks/useSetActiveMenu';
+import { getFillingProducts } from '@/store/slices/rawProductSlice';
 
 const View = () => {
     useSetActiveMenu(AppBasePath.Filling);
@@ -15,11 +16,72 @@ const View = () => {
     const router = useRouter();
     const { loading, fillingDetail } = useAppSelector((state) => state.filling);
     const [ids, setIds] = useState<string[]>([]);
+    const [batchCalculations, setBatchCalculations] = useState<any[]>([]);
+    const [itemWiseCalculations, setItemWiseCalculations] = useState([]);
+
+    const calculateItemWise = () => {
+        const calculations = fillingDetail.filling_calculations.map((calculation: any) => {
+            const perKgCost = calculation.product_assembly.product_assembly_items.reduce((acc: number, item: any) => acc + parseFloat(item.total), 0);
+            const rawProduct = calculation.product;
+            const totalCost = ((parseFloat(calculation.capacity) * perKgCost) + parseFloat(rawProduct.valuated_unit_price));
+            const totalSalePrice = ((parseFloat(calculation.capacity) * perKgCost) + parseFloat(rawProduct.retail_price));
+
+            return {
+                productId: rawProduct.id,
+                productTitle: rawProduct.title,
+                ...calculation,
+                costOfGoods: totalCost,
+                salePrice: totalSalePrice
+            };
+        });
+        setItemWiseCalculations(calculations);
+    };
+
+    const calculateBatchCalculation = () => {
+        // Get the batch usage order (FIFO or LIFO)
+        const batchUsageOrder = fillingDetail.batch_usage_order;
+
+        // Sort the production fillings based on the batch usage order
+        const sortedBatches = [...fillingDetail.production_fillings].sort((a: any, b: any) => {
+            const dateA:any = new Date(a.production.created_at);
+            const dateB:any = new Date(b.production.created_at);
+            return batchUsageOrder === 'first-in-first-out' ? dateA - dateB : dateB - dateA;
+        });
+
+        let totalUsed = 0;
+        const fillingQuantity = fillingDetail.filling_calculations.reduce((acc: number, item: any) => acc + parseFloat(item.filling_quantity), 0);
+
+        const batchCalculations = sortedBatches.map((batch: any) => {
+            const batchQuantity = batch.production.no_of_quantity;
+            let used = 0;
+
+            if (fillingQuantity - totalUsed > 0) {
+                used = Math.min(batchQuantity, fillingQuantity - totalUsed);
+                totalUsed += used;
+            }
+
+            return {
+                batch_number: batch.production.batch_number,
+                quantity: batchQuantity,
+                used,
+                remaining: batchQuantity - used,
+                created_at: batch.production.created_at
+            };
+        });
+
+        setBatchCalculations(batchCalculations);
+    };
+
+    useEffect(() => {
+        if (fillingDetail) {
+            calculateItemWise();
+            calculateBatchCalculation();
+        }
+    }, [fillingDetail]);
 
     useEffect(() => {
         dispatch(setPageTitle('Fillings Details'));
         dispatch(clearFillingState());
-
         const fillingId = router.query.id;
 
         if (fillingId) {
@@ -45,7 +107,7 @@ const View = () => {
                         onClick: () => router.push('/apps/manufacturing/operations/fillings/print/' + ids.join('/'))
                     },
                     delete: {
-                        show: false,
+                        show: false
                     },
                     duplicate: {
                         show: true,
@@ -93,59 +155,81 @@ const View = () => {
                                     {fillingDetail?.filling_shift_id}
                                 </span>
                                 <span>
-                                    <strong>No of Quantity (KG): </strong>
-                                    {fillingDetail?.production.no_of_quantity}
-                                </span>
-                                <span>
                                     <strong>Created At: </strong>
                                     {(new Date(fillingDetail?.created_at)).toLocaleDateString()}
                                 </span>
                             </div>
                         </div>
 
-                        <div className="mt-5">
+                        <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div className="table-responsive">
-                                <h5 className="text-lg font-semibold dark:text-white-light mb-3">Final Calculation</h5>
+                                <h5 className="text-lg font-semibold dark:text-white-light mb-3">Cost Calculation</h5>
                                 <table>
                                     <thead>
                                     <tr>
                                         <th>Filling</th>
                                         <th>No of Fillings</th>
-                                        <th>Per Filling Cost</th>
-                                        <th>Total Cost</th>
+                                        <th>Cost Goods</th>
+                                        <th>Sale Price</th>
+                                        <th>Total Sale Cost</th>
                                     </tr>
                                     </thead>
                                     <tbody>
-
-                                    {fillingDetail?.filling_calculations.length > 0
-                                        ? (fillingDetail?.filling_calculations.map((item: any, index: number) => {
-
-                                                const totalMaterialCost = fillingDetail?.filling_items.reduce((acc: number, item: any) => acc + ((parseFloat(item.unit_cost) * parseFloat(item.quantity) * parseFloat(fillingDetail?.production?.no_of_quantity)) / parseFloat(item.quantity)), 0);
-                                                const perFillingCost = (totalMaterialCost / fillingDetail?.production.no_of_quantity * item.capacity) + item.unit_price;
-                                                const totalFillingCost = perFillingCost * item.required_quantity;
-                                                console.log('totalMaterialCost', totalMaterialCost);
-                                                console.log('perFillingCost', perFillingCost);
-                                                console.log('totalFillingCost', totalFillingCost);
-                                                return (
-                                                    <tr key={index}>
-                                                        <td>
-                                                            <div className="flex justify-start flex-col items-start">
-                                                                <span
-                                                                    style={{ fontSize: 8 }}>Code: {item.product?.item_code}</span>
-                                                                <span>{item.product?.title}</span>
-                                                                <span
-                                                                    style={{ fontSize: 8 }}>VM: {item.product?.valuation_method}</span>
-                                                            </div>
-                                                        </td>
-                                                        <td>{item.filling_quantity + '(Kg) / ' + item.required_quantity}</td>
-                                                        <td>{perFillingCost.toFixed(2)}</td>
-                                                        <td>{totalFillingCost.toFixed(2)}</td>
-                                                    </tr>
-                                                );
-                                            })
+                                    {itemWiseCalculations.length > 0
+                                        ? (
+                                            itemWiseCalculations.map((item: any, index: number) => (
+                                                <tr key={index}>
+                                                    <td>
+                                                        <div className="flex justify-start flex-col items-start">
+                                                            <span
+                                                                style={{ fontSize: 8 }}>Code: {item.product?.item_code}</span>
+                                                            <span>{item.product?.title}</span>
+                                                            <span
+                                                                style={{ fontSize: 8 }}>VM: {item.product?.valuation_method}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td>{item.filling_quantity + '(Kg) / ' + item.required_quantity}</td>
+                                                    <td>{parseFloat(item.costOfGoods).toFixed(2)}</td>
+                                                    <td>{parseFloat(item.salePrice).toFixed(2)}</td>
+                                                    <td>{(parseFloat(item.salePrice) * parseFloat(item.required_quantity)).toFixed(2)}</td>
+                                                </tr>
+                                            ))
                                         ) : (
                                             <tr>
-                                                <td colSpan={4} className="text-center">No data found</td>
+                                                <td colSpan={5} className="text-center">No data found</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div className="table-responsive">
+                                <h5 className="text-lg font-semibold dark:text-white-light mb-3">Batch Used</h5>
+                                <table>
+                                    <thead>
+                                    <tr>
+                                        <th>Batch</th>
+                                        <th>Quantity</th>
+                                        <th>Used</th>
+                                        <th>Remaining</th>
+                                        <th>Created At</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {batchCalculations.length > 0
+                                        ? (
+                                            batchCalculations.map((row, index) => (
+                                                <tr key={index}>
+                                                    <td>{row.batch_number}</td>
+                                                    <td>{row.quantity}</td>
+                                                    <td>{row.used}</td>
+                                                    <td>{row.remaining}</td>
+                                                    <td>{new Date(row.created_at).toLocaleDateString() + ' ' + new Date(row.created_at).toLocaleTimeString()}</td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={4} className="text-center">No batch selected</td>
                                             </tr>
                                         )}
                                     </tbody>
@@ -153,69 +237,8 @@ const View = () => {
                             </div>
                         </div>
 
-                        <h5 className="text-lg font-semibold dark:text-white-light pt-10">Item Details</h5>
-                        <div className="table-responsive">
-                            <table>
-                                <thead>
-                                <tr>
-                                    <th>Sr.No</th>
-                                    <th>Product</th>
-                                    <th>Unit</th>
-                                    <th>Formula Qty</th>
-                                    <th>Unit Price</th>
-                                    <th>Available Qty</th>
-                                    <th>Req Qty</th>
-                                    <th>Cost</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-
-                                {fillingDetail?.filling_items.map((item: any, index: any) => (
-
-                                    <tr key={index}>
-                                        <td>{index + 1}</td>
-                                        <td>
-                                            <div className="flex justify-start flex-col items-start">
-                                                <span style={{ fontSize: 8 }}>Code: {item.product?.item_code}</span>
-                                                <span>{item.product?.title}</span>
-                                                <span
-                                                    style={{ fontSize: 8 }}>VM: {item.product?.valuation_method}</span>
-                                            </div>
-                                        </td>
-                                        <td>{item.unit?.name}</td>
-                                        <td>{item.quantity}</td>
-                                        <td>{(item.unit_cost * item.quantity).toFixed(2)}</td>
-                                        <td>{item.available_quantity}</td>
-                                        <td>{item.required_quantity}</td>
-                                        <td>{((parseFloat(item.unit_cost) * parseFloat(item.quantity) * parseFloat(fillingDetail?.production?.no_of_quantity)) / parseFloat(item.quantity)).toFixed(2)}</td>
-                                    </tr>
-                                ))}
-                                </tbody>
-                                <tfoot>
-                                <tr>
-                                    <td colSpan={3} className="text-center">Total</td>
-                                    <td>
-                                        {fillingDetail?.filling_items?.reduce((total: number, item: any) => total + parseFloat(item.quantity), 0).toFixed(2)}
-                                    </td>
-                                    <td>
-                                        {fillingDetail?.filling_items?.reduce((total: number, item: any) => total + (parseFloat(item.unit_cost) * parseFloat(item.quantity)), 0).toFixed(2)}
-                                    </td>
-                                    <td>
-                                        {fillingDetail?.filling_items?.reduce((total: number, item: any) => total + parseFloat(item.available_quantity), 0).toFixed(2)}
-                                    </td>
-                                    <td>
-                                        {fillingDetail?.filling_items?.reduce((total: number, item: any) => total + parseFloat(item.required_quantity), 0).toFixed(2)}
-                                    </td>
-                                    <td>
-                                        {fillingDetail?.filling_items?.reduce((total: number, item: any) => total + ((parseFloat(item.unit_cost) * parseFloat(item.quantity) * parseFloat(fillingDetail?.production?.no_of_quantity)) / parseFloat(item.quantity)), 0)
-                                            .toFixed(2)}
-                                    </td>
-                                </tr>
-                                </tfoot>
-                            </table>
-                        </div>
                         {/* Filling Calculation */}
-                        <h5 className="text-lg font-semibold dark:text-white-light pt-10">Filling Calculation</h5>
+                        <h5 className="text-lg font-semibold dark:text-white-light pt-10">Fillings</h5>
                         <div className="table-responsive">
                             <table>
                                 <thead>

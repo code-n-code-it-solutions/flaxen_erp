@@ -68,17 +68,17 @@ const Index = () => {
         },
         {
             headerName: 'Valuation Price',
-            field: 'valuated_unit_price',
+            valueGetter: (row: any) => row.data.valuated_unit_price.toFixed(2),
             minWidth: 150
         },
         {
             headerName: 'Sale Price',
-            field: 'retail_price',
+            valueGetter: (row: any) => parseFloat(row.data.retail_price).toFixed(2),
             minWidth: 150
         },
         {
             headerName: 'On Hand',
-            field: 'stock_quantity',
+            valueGetter: (row: any) => row.data.stock_quantity.toFixed(2),
             minWidth: 150
         }
     ]);

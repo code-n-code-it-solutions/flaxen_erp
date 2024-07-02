@@ -1,38 +1,38 @@
-import React, {useEffect, useState} from 'react';
-import {useAppDispatch, useAppSelector} from "@/store";
-import {setAuthToken, setContentType} from "@/configs/api.config";
-import {clearProductAssemblyState, getAssemblyItems, getProductAssemblies} from "@/store/slices/productAssemblySlice";
-import {storeProduction, updateProduction} from "@/store/slices/productionSlice";
-import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
-import {ButtonType, ButtonVariant, FORM_CODE_TYPE, RAW_PRODUCT_LIST_TYPE} from "@/utils/enums";
-import Alert from "@/components/Alert";
-import Button from "@/components/Button";
-import {Input} from "@/components/form/Input";
-import {Dropdown} from "@/components/form/Dropdown";
-import RawProductItemListing from "@/components/listing/RawProductItemListing";
+import React, { useEffect, useState } from 'react';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { setAuthToken, setContentType } from '@/configs/api.config';
+import { clearProductAssemblyState, getAssemblyItems, getProductAssemblies } from '@/store/slices/productAssemblySlice';
+import { storeProduction, updateProduction } from '@/store/slices/productionSlice';
+import { clearUtilState, generateCode } from '@/store/slices/utilSlice';
+import { ButtonType, ButtonVariant, FORM_CODE_TYPE, RAW_PRODUCT_LIST_TYPE } from '@/utils/enums';
+import Alert from '@/components/Alert';
+import Button from '@/components/Button';
+import { Input } from '@/components/form/Input';
+import { Dropdown } from '@/components/form/Dropdown';
+import RawProductItemListing from '@/components/listing/RawProductItemListing';
 
 interface IFormProps {
     id?: any;
 }
 
-const ProductionForm = ({id}: IFormProps) => {
+const ProductionForm = ({ id }: IFormProps) => {
     const dispatch = useAppDispatch();
-    const {token} = useAppSelector(state => state.user);
-    const {code} = useAppSelector(state => state.util);
-    const {allProductAssemblies, assemblyItems} = useAppSelector(state => state.productAssembly);
-    const {productionDetail, loading} = useAppSelector(state => state.production);
+    const { token } = useAppSelector(state => state.user);
+    const { code } = useAppSelector(state => state.util);
+    const { allProductAssemblies, assemblyItems } = useAppSelector(state => state.productAssembly);
+    const { productionDetail, loading } = useAppSelector(state => state.production);
 
-    const [formData, setFormData] = useState<any>({})
+    const [formData, setFormData] = useState<any>({});
     const [rawProducts, setRawProducts] = useState<any[]>([]);
     const [productAssemblyOptions, setProductAssemblyOptions] = useState<any>([]);
-    const [messages, setMessages] = useState("Production can't be proceeding. Please purchase the In-stock quantities.");
-    const [errorMessages, setErrorMessages] = useState<any>({})
+    const [messages, setMessages] = useState('Production can\'t be proceeding. Please purchase the In-stock quantities.');
+    const [errorMessages, setErrorMessages] = useState<any>({});
 
     const handleChange = (name: string, value: any, required: boolean) => {
         if (required && !value) {
             setErrorMessages((prev: any) => ({
                 ...prev,
-                [name]: 'This field is required',
+                [name]: 'This field is required'
             }));
             return;
         } else {
@@ -50,12 +50,12 @@ const ProductionForm = ({id}: IFormProps) => {
                         dispatch(getAssemblyItems(value.value));
                         setFormData((prev: any) => ({
                             ...prev,
-                            product_assembly_id: value.value,
+                            product_assembly_id: value.value
                         }));
                     } else {
                         setFormData((prev: any) => ({
                             ...prev,
-                            product_assembly_id: '',
+                            product_assembly_id: ''
                         }));
                         setRawProducts([]);
                     }
@@ -63,16 +63,16 @@ const ProductionForm = ({id}: IFormProps) => {
                     alert('No of Quantity is required');
                 }
                 if (hasInsufficientQuantity()) {
-                    setMessages("Production can't be proceeding. Please purchase the In-stock quantities.");
+                    setMessages('Production can\'t be proceeding. Please purchase the In-stock quantities.');
                 }
                 break;
             default:
                 setFormData((prev: any) => ({
                     ...prev,
-                    [name]: value,
+                    [name]: value
                 }));
         }
-    }
+    };
 
     const hasInsufficientQuantity = () => {
         return rawProducts.some((row) => row.available_quantity < row.required_quantity);
@@ -88,14 +88,14 @@ const ProductionForm = ({id}: IFormProps) => {
 
         let finalData = {
             ...formData,
-            production_items: rawProducts,
-        }
+            production_items: rawProducts
+        };
 
         setAuthToken(token);
         setContentType('application/json');
         dispatch(clearProductAssemblyState());
         if (id) {
-            dispatch(updateProduction({id, productionData: finalData}));
+            dispatch(updateProduction({ id, productionData: finalData }));
         } else {
             dispatch(storeProduction(finalData));
         }
@@ -103,13 +103,13 @@ const ProductionForm = ({id}: IFormProps) => {
 
     useEffect(() => {
         dispatch(getProductAssemblies());
-        setRawProducts([])
+        setRawProducts([]);
         if (!id) {
             dispatch(generateCode(FORM_CODE_TYPE.PRODUCTION));
         }
         return () => {
             dispatch(clearUtilState());
-        }
+        };
     }, []);
 
     useEffect(() => {
@@ -122,8 +122,8 @@ const ProductionForm = ({id}: IFormProps) => {
                 quantity: parseFloat(item.quantity),
                 available_quantity: parseFloat(item.available_quantity),
                 required_quantity: parseFloat(item.quantity) * parseFloat(productionDetail.no_of_quantity),
-                sub_total: (parseFloat(item.unit_cost) * parseFloat(item.quantity) * parseFloat(productionDetail.no_of_quantity)) / parseFloat(item.quantity),
-            }))
+                sub_total: (parseFloat(item.unit_cost) * parseFloat(item.quantity) * parseFloat(productionDetail.no_of_quantity)) / parseFloat(item.quantity)
+            }));
 
             setFormData((prev: any) => ({
                 ...prev,
@@ -133,7 +133,7 @@ const ProductionForm = ({id}: IFormProps) => {
                 production_items: items
             }));
 
-            setRawProducts(items)
+            setRawProducts(items);
         }
     }, [productionDetail]);
 
@@ -143,7 +143,7 @@ const ProductionForm = ({id}: IFormProps) => {
                 return {
                     ...row,
                     required_quantity: parseFloat(row.quantity) * parseFloat(formData.no_of_quantity),
-                    sub_total: (parseFloat(row.unit_price) * parseFloat(row.quantity) * parseFloat(formData.no_of_quantity)) / parseFloat(row.quantity),
+                    sub_total: (parseFloat(row.unit_price) * parseFloat(row.quantity) * parseFloat(formData.no_of_quantity)) / parseFloat(row.quantity)
                 };
             });
             setRawProducts(updatedRawProducts);
@@ -155,16 +155,16 @@ const ProductionForm = ({id}: IFormProps) => {
             let formulaOptions = allProductAssemblies.map((assembly: any) => {
                 return {
                     value: assembly.id,
-                    label: assembly.formula_name + ' (' + assembly.formula_code + ')',
+                    label: assembly.formula_name + ' (' + assembly.color_code.name + ')'
                 };
             });
-            setProductAssemblyOptions([{value: '', label: 'Select Formula'}, ...formulaOptions]);
+            setProductAssemblyOptions([{ value: '', label: 'Select Formula' }, ...formulaOptions]);
         }
     }, [allProductAssemblies]);
 
     useEffect(() => {
         if (assemblyItems) {
-            console.log(assemblyItems)
+            console.log(assemblyItems);
             let rawProducts = assemblyItems.map((item: any) => {
                 return {
                     raw_product_id: item.raw_product_id,
@@ -174,7 +174,7 @@ const ProductionForm = ({id}: IFormProps) => {
                     quantity: parseFloat(item.quantity),
                     available_quantity: parseFloat(item.available_stock),
                     required_quantity: parseFloat(item.quantity) * parseFloat(formData.no_of_quantity),
-                    sub_total: (parseFloat(item.cost) * parseFloat(item.quantity) * parseFloat(formData.no_of_quantity)) / parseFloat(item.quantity),
+                    sub_total: (parseFloat(item.cost) * parseFloat(item.quantity) * parseFloat(formData.no_of_quantity)) / parseFloat(item.quantity)
                 };
             });
             setRawProducts(rawProducts);
@@ -185,14 +185,14 @@ const ProductionForm = ({id}: IFormProps) => {
         if (code) {
             setFormData((prev: any) => ({
                 ...prev,
-                batch_number: code[FORM_CODE_TYPE.PRODUCTION],
+                batch_number: code[FORM_CODE_TYPE.PRODUCTION]
             }));
         }
     }, [code]);
 
     return (
         <form className="space-y-5" onSubmit={handleSubmit}>
-            <div className='mt-5'>
+            <div className="mt-5">
                 {hasInsufficientQuantity() &&
                     <Alert
                         alertType="error"

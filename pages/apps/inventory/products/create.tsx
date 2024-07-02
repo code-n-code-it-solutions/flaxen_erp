@@ -8,6 +8,7 @@ import PageWrapper from '@/components/PageWrapper';
 import { AppBasePath, ButtonType, ButtonVariant, IconType } from '@/utils/enums';
 import AppLayout from '@/components/Layouts/AppLayout';
 import useSetActiveMenu from '@/hooks/useSetActiveMenu';
+import DetailPageHeader from '@/components/apps/DetailPageHeader';
 
 const Create = () => {
     useSetActiveMenu(AppBasePath.Raw_Product);
@@ -27,22 +28,26 @@ const Create = () => {
     }, [rawProduct]);
 
     return (
-        <PageWrapper
-            embedLoader={false}
-            breadCrumbItems={[]}
-            title="Create Raw Material"
-            buttons={[
-                {
-                    text: 'Back',
-                    type: ButtonType.link,
-                    variant: ButtonVariant.primary,
-                    icon: IconType.back,
-                    link: '/apps/inventory/products'
-                }
-            ]}
-        >
-            <ProductForm />
-        </PageWrapper>
+        <div>
+            <DetailPageHeader
+                appBasePath={AppBasePath.Raw_Product}
+                title="New Product"
+                middleComponent={{
+                    show: false
+                }}
+                backButton={{
+                    show: true,
+                    backLink: '/apps/inventory/products'
+                }}
+            />
+            <PageWrapper
+                breadCrumbItems={[]}
+                embedLoader={true}
+                loading={false}
+            >
+                <ProductForm />
+            </PageWrapper>
+        </div>
     );
 };
 

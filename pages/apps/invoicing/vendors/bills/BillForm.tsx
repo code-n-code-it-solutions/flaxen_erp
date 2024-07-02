@@ -4,11 +4,13 @@ import { useAppDispatch, useAppSelector } from '@/store';
 import { generateCode } from '@/store/slices/utilSlice';
 import { setAuthToken, setContentType } from '@/configs/api.config';
 import { Dropdown } from '@/components/form/Dropdown';
-import { pendingDeliveryNotes } from '@/store/slices/deliveryNoteSlice';
 import Button from '@/components/Button';
 import { ButtonType, ButtonVariant } from '@/utils/enums';
 import { capitalize } from 'lodash';
-import { storeSaleInvoice } from '@/store/slices/saleInvoiceSlice';
+import { getPendingGRNs } from '@/store/slices/goodReceiveNoteSlice';
+import { getVendors } from '@/store/slices/vendorSlice';
+import { storeVendorBill } from '@/store/slices/vendorBillSlice';
+import { calculateDateFromDays } from '@/utils/helper';
 
 const InvoiceForm = () => {
     const dispatch = useAppDispatch();
@@ -20,9 +22,8 @@ const InvoiceForm = () => {
     const [formData, setFormData] = useState<any>({});
     const [errors, setErrors] = useState<any>({});
     const [goodReceiveNoteOptions, setGoodReceiveNoteOptions] = useState<any[]>([]);
+    const [vendorOptions, setVendorOptions] = useState<any[]>([]);
     const [vendor, setVendor] = useState<any>({});
-    const [vendorRep, setVendorRep] = useState<any>({});
-    const [salesman, setSalesman] = useState<any>({});
     const [goodReceiveNoteItems, setGoodReceiveNoteItems] = useState<any[]>([]);
 
     const handleChange = (name: string, value: string, required: boolean) => {
@@ -40,33 +41,24 @@ const InvoiceForm = () => {
                 });
             }
         }
-        if(name==='payment_terms') {
-            if(value !== '') {
-                setFormData({ ...formData, payment_terms: value, due_date: '' });
-                return;
-            }
-        }
-
-        if(name==='due_date') {
-            if(value !== '') {
-                setFormData({ ...formData, due_date: value, payment_terms: '' });
-                return;
-            }
-        }
+        console.log(value);
         setFormData({ ...formData, [name]: value });
     };
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setAuthToken(token);
-        dispatch(storeSaleInvoice(formData));
+        dispatch(storeVendorBill(formData));
     };
 
     useEffect(() => {
         setAuthToken(token);
         setContentType('application/json');
         dispatch(generateCode('vendor_bill'));
-        dispatch(pendingDeliveryNotes());
+        dispatch(getVendors());
+        setGoodReceiveNoteItems([]);
+        setFormData({});
+        setVendor({});
     }, []);
 
     useEffect(() => {
@@ -88,6 +80,16 @@ const InvoiceForm = () => {
         }
     }, [allGRNs]);
 
+    useEffect(() => {
+        if (allVendors) {
+            setVendorOptions(allVendors.map((item: any) => ({
+                value: item.id,
+                label: item.name,
+                vendor: item
+            })));
+        }
+    }, [allVendors]);
+
     return (
         <form onSubmit={(e) => handleSubmit(e)}>
             <Input
@@ -104,58 +106,101 @@ const InvoiceForm = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="w-full flex flex-col gap-3">
                     <h4 className="text-xl font-semibold text-gray-600 py-3">Bill Details</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <span className="font-semibold text-gray-600">Vendor Name: </span>
-                        <span>{vendor.name}</span>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <span className="font-semibold text-gray-600">Representative Name: </span>
-                        <span>{vendorRep.name}</span>
-                    </div>
-                    {/*<div className="grid grid-cols-1 md:grid-cols-2 gap-5">*/}
-                    {/*    <span className="font-semibold text-gray-600">Salesman Name: </span>*/}
-                    {/*    <span>{salesman.name}</span>*/}
-                    {/*</div>*/}
-                    {/* eslint-disable-next-line react/jsx-no-undef */}
                     <Dropdown
                         divClasses="w-full"
-                        label="Delivery Note"
-                        name="delivery_note_ids"
+                        label="Vendor"
+                        name="vendor_id"
+                        options={vendorOptions}
+                        value={formData.vendor_id}
+                        onChange={(e) => {
+                            if (e && typeof e !== 'undefined') {
+                                dispatch(getPendingGRNs(e.value));
+                                setVendor(e.vendor);
+                                setFormData({
+                                    ...formData,
+                                    vendor_id: e.value
+                                });
+                            } else {
+                                setFormData({
+                                    ...formData,
+                                    vendor_id: ''
+                                });
+                                setVendor({});
+                            }
+                        }}
+                    />
+                    <Dropdown
+                        divClasses="w-full"
+                        label="Good Receive Notes"
+                        name="good_receive_note_ids"
                         options={goodReceiveNoteOptions}
                         value={formData.good_receive_note_ids}
                         onChange={(e) => {
                             if (e && typeof e !== 'undefined' && e.length > 0) {
-                                console.log(e);
                                 setFormData({
                                     ...formData,
-                                    good_receive_note_ids: e.map((item: any) => item.value).join(','),
-                                    // customer_id: e[0].delivery_note.delivery_note_items[0].quotation.customer_id,
-                                    // contact_person_id: e[0].delivery_note.delivery_note_items[0].quotation.contact_person_id,
-                                    // salesman_id: e[0].delivery_note.delivery_note_items[0].quotation.salesman_id
+                                    good_receive_note_ids: e.map((item: any) => item.value).join(',')
                                 });
-                                // setCustomer(e[0].delivery_note.delivery_note_items[0].quotation.customer);
-                                // setContactPerson(e[0].delivery_note.delivery_note_items[0].quotation.contact_person);
-                                // setSalesman(e[0].delivery_note.delivery_note_items[0].quotation.salesman);
-                                // setDeliveryNoteItems(e.map((item: any) => item.delivery_note.delivery_note_items).flat());
+                                setGoodReceiveNoteItems(e.map((item: any) => item.grn.raw_products).flat());
                             } else {
                                 setFormData({
                                     ...formData,
-                                    good_receive_note_ids: '',
-                                    // customer_id: '',
-                                    // contact_person_id: '',
-                                    // salesman_id: ''
+                                    good_receive_note_ids: ''
                                 });
-                                // setCustomer({});
-                                // setContactPerson({});
-                                // setSalesman({});
-                                // setDeliveryNoteItems([]);
+                                setGoodReceiveNoteItems([]);
                             }
                         }}
                         isMulti={true}
                     />
+                    {Object.keys(vendor).length > 0 && (
+                        <>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <span className="font-semibold text-gray-600">Vendor Name: </span>
+                                <span>{vendor.name}</span>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <span className="font-semibold text-gray-600">Email: </span>
+                                <span>{vendor.email}</span>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <span className="font-semibold text-gray-600">Phone: </span>
+                                <span>{vendor.phone}</span>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <span className="font-semibold text-gray-600">Address: </span>
+                                <span>
+                                    {vendor.address}, {vendor.city?.name}, {vendor.state?.name}, {vendor.country?.name}, {vendor.postal_code}
+                                </span>
+                            </div>
+                        </>
+                    )}
                 </div>
                 <div className="w-full flex flex-col gap-3">
                     <h4 className="text-xl font-semibold text-gray-600 py-3">Bill Params</h4>
+                    <Dropdown
+                        divClasses="w-full"
+                        label="Bill Type"
+                        name="bill_type"
+                        options={[
+                            { value: 'credit', label: 'Credit Bill' },
+                            { value: 'cash', label: 'Cash Bill' }
+
+                        ]}
+                        value={formData.bill_type}
+                        onChange={(e) => {
+                            if (e && typeof e !== 'undefined') {
+                                setFormData({
+                                    ...formData,
+                                    bill_type: e.value
+                                });
+                            } else {
+                                setFormData({
+                                    ...formData,
+                                    bill_type: ''
+                                });
+                            }
+                        }}
+                    />
                     <Input
                         divClasses="w-full"
                         label="Bill Date"
@@ -176,29 +221,12 @@ const InvoiceForm = () => {
                         placeholder="Enter Bill Reference"
                         isMasked={false}
                     />
-                    <div className="flex flex-col gap-3 md:flex-row justify-between items-end">
-                        <Input
-                            divClasses="w-full"
-                            label="Due Date"
-                            type="date"
-                            name="due_date"
-                            value={formData.due_date}
-                            onChange={(e) => handleChange('due_date', e[0] ? e[0].toLocaleDateString() : '', true)}
-                            placeholder="Enter Due Date"
-                            isMasked={false}
-                        />
-                        <span className="w-full text-center">OR</span>
-                        <Input
-                            divClasses="w-full"
-                            label="Payment Terms (Days)"
-                            type="number"
-                            name="payment_terms"
-                            value={formData.payment_terms}
-                            onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
-                            placeholder="Enter Payment Terms"
-                            isMasked={false}
-                        />
-                    </div>
+                    {formData.bill_type === 'credit' && (
+                        <div className="flex flex-col gap-3 justify-start items-start">
+                            <span><strong>Payment Terms (Days):</strong> {vendor?.due_in_days}</span>
+                            <span><strong>Due Date:</strong> {calculateDateFromDays(vendor?.due_in_days, formData.bill_date)}</span>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -206,12 +234,11 @@ const InvoiceForm = () => {
                 <table>
                     <thead>
                     <tr>
+                        <th>GRN</th>
                         <th>Product</th>
-                        <th>Filling</th>
-                        <th>Capacity</th>
-                        <th>Quantity</th>
-                        <th>Unit Price</th>
-                        <th>Before Tax</th>
+                        <th className="text-center">Quantity</th>
+                        <th className="text-center">Unit Price</th>
+                        <th className="text-center">Before Tax</th>
                         <th>Tax</th>
                         <th>Discount</th>
                         <th className="text-center">Grand Total</th>
@@ -221,14 +248,13 @@ const InvoiceForm = () => {
                     {goodReceiveNoteItems.length > 0
                         ? (goodReceiveNoteItems.map((item: any, index: number) => (
                                 <tr key={index}>
-                                    <td>{item.product_assembly.formula_name}</td>
-                                    <td>{item.product.title}</td>
-                                    <td>{item.capacity}</td>
-                                    <td>{item.delivered_quantity}</td>
-                                    <td>{item.retail_price}</td>
                                     <td>
-                                        {(parseFloat(item.delivered_quantity) * parseFloat(item.retail_price)).toFixed(2)}
+                                        {allGRNs?.find((grn: any) => grn.id === item.good_receive_note_id)?.grn_number}
                                     </td>
+                                    <td>{item.raw_product?.item_code}</td>
+                                    <td className="text-center">{item.received_quantity}</td>
+                                    <td className="text-center">{item.unit_price}</td>
+                                    <td className="text-center">{(item.unit_price * item.received_quantity).toFixed(2)}</td>
                                     <td>
                                         {item.tax_category
                                             ? (
@@ -254,20 +280,22 @@ const InvoiceForm = () => {
                                             )}
                                     </td>
                                     <td className="text-center">
-                                        {item.total_cost.toFixed(2)}
+                                        {item.total_price.toFixed(2)}
                                     </td>
                                 </tr>
                             ))
                         ) : (
                             <tr>
-                                <td colSpan={9} className="text-center">No items found</td>
+                                <td colSpan={8} className="text-center">No items found</td>
                             </tr>
                         )}
                     </tbody>
                     <tfoot>
                     <tr>
-                        <td colSpan={8} className="text-center font-bold">Total</td>
-                        <td className="text-center font-bold">{goodReceiveNoteItems.reduce((acc, item) => acc + item.total_cost, 0).toFixed(2)}</td>
+                        <td colSpan={4} className="text-center font-bold">Total</td>
+                        <td className="text-center font-bold">{goodReceiveNoteItems.reduce((acc, item) => acc + (item.unit_price * item.received_quantity), 0).toFixed(2)}</td>
+                        <td colSpan={2}></td>
+                        <td className="text-center font-bold">{goodReceiveNoteItems.reduce((acc, item) => acc + item.total_price, 0).toFixed(2)}</td>
                     </tr>
                     </tfoot>
                 </table>

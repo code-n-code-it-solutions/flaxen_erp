@@ -80,11 +80,11 @@ export const deleteGRN = createAsyncThunk(
     }
 );
 
-export const getGRNByStatuses = createAsyncThunk(
-    'good-receive-note/by-statuses',
-    async (statuses: any, thunkAPI) => {
+export const getPendingGRNs = createAsyncThunk(
+    'good-receive-note/pending',
+    async (vendorId: number, thunkAPI) => {
         try {
-            const response = await API.post('/good-receive-note/by-statuses', statuses);
+            const response = await API.get('/good-receive-note/pending/' + vendorId);
             return response.data;
         } catch (error: any) {
             const message =
@@ -158,15 +158,15 @@ export const goodReceiveNoteSlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message;
             })
-            .addCase(getGRNByStatuses.pending, (state) => {
+            .addCase(getPendingGRNs.pending, (state) => {
                 state.loading = true;
             })
-            .addCase(getGRNByStatuses.fulfilled, (state, action) => {
+            .addCase(getPendingGRNs.fulfilled, (state, action) => {
                 state.loading = false;
                 state.allGRNs = action.payload.data;
                 state.success = action.payload.success;
             })
-            .addCase(getGRNByStatuses.rejected, (state, action) => {
+            .addCase(getPendingGRNs.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })

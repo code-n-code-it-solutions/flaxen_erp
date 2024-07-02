@@ -1,45 +1,30 @@
 import React from 'react';
 import { Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import Header from '@/components/Report/Header';
+import Footer from '@/components/Report/Footer';
 
-const PrintContent = ({ content }: any) => {
-    const renderFillingCalculations = () => {
-        if (content?.filling_calculations.length > 0) {
-            return content?.filling_calculations.map((item: any, index: number) => {
-                const totalMaterialCost = content?.filling_items.reduce((acc: number, fillingItem: any) =>
-                    acc + ((parseFloat(fillingItem.unit_cost) * parseFloat(fillingItem.quantity) * parseFloat(content?.production?.no_of_quantity)) / parseFloat(fillingItem.quantity)), 0
-                );
-                const perFillingCost = (totalMaterialCost / content?.production.no_of_quantity * item.capacity) + item.unit_price;
-                const totalFillingCost = perFillingCost * item.required_quantity;
-
-                return (
-                    <View key={index} style={styles.tableRow}>
-                        <Text style={styles.tableCell}>{item.product?.item_code}</Text>
-                        <Text
-                            style={styles.tableCell}>{`${item.filling_quantity} (Kg) / ${item.required_quantity}`}</Text>
-                        <Text style={styles.tableCell}>{perFillingCost.toFixed(2)}</Text>
-                        <Text style={styles.tableCell}>{totalFillingCost.toFixed(2)}</Text>
-                    </View>
-                );
-            });
-        } else {
-            return (
-                <View style={styles.tableRow}>
-                    <Text style={styles.tableCell}>
-                        No data found
-                    </Text>
-                </View>
-            );
-        }
-    };
-
+const PrintContent = ({ content, itemWiseCalculations, batchCalculations }: any) => {
     return (
         <Page size="A4" style={styles.page}>
             <Header />
-            <View style={styles.titleContainer}>
-                <Text style={styles.title}>Filling Details</Text>
-                <Text style={styles.subtitle}>
-                    {content?.production?.batch_number}
+            <View
+                style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    marginVertical: 10
+                }}
+            >
+                <Text
+                    style={{
+                        fontSize: 12,
+                        fontWeight: 'bold'
+                    }}
+                >
+                    Filling Details
+                </Text>
+                <Text style={{ fontSize: 10, fontWeight: 'bold' }}>
+                    {content?.formula_code}
                 </Text>
             </View>
             <View style={styles.infoContainer}>
@@ -50,34 +35,72 @@ const PrintContent = ({ content }: any) => {
                     <Text style={styles.infoText}>
                         <Text style={styles.bold}>Filling Date: </Text> {content?.filling_date}
                     </Text>
-                    <Text style={styles.infoText}>
-                        <Text style={styles.bold}>Filling Time: </Text> {content?.filling_time}
-                    </Text>
                 </View>
                 <View style={styles.infoColumn}>
                     <Text style={styles.infoText}>
-                        <Text style={styles.bold}>Filling Shift: </Text> {content?.working_shift?.name}
+                        <Text style={styles.bold}>Filling Time: </Text> {content?.filling_time}
                     </Text>
                     <Text style={styles.infoText}>
-                        <Text style={styles.bold}>No of Quantity (KG): </Text> {content?.production.no_of_quantity}
-                    </Text>
-                    <Text style={styles.infoText}>
-                        <Text style={styles.bold}>Created
-                            At: </Text> {new Date(content?.created_at).toLocaleDateString() + ' ' + new Date(content?.created_at).toLocaleTimeString()}
+                        <Text style={styles.bold}>Filling Shift: </Text> {content?.filling_shift_id}
                     </Text>
                 </View>
             </View>
-            <Text style={styles.sectionTitle}>Final Calculation</Text>
+
+            <Text style={styles.sectionTitle}>Cost Calculation</Text>
             <View style={styles.table}>
                 <View style={styles.tableHeader}>
                     <Text style={styles.tableHeaderCell}>Filling</Text>
                     <Text style={styles.tableHeaderCell}>No of Fillings</Text>
-                    <Text style={styles.tableHeaderCell}>Per Filling Cost</Text>
-                    <Text style={styles.tableHeaderCell}>Total Cost</Text>
+                    <Text style={styles.tableHeaderCell}>Cost Goods</Text>
+                    <Text style={styles.tableHeaderCell}>Sale Price</Text>
+                    <Text style={styles.tableHeaderCell}>Total Sale Cost</Text>
                 </View>
-                {renderFillingCalculations()}
+                {itemWiseCalculations.length > 0 ? (
+                    itemWiseCalculations.map((item: any, index: number) => (
+                        <View key={index} style={styles.tableRow}>
+                            <Text style={styles.tableCell}>{item.product?.title}</Text>
+                            <Text style={styles.tableCell}>{item.filling_quantity} (Kg)
+                                / {item.required_quantity}</Text>
+                            <Text style={styles.tableCell}>{parseFloat(item.costOfGoods).toFixed(2)}</Text>
+                            <Text style={styles.tableCell}>{parseFloat(item.salePrice).toFixed(2)}</Text>
+                            <Text
+                                style={styles.tableCell}>{(parseFloat(item.salePrice) * parseFloat(item.required_quantity)).toFixed(2)}</Text>
+                        </View>
+                    ))
+                ) : (
+                    <View style={styles.tableRow}>
+                        <Text style={styles.tableCell}>No data found</Text>
+                    </View>
+                )}
             </View>
-            <Text style={styles.sectionTitle}>Filling Calculation</Text>
+
+            <Text style={styles.sectionTitle}>Batch Used</Text>
+            <View style={styles.table}>
+                <View style={styles.tableHeader}>
+                    <Text style={styles.tableHeaderCell}>Batch</Text>
+                    <Text style={styles.tableHeaderCell}>Quantity</Text>
+                    <Text style={styles.tableHeaderCell}>Used</Text>
+                    <Text style={styles.tableHeaderCell}>Remaining</Text>
+                    <Text style={styles.tableHeaderCell}>Created At</Text>
+                </View>
+                {batchCalculations.length > 0 ? (
+                    batchCalculations.map((row: any, index: number) => (
+                        <View key={index} style={styles.tableRow}>
+                            <Text style={styles.tableCell}>{row.batch_number}</Text>
+                            <Text style={styles.tableCell}>{row.quantity}</Text>
+                            <Text style={styles.tableCell}>{row.used}</Text>
+                            <Text style={styles.tableCell}>{row.remaining}</Text>
+                            <Text style={styles.tableCell}>{new Date(row.created_at).toLocaleDateString()}</Text>
+                        </View>
+                    ))
+                ) : (
+                    <View style={styles.tableRow}>
+                        <Text style={styles.tableCell}>No batch selected</Text>
+                    </View>
+                )}
+            </View>
+
+            <Text style={styles.sectionTitle}>Fillings</Text>
             <View style={styles.table}>
                 <View style={styles.tableHeader}>
                     <Text style={styles.tableHeaderCell}>Sr.No</Text>
@@ -89,10 +112,10 @@ const PrintContent = ({ content }: any) => {
                     <Text style={styles.tableHeaderCell}>Required</Text>
                     <Text style={styles.tableHeaderCell}>Total Cost</Text>
                 </View>
-                {content?.filling_calculations.map((item: any, index: number) => (
+                {content?.filling_calculations.map((item: any, index: any) => (
                     <View key={index} style={styles.tableRow}>
                         <Text style={styles.tableCell}>{index + 1}</Text>
-                        <Text style={styles.tableCell}>{item.product?.item_code}</Text>
+                        <Text style={styles.tableCell}>{item.product?.title}</Text>
                         <Text style={styles.tableCell}>{item.unit?.name}</Text>
                         <Text style={styles.tableCell}>{item.unit_price}</Text>
                         <Text style={styles.tableCell}>{item.filling_quantity}</Text>
@@ -103,8 +126,8 @@ const PrintContent = ({ content }: any) => {
                     </View>
                 ))}
                 <View style={styles.tableFooter}>
-                    <Text style={styles.tableFooterCell}></Text>
                     <Text style={styles.tableFooterCell}>Total</Text>
+                    <Text style={styles.tableFooterCell}></Text>
                     <Text style={styles.tableFooterCell}></Text>
                     <Text style={styles.tableFooterCell}>
                         {content?.filling_calculations?.reduce((total: number, item: any) => total + parseFloat(item.unit_price), 0).toFixed(2)}
@@ -123,21 +146,8 @@ const PrintContent = ({ content }: any) => {
                     </Text>
                 </View>
             </View>
-            <View style={styles.footer}>
-                <View style={styles.footerContainer}>
-                    <Text style={styles.footerText}>
-                        <Text>Created By: </Text>
-                        {content?.created_by?.name}
-                    </Text>
-                    <Text style={styles.footerText} render={({ pageNumber, totalPages }) => (
-                        `${pageNumber} / ${totalPages}`
-                    )} fixed />
-                    <Text style={styles.footerText}>
-                        <Text>Created At: </Text>
-                        {new Date(content?.created_at).toLocaleDateString() + '  ' + new Date(content?.created_at).toLocaleTimeString()}
-                    </Text>
-                </View>
-            </View>
+
+            <Footer content={content} />
         </Page>
     );
 };
@@ -147,20 +157,6 @@ const styles = StyleSheet.create({
         display: 'flex',
         flexDirection: 'column',
         padding: 20
-    },
-    titleContainer: {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        marginVertical: 10
-    },
-    title: {
-        fontSize: 14,
-        fontWeight: 'bold'
-    },
-    subtitle: {
-        fontSize: 10,
-        marginVertical: 5
     },
     bold: {
         fontWeight: 'bold'
@@ -187,7 +183,8 @@ const styles = StyleSheet.create({
     table: {
         display: 'flex',
         flexDirection: 'column',
-        width: '100%'
+        width: '100%',
+        marginBottom: 10
     },
     tableHeader: {
         display: 'flex',
@@ -199,7 +196,8 @@ const styles = StyleSheet.create({
     tableHeaderCell: {
         width: '12%',
         fontSize: 10,
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        textAlign: 'center'
     },
     tableRow: {
         display: 'flex',
@@ -211,8 +209,11 @@ const styles = StyleSheet.create({
     tableCell: {
         width: '12%',
         fontSize: 10,
-        paddingVertical: 5,
-        textAlign: 'center'
+        textAlign: 'center',
+        paddingVertical: 5
+    },
+    tableCellText: {
+        fontSize: 8
     },
     tableFooter: {
         display: 'flex',
@@ -227,24 +228,6 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         textAlign: 'center'
     },
-    footer: {
-        position: 'absolute',
-        bottom: 15,
-        left: 0,
-        right: 0
-    },
-    footerContainer: {
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 10
-    },
-    footerText: {
-        // textAlign: 'center',
-        color: 'gray',
-        fontSize: 8
-    }
 });
 
 export default PrintContent;

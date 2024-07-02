@@ -6,8 +6,6 @@ import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import { useRouter } from 'next/router';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { setAuthToken, setContentType } from '@/configs/api.config';
-import { ModuleRegistry } from '@ag-grid-community/core';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import AgGridComponent from '@/components/apps/AgGridComponent';
 import DisabledClickRenderer from '@/components/apps/DisabledClickRenderer';
 import Swal from 'sweetalert2';
@@ -15,8 +13,6 @@ import { deleteProductAssembly, getProductAssemblies } from '@/store/slices/prod
 import useSetActiveMenu from '@/hooks/useSetActiveMenu';
 import { AgGridReact } from 'ag-grid-react';
 import { checkPermission } from '@/utils/helper';
-
-ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
 const Index = () => {
     useSetActiveMenu(AppBasePath.Product_Assembly);
@@ -76,7 +72,7 @@ const Index = () => {
         {
             headerName: 'Cost',
             field: 'cost',
-            valueGetter: (row: any) => row.data?.product_assembly_items.reduce((sum: number, row: any) => sum + parseFloat(row.cost), 0).toFixed(2),
+            valueGetter: (row: any) => row.data?.product_assembly_items.reduce((sum: number, row: any) => sum + parseFloat(row.total), 0).toFixed(2),
             minWidth: 150
         },
         {

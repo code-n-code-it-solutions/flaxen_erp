@@ -92,6 +92,8 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
                     tax_category_id: product.tax_category_id,
                     tax_rate: product.tax_rate,
                     tax_amount: product.tax_amount,
+                    discount_type: product.discount_type,
+                    discount_amount_rate: product.discount_amount_rate,
                     row_total: product.row_total
                 }
             })
@@ -118,6 +120,7 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
             setFormData(prev => ({
                 ...prev,
                 local_purchase_order_ids: lpoIds,
+                vendor_id: vendorId[0]
                 // purchase_requisition_id: e.lpo.purchase_requisition_id,
                 // received_by_id: e.lpo.received_by_id,
                 // verified_by_id: e.lpo.received_by_id
@@ -133,6 +136,7 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
             setFormData(prev => ({
                 ...prev,
                 local_purchase_order_ids: '',
+                vendor_id: ''
             }))
             dispatch(clearGoodReceiveNoteState())
             setRawProductForSelect([])

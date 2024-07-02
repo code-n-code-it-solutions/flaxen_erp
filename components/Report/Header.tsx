@@ -59,9 +59,10 @@ const Header = () => {
                         Flaxen Paints Industry LLC
                     </Text>
                     <Text style={{ fontWeight: 'bold', fontSize: 10 }}>info@flaxenpaints.com</Text>
-                    <Text style={{ fontWeight: 'bold', fontSize: 10 }}>+971 4 333 4444</Text>
-                    <Text style={{ fontWeight: 'bold', fontSize: 10 }}>P.O. Box 12345</Text>
-                    <Text style={{ fontWeight: 'bold', fontSize: 10 }}>Dubai, UAE</Text>
+                    <Text style={{ fontWeight: 'bold', fontSize: 10 }}>+971 6 766 9442</Text>
+                    <Text style={{ fontWeight: 'bold', fontSize: 10 }}>Plot # 593 Industrial Area</Text>
+                    <Text style={{ fontWeight: 'bold', fontSize: 10 }}>Umm Al Thuoob Umm Al Quwain</Text>
+                    <Text style={{ fontWeight: 'bold', fontSize: 10 }}>UAE</Text>
                 </View>
             </View>
 

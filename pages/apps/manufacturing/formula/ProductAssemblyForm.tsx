@@ -55,11 +55,12 @@ const ProductAssemblyForm = ({id}: IFormProps) => {
                         unit_id: row.unit_id,
                         quantity: row.quantity,
                         unit_price: row.quantity * row.unit_price,
-                        total: row.total,
+                        total: row.sub_total,
                     }
                 })
             };
             setAuthToken(token);
+            // console.log(finalData);
             dispatch(clearProductAssemblyState());
             if (id) {
                 dispatch(updateProductAssembly({id: productAssemblyDetail.id, productAssemblyData: formData}));
@@ -73,6 +74,7 @@ const ProductAssemblyForm = ({id}: IFormProps) => {
         dispatch(clearUtilState());
         dispatch(getProductCategory());
         dispatch(getColorCodes());
+        // setRawProducts([])
     }, [])
 
     useEffect(() => {

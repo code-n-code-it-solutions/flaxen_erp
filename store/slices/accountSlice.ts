@@ -1,8 +1,9 @@
-import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
-import {API} from "@/configs/api.config";
-import {configureSlice} from "@/utils/helper";
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { API } from '@/configs/api.config';
+import { configureSlice } from '@/utils/helper';
 
 interface IAssetState {
+    accountTypes: any;
     account: any;
     accountList: any,
     accountDetail: any
@@ -14,13 +15,14 @@ interface IAssetState {
 
 // Initial state
 const initialState: IAssetState = {
+    accountTypes: null,
     account: null,
     accountList: null,
     accountDetail: null,
     accounts: null,
     loading: false,
     error: null,
-    success: false,
+    success: false
 };
 
 // Async thunks
@@ -38,11 +40,25 @@ export const getAccounts = createAsyncThunk(
     }
 );
 
+export const getAccountsTypes = createAsyncThunk(
+    'accounts/types',
+    async (params: any, thunkAPI) => {
+        try {
+            const response = await API.post('/account/types', params);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 export const getAccountList = createAsyncThunk(
     'accounts/list',
-    async (accountType: number, thunkAPI) => {
+    async (params: any, thunkAPI) => {
         try {
-            const response = await API.get('/account/list/' + accountType);
+            const response = await API.post('/account/list/', params);
             return response.data;
         } catch (error: any) {
             const message =
@@ -70,7 +86,7 @@ export const updateAccount = createAsyncThunk(
     'accounts/update',
     async (data: any, thunkAPI) => {
         try {
-            const {id, accountData} = data
+            const { id, accountData } = data;
             const response = await API.post('/account/update/' + id, accountData);
             return response.data;
         } catch (error: any) {
@@ -87,12 +103,13 @@ export const accountSlice = createSlice({
     initialState,
     reducers: {
         clearAccountState: (state) => {
+            state.accountTypes = null;
             state.account = null;
             state.accountList = null;
             state.error = null;
             state.success = false;
             state.accountDetail = null;
-        },
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -105,6 +122,18 @@ export const accountSlice = createSlice({
                 state.success = action.payload.success;
             })
             .addCase(getAccounts.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(getAccountsTypes.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getAccountsTypes.fulfilled, (state, action) => {
+                state.loading = false;
+                state.accountTypes = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getAccountsTypes.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })
@@ -143,10 +172,10 @@ export const accountSlice = createSlice({
             .addCase(getAccountList.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
-            })
-    },
+            });
+    }
 });
-export const {clearAccountState} = accountSlice.actions;
+export const { clearAccountState } = accountSlice.actions;
 
 export const accountSliceConfig = configureSlice(accountSlice, false);
 

@@ -1,47 +1,56 @@
-import React, {useEffect, useState} from 'react';
-import {useAppDispatch, useAppSelector} from "@/store";
-import {setAuthToken, setContentType} from "@/configs/api.config";
-import {clearFillingState, getLatestFillingCalculation, storeFilling, updateFilling} from "@/store/slices/fillingSlice";
+import React, { useEffect, useState } from 'react';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { setAuthToken, setContentType } from '@/configs/api.config';
+import {
+    clearFillingState,
+    getLatestFillingCalculation,
+    storeFilling,
+    updateFilling
+} from '@/store/slices/fillingSlice';
 import {
     clearProductionState,
     getProductionItems,
     getProductions,
     pendingProductions
-} from "@/store/slices/productionSlice";
-import {getProductAssemblies} from "@/store/slices/productAssemblySlice";
-import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
-import {ButtonSize, ButtonType, ButtonVariant, FORM_CODE_TYPE, IconType, RAW_PRODUCT_LIST_TYPE} from "@/utils/enums";
-import {getWorkingShifts} from "@/store/slices/workingShiftSlice";
-import {getFillingProducts} from "@/store/slices/rawProductSlice";
-import {getUnits} from "@/store/slices/unitSlice";
-import Button from "@/components/Button";
-import {Input} from "@/components/form/Input";
-import {Dropdown} from "@/components/form/Dropdown";
-import IconButton from "@/components/IconButton";
-import RawProductItemListing from "@/components/listing/RawProductItemListing";
-import RawProductModal from "@/components/modals/RawProductModal";
+} from '@/store/slices/productionSlice';
+import { getProductAssemblies } from '@/store/slices/productAssemblySlice';
+import { clearUtilState, generateCode } from '@/store/slices/utilSlice';
+import { ButtonSize, ButtonType, ButtonVariant, FORM_CODE_TYPE, IconType, RAW_PRODUCT_LIST_TYPE } from '@/utils/enums';
+import { getWorkingShifts } from '@/store/slices/workingShiftSlice';
+import { getFillingProducts } from '@/store/slices/rawProductSlice';
+import { getUnits } from '@/store/slices/unitSlice';
+import Button from '@/components/Button';
+import { Input } from '@/components/form/Input';
+import { Dropdown } from '@/components/form/Dropdown';
+import IconButton from '@/components/IconButton';
+import RawProductItemListing from '@/components/listing/RawProductItemListing';
+import RawProductModal from '@/components/modals/RawProductModal';
 import Swal from 'sweetalert2';
+import Option from '@/components/form/Option';
+import { ba } from '@fullcalendar/core/internal-common';
 
 interface IFormProps {
     id?: any;
 }
 
-const FillingForm = ({id}: IFormProps) => {
+const FillingForm = ({ id }: IFormProps) => {
     const dispatch = useAppDispatch();
-    const {token} = useAppSelector(state => state.user);
-    const {code} = useAppSelector(state => state.util);
-    const {fillingProducts} = useAppSelector(state => state.rawProduct);
-    const {allProductions, productionItems} = useAppSelector(state => state.production);
-    const {fillingDetail, loading, lastFillingCalculations} = useAppSelector(state => state.filling);
-    const {workingShifts} = useAppSelector(state => state.workingShift);
-    const {units} = useAppSelector(state => state.unit);
+    const { token } = useAppSelector(state => state.user);
+    const { code } = useAppSelector(state => state.util);
+    const { allProductAssemblies } = useAppSelector(state => state.productAssembly);
+    const { fillingProducts } = useAppSelector(state => state.rawProduct);
+    const { allProductions, productionItems } = useAppSelector(state => state.production);
+    const { fillingDetail, loading, lastFillingCalculations } = useAppSelector(state => state.filling);
+    const { workingShifts } = useAppSelector(state => state.workingShift);
+    const { units } = useAppSelector(state => state.unit);
 
-    const [formData, setFormData] = useState<any>({})
-    const [validationMessages, setValidationMessages] = useState<any>({})
+    const [formData, setFormData] = useState<any>({});
+    const [validationMessages, setValidationMessages] = useState<any>({});
     const [rawProducts, setRawProducts] = useState<any[]>([]);
+    const [productAssemblyOptions, setProductAssemblyOptions] = useState<any>([]);
     const [productionOptions, setProductionOptions] = useState<any>([]);
     const [fillingShiftOptions, setFillingShiftOptions] = useState<any>([]);
-    const [messages, setMessages] = useState("Production can't be proceeding. Please purchase the In-stock quantities.");
+    const [messages, setMessages] = useState('Production can\'t be proceeding. Please purchase the In-stock quantities.');
     const [modalOpen, setModalOpen] = useState<boolean>(false);
     const [modalDetail, setModalDetail] = useState<any>({});
     const [fillingMaterialOptions, setFillingMaterialOptions] = useState<any[]>([]);
@@ -50,57 +59,72 @@ const FillingForm = ({id}: IFormProps) => {
     const [fillingRemaining, setFillingRemaining] = useState<number>(0);
     const [noOfProductionQty, setNoOfProductionQty] = useState<number>(0);
     const [fillingCalculation, setFillingCalculation] = useState<any[]>([]);
+    const [batchCalculations, setBatchCalculations] = useState<any[]>([]);
 
     const handleChange = (name: string, value: any, required: boolean) => {
         if (required && value === '') {
-            setValidationMessages({...validationMessages, [name]: 'This field is required.'})
+            setValidationMessages({ ...validationMessages, [name]: 'This field is required.' });
             return;
         } else {
             setValidationMessages((prev: any) => {
                 delete prev[name];
                 return prev;
-            })
+            });
         }
         switch (name) {
             case 'filling_shift_id':
                 if (value && typeof value !== 'undefined') {
-                    setFormData({...formData, filling_shift_id: value.value})
+                    setFormData({ ...formData, filling_shift_id: value.value });
                 } else {
-                    setFormData({...formData, filling_shift_id: ''})
+                    setFormData({ ...formData, filling_shift_id: '' });
                 }
                 break;
-            case 'production_id':
+            case 'product_assembly_id':
                 if (value && typeof value !== 'undefined') {
-                    if (name === 'production_id') {
-                        if (value.value !== '') {
-                            setAuthToken(token);
-                            dispatch(clearProductionState());
-                            dispatch(getProductionItems(value.value));
-                            setFillingRemaining(Number(value.production.no_of_quantity))
-                            setNoOfProductionQty(Number(value.production.no_of_quantity))
-                            setFormData({
-                                ...formData,
-                                product_assembly_id: value.production.product_assembly_id,
-                                production_id: value.value
-                            })
-                        }
-                    }
+                    dispatch(pendingProductions(value.value));
+                    setFormData({ ...formData, product_assembly_id: value.value });
                 } else {
-                    if (name === 'production_id') {
-                        dispatch(clearProductionState());
-                        setFormData({...formData, production_id: 0})
-                        setRawProducts([]);
-                        setFillingCalculation([]);
-                        setFillingMaterials([]);
-                    }
-                    setFormData({...formData, [name]: ''})
+                    setFormData({ ...formData, product_assembly_id: '' });
                 }
-                break
+                break;
+            case 'production_ids':
+                if (value && typeof value !== 'undefined' && value.length > 0) {
+                    setBatchCalculations(value.map((item: any) => {
+                        return {
+                            production_id: item.value,
+                            batch_number: item.production.batch_number,
+                            quantity: item.production.production_quantity_details[0].remaining_quantity,
+                            used: 0,
+                            remaining: item.production.production_quantity_details[0].remaining_quantity,
+                            created_at: item.production.created_at
+                        };
+                    }));
+
+                    setAuthToken(token);
+                    dispatch(clearProductionState());
+                    dispatch(getProductionItems(value.map((item: any) => item.value)));
+                    const totalQuantity = value.reduce((acc: number, item: any) => acc + item.production.production_quantity_details[0].remaining_quantity, 0);
+                    setFillingRemaining(totalQuantity);
+                    setNoOfProductionQty(totalQuantity);
+                    setFormData({
+                        ...formData,
+                        production_ids: value.map((item: any) => item.value).join(',')
+                    });
+                } else {
+                    setFormData({ ...formData, [name]: '' });
+                    setRawProducts([]);
+                    setFillingMaterials([]);
+                    setBatchCalculations([])
+                }
+                break;
+            case 'usage_order':
+                setFormData({ ...formData, usage_order: value });
+                break;
             default:
-                setFormData({...formData, [name]: value})
-                break
+                setFormData({ ...formData, [name]: value });
+                break;
         }
-    }
+    };
 
     const hasInsufficientQuantity = () => {
         return rawProducts.some((row) => row.available_quantity < row.required_quantity);
@@ -111,39 +135,46 @@ const FillingForm = ({id}: IFormProps) => {
 
         const finalData = {
             ...formData,
-            filling_items: rawProducts,
+            filling_items: rawProducts.map((item) => {
+                return {
+                    ...item,
+                    product_assembly_id: formData.product_assembly_id
+                };
+            }),
+            wastage_no_of_quantity: fillingRemaining,
             filling_calculation: fillingMaterials.map((item) => {
                 const retailPrice = fillingCalculation.find((row) => row.raw_product_id === item.raw_product_id)?.retail_price || 0;
                 delete item.latest_capacity;
                 delete item.latest_retail_price;
                 return {
                     ...item,
-                    retail_price: retailPrice
+                    retail_price: retailPrice,
+                    product_assembly_id: formData.product_assembly_id
                 };
-            })
-        }
+            }),
+            batch_calculations: batchCalculations
+        };
         setAuthToken(token);
         setContentType('application/json');
         dispatch(clearFillingState());
-        console.log(finalData)
-
-        Swal.fire({
-            icon: 'warning',
-            title: 'Retail Price Confirmation',
-            text: "Did you confirm the retail price?",
-            showCancelButton: true,
-            confirmButtonText: 'Yes I did',
-            padding: '2em',
-            customClass: 'sweet-alerts',
-        }).then((result) => {
-            if (result.value) {
-                if (id) {
-                    dispatch(updateFilling({id, finalData: finalData}))
-                } else {
-                    dispatch(storeFilling(finalData));
-                }
-            }
-        });
+        console.log(finalData);
+        // Swal.fire({
+        //     icon: 'warning',
+        //     title: 'Retail Price Confirmation',
+        //     text: 'Did you confirm the retail price?',
+        //     showCancelButton: true,
+        //     confirmButtonText: 'Yes I did',
+        //     padding: '2em',
+        //     customClass: 'sweet-alerts'
+        // }).then((result) => {
+        //     if (result.value) {
+        //         if (id) {
+        //             dispatch(updateFilling({ id, finalData: finalData }));
+        //         } else {
+        //             dispatch(storeFilling(finalData));
+        //         }
+        //     }
+        // });
     };
 
     useEffect(() => {
@@ -153,14 +184,12 @@ const FillingForm = ({id}: IFormProps) => {
         if (!id) {
             dispatch(generateCode(FORM_CODE_TYPE.FILLING));
         }
-        console.log("running")
         dispatch(getWorkingShifts());
-        dispatch(getProductions());
         dispatch(getFillingProducts(['filling-material', 'packing-material']));
         dispatch(getUnits());
 
-        setRawProducts([])
-        setFillingMaterials([])
+        setRawProducts([]);
+        setFillingMaterials([]);
 
     }, []);
 
@@ -169,7 +198,7 @@ const FillingForm = ({id}: IFormProps) => {
             setProductionOptions(allProductions.map((production: any) => (
                 {
                     value: production.id,
-                    label: production.batch_number,
+                    label: production.batch_number + ' (' + (production.production_quantity_details.length > 0 ? production.production_quantity_details[0].remaining_quantity : 0) + ' KG)',
                     production: production
                 }
             )));
@@ -177,8 +206,19 @@ const FillingForm = ({id}: IFormProps) => {
     }, [allProductions]);
 
     useEffect(() => {
+        if (allProductAssemblies) {
+            setProductAssemblyOptions(allProductAssemblies.map((assembly: any) => (
+                {
+                    value: assembly.id,
+                    label: assembly.formula_name + ' (' + assembly.color_code.name + ')'
+                }
+            )));
+        }
+    }, [allProductAssemblies]);
+
+    useEffect(() => {
         if (units) {
-            setUnitOptions([{value: '', label: 'Select Unit'}, ...units]);
+            setUnitOptions([{ value: '', label: 'Select Unit' }, ...units]);
         }
     }, [units]);
 
@@ -191,7 +231,7 @@ const FillingForm = ({id}: IFormProps) => {
                     product
                 };
             });
-            setFillingMaterialOptions([{value: '', label: 'Select Material'}, ...options]);
+            setFillingMaterialOptions([{ value: '', label: 'Select Material' }, ...options]);
         }
     }, [fillingProducts]);
 
@@ -200,10 +240,10 @@ const FillingForm = ({id}: IFormProps) => {
             let options = workingShifts.map((shift: any) => {
                 return {
                     value: shift.id,
-                    label: shift.name + ' (' + shift.start_time + ' - ' + shift.end_time + ')',
+                    label: shift.name + ' (' + shift.start_time + ' - ' + shift.end_time + ')'
                 };
             });
-            setFillingShiftOptions([{value: '', label: 'Select Shift'}, ...options]);
+            setFillingShiftOptions([{ value: '', label: 'Select Shift' }, ...options]);
         }
     }, [workingShifts]);
 
@@ -211,6 +251,8 @@ const FillingForm = ({id}: IFormProps) => {
         if (productionItems) {
             let rawProducts = productionItems.map((item: any) => {
                 return {
+                    production_id: item.production.id,
+                    batch_number: item.production.batch_number,
                     raw_product_id: item.raw_product_id,
                     description: item.description,
                     unit_id: item.unit_id,
@@ -227,7 +269,7 @@ const FillingForm = ({id}: IFormProps) => {
 
     useEffect(() => {
         if (code) {
-            setFormData({...formData, filling_code: code[FORM_CODE_TYPE.FILLING]})
+            setFormData({ ...formData, filling_code: code[FORM_CODE_TYPE.FILLING], usage_order: 'last-in-first-out' });
         }
     }, [code]);
 
@@ -241,8 +283,8 @@ const FillingForm = ({id}: IFormProps) => {
                 return [...prev, data];
             }
         });
-        setModalOpen(false)
-    }
+        setModalOpen(false);
+    };
 
     const handleChangeRetailPrice = (productId: number, value: any) => {
         setFillingCalculation((prev) => {
@@ -254,18 +296,54 @@ const FillingForm = ({id}: IFormProps) => {
             const updatedArray = [...prev];
 
             if (index !== -1) {
-                updatedArray[index] = {...updatedArray[index], retail_price: parseFloat(value)};
+                updatedArray[index] = { ...updatedArray[index], retail_price: parseFloat(value) };
             } else {
-                updatedArray.push({raw_product_id: productId, retail_price: parseFloat(value)});
+                updatedArray.push({ raw_product_id: productId, retail_price: parseFloat(value) });
             }
 
-            console.log("Updated Filling Calculation:", updatedArray); // Debugging line
             return updatedArray;
         });
-    }
+    };
+
+    const calculateBatchUsage = () => {
+        let totalUsed = fillingMaterials.reduce((acc, item) => acc + item.filling_quantity, 0);
+
+        let updatedBatches = batchCalculations.map(batch => ({ ...batch, used: 0, remaining: batch.quantity }));
+
+        if (formData.usage_order === 'first-in-first-out') {
+            for (let i = 0; i < updatedBatches.length && totalUsed > 0; i++) {
+                if (totalUsed >= updatedBatches[i].quantity) {
+                    updatedBatches[i].used = updatedBatches[i].quantity;
+                    updatedBatches[i].remaining = 0;
+                    totalUsed -= updatedBatches[i].quantity;
+                } else {
+                    updatedBatches[i].used = totalUsed;
+                    updatedBatches[i].remaining = updatedBatches[i].quantity - totalUsed;
+                    totalUsed = 0;
+                }
+            }
+        } else {
+            for (let i = updatedBatches.length - 1; i >= 0 && totalUsed > 0; i--) {
+                if (totalUsed >= updatedBatches[i].quantity) {
+                    updatedBatches[i].used = updatedBatches[i].quantity;
+                    updatedBatches[i].remaining = 0;
+                    totalUsed -= updatedBatches[i].quantity;
+                } else {
+                    updatedBatches[i].used = totalUsed;
+                    updatedBatches[i].remaining = updatedBatches[i].quantity - totalUsed;
+                    totalUsed = 0;
+                }
+            }
+        }
+
+        setBatchCalculations(updatedBatches);
+    };
+
+    useEffect(() => {
+        calculateBatchUsage();
+    }, [fillingMaterials, formData.usage_order]);
 
     return (
-
         <form className="space-y-5" onSubmit={handleSubmit}>
             <div className="flex w-full flex-row items-start justify-between gap-3">
                 <div className="flex w-full flex-col items-start justify-start space-y-3">
@@ -322,86 +400,163 @@ const FillingForm = ({id}: IFormProps) => {
 
                     <Dropdown
                         divClasses="w-full"
-                        label="Active Production"
-                        name="production_id"
-                        options={productionOptions}
-                        value={formData.production_id}
-                        onChange={(e: any) => handleChange('production_id', e, true)}
+                        label="Product Assembly"
+                        name="product_assembly_id"
+                        options={productAssemblyOptions}
+                        value={formData.product_assembly_id}
+                        onChange={(e: any) => handleChange('product_assembly_id', e, true)}
                         required={true}
-                        errorMessage={validationMessages.filling_shift_id}
+                        errorMessage={validationMessages.product_assembly_id}
                     />
+
+                    <Dropdown
+                        divClasses="w-full"
+                        label="Active Production"
+                        name="production_ids"
+                        options={productionOptions}
+                        value={formData.production_ids}
+                        onChange={(e: any) => handleChange('production_ids', e, true)}
+                        required={true}
+                        errorMessage={validationMessages.production_ids}
+                        isMulti={true}
+                    />
+
+                    {fillingRemaining > 0 && (
+                        <Option
+                            divClasses="w-full"
+                            label="Consider The remaining as wastage"
+                            type="checkbox"
+                            name="has_wastage"
+                            value={formData.has_wastage}
+                            defaultChecked={formData.has_wastage === 1}
+                            onChange={(e: any) => handleChange('has_wastage', e.target.checked ? 1 : 0, false)}
+                        />
+                    )}
 
                 </div>
                 <div className="w-full border rounded p-5 hidden md:block">
-                    {fillingMaterials.length > 0
-                        ? fillingMaterials.map((row, index) => {
-                            const label = fillingMaterialOptions.find((item) => item.value === row.raw_product_id)?.label || "Unknown Material";
-                            const defaultValue = row?.latest_retail_price || 0;
-                            const currentValue = fillingCalculation.find((item) => item.raw_product_id === row.raw_product_id)?.retail_price || defaultValue;
-                            return (
-                                <Input
-                                    key={index}
-                                    divClasses="w-full mb-3"
-                                    label={"Retail Price of " + label + " - Capacity was: " + row.latest_capacity}
-                                    type="number"
-                                    name="retail_price"
-                                    value={currentValue}
-                                    onChange={(e) => handleChangeRetailPrice(row.raw_product_id, e.target.value || 0)}
-                                    isMasked={false}
-                                    required={true}
+                    <div className="table-responsive">
+                        <h5 className="text-lg font-semibold dark:text-white-light w-full">Batch Calculation</h5>
+                        <div>
+                            <label>Usage Order</label>
+                            <div className="flex gap-5">
+                                <Option
+                                    label="First In First Out"
+                                    type="radio"
+                                    name="usage_order"
+                                    value={formData.usage_order}
+                                    defaultChecked={formData.usage_order === 'first-in-first-out'}
+                                    onChange={(e) => handleChange('usage_order', e.target.checked ? 'first-in-first-out' : 'last-in-first-out', false)}
                                 />
-                            );
-                        })
-                        : (
-                            <div>
-                                <h5 className="text-lg font-semibold dark:text-white-light">
-                                    Retail Prices
-                                </h5>
-                                <p className="text-sm dark:text-white-light">No filling added</p>
+                                <Option
+                                    label="Last In First Out"
+                                    type="radio"
+                                    name="usage_order"
+                                    value={formData.usage_order}
+                                    defaultChecked={formData.usage_order === 'last-in-first-out'}
+                                    onChange={(e) => handleChange('usage_order', e.target.checked ? 'last-in-first-out' : 'first-in-first-out', false)}
+                                />
                             </div>
-                        )
-                    }
-                </div>
-
-            </div>
-
-
-            <div className="mt-5">
-                <div className="table-responsive">
-                    <h5 className="text-lg font-semibold dark:text-white-light mb-3">Final Calculation</h5>
-                    <table>
-                        <thead>
-                        <tr>
-                            <th>Filling</th>
-                            <th>No of Fillings</th>
-                            <th>Per Filling Cost</th>
-                            <th>Total Cost</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {fillingMaterials.length > 0
-                            ? (fillingMaterials.map((row, index) => {
-                                    console.log(row)
-                                    const totalMaterialCost = rawProducts.reduce((acc, item) => acc + item.sub_total, 0);
-                                    const perFillingCost = (totalMaterialCost / noOfProductionQty * row.capacity) + row.unit_price;
-                                    const totalFillingCost = perFillingCost * row.required_quantity;
-                                    return (
+                        </div>
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>Batch</th>
+                                <th>Quantity</th>
+                                <th>Used</th>
+                                <th>Remaining</th>
+                                <th>Created At</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {batchCalculations.length > 0
+                                ? (
+                                    batchCalculations.map((row, index) => (
                                         <tr key={index}>
-                                            <td>{fillingMaterialOptions.find((item) => item.value === row.raw_product_id)?.label}</td>
-                                            <td>{row.filling_quantity + '(Kg) / ' + row.required_quantity}</td>
-                                            <td>{perFillingCost.toFixed(2)}</td>
-                                            <td>{totalFillingCost.toFixed(2)}</td>
+                                            <td>{row.batch_number}</td>
+                                            <td>{row.quantity}</td>
+                                            <td>{row.used}</td>
+                                            <td>{row.remaining}</td>
+                                            <td>{new Date(row.created_at).toLocaleDateString() + ' ' + new Date(row.created_at).toLocaleTimeString()}</td>
                                         </tr>
-                                    );
-                                })
-                            ) : (
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={4} className="text-center">No batch selected</td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className="mt-5">
+                        <div className="table-responsive">
+                            <h5 className="text-lg font-semibold dark:text-white-light mb-3">Final Calculation</h5>
+                            <table>
+                                <thead>
                                 <tr>
-                                    <td colSpan={4} className='text-center'>No data found</td>
+                                    <th>Filling</th>
+                                    <th>No of Fillings</th>
+                                    <th>Per Filling Cost</th>
+                                    <th>Total Cost</th>
                                 </tr>
-                            )}
-                        </tbody>
-                    </table>
+                                </thead>
+                                <tbody>
+                                {fillingMaterials.length > 0
+                                    ? (fillingMaterials.map((row, index) => {
+                                            const totalMaterialCost = rawProducts.reduce((acc, item) => acc + item.sub_total, 0);
+                                            const perFillingCost = (totalMaterialCost / noOfProductionQty * row.capacity) + row.unit_price;
+                                            const totalFillingCost = perFillingCost * row.required_quantity;
+                                            return (
+                                                <tr key={index}>
+                                                    <td>{fillingMaterialOptions.find((item) => item.value === row.raw_product_id)?.label}</td>
+                                                    <td>{row.filling_quantity + '(Kg) / ' + row.required_quantity}</td>
+                                                    <td>{perFillingCost.toFixed(2)}</td>
+                                                    <td>{totalFillingCost.toFixed(2)}</td>
+                                                </tr>
+                                            );
+                                        })
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={4} className="text-center">No data found</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div className="mt-5">
+                        {fillingMaterials.length > 0
+                            ? fillingMaterials.map((row, index) => {
+                                const label = fillingMaterialOptions.find((item) => item.value === row.raw_product_id)?.label || 'Unknown Material';
+                                const defaultValue = row?.latest_retail_price || 0;
+                                const currentValue = fillingCalculation.find((item) => item.raw_product_id === row.raw_product_id)?.retail_price || defaultValue;
+                                return (
+                                    <Input
+                                        key={index}
+                                        divClasses="w-full mb-3"
+                                        label={'Retail Price of ' + label}
+                                        type="number"
+                                        name="retail_price"
+                                        value={currentValue}
+                                        onChange={(e) => handleChangeRetailPrice(row.raw_product_id, e.target.value || 0)}
+                                        isMasked={false}
+                                        required={true}
+                                    />
+                                );
+                            })
+                            : (
+                                <div>
+                                    <h5 className="text-lg font-semibold dark:text-white-light">
+                                        Retail Prices
+                                    </h5>
+                                    <p className="text-sm dark:text-white-light">No filling added</p>
+                                </div>
+                            )
+                        }
+                    </div>
                 </div>
+
             </div>
 
             <div>
@@ -416,8 +571,8 @@ const FillingForm = ({id}: IFormProps) => {
                             variant={ButtonVariant.primary}
                             size={ButtonSize.small}
                             onClick={() => {
-                                setModalOpen(true)
-                                setModalDetail({})
+                                setModalOpen(true);
+                                setModalDetail({});
                             }}
                         />
                     )}
@@ -460,23 +615,23 @@ const FillingForm = ({id}: IFormProps) => {
                                                 <IconButton
                                                     icon={IconType.edit}
                                                     color={ButtonVariant.primary}
-                                                    tooltip='Edit'
+                                                    tooltip="Edit"
                                                     onClick={() => {
-                                                        setModalOpen(true)
-                                                        setModalDetail(row)
-                                                        setFillingRemaining(fillingRemaining + row.filling_quantity)
+                                                        setModalOpen(true);
+                                                        setModalDetail(row);
+                                                        setFillingRemaining(fillingRemaining + row.filling_quantity);
                                                     }}
                                                 />
                                                 <IconButton
                                                     icon={IconType.delete}
                                                     color={ButtonVariant.danger}
-                                                    tooltip='Delete'
+                                                    tooltip="Delete"
                                                     onClick={() => {
-                                                        setFillingMaterials(fillingMaterials.filter((item) => item.raw_product_id !== row.raw_product_id))
+                                                        setFillingMaterials(fillingMaterials.filter((item) => item.raw_product_id !== row.raw_product_id));
                                                         if (index === 0) {
-                                                            setFillingRemaining(noOfProductionQty)
+                                                            setFillingRemaining(noOfProductionQty);
                                                         } else {
-                                                            setFillingRemaining(fillingRemaining + row.filling_quantity)
+                                                            setFillingRemaining(fillingRemaining + row.filling_quantity);
                                                         }
                                                     }}
                                                 />
@@ -487,7 +642,7 @@ const FillingForm = ({id}: IFormProps) => {
                             )
                             : (
                                 <tr>
-                                    <td colSpan={9} className='text-center'>No data found</td>
+                                    <td colSpan={9} className="text-center">No data found</td>
                                 </tr>
                             )}
                         </tbody>
@@ -507,13 +662,6 @@ const FillingForm = ({id}: IFormProps) => {
                         )}
                     </table>
                 </div>
-
-                <RawProductItemListing
-                    rawProducts={rawProducts}
-                    setRawProducts={setRawProducts}
-                    type={RAW_PRODUCT_LIST_TYPE.FILLING}
-                />
-
 
                 {!hasInsufficientQuantity() && (
                     <Button

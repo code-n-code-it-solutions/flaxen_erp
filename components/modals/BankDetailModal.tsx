@@ -74,6 +74,7 @@ const BankDetailModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData, 
                 account_name: modalFormData?.account_name || '',
                 account_number: modalFormData?.account_number || '',
                 iban: modalFormData?.iban || '',
+                swift_code: modalFormData?.swift_code || '',
                 is_active: modalFormData?.is_active || true,
             })
             dispatch(getBanks());
@@ -166,7 +167,6 @@ const BankDetailModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData, 
 
             <div className="w-full flex justify-center items-end gap-3">
                 <div className="w-full">
-                    {/* <label htmlFor="bank_id">Bank</label> */}
                     <Dropdown
                         label='Bank'
                         options={bankOptions}
@@ -181,7 +181,7 @@ const BankDetailModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData, 
                                     bank_name: e.label || 0
                                 }));
                                 if (required) {
-                                    setErrorMessages({...errorMessages, bank_id: ''});
+                                    setErrorMessages({ ...errorMessages, bank_id: '' });
                                 }
                             } else {
                                 setFormData((prev: any) => ({
@@ -189,7 +189,7 @@ const BankDetailModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData, 
                                     bank_id: ''
                                 }));
                                 if (required) {
-                                    setErrorMessages({...errorMessages, bank_id: 'This field is required.'});
+                                    setErrorMessages({ ...errorMessages, bank_id: 'This field is required.' });
                                 }
                             }
                         }}
@@ -208,7 +208,6 @@ const BankDetailModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData, 
             </div>
 
             <div className="w-full">
-                {/* <label htmlFor="currency_id">Currency</label> */}
                 <Dropdown
                     label='Currency'
                     name='currency_id'
@@ -222,7 +221,7 @@ const BankDetailModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData, 
                                 currency_name: e.label || 0
                             }));
                             if (required) {
-                                setErrorMessages({...errorMessages, currency_id: ''});
+                                setErrorMessages({ ...errorMessages, currency_id: '' });
                             }
                         } else {
                             setFormData((prev: any) => ({
@@ -230,7 +229,7 @@ const BankDetailModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData, 
                                 currency_id: ''
                             }));
                             if (required) {
-                                setErrorMessages({...errorMessages, currency_id: 'This field is required.'});
+                                setErrorMessages({ ...errorMessages, currency_id: 'This field is required.' });
                             }
                         }
                     }}
@@ -241,7 +240,6 @@ const BankDetailModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData, 
             </div>
 
             <div className="w-full">
-                {/* <label htmlFor="account_name">Account Title</label> */}
                 <Input
                     label='Account Title'
                     type="text"
@@ -256,7 +254,6 @@ const BankDetailModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData, 
             </div>
 
             <div className="w-full">
-                {/* <label htmlFor="account_number">Account No</label> */}
                 <Input
                     label='Account No'
                     type="text"
@@ -272,7 +269,6 @@ const BankDetailModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData, 
             </div>
 
             <div className="w-full">
-                {/* <label htmlFor="iban">IBAN</label> */}
                 <Input
                     label='IBAN'
                     type="text"
@@ -285,6 +281,20 @@ const BankDetailModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData, 
                     errorMessage={errorMessages.iban}
                 />
             </div>
+
+            <div className="w-full">
+                <Input
+                    label='Swift Code'
+                    type="text"
+                    name="swift_code"
+                    placeholder='Enter Swift Code'
+                    value={formData.swift_code}
+                    onChange={handleChange}
+                    isMasked={false}
+                    required={false}
+                />
+            </div>
+
             <BankFormModal
                 modalOpen={bankFormModal}
                 setModalOpen={setBankFormModal}

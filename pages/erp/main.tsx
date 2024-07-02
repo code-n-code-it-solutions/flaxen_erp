@@ -13,8 +13,9 @@ const Main = () => {
     const { selectedCompany, selectedBranch, loading } = useAppSelector(state => state.company);
 
     const handlePluginClick = (plugin: any) => {
+        // console.log('plugin', plugin);
         dispatch(clearMenuState());
-        dispatch(setSelectedPlugin(plugin));
+        dispatch(setSelectedPlugin(plugin.plugin));
     };
 
     return (

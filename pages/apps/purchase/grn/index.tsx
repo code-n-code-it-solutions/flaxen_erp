@@ -24,21 +24,16 @@ const Index = () => {
     const gridRef = useRef<AgGridReact<any>>(null);
     const [colDefs, setColDefs] = useState<any>([
         {
-            headerName: 'PRs #',
+            headerName: 'GRN #',
             headerCheckboxSelection: true,
             checkboxSelection: true,
             minWidth: 150,
-            valueGetter: (params: any) => params.data.purchase_requisitions?.map((item: any) => item.pr_code).join(", "),
+            valueGetter: (params: any) => params.data.grn_number,
             cellRenderer: DisabledClickRenderer
         },
         {
-            headerName: 'LPOs #',
-            valueGetter: (params: any) => params.data.local_purchase_orders?.map((item: any) => item.lpo_number).join(", "),
-            minWidth: 150
-        },
-        {
-            headerName: 'GRN #',
-            field: 'grn_number',
+            headerName: 'Vendor',
+            valueGetter: (params: any) => params.data.vendor?.name,
             minWidth: 150
         },
         {
@@ -48,7 +43,12 @@ const Index = () => {
         },
         {
             headerName: 'Created By',
-            field: 'user.name',
+            field: 'created_by.name',
+            minWidth: 150
+        },
+        {
+            headerName: 'Status',
+            field: 'status',
             minWidth: 150
         },
     ]);

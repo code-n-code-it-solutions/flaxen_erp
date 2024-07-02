@@ -155,6 +155,20 @@ export const getFinishedGoodStock = createAsyncThunk(
     }
 );
 
+export const getFillingByProductAssembly = createAsyncThunk(
+    'fillings/report-list/by-product-assembly',
+    async (assemblyId: number, thunkAPI) => {
+        try {
+            const response = await API.post('/filling/report-list/by-product-assembly', { product_assembly_id: assemblyId });
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 export const getFillingsForPrint = createAsyncThunk(
     'fillings/for-print',
     async (data: any, thunkAPI) => {
@@ -301,6 +315,18 @@ export const fillingSlice = createSlice({
                 state.success = action.payload.success;
             })
             .addCase(getFillingsForPrint.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(getFillingByProductAssembly.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getFillingByProductAssembly.fulfilled, (state, action) => {
+                state.loading = false;
+                state.fillings = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getFillingByProductAssembly.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })

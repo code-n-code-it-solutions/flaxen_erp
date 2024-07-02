@@ -58,7 +58,8 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
 
     const handleChange = (name: string, value: any) => {
         if (name === 'raw_product_id') {
-            let selectedProduct = allRawProducts.find((product: any) => product.id === value);
+            // console.log(allRawProducts);
+            let selectedProduct = allRawProducts?.find((product: any) => product.id === value);
             setValuationMethod(selectedProduct?.valuation_method)
             // console.log(selectedProduct)
             if (selectedProduct) {
@@ -202,6 +203,7 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
             } else {
                 dispatch(getRawProducts([]));
             }
+            dispatch(getRawProducts([]));
             setFormData({})
             if (detail) {
                 setFormData(detail)
@@ -437,7 +439,7 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                         value={formData.unit_price}
                         onChange={(e) => handleChange('unit_price', parseFloat(e.target.value))}
                         isMasked={false}
-                        disabled={true}
+                        disabled={false}
                     />
 
                     <Input

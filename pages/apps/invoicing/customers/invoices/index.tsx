@@ -13,7 +13,7 @@ import DisabledClickRenderer from '@/components/apps/DisabledClickRenderer';
 import { checkPermission } from '@/utils/helper';
 import { ActionList, AppBasePath } from '@/utils/enums';
 import useSetActiveMenu from '@/hooks/useSetActiveMenu';
-import { getSaleInvoices } from '@/store/slices/saleInvoiceSlice';
+import { clearSaleInvoiceState, getSaleInvoices } from '@/store/slices/saleInvoiceSlice';
 
 const Index = () => {
     useSetActiveMenu(AppBasePath.Invoice);
@@ -39,6 +39,7 @@ const Index = () => {
         {
             headerName: 'Customer',
             field: 'customer.name',
+            valueGetter: (params: any) => params.data.customer.name + ' (' + params.data.customer.customer_code + ')',
             minWidth: 150
         },
         {
@@ -87,6 +88,7 @@ const Index = () => {
         dispatch(setPageTitle('Invoices'));
         setAuthToken(token);
         setContentType('application/json');
+        dispatch(clearSaleInvoiceState());
         dispatch(getSaleInvoices());
     }, []);
 

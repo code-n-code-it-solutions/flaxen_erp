@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { Fragment, useCallback, useEffect, useState } from 'react';
 import ImageUploader from '@/components/form/ImageUploader';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { getUnits } from '@/store/slices/unitSlice';
@@ -10,8 +10,13 @@ import { Dropdown } from '@/components/form/Dropdown';
 import { Input } from '@/components/form/Input';
 import Textarea from '@/components/form/Textarea';
 import Button from '@/components/Button';
-import { serverFilePath } from '@/utils/helper';
+import { serverFilePath, transformAccountsToSelectOptions } from '@/utils/helper';
 import Alert from '@/components/Alert';
+import { Tab } from '@headlessui/react';
+import Option from '@/components/form/Option';
+// import useTransformToSelectOptions from '@/hooks/useTransformToSelectOptions';
+import AccountDropdowns from '@/components/form/AccountDropdowns';
+// import Treeselect, {DirectionType, IconsType, OptionType, TreeselectProps, TreeselectValue } from "react-treeselectjs"
 
 interface IFormProps {
     id?: any;
@@ -19,10 +24,12 @@ interface IFormProps {
 
 const ProductForm = ({ id }: IFormProps) => {
     const dispatch = useAppDispatch();
+    // const accountOptions = useTransformToSelectOptions(useAppSelector(state => state.account).accounts);
     const { units } = useAppSelector(state => state.unit);
     const { code } = useAppSelector(state => state.util);
     const { loading, rawProductDetail } = useAppSelector((state) => state.rawProduct);
     const { branchList } = useAppSelector((state) => state.company);
+    // const { accounts } = useAppSelector((state) => state.account);
     const { token, user } = useAppSelector(state => state.user);
     const [image, setImage] = useState<File | null>(null);
     const [isFormValid, setIsFormValid] = useState<boolean>(false);
@@ -34,6 +41,8 @@ const ProductForm = ({ id }: IFormProps) => {
     const [imagePreview, setImagePreview] = useState('');
     const [unitOptions, setUnitOptions] = useState([]);
     const [subUnitOptions, setSubUnitOptions] = useState([]);
+    const [accountsList, setAccountsList] = useState([]);
+    const [accountOptions, setAccountOptions] = useState([]);
     const [valuationMethodOptions, setValuationMethodOptions] = useState([
         { value: '', label: 'Select Valuation Method' },
         { value: 'LIFO', label: 'LIFO' },
@@ -64,15 +73,15 @@ const ProductForm = ({ id }: IFormProps) => {
 
         switch (name) {
             case 'branch_id':
-                // if (value && typeof value !== 'undefined') {
-                //     setFormData((prevFormData: any) => ({
-                //         ...prevFormData,
-                //         branch_id: value.map((v: any) => v.value).join(',')
-                //     }));
-                // } else {
-                //     setFormData((prevFormData: any) => ({ ...prevFormData, branch_id: '' }));
-                // }
-                // break;
+            // if (value && typeof value !== 'undefined') {
+            //     setFormData((prevFormData: any) => ({
+            //         ...prevFormData,
+            //         branch_id: value.map((v: any) => v.value).join(',')
+            //     }));
+            // } else {
+            //     setFormData((prevFormData: any) => ({ ...prevFormData, branch_id: '' }));
+            // }
+            // break;
             case 'product_type':
             case 'unit_id':
             case 'valuation_method':
@@ -120,6 +129,17 @@ const ProductForm = ({ id }: IFormProps) => {
         setValidationMessage('');
     };
 
+    const customStyles = {
+        option: (provided: any, state: any) => ({
+            ...provided,
+            paddingLeft: `${state.data.depth * 10}px`
+        }),
+        group: (provided: any) => ({
+            ...provided,
+            paddingLeft: '10px'
+        })
+    };
+
     useEffect(() => {
         dispatch(getUnits());
         dispatch(clearUtilState());
@@ -139,6 +159,7 @@ const ProductForm = ({ id }: IFormProps) => {
 
     useEffect(() => {
         setValidationMessage('');
+        // dispatch(getAccountsByType([]));
     }, []);
 
     useEffect(() => {
@@ -193,9 +214,65 @@ const ProductForm = ({ id }: IFormProps) => {
         }
     }, [errorMessages]);
 
+    // useEffect(() => {
+    //     if (accounts) {
+    //         setAccountOptions(transformAccountsToSelectOptions(accounts));
+    //     }
+    // }, [accounts]);
+
     useEffect(() => {
         console.log(formData);
     }, [formData]);
+
+    const options = [
+        {
+            name: 'England',
+            value: 1,
+            children: [
+                {
+                    name: 'London',
+                    value: 2,
+                    children: [
+                        {
+                            name: 'Chelsea',
+                            value: 3,
+                            children: []
+                        },
+                        {
+                            name: 'West End',
+                            value: 4,
+                            children: []
+                        }
+                    ]
+                },
+                {
+                    name: 'Brighton',
+                    value: 5,
+                    children: []
+                }
+            ]
+        },
+        {
+            name: 'France',
+            value: 6,
+            children: [
+                {
+                    name: 'Paris',
+                    value: 7,
+                    children: []
+                },
+                {
+                    name: 'Lyon',
+                    value: 8,
+                    children: []
+                }
+            ]
+        }
+    ]
+
+    const onInput = useCallback((value: TreeselectValue) => {
+        console.log('onInput', value)
+    }, [])
 
     return (
         <form className="space-y-5" onSubmit={handleSubmit}>
@@ -206,194 +283,293 @@ const ProductForm = ({ id }: IFormProps) => {
                     setMessages={setValidationMessage}
                 />
             }
-
-            <div className="flex items-center justify-center">
-                <ImageUploader image={image} setImage={setImage} existingImage={imagePreview} />
-            </div>
-            <div className="flex flex-col items-start justify-start space-y-3">
-                <Input
-                    label="Item Code"
-                    type="text"
-                    name="item_code"
-                    value={formData.item_code}
-                    onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
-                    isMasked={false}
-                    placeholder="Enter Item code"
-                    disabled={true}
-                    required={false}
-                />
-                {user && user.roles.find((role: any) => role.name === 'Allow Company Wise Entry') && (
-                    <Dropdown
-                        // divClasses="w-full"
-                        label="Company Branch"
-                        name="branch_id"
-                        options={branchList && branchList.map((branch: any) => ({ value: branch.id, label: branch.name })) || []}
-                        value={formData.branch_id}
-                        onChange={(e) => handleChange('branch_id', e, true)}
-                        required={true}
-                        errorMessage={'If non select it will store as logged in employee registered branch'}
-                    />
-                )}
-
-                <Input
-                    divClasses="w-full md:w-1/2"
-                    label="Item Title"
-                    type="text"
-                    name="title"
-                    value={formData.title}
-                    onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
-                    isMasked={false}
-                    styles={{ height: 45 }}
-                    required={true}
-                    errorMessage={errorMessages.title}
-                />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <Dropdown
-                    divClasses="w-full"
-                    label="Product Type"
-                    name="product_type"
-                    options={productTypeOptions}
-                    value={formData.product_type}
-                    onChange={(e) => handleChange('product_type', e, true)}
-                    required={true}
-                    errorMessage={errorMessages?.product_type}
-                />
-                <Dropdown
-                    divClasses="w-full"
-                    label="Valuation Method"
-                    name="valuation_method"
-                    options={valuationMethodOptions}
-                    value={formData.valuation_method}
-                    onChange={(e) => handleChange('valuation_method', e, true)}
-                    required={true}
-                    errorMessage={errorMessages?.valuation_method}
-                />
-                <Input
-                    divClasses="w-full"
-                    label="Retail Price"
-                    type="number"
-                    name="retail_price"
-                    value={formData.retail_price?.toString()}
-                    onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
-                    isMasked={false}
-                    placeholder="Enter retail price for it"
-                    required={true}
-                    errorMessage={errorMessages?.retail_price}
-                />
-
-                <Dropdown
-                    divClasses="w-full"
-                    label="Unit"
-                    name="unit_id"
-                    options={unitOptions}
-                    value={formData.unit_id}
-                    onChange={(e) => handleChange('unit_id', e, true)}
-                    required={true}
-                    errorMessage={errorMessages?.unit_id}
-                />
-
-                <Dropdown
-                    divClasses="w-full"
-                    label="Sub Unit"
-                    name="sub_unit_id"
-                    options={subUnitOptions}
-                    value={formData.sub_unit_id}
-                    onChange={(e) => handleChange('sub_unit_id', e, true)}
-                    required={true}
-                    errorMessage={errorMessages?.sub_unit_id}
-                />
-
-                <Input
-                    divClasses="w-full"
-                    label="Value per Unit (According to sub unit)"
-                    type="number"
-                    name="value_per_unit"
-                    value={formData.value_per_unit}
-                    onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
-                    isMasked={false}
-                    placeholder="Enter weight per main unit"
-                    required={true}
-                    errorMessage={errorMessages?.value_per_unit}
-                />
-
-                <Input
-                    divClasses="w-full"
-                    label="Min Stock Level (Main Unit)"
-                    type="number"
-                    name="min_stock_level"
-                    value={formData.min_stock_level}
-                    onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
-                    isMasked={false}
-                    placeholder="Set min stock level"
-                    required={true}
-                    errorMessage={errorMessages?.min_stock_level}
-                />
-
-                <Input
-                    divClasses="w-full"
-                    label="Opening Stock Count (Sub Unit)"
-                    type="number"
-                    name="opening_stock"
-                    value={formData.opening_stock?.toString()}
-                    onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
-                    isMasked={false}
-                    placeholder="Enter Opening Stock Count"
-                    required={true}
-                    errorMessage={errorMessages?.opening_stock}
-                />
-
-                <div className="flex w-full flex-col items-center justify-between gap-3 md:flex-row">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
+                <div className="flex flex-col items-start justify-start space-y-3">
                     <Input
-                        divClasses="w-full"
-                        label="Opening Per Sub Unit Price"
-                        type="number"
-                        name="opening_stock_unit_balance"
-                        value={formData.opening_stock_unit_balance?.toString()}
+                        label="Item Code"
+                        type="text"
+                        name="item_code"
+                        value={formData.item_code}
                         onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
                         isMasked={false}
-                        placeholder="Enter Opening Stock Unit Balance"
-                        required={true}
-                        errorMessage={errorMessages?.opening_stock_unit_balance}
-                    />
-                    <Input
-                        divClasses="w-full"
-                        label="Opening Stock Total Balance"
-                        type="number"
-                        name="opening_stock_total_balance"
-                        value={formData.opening_stock_total_balance?.toString()}
-                        onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
-                        isMasked={false}
+                        placeholder="Enter Item code"
                         disabled={true}
-                        placeholder="Enter Opening Stock Total Balance"
+                        required={false}
+                    />
+                    {user && user.roles.find((role: any) => role.name === 'Allow Company Wise Entry') && (
+                        <Dropdown
+                            // divClasses="w-full"
+                            label="Company Branch"
+                            name="branch_id"
+                            options={branchList && branchList.map((branch: any) => ({
+                                value: branch.id,
+                                label: branch.name
+                            })) || []}
+                            value={formData.branch_id}
+                            onChange={(e) => handleChange('branch_id', e, true)}
+                            required={true}
+                            errorMessage={'If non select it will store as logged in employee registered branch'}
+                        />
+                    )}
+
+                    <Input
+                        divClasses="w-full"
+                        label="Item Title"
+                        type="text"
+                        name="title"
+                        value={formData.title}
+                        onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
+                        isMasked={false}
+                        styles={{ height: 45 }}
                         required={true}
-                        // errorMessage={errorMessages?.opening_stock_total_balance}
+                        errorMessage={errorMessages.title}
                     />
                 </div>
-
-                {/*<Dropdown*/}
-                {/*    divClasses="w-full"*/}
-                {/*    label="Account Receivable"*/}
-                {/*    name="account_receivable_id"*/}
-                {/*    options={unitOptions}*/}
-                {/*    value={formData.account_receivable_id}*/}
-                {/*    onChange={(e) => handleChange('account_receivable_id', e, true)}*/}
-                {/*    required={true}*/}
-                {/*    errorMessage={errorMessages?.account_receivable_id}*/}
-                {/*/>*/}
-                {/*<Dropdown*/}
-                {/*    divClasses="w-full"*/}
-                {/*    label="Account Payable"*/}
-                {/*    name="account_payable_id"*/}
-                {/*    options={unitOptions}*/}
-                {/*    value={formData.account_payable_id}*/}
-                {/*    onChange={(e) => handleChange('account_payable_id', e, true)}*/}
-                {/*    required={true}*/}
-                {/*    errorMessage={errorMessages?.account_payable_id}*/}
-                {/*/>*/}
-
+                <div className="flex md:justify-end md:items-start">
+                    <ImageUploader image={image} setImage={setImage} existingImage={imagePreview} />
+                </div>
             </div>
+
+            <Tab.Group>
+                <Tab.List className="mt-3 flex flex-wrap border-b border-white-light dark:border-[#191e3a]">
+                    <Tab as={Fragment}>
+                        {({ selected }) => (
+                            <button
+                                className={`${
+                                    selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
+                                } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
+                            >
+                                Basic Details
+                            </button>
+                        )}
+                    </Tab>
+                    <Tab as={Fragment}>
+                        {({ selected }) => (
+                            <button
+                                className={`${
+                                    selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
+                                } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
+                            >
+                                Accounting
+                            </button>
+                        )}
+                    </Tab>
+
+                </Tab.List>
+                <Tab.Panels className="panel rounded-none">
+                    <Tab.Panel>
+                        <div className="active">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <Dropdown
+                                    divClasses="w-full"
+                                    label="Product Type"
+                                    name="product_type"
+                                    options={productTypeOptions}
+                                    value={formData.product_type}
+                                    onChange={(e) => handleChange('product_type', e, true)}
+                                    required={true}
+                                    errorMessage={errorMessages?.product_type}
+                                />
+                                <Dropdown
+                                    divClasses="w-full"
+                                    label="Valuation Method"
+                                    name="valuation_method"
+                                    options={valuationMethodOptions}
+                                    value={formData.valuation_method}
+                                    onChange={(e) => handleChange('valuation_method', e, true)}
+                                    required={true}
+                                    errorMessage={errorMessages?.valuation_method}
+                                />
+                                <Input
+                                    divClasses="w-full"
+                                    label="Retail Price"
+                                    type="number"
+                                    name="retail_price"
+                                    value={formData.retail_price?.toString()}
+                                    onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
+                                    isMasked={false}
+                                    placeholder="Enter retail price for it"
+                                    required={true}
+                                    errorMessage={errorMessages?.retail_price}
+                                />
+
+                                <Dropdown
+                                    divClasses="w-full"
+                                    label="Unit"
+                                    name="unit_id"
+                                    options={unitOptions}
+                                    value={formData.unit_id}
+                                    onChange={(e) => handleChange('unit_id', e, true)}
+                                    required={true}
+                                    errorMessage={errorMessages?.unit_id}
+                                />
+
+                                <Dropdown
+                                    divClasses="w-full"
+                                    label="Sub Unit"
+                                    name="sub_unit_id"
+                                    options={subUnitOptions}
+                                    value={formData.sub_unit_id}
+                                    onChange={(e) => handleChange('sub_unit_id', e, true)}
+                                    required={true}
+                                    errorMessage={errorMessages?.sub_unit_id}
+                                />
+
+                                <Input
+                                    divClasses="w-full"
+                                    label="Value per Unit (According to sub unit)"
+                                    type="number"
+                                    name="value_per_unit"
+                                    value={formData.value_per_unit}
+                                    onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
+                                    isMasked={false}
+                                    placeholder="Enter weight per main unit"
+                                    required={true}
+                                    errorMessage={errorMessages?.value_per_unit}
+                                />
+
+                                <Input
+                                    divClasses="w-full"
+                                    label="Min Stock Level (Main Unit)"
+                                    type="number"
+                                    name="min_stock_level"
+                                    value={formData.min_stock_level}
+                                    onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
+                                    isMasked={false}
+                                    placeholder="Set min stock level"
+                                    required={true}
+                                    errorMessage={errorMessages?.min_stock_level}
+                                />
+
+                                <Input
+                                    divClasses="w-full"
+                                    label="Opening Stock Count (Sub Unit)"
+                                    type="number"
+                                    name="opening_stock"
+                                    value={formData.opening_stock?.toString()}
+                                    onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
+                                    isMasked={false}
+                                    placeholder="Enter Opening Stock Count"
+                                    required={true}
+                                    errorMessage={errorMessages?.opening_stock}
+                                />
+
+                                <div className="flex w-full flex-col items-center justify-between gap-3 md:flex-row">
+                                    <Input
+                                        divClasses="w-full"
+                                        label="Opening Per Sub Unit Price"
+                                        type="number"
+                                        name="opening_stock_unit_balance"
+                                        value={formData.opening_stock_unit_balance?.toString()}
+                                        onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
+                                        isMasked={false}
+                                        placeholder="Enter Opening Stock Unit Balance"
+                                        required={true}
+                                        errorMessage={errorMessages?.opening_stock_unit_balance}
+                                    />
+                                    <Input
+                                        divClasses="w-full"
+                                        label="Opening Stock Total Balance"
+                                        type="number"
+                                        name="opening_stock_total_balance"
+                                        value={formData.opening_stock_total_balance?.toString()}
+                                        onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
+                                        isMasked={false}
+                                        disabled={true}
+                                        placeholder="Enter Opening Stock Total Balance"
+                                        required={true}
+                                        // errorMessage={errorMessages?.opening_stock_total_balance}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </Tab.Panel>
+
+                    <Tab.Panel>
+                        <div>
+                            <Option
+                                divClasses="mb-5"
+                                label="Use Previous Item Accounting"
+                                type="checkbox"
+                                name="use_previous_accounting"
+                                value="1"
+                                defaultChecked={formData.use_previous_accounting}
+                                onChange={(e) => {
+                                    setFormData((prevFormData: any) => ({
+                                        ...prevFormData,
+                                        use_previous_accounting: e.target.checked ? 1 : 0
+                                    }));
+                                }}
+                            />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                    <h3 className="font-bold text-lg mb-5 border-b">Receivables</h3>
+                                    <div className="space-y-3">
+                                        {/*<Treeselect*/}
+                                        {/*    options={options}*/}
+                                        {/*    value={[4, 7, 8]}*/}
+                                        {/*    onInput={onInput}*/}
+                                        {/*/>*/}
+                                        {/*<AccountDropdowns*/}
+                                        {/*    formData={formData}*/}
+                                        {/*    setFormData={setFormData}*/}
+                                        {/*    accountNature="receivables"*/}
+                                        {/*/>*/}
+                                        {/*<Dropdown*/}
+                                        {/*    divClasses="w-full"*/}
+                                        {/*    label="Account Receivable"*/}
+                                        {/*    name="account_receivable_id"*/}
+                                        {/*    options={accountOptions}*/}
+                                        {/*    value={formData.account_receivable_id}*/}
+                                        {/*    customStyles={customStyles}*/}
+                                        {/*    onChange={(e) => handleChange('account_receivable_id', e, true)}*/}
+                                        {/*    required={true}*/}
+                                        {/*    errorMessage={errorMessages?.account_receivable_id}*/}
+                                        {/*/>*/}
+                                        <Dropdown
+                                            divClasses="w-full"
+                                            label="VAT Account Receivable"
+                                            name="vat_receivable_id"
+                                            options={unitOptions}
+                                            value={formData.account_receivable_id}
+                                            onChange={(e) => handleChange('account_receivable_id', e, true)}
+                                            required={true}
+                                            errorMessage={errorMessages?.account_receivable_id}
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-lg mb-5 border-b">Payable</h3>
+                                    <div className="space-y-3">
+                                        <Dropdown
+                                            divClasses="w-full"
+                                            label="Account Payable"
+                                            name="account_payable_id"
+                                            options={unitOptions}
+                                            value={formData.account_payable_id}
+                                            onChange={(e) => handleChange('account_payable_id', e, true)}
+                                            required={true}
+                                            errorMessage={errorMessages?.account_payable_id}
+                                        />
+                                        <Dropdown
+                                            divClasses="w-full"
+                                            label="VAT Account Payable"
+                                            name="vat_payable_id"
+                                            options={unitOptions}
+                                            value={formData.account_receivable_id}
+                                            onChange={(e) => handleChange('account_receivable_id', e, true)}
+                                            required={true}
+                                            errorMessage={errorMessages?.account_receivable_id}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </Tab.Panel>
+
+                </Tab.Panels>
+            </Tab.Group>
+
 
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
 

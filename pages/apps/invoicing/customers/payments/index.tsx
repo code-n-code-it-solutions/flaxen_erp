@@ -60,6 +60,11 @@ const Index = () => {
             minWidth: 150
         },
         {
+            headerName: 'Discount',
+            valueGetter: (params: any) => params.data.discount_amount.toFixed(2),
+            minWidth: 150
+        },
+        {
             headerName: 'Due',
             valueGetter: (params: any) => {
                 const dueAmount = params.data.customer_payment_details

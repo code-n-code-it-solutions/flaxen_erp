@@ -9,6 +9,7 @@ import Button from '@/components/Button';
 import { ButtonType, ButtonVariant } from '@/utils/enums';
 import { capitalize } from 'lodash';
 import { storeSaleInvoice } from '@/store/slices/saleInvoiceSlice';
+import { calculateDateFromDays } from '@/utils/helper';
 
 const InvoiceForm = () => {
     const dispatch = useAppDispatch();
@@ -23,36 +24,36 @@ const InvoiceForm = () => {
     const [contactPerson, setContactPerson] = useState<any>({});
     const [salesman, setSalesman] = useState<any>({});
     const [deliveryNoteItems, setDeliveryNoteItems] = useState<any[]>([]);
+    const [receivableAmount, setReceivableAmount] = useState<number>(0);
 
     const handleChange = (name: string, value: string, required: boolean) => {
-        if (required) {
-            if (value === '') {
-                setErrors({
-                    ...errors,
-                    [name]: 'This field is required'
-                });
-                return;
-            } else {
-                setErrors((err: any) => {
-                    delete err[name];
-                    return err;
-                });
-            }
-        }
-        if(name==='payment_terms') {
-            if(value !== '') {
-                setFormData({ ...formData, payment_terms: value, due_date: '' });
-                return;
-            }
+        if (required && value === '') {
+            setErrors({
+                ...errors,
+                [name]: 'This field is required'
+            });
+            return;
+        } else {
+            setErrors((err: any) => {
+                delete err[name];
+                return err;
+            });
         }
 
-        if(name==='due_date') {
-            if(value !== '') {
-                setFormData({ ...formData, due_date: value, payment_terms: '' });
-                return;
-            }
+        if (name === 'payment_terms') {
+            setFormData({ ...formData, due_date: calculateDateFromDays(parseInt(value)) });
+            return;
         }
-        setFormData({ ...formData, [name]: value });
+
+        if (name === 'discount_amount') {
+            setFormData({ ...formData, [name]: parseFloat(value) });
+        } else {
+            setFormData({ ...formData, [name]: value });
+        }
+
+        if (name === 'invoice_type' || name === 'discount_amount') {
+            recalculateReceivableAmount(deliveryNoteItems, parseFloat(formData.discount_amount || 0));
+        }
     };
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -66,14 +67,12 @@ const InvoiceForm = () => {
         setContentType('application/json');
         dispatch(generateCode('sale_invoice'));
         dispatch(pendingDeliveryNotes());
+        setFormData({ ...formData, discount_amount: 0 });
     }, []);
 
     useEffect(() => {
         if (code) {
-            setFormData({
-                ...formData,
-                sale_invoice_code: code['sale_invoice']
-            });
+            setFormData({ ...formData, sale_invoice_code: code['sale_invoice'] });
         }
     }, [code]);
 
@@ -86,6 +85,17 @@ const InvoiceForm = () => {
             })));
         }
     }, [deliveryNotes]);
+
+    useEffect(() => {
+        if (deliveryNoteItems.length > 0) {
+            recalculateReceivableAmount(deliveryNoteItems, parseFloat(formData.discount_amount || 0));
+        }
+    }, [deliveryNoteItems, formData.discount_amount]);
+
+    const recalculateReceivableAmount = (items: any[], discount: number) => {
+        const totalCost = items.reduce((acc: number, item: any) => acc + parseFloat(item.total_cost), 0);
+        setReceivableAmount(totalCost - discount);
+    };
 
     return (
         <form onSubmit={(e) => handleSubmit(e)}>
@@ -104,18 +114,17 @@ const InvoiceForm = () => {
                 <div className="w-full flex flex-col gap-3">
                     <h4 className="text-xl font-semibold text-gray-600 py-3">Invoice Details</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <span className="font-semibold text-gray-600">Customer Name: </span>
-                        <span>{customer.name}</span>
+                        <span className="font-semibold text-gray-600">Customer Code: </span>
+                        <span>{customer.customer_code}</span>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <span className="font-semibold text-gray-600">Contact Person Name: </span>
-                        <span>{contactPerson.name}</span>
+                        <span className="font-semibold text-gray-600">Customer Name: </span>
+                        <span>{customer.name}</span>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <span className="font-semibold text-gray-600">Salesman Name: </span>
                         <span>{salesman.name}</span>
                     </div>
-                    {/* eslint-disable-next-line react/jsx-no-undef */}
                     <Dropdown
                         divClasses="w-full"
                         label="Delivery Note"
@@ -124,13 +133,14 @@ const InvoiceForm = () => {
                         value={formData.delivery_note_ids}
                         onChange={(e) => {
                             if (e && typeof e !== 'undefined' && e.length > 0) {
-                                console.log(e);
                                 setFormData({
                                     ...formData,
                                     delivery_note_ids: e.map((item: any) => item.value).join(','),
                                     customer_id: e[0].delivery_note.delivery_note_items[0].quotation.customer_id,
                                     contact_person_id: e[0].delivery_note.delivery_note_items[0].quotation.contact_person_id,
-                                    salesman_id: e[0].delivery_note.delivery_note_items[0].quotation.salesman_id
+                                    salesman_id: e[0].delivery_note.delivery_note_items[0].quotation.salesman_id,
+                                    due_date: calculateDateFromDays(e[0].delivery_note.delivery_note_items[0].quotation.customer.due_in_days),
+                                    payment_terms: e[0].delivery_note.delivery_note_items[0].quotation.customer.due_in_days
                                 });
                                 setCustomer(e[0].delivery_note.delivery_note_items[0].quotation.customer);
                                 setContactPerson(e[0].delivery_note.delivery_note_items[0].quotation.contact_person);
@@ -142,62 +152,79 @@ const InvoiceForm = () => {
                                     delivery_note_ids: '',
                                     customer_id: '',
                                     contact_person_id: '',
-                                    salesman_id: ''
+                                    salesman_id: '',
+                                    payment_terms: '',
+                                    due_date: ''
                                 });
                                 setCustomer({});
                                 setContactPerson({});
                                 setSalesman({});
                                 setDeliveryNoteItems([]);
+                                setReceivableAmount(0);
                             }
                         }}
                         isMulti={true}
                     />
+                    <div className="flex gap-3  items-center">
+                        <h3 className="text-md">Receivable Amount: </h3>
+                        <h3 className="text-lg font-bold">{receivableAmount.toFixed(2)}</h3>
+                    </div>
                 </div>
                 <div className="w-full flex flex-col gap-3">
                     <h4 className="text-xl font-semibold text-gray-600 py-3">Invoice Params</h4>
-                    <Input
+                    <Dropdown
                         divClasses="w-full"
-                        label="Invoice Date"
-                        type="date"
-                        name="invoice_date"
-                        value={formData.invoice_date}
-                        onChange={(e) => handleChange('invoice_date', e[0] ? e[0].toLocaleDateString() : '', true)}
-                        placeholder="Enter Invoice Date"
-                        isMasked={false}
+                        label="Invoice Type"
+                        name="invoice_type"
+                        options={[
+                            { value: 'credit', label: 'Credit Invoice' },
+                            { value: 'cash', label: 'Cash Invoice' }
+                        ]}
+                        value={formData.invoice_type}
+                        onChange={(e) => handleChange('invoice_type', e.value, true)}
                     />
                     <Input
                         divClasses="w-full"
-                        label="Payment Reference (optional)"
+                        label="PO # (optional)"
                         type="text"
-                        name="payment_reference"
+                        name="po_number"
                         value={formData.payment_refernce}
                         onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
-                        placeholder="Enter Payment Reference"
+                        placeholder="Enter Purchase Order number"
                         isMasked={false}
                     />
-                    <div className="flex flex-col gap-3 md:flex-row justify-between items-end">
+
+                    {formData.invoice_type === 'cash' && (
                         <Input
                             divClasses="w-full"
-                            label="Due Date"
-                            type="date"
-                            name="due_date"
-                            value={formData.due_date}
-                            onChange={(e) => handleChange('due_date', e[0] ? e[0].toLocaleDateString() : '', true)}
-                            placeholder="Enter Due Date"
-                            isMasked={false}
-                        />
-                        <span className="w-full text-center">OR</span>
-                        <Input
-                            divClasses="w-full"
-                            label="Payment Terms (Days)"
+                            label="Discount"
                             type="number"
-                            name="payment_terms"
-                            value={formData.payment_terms}
+                            name="discount_amount"
+                            value={formData.discount_amount}
                             onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
-                            placeholder="Enter Payment Terms"
+                            placeholder="Enter Discount Amount"
                             isMasked={false}
                         />
-                    </div>
+                    )}
+
+                    {formData.invoice_type === 'credit' && (
+                        <>
+                            <Input
+                                divClasses="w-full"
+                                label="Internal Document # (optional)"
+                                type="text"
+                                name="internal_document_no"
+                                value={formData.internal_document_no}
+                                onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
+                                placeholder="Enter Internal Document"
+                                isMasked={false}
+                            />
+                            <div className="flex flex-col gap-3 justify-start items-start">
+                                <span><strong>Payment Terms (Days):</strong> {formData.payment_terms}</span>
+                                <span><strong>Due Date:</strong> {formData.due_date}</span>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
 
@@ -217,51 +244,49 @@ const InvoiceForm = () => {
                     </tr>
                     </thead>
                     <tbody>
-                    {deliveryNoteItems.length > 0
-                        ? (deliveryNoteItems.map((item: any, index: number) => (
-                                <tr key={index}>
-                                    <td>{item.product_assembly.formula_name}</td>
-                                    <td>{item.product.title}</td>
-                                    <td>{item.capacity}</td>
-                                    <td>{item.delivered_quantity}</td>
-                                    <td>{item.retail_price}</td>
-                                    <td>
-                                        {(parseFloat(item.delivered_quantity) * parseFloat(item.retail_price)).toFixed(2)}
-                                    </td>
-                                    <td>
-                                        {item.tax_category
-                                            ? (
-                                                <div className="flex flex-col">
-                                                    <span><strong>Tax: </strong>{item.tax_category.name} ({item.tax_rate}%)</span>
-                                                    <span><strong>Amount: </strong>{item.tax_amount.toFixed(2)}</span>
-                                                </div>
-                                            ) : (
-                                                <span>N/A</span>
-                                            )}
-                                    </td>
-                                    <td>
-                                        {item.discount_type
-                                            ? (
-                                                <div className="flex flex-col">
-                                                    <span><strong>Type: </strong>{capitalize(item.discount_type)}</span>
-                                                    <span><strong>Rate: </strong>
-                                                        {item.discount_amount_rate.toFixed(2)}{item.discount_type === 'percentage' ? '%' : ''}
-                                                    </span>
-                                                </div>
-                                            ) : (
-                                                <span>N/A</span>
-                                            )}
-                                    </td>
-                                    <td className="text-center">
-                                        {item.total_cost.toFixed(2)}
-                                    </td>
-                                </tr>
-                            ))
-                        ) : (
-                            <tr>
-                                <td colSpan={9} className="text-center">No items found</td>
+                    {deliveryNoteItems.length > 0 ? (
+                        deliveryNoteItems.map((item: any, index: number) => (
+                            <tr key={index}>
+                                <td>{item.product_assembly.formula_name}</td>
+                                <td>{item.product.title}</td>
+                                <td>{item.capacity}</td>
+                                <td>{item.delivered_quantity}</td>
+                                <td>{item.retail_price}</td>
+                                <td>
+                                    {(parseFloat(item.delivered_quantity) * parseFloat(item.retail_price)).toFixed(2)}
+                                </td>
+                                <td>
+                                    {item.tax_category ? (
+                                        <div className="flex flex-col">
+                                            <span><strong>Tax: </strong>{item.tax_category.name} ({item.tax_rate}%)</span>
+                                            <span><strong>Amount: </strong>{item.tax_amount.toFixed(2)}</span>
+                                        </div>
+                                    ) : (
+                                        <span>N/A</span>
+                                    )}
+                                </td>
+                                <td>
+                                    {item.discount_type ? (
+                                        <div className="flex flex-col">
+                                            <span><strong>Type: </strong>{capitalize(item.discount_type)}</span>
+                                            <span><strong>Rate: </strong>
+                                                {item.discount_amount_rate.toFixed(2)}{item.discount_type === 'percentage' ? '%' : ''}
+                                            </span>
+                                        </div>
+                                    ) : (
+                                        <span>N/A</span>
+                                    )}
+                                </td>
+                                <td className="text-center">
+                                    {item.total_cost.toFixed(2)}
+                                </td>
                             </tr>
-                        )}
+                        ))
+                    ) : (
+                        <tr>
+                            <td colSpan={9} className="text-center">No items found</td>
+                        </tr>
+                    )}
                     </tbody>
                     <tfoot>
                     <tr>

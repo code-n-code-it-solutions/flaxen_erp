@@ -12,10 +12,14 @@ import { setAuthToken } from '@/configs/api.config';
 import { getIcon } from '@/utils/helper';
 import { IconType } from '@/utils/enums';
 import IconCaretDown from '@/components/Icon/IconCaretDown';
+import useOS from '@/hooks/useOS';
+import { CommandIcon } from 'lucide-react';
+import PluginSearchModal from '@/components/modals/PluginSearchModal';
 
 const Header = ({ menus }: { menus: any[] }) => {
     const router = useRouter();
     const dispatch = useAppDispatch();
+    const os = useOS();
     const { t, i18n } = useTranslation();
     const { activeMenu } = useAppSelector((state) => state.menu);
     const { isLoggedIn, token, user } = useAppSelector((state) => state.user);
@@ -23,6 +27,7 @@ const Header = ({ menus }: { menus: any[] }) => {
     const isRtl = useAppSelector((state) => state.themeConfig.rtlClass) === 'rtl';
     const themeConfig = useAppSelector((state) => state.themeConfig);
     const [flag, setFlag] = useState('');
+    const [searchModalOpen, setSearchModalOpen] = useState<boolean>(false);
     // console.log(router);
     const [notifications, setNotifications] = useState([
         {
@@ -56,6 +61,21 @@ const Header = ({ menus }: { menus: any[] }) => {
         setNotifications(notifications.filter((user) => user.id !== value));
     };
 
+    useEffect(() => {
+        const handleKeydown = (event: KeyboardEvent) => {
+            if ((event.ctrlKey && event.key === 'k') || (event.metaKey && event.key === 'k')) {
+                event.preventDefault();
+                setSearchModalOpen(true);
+            }
+        };
+
+        window.addEventListener('keydown', handleKeydown);
+
+        return () => {
+            window.removeEventListener('keydown', handleKeydown);
+        };
+    }, []);
+
     const [search, setSearch] = useState(false);
     return (
         <header className={themeConfig.semidark && themeConfig.menu === 'horizontal' ? 'dark' : ''}>
@@ -69,7 +89,7 @@ const Header = ({ menus }: { menus: any[] }) => {
                                 className="hidden align-middle text-2xl font-semibold transition-all duration-300 ltr:ml-1.5 rtl:mr-1.5 dark:text-white-light md:inline">
                                 <div className="flex items-center gap-1">
                                     {getIcon(IconType.back)}
-                                    {selectedPlugin?.plugin?.name || 'App'}
+                                    {selectedPlugin?.name || 'App'}
                                 </div>
                             </span>
                         </Link>
@@ -95,79 +115,77 @@ const Header = ({ menus }: { menus: any[] }) => {
                             <ul className="top-nav horizontal-menu lg:flex hidden py-1.5 px-6 dark:text-white-light font-semibold text-black rtl:space-x-reverse lg:space-x-1.5 xl:space-x-8">
                                 {menus && menus.map((menu: any, index: number) => (
                                     // menu.actions.length > 0 && (
-                                        menu.children.length > 0
-                                            ? (
-                                                <li className="menu nav-item relative" key={index}>
-                                                    <button type="button" className="nav-link">
-                                                        <span className="px-1">{t(menu.translation_key)}</span>
-                                                        <div className="right_arrow">
-                                                            <IconCaretDown />
-                                                        </div>
-                                                    </button>
-                                                    <ul className="sub-menu">
-                                                        {menu.children.map((child: any, childIndex: number) => (
-                                                            // child.actions.length > 0 && (
-                                                                child.children.length > 0
-                                                                    ? (
-                                                                        <li className="relative" key={childIndex}>
-                                                                            <button type="button">
-                                                                                {t(child.translation_key)}
-                                                                                <div
-                                                                                    className="-rotate-90 ltr:ml-auto rtl:mr-auto rtl:rotate-90">
-                                                                                    <IconCaretDown />
-                                                                                </div>
-                                                                            </button>
-                                                                            <ul className="absolute top-0 z-[10] hidden min-w-[180px] rounded bg-white p-0 py-2 text-dark shadow ltr:left-[95%] rtl:right-[95%] dark:bg-[#1b2e4b] dark:text-white-dark">
-                                                                                {child.children.map((subChild: any, subChildIndex: number) => (
-                                                                                    // subChild.actions.length > 0 && (
-                                                                                        <li key={subChildIndex}
-                                                                                            onClick={() => dispatch(setActiveMenu(subChild))}>
-                                                                                            <Link
-                                                                                                href={subChild.route || ''}>{t(subChild.translation_key)}</Link>
-                                                                                        </li>
-                                                                                    // )
-                                                                                ))}
-                                                                            </ul>
-                                                                        </li>
-                                                                    ) : (
-                                                                        <li key={childIndex}
-                                                                            onClick={() => dispatch(setActiveMenu(child))}>
-                                                                            <Link
-                                                                                href={child.route || ''}>{t(child.translation_key)}</Link>
-                                                                        </li>
-                                                                    )
-                                                            // )
-                                                        ))}
-                                                    </ul>
-                                                </li>
-                                            ) : (
-                                                <li className="menu nav-item" key={index}
-                                                    onClick={() => dispatch(setActiveMenu(menu))}>
-                                                    <Link href={menu.route || ''} className="nav-link">
-                                                        <span className="px-1">{t(menu.translation_key)}</span>
-                                                    </Link>
-                                                </li>
-                                            )
+                                    menu.children.length > 0
+                                        ? (
+                                            <li className="menu nav-item relative" key={index}>
+                                                <button type="button" className="nav-link">
+                                                    <span className="px-1">{t(menu.translation_key)}</span>
+                                                    <div className="right_arrow">
+                                                        <IconCaretDown />
+                                                    </div>
+                                                </button>
+                                                <ul className="sub-menu">
+                                                    {menu.children.map((child: any, childIndex: number) => (
+                                                        // child.actions.length > 0 && (
+                                                        child.children.length > 0
+                                                            ? (
+                                                                <li className="relative" key={childIndex}>
+                                                                    <button type="button">
+                                                                        {t(child.translation_key)}
+                                                                        <div
+                                                                            className="-rotate-90 ltr:ml-auto rtl:mr-auto rtl:rotate-90">
+                                                                            <IconCaretDown />
+                                                                        </div>
+                                                                    </button>
+                                                                    <ul className="absolute top-0 z-[10] hidden min-w-[180px] rounded bg-white p-0 py-2 text-dark shadow ltr:left-[95%] rtl:right-[95%] dark:bg-[#1b2e4b] dark:text-white-dark">
+                                                                        {child.children.map((subChild: any, subChildIndex: number) => (
+                                                                            // subChild.actions.length > 0 && (
+                                                                            <li key={subChildIndex}
+                                                                                onClick={() => dispatch(setActiveMenu(subChild))}>
+                                                                                <Link
+                                                                                    href={subChild.route || ''}>{t(subChild.translation_key)}</Link>
+                                                                            </li>
+                                                                            // )
+                                                                        ))}
+                                                                    </ul>
+                                                                </li>
+                                                            ) : (
+                                                                <li key={childIndex}
+                                                                    onClick={() => dispatch(setActiveMenu(child))}>
+                                                                    <Link
+                                                                        href={child.route || ''}>{t(child.translation_key)}</Link>
+                                                                </li>
+                                                            )
+                                                        // )
+                                                    ))}
+                                                </ul>
+                                            </li>
+                                        ) : (
+                                            <li className="menu nav-item" key={index}
+                                                onClick={() => dispatch(setActiveMenu(menu))}>
+                                                <Link href={menu.route || ''} className="nav-link">
+                                                    <span className="px-1">{t(menu.translation_key)}</span>
+                                                </Link>
+                                            </li>
+                                        )
                                     // )
                                 ))}
                             </ul>
                         </div>
                         <div>
-                            <Link href="/workspace/apps/chat"
-                                  className="block rounded-full bg-white-light/40 p-2 hover:bg-white-light/90 hover:text-primary dark:bg-dark/40 dark:hover:bg-dark/60">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                                     xmlns="http://www.w3.org/2000/svg">
-                                    <circle r="3" transform="matrix(-1 0 0 1 19 5)" stroke="currentColor"
-                                            strokeWidth="1.5" />
-                                    <path
-                                        opacity="0.5"
-                                        d="M14 2.20004C13.3538 2.06886 12.6849 2 12 2C6.47715 2 2 6.47715 2 12C2 13.5997 2.37562 15.1116 3.04346 16.4525C3.22094 16.8088 3.28001 17.2161 3.17712 17.6006L2.58151 19.8267C2.32295 20.793 3.20701 21.677 4.17335 21.4185L6.39939 20.8229C6.78393 20.72 7.19121 20.7791 7.54753 20.9565C8.88837 21.6244 10.4003 22 12 22C17.5228 22 22 17.5228 22 12C22 11.3151 21.9311 10.6462 21.8 10"
-                                        stroke="currentColor"
-                                        strokeWidth="1.5"
-                                        strokeLinecap="round"
-                                    />
-                                </svg>
-                            </Link>
+                            <div
+                                className="px-2 py-1 rounded bg-gray-300 dark:bg-slate-500 flex gap-1 justify-center font-bold text-lg items-center shadow cursor-pointer"
+                                onClick={() => setSearchModalOpen(true)}>
+                                {os === 'mac'
+                                    ? (
+                                        <CommandIcon size={18} />
+                                    ) : os === 'window' ? (
+                                        <span>CTRL</span>
+                                    ) : (
+                                        <span>CTRL</span>
+                                    )}
+                                <span>K</span>
+                            </div>
                         </div>
                         <div>
                             {themeConfig.theme === 'light' ? (
@@ -346,6 +364,10 @@ const Header = ({ menus }: { menus: any[] }) => {
                     </div>
                 </div>
             </div>
+            <PluginSearchModal
+                modalOpen={searchModalOpen}
+                setModalOpen={setSearchModalOpen}
+            />
         </header>
     );
 };

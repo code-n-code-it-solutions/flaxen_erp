@@ -12,6 +12,9 @@ import { Dropdown } from '@/components/form/Dropdown';
 import { getCustomers } from '@/store/slices/customerSlice';
 import { getPaymentMethods } from '@/store/slices/paymentMethodSlice';
 import { storeCustomerPayment } from '@/store/slices/customerPayment';
+import { PlusCircleIcon } from 'lucide-react';
+import BankDetailModal from '@/components/modals/BankDetailModal';
+import { getAccountsByCustomer, storeBankAccount } from '@/store/slices/bankAccountSlice';
 
 const PaymentForm = () => {
     const dispatch = useAppDispatch();
@@ -20,6 +23,7 @@ const PaymentForm = () => {
     const { saleInvoices } = useAppSelector((state) => state.saleInvoice);
     const { customers } = useAppSelector((state) => state.customer);
     const { paymentMethods } = useAppSelector((state) => state.paymentMethod);
+    const { bankAccounts, bankAccount, success } = useAppSelector((state) => state.bankAccount);
 
     const [formData, setFormData] = useState<any>({});
     const [errors, setErrors] = useState<any>({});
@@ -27,23 +31,33 @@ const PaymentForm = () => {
     const [customerOptions, setCustomerOptions] = useState<any[]>([]);
     const [paymentMethodOptions, setPaymentMethodOptions] = useState<any[]>([]);
     const [invoices, setInvoices] = useState<any[]>([]);
+    const [bankAccountOptions, setBankAccountOptions] = useState<any[]>([]);
+    const [bankAccountModal, setBankAccountModal] = useState<boolean>(false);
+    const [receivableAmount, setReceivableAmount] = useState<number>(0);
 
     const handleChange = (name: string, value: any, required: boolean) => {
-        if (required) {
-            if (value === '') {
-                setErrors({
-                    ...errors,
-                    [name]: 'This field is required'
-                });
-                return;
-            } else {
-                setErrors((err: any) => {
-                    delete err[name];
-                    return err;
-                });
-            }
+        if (required && value === '') {
+            setErrors({
+                ...errors,
+                [name]: 'This field is required'
+            });
+            return;
+        } else {
+            setErrors((err: any) => {
+                delete err[name];
+                return err;
+            });
         }
-        setFormData({ ...formData, [name]: value });
+
+        if (name === 'discount_amount') {
+            setFormData({ ...formData, [name]: parseFloat(value) });
+        } else {
+            setFormData({ ...formData, [name]: value });
+        }
+
+        if (name === 'discount_amount') {
+            recalculateReceivableAmount(invoices, parseFloat(value || 0));
+        }
     };
 
     const handleSetInvoiceList = (invoices: any) => {
@@ -60,11 +74,10 @@ const PaymentForm = () => {
                 due_date: invoice.due_date,
                 payment_terms: invoice.payment_terms,
                 total_amount: totalAmount,
-                due_amount: invoice.customer_payments.length > 0 ? (totalAmount - invoice.customer_payments.reduce((acc: number, item: any) => acc + parseFloat(item.received_amount), 0)) : totalAmount,
-                paid_amount: 0
+                due_amount: invoice.customer_payments?.length > 0 ? (totalAmount - invoice.customer_payments.reduce((acc: number, item: any) => acc + parseFloat(item.received_amount), 0)) : totalAmount,
+                received_amount: 0
             };
         }));
-        console.log(invoices);
     };
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -74,10 +87,19 @@ const PaymentForm = () => {
             customer_payment_details: invoices.map((invoice: any) => ({
                 sale_invoice_id: invoice.id,
                 due_amount: invoice.due_amount,
-                received_amount: invoice.paid_amount
+                received_amount: invoice.received_amount
             }))
         };
         dispatch(storeCustomerPayment(finalData));
+    };
+
+    const handleAddAccount = (value: any) => {
+        let finalData = {
+            ...value,
+            account_of: 2,
+            account_of_id: formData.customer_id
+        };
+        dispatch(storeBankAccount(finalData));
     };
 
     useEffect(() => {
@@ -99,12 +121,6 @@ const PaymentForm = () => {
 
     useEffect(() => {
         if (saleInvoices) {
-            // setPendingInvoiceOptions(saleInvoices.map((invoice: any) => ({
-            //     value: invoice.id,
-            //     label: invoice.sale_invoice_code,
-            //     invoice
-            // })));
-            console.log(saleInvoices);
             handleSetInvoiceList(saleInvoices.map((invoice: any) => invoice));
         }
     }, [saleInvoices]);
@@ -128,8 +144,31 @@ const PaymentForm = () => {
     }, [paymentMethods]);
 
     useEffect(() => {
-        console.log(invoices);
-    }, [invoices]);
+        if (bankAccounts) {
+            setBankAccountOptions(bankAccounts.map((account: any) => ({
+                value: account.id,
+                label: account.account_number + ' (' + account.bank.name + ')'
+            })));
+        }
+    }, [bankAccounts]);
+
+    useEffect(() => {
+        if (bankAccount && success) {
+            setBankAccountModal(false);
+            dispatch(getAccountsByCustomer(formData.customer_id));
+        }
+    }, [bankAccount, success]);
+
+    useEffect(() => {
+        if (invoices.length > 0) {
+            recalculateReceivableAmount(invoices, parseFloat(formData.discount_amount || 0));
+        }
+    }, [invoices, formData.discount_amount]);
+
+    const recalculateReceivableAmount = (items: any[], discount: number) => {
+        const totalCost = items.reduce((acc: number, item: any) => acc + parseFloat(item.total_amount), 0);
+        setReceivableAmount(totalCost - discount);
+    };
 
     return (
         <form onSubmit={(e) => handleSubmit(e)}>
@@ -191,21 +230,6 @@ const PaymentForm = () => {
                         }}
                     />
 
-                    {/*<Dropdown*/}
-                    {/*    label="Pending Invoices"*/}
-                    {/*    name="sale_invoice_ids"*/}
-                    {/*    value={formData.sale_invoice_ids}*/}
-                    {/*    options={pendingInvoiceOptions}*/}
-                    {/*    isMulti={true}*/}
-                    {/*    onChange={(e) => {*/}
-                    {/*        if (e && e.length > 0 && typeof e !== 'undefined') {*/}
-                    {/*            handleChange('sale_invoice_ids', e.map((invoice: any) => invoice.value).join(','), false);*/}
-                    {/*            handleSetInvoiceList(e.map((invoice: any) => invoice.invoice));*/}
-                    {/*        } else {*/}
-                    {/*            handleChange('sale_invoice_ids', '', false);*/}
-                    {/*        }*/}
-                    {/*    }}*/}
-                    {/*/>*/}
                     <Dropdown
                         label="Payment Method"
                         name="payment_method_id"
@@ -213,12 +237,108 @@ const PaymentForm = () => {
                         options={paymentMethodOptions}
                         onChange={(e) => {
                             if (e && typeof e !== 'undefined') {
+                                if (e.value === 2) {
+                                    dispatch(getAccountsByCustomer(formData.customer_id));
+                                }
                                 handleChange('payment_method_id', e.value, true);
                             } else {
                                 handleChange('payment_method_id', '', true);
                             }
                         }}
                     />
+
+                    {formData.customer_id !== '' ?
+                        (formData.payment_method_id === 2 && (
+                            <>
+                                <div className="flex flex-col md:flex-row gap-3">
+                                    <div className="flex items-end gap-1 w-full">
+                                        <Dropdown
+                                            divClasses="w-full"
+                                            label="Bank Accounts"
+                                            name="bank_account_id"
+                                            value={formData.bank_account_id}
+                                            options={bankAccountOptions}
+                                            onChange={(e) => {
+                                                if (e && typeof e !== 'undefined') {
+                                                    handleChange('bank_account_id', e.value, true);
+                                                } else {
+                                                    handleChange('bank_account_id', '', true);
+                                                }
+                                            }}
+                                        />
+                                        <Button
+                                            type={ButtonType.button}
+                                            text={<PlusCircleIcon size={18} />}
+                                            variant={ButtonVariant.primary}
+                                            onClick={() => setBankAccountModal(true)}
+                                        />
+                                    </div>
+
+                                    <Dropdown
+                                        divClasses="w-full"
+                                        label="Bank Options"
+                                        name="bank_option"
+                                        value={formData.bank_option}
+                                        options={[
+                                            { value: 'Bank Transfer', label: 'Bank Transfer' },
+                                            { value: 'Cheque', label: 'Cheque' },
+                                            { value: 'Credit Card', label: 'Credit Card' }
+                                        ]}
+                                        onChange={(e) => {
+                                            if (e && typeof e !== 'undefined') {
+                                                handleChange('bank_option', e.value, true);
+                                            } else {
+                                                handleChange('bank_option', '', true);
+                                            }
+                                        }}
+                                    />
+
+                                    {(formData.bank_option === 'Cheque' || formData.bank_option === 'Credit Card') && (
+                                        <Input
+                                            divClasses="w-full"
+                                            label="Cheque No/Credit Card Number"
+                                            type="text"
+                                            name="cheque_card_no"
+                                            value={formData.cheque_card_no}
+                                            onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
+                                            placeholder="Enter Card or Cheque Number"
+                                            isMasked={false}
+                                        />
+                                    )}
+                                </div>
+                                {formData.bank_option === 'Cheque' && (
+                                    <div className="flex md:items-end flex-col md:flex-row gap-3">
+                                        <Dropdown
+                                            label="Is PDC"
+                                            name="is_pdc"
+                                            value={formData.is_pdc}
+                                            options={[
+                                                { value: 1, label: 'Yes' },
+                                                { value: 0, label: 'No' },
+                                            ]}
+                                            onChange={(e) => {
+                                                if (e && typeof e !== 'undefined') {
+                                                    handleChange('is_pdc', e.value, false);
+                                                } else {
+                                                    handleChange('is_pdc', '', false);
+                                                }
+                                            }}
+                                        />
+                                        {formData.is_pdc === 1 && (
+                                            <Input
+                                                label="PDC Date"
+                                                type="date"
+                                                name="pdc_date"
+                                                value={formData.pdc_date}
+                                                onChange={(e) => handleChange('pdc_date', e[0] ? e[0].toLocaleDateString() : '', true)}
+                                                placeholder="Enter PDC Date"
+                                                isMasked={false}
+                                            />
+                                        )}
+                                    </div>
+                                )}
+                            </>
+                        )) : (<></>)}
                 </div>
                 <div className="w-full flex flex-col gap-3">
                     <Input
@@ -243,6 +363,16 @@ const PaymentForm = () => {
                         isMasked={false}
                     />
 
+                    <Input
+                        divClasses="w-full"
+                        label="Discount Amount"
+                        type="number"
+                        name="discount_amount"
+                        value={formData.discount_amount}
+                        onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
+                        placeholder="Enter Discount Amount"
+                        isMasked={false}
+                    />
                 </div>
             </div>
 
@@ -256,7 +386,7 @@ const PaymentForm = () => {
                         <th>Due Date/Terms</th>
                         <th>Total Amount</th>
                         <th>Due Amount</th>
-                        <th>Paid Amount</th>
+                        <th>Received Amount</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -272,19 +402,19 @@ const PaymentForm = () => {
                                 <Input
                                     divClasses="w-full"
                                     type="number"
-                                    name={`invoices[${index}][paid_amount]`}
-                                    value={invoice.paid_amount}
+                                    name={`invoices[${index}][received_amount]`}
+                                    value={invoice.received_amount}
                                     onChange={(e) => {
-                                        const paidAmount = parseFloat(e.target.value);
-                                        if (paidAmount > invoice.due_amount) {
+                                        const receivedAmount = parseFloat(e.target.value);
+                                        if (receivedAmount > invoice.due_amount) {
                                             setErrors({
                                                 ...errors,
-                                                [`invoices[${index}][paid_amount]`]: 'Paid amount cannot exceed due amount'
+                                                [`invoices[${index}][received_amount]`]: 'Received amount cannot exceed due amount'
                                             });
                                         } else {
                                             setErrors((prevErrors: any) => {
                                                 const {
-                                                    [`invoices[${index}][paid_amount]`]: removedError,
+                                                    [`invoices[${index}][received_amount]`]: removedError,
                                                     ...restErrors
                                                 } = prevErrors;
                                                 return restErrors;
@@ -295,19 +425,19 @@ const PaymentForm = () => {
                                                 if (i === index) {
                                                     return {
                                                         ...inv,
-                                                        paid_amount: paidAmount > invoice.due_amount ? invoice.due_amount : paidAmount
+                                                        received_amount: receivedAmount > invoice.due_amount ? invoice.due_amount : receivedAmount
                                                     };
                                                 }
                                                 return inv;
                                             });
                                         });
                                     }}
-                                    placeholder="Enter Paid Amount"
+                                    placeholder="Enter Received Amount"
                                     isMasked={false}
                                 />
-                                {errors[`invoices[${index}][paid_amount]`] && (
+                                {errors[`invoices[${index}][received_amount]`] && (
                                     <div
-                                        className="text-red-500 text-xs">{errors[`invoices[${index}][paid_amount]`]}</div>
+                                        className="text-red-500 text-xs">{errors[`invoices[${index}][received_amount]`]}</div>
                                 )}
                             </td>
                         </tr>
@@ -315,13 +445,23 @@ const PaymentForm = () => {
                     </tbody>
                 </table>
             </div>
-            <div className="flex justify-center items-center mt-3">
+            <div className="flex justify-between items-center mt-3">
+                <div className="flex gap-3 items-center">
+                    <h3 className="text-md">Receivable Amount: </h3>
+                    <h3 className="text-lg font-bold">{receivableAmount.toFixed(2)}</h3>
+                </div>
                 <Button
                     type={ButtonType.submit}
                     text="Confirm Payment"
                     variant={ButtonVariant.primary}
                 />
             </div>
+            <BankDetailModal
+                modalOpen={bankAccountModal}
+                setModalOpen={setBankAccountModal}
+                handleSubmit={(value) => handleAddAccount(value)}
+                title="New Account"
+            />
         </form>
     );
 };

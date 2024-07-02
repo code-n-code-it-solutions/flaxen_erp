@@ -8,6 +8,7 @@ import { useAppDispatch, useAppSelector } from '@/store';
 import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import { useRouter } from 'next/router';
 import BillForm from '@/pages/apps/invoicing/vendors/bills/BillForm';
+import { clearVendorBillState } from '@/store/slices/vendorBillSlice';
 
 const Create = () => {
     useSetActiveMenu(AppBasePath.Vendor_Bill)
@@ -18,6 +19,7 @@ const Create = () => {
 
     useEffect(() => {
         dispatch(setPageTitle('New Bill'));
+        dispatch(clearVendorBillState());
     }, []);
 
     useEffect(() => {

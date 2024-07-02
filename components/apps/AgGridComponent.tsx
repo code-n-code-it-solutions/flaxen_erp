@@ -9,6 +9,7 @@ import { MenuModule } from '@ag-grid-enterprise/menu';
 import { SetFilterModule } from '@ag-grid-enterprise/set-filter';
 import { MasterDetailModule } from "@ag-grid-enterprise/master-detail";
 import { RangeSelectionModule } from "@ag-grid-enterprise/range-selection";
+import { RowGroupingModule } from "@ag-grid-enterprise/row-grouping";
 
 ModuleRegistry.registerModules([
     ClientSideRowModelModule,
@@ -17,7 +18,8 @@ ModuleRegistry.registerModules([
     MenuModule,
     SetFilterModule,
     MasterDetailModule,
-    RangeSelectionModule
+    RangeSelectionModule,
+    RowGroupingModule
 ]);
 
 interface IProps {
@@ -35,6 +37,8 @@ interface IProps {
     autoGroupColumnDef?: any;
     onFirstDataRendered?: (params: any) => void;
     gridRef?: any;
+    grandTotalRow?: any;
+    pinnedBottomRowData?: any;
 }
 
 const AgGridComponent = ({
@@ -51,7 +55,9 @@ const AgGridComponent = ({
                              detailCellRendererParams,
                              autoGroupColumnDef,
                              onFirstDataRendered,
-                             gridRef
+                             gridRef,
+                             grandTotalRow,
+                             pinnedBottomRowData
                          }: IProps) => {
 
     const themeConfig = useAppSelector((state) => state.themeConfig);
@@ -145,6 +151,8 @@ const AgGridComponent = ({
                 autoGroupColumnDef={autoGroupColumnDef}
                 onFirstDataRendered={onFirstDataRendered}
                 sideBar={'filters'}
+                grandTotalRow={grandTotalRow}
+                pinnedBottomRowData={pinnedBottomRowData}
             />
         </div>
     );

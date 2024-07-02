@@ -12,6 +12,8 @@ import { checkPermission } from '@/utils/helper';
 import { ActionList, AppBasePath } from '@/utils/enums';
 import useSetActiveMenu from '@/hooks/useSetActiveMenu';
 import { getSaleInvoices } from '@/store/slices/saleInvoiceSlice';
+import { getVendors } from '@/store/slices/vendorSlice';
+import { clearVendorBillState, getVendorBills } from '@/store/slices/vendorBillSlice';
 
 const Index = () => {
     useSetActiveMenu(AppBasePath.Vendor_Bill);
@@ -40,13 +42,8 @@ const Index = () => {
             minWidth: 150
         },
         {
-            headerName: 'Representative',
-            field: 'vendor_representative.name',
-            minWidth: 150
-        },
-        {
             headerName: 'Bill Ref',
-            field: 'reference_no',
+            field: 'bill_reference',
             minWidth: 150
         },
         {
@@ -62,11 +59,10 @@ const Index = () => {
         {
             headerName: 'Bill Amount',
             valueGetter: (params: any) => {
-                return ''
-                // return params.data.delivery_note_sale_invoices
-                //     .flatMap((invoice: any) => invoice.delivery_note.delivery_note_items)
-                //     .map((item: any) => parseFloat(item.total_cost))
-                //     .reduce((a: number, b: number) => a + b, 0).toFixed(2);
+                return params.data.good_receive_note_vendor_bill
+                    .flatMap((invoice: any) => invoice.good_receive_note.raw_products)
+                    .map((item: any) => parseFloat(item.total_price))
+                    .reduce((a: number, b: number) => a + b, 0).toFixed(2);
             },
             minWidth: 150
         },
@@ -81,7 +77,8 @@ const Index = () => {
         dispatch(setPageTitle('Bills'));
         setAuthToken(token);
         setContentType('application/json');
-        dispatch(getSaleInvoices());
+        dispatch(getVendorBills());
+        dispatch(clearVendorBillState());
     }, []);
 
     return (

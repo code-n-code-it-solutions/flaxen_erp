@@ -17,6 +17,7 @@ import { ButtonSize, ButtonType, ButtonVariant } from '@/utils/enums';
 import { Input } from '@/components/form/Input';
 import Link from 'next/link';
 import { uniqBy } from 'lodash';
+import { EyeIcon } from 'lucide-react';
 
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
@@ -89,20 +90,31 @@ const Detail = () => {
             field: 'actions',
             cellRenderer: (param: any) => {
                 return (
-                    <Button
-                        type={ButtonType.button}
-                        text="Go ERP"
-                        variant={ButtonVariant.primary}
-                        size={ButtonSize.small}
-                        onClick={() => {
-                            dispatch(setSelectedCompany({
-                                id: companyDetail?.id,
-                                name: companyDetail?.name
-                            }));
-                            dispatch(setSelectedBranch(param.data));
-                            router.push('/erp/main');
-                        }}
-                    />
+                    <div className="flex gap-1">
+                        <Button
+                            tooltip="ERP"
+                            type={ButtonType.button}
+                            text="Go ERP"
+                            variant={ButtonVariant.primary}
+                            size={ButtonSize.small}
+                            onClick={() => {
+                                dispatch(setSelectedCompany({
+                                    id: companyDetail?.id,
+                                    name: companyDetail?.name
+                                }));
+                                dispatch(setSelectedBranch(param.data));
+                                router.push('/erp/main');
+                            }}
+                        />
+                        <Button
+                            tooltip="Details"
+                            type={ButtonType.link}
+                            text={<EyeIcon size={18} />}
+                            variant={ButtonVariant.info}
+                            size={ButtonSize.small}
+                            link={'/workspace/companies/branch/detail/' + param.data.id}
+                        />
+                    </div>
                 );
             }
         }

@@ -1,7 +1,7 @@
-import React, {FC} from 'react';
+import React, { FC } from 'react';
 import Flatpickr from 'react-flatpickr';
 import 'flatpickr/dist/flatpickr.css';
-import MaskedInput from "react-text-mask";
+import MaskedInput from 'react-text-mask';
 
 interface IProps {
     divClasses?: string;
@@ -64,7 +64,7 @@ export const Input: FC<IProps> = ({
                 />
                 : type === 'date'
                     ? <Flatpickr
-                        value={value}
+                        value={value ? new Date(value) : new Date()}
                         placeholder={placeholder}
                         options={{
                             dateFormat: 'Y-m-d'
@@ -77,7 +77,7 @@ export const Input: FC<IProps> = ({
                             options={{
                                 noCalendar: true,
                                 enableTime: true,
-                                dateFormat: 'h:i K',
+                                dateFormat: 'h:i K'
                             }}
                             placeholder={placeholder}
                             defaultValue={value}

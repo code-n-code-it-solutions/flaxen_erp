@@ -93,6 +93,20 @@ export const getPendingSaleInvoices = createAsyncThunk(
     }
 );
 
+export const getSaleInvoicesByCustomer = createAsyncThunk(
+    'sale-invoice/by-customer',
+    async (customerId:number, thunkAPI) => {
+        try {
+            const response = await API.get('/sale-invoice/by-customer/'+customerId);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 // Slice
 export const saleInvoiceSlice = createSlice({
     name: 'sale-invoice',
@@ -164,6 +178,18 @@ export const saleInvoiceSlice = createSlice({
                 state.success = action.payload.success;
             })
             .addCase(getPendingSaleInvoices.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(getSaleInvoicesByCustomer.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getSaleInvoicesByCustomer.fulfilled, (state, action) => {
+                state.loading = false;
+                state.saleInvoices = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getSaleInvoicesByCustomer.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })
