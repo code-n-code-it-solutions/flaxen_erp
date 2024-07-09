@@ -26,7 +26,7 @@ interface IProps {
             type?: string;
             onClick?: () => void;
             link?: string;
-            text: string;
+            text?: string;
         }
         title: string;
         showSetting?: boolean;

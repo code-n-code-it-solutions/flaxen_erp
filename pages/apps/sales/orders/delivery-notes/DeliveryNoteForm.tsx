@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { setAuthToken, setContentType } from '@/configs/api.config';
 import Alert from '@/components/Alert';
@@ -9,7 +9,7 @@ import { ButtonSize, ButtonType, ButtonVariant, FORM_CODE_TYPE, IconType } from 
 import Textarea from '@/components/form/Textarea';
 import { getCustomers } from '@/store/slices/customerSlice';
 import { pendingQuotations } from '@/store/slices/quotationSlice';
-import { generateCode } from '@/store/slices/utilSlice';
+import { clearLatestRecord, generateCode, getLatestRecord } from '@/store/slices/utilSlice';
 import { clearProductionState } from '@/store/slices/productionSlice';
 import { clearFillingState, getFinishedGoodStock } from '@/store/slices/fillingSlice';
 import { getIcon } from '@/utils/helper';
@@ -21,13 +21,20 @@ import { storeDeliveryNote } from '@/store/slices/deliveryNoteSlice';
 import { getEmployees } from '@/store/slices/employeeSlice';
 import Option from '@/components/form/Option';
 import Modal from '@/components/Modal';
+import { Tab } from '@headlessui/react';
+import dynamic from 'next/dynamic';
+import useTransformToSelectOptions from '@/hooks/useTransformToSelectOptions';
+import { getAccountsTypes } from '@/store/slices/accountSlice';
+import Swal from 'sweetalert2';
+const TreeSelect = dynamic(() => import('antd/es/tree-select'), { ssr: false });
 
 const DeliveryNoteForm = () => {
     const dispatch = useAppDispatch();
+    const accountOptions = useTransformToSelectOptions(useAppSelector(state => state.account).accountTypes);
     const { token } = useAppSelector((state) => state.user);
     const { quotations } = useAppSelector((state) => state.quotation);
     const { customers } = useAppSelector((state) => state.customer);
-    const { code } = useAppSelector((state) => state.util);
+    const { code, latestRecord } = useAppSelector((state) => state.util);
     const { fillingProducts } = useAppSelector((state) => state.rawProduct);
     const { allProductAssemblies } = useAppSelector((state) => state.productAssembly);
     const { employees } = useAppSelector((state) => state.employee);
@@ -110,11 +117,11 @@ const DeliveryNoteForm = () => {
                             idsString = ids.join(',');
                             if (selectedQuotations) {
                                 let quotationItemList = selectedQuotations.flatMap((quotation: any) => quotation.quotation_items);
-                                let customerIds = value.filter((item: any) => item.value !== 0).map((item: any) => item.quotation.customer_id)
-                                let customerIdsSet = new Set(customerIds)
+                                let customerIds = value.filter((item: any) => item.value !== 0).map((item: any) => item.quotation.customer_id);
+                                let customerIdsSet = new Set(customerIds);
                                 if (customerIdsSet.size > 1) {
-                                    alert('You cannot select multiple customer')
-                                    return
+                                    alert('You cannot select multiple customer');
+                                    return;
                                 }
                                 setItemsForSelect(quotationItemList?.map((item: any) => ({
                                     ...item,
@@ -197,6 +204,7 @@ const DeliveryNoteForm = () => {
             return;
         } else {
             let deliveryNoteData: any = {
+                un_billed_receivable_account_id: formData.un_billed_receivable_account_id,
                 skip_quotation: formData.skip_quotation,
                 delivery_note_for: formData.delivery_note_for,
                 receipt_delivery_due_days: formData.receipt_delivery_due_days,
@@ -226,8 +234,11 @@ const DeliveryNoteForm = () => {
                 })),
                 terms_conditions: formData.terms_conditions
             };
-
-            dispatch(storeDeliveryNote(deliveryNoteData));
+            if(!deliveryNoteData.un_billed_receivable_account_id) {
+                Swal.fire('Error', 'Please select accounting for un billed receivable', 'error')
+            } else {
+                dispatch(storeDeliveryNote(deliveryNoteData));
+            }
         }
     };
 
@@ -257,11 +268,12 @@ const DeliveryNoteForm = () => {
         dispatch(getCustomers());
         dispatch(getEmployees());
         dispatch(generateCode(FORM_CODE_TYPE.DELIVERY_NOTE));
-        dispatch(getProductAssemblies())
+        dispatch(getProductAssemblies());
         // dispatch(getFillingProducts(['filling-material', 'packing-material']));
         setModalOpen(false);
         // setItemModalOpen(false);
         // dispatch(clearFillingState())
+        dispatch(getAccountsTypes({ids: 1}));
     }, []);
 
     useEffect(() => {
@@ -344,6 +356,15 @@ const DeliveryNoteForm = () => {
             setItemsForSelect((prev: any) => [...prev, ...newItemsForSelect]);
         }
     }, [quotationStock, originalItemsState]);
+
+    useEffect(() => {
+        if (latestRecord) {
+            setFormData((prevFormData: any) => ({
+                ...prevFormData,
+                un_billed_receivable_account_id: latestRecord.un_billed_receivable_account?.code,
+            }));
+        }
+    }, [latestRecord]);
 
     useEffect(() => {
         console.log(itemsForSelect);
@@ -500,88 +521,167 @@ const DeliveryNoteForm = () => {
                 </div>
             </div>
 
-
-            <div className="my-5 table-responsive">
-                <div
-                    className="flex mb-3 justify-start items-start md:justify-between md:items-center gap-3 flex-col md:flex-row">
-                    <h3 className="text-lg font-semibold">Quotation Items</h3>
-                    {formData.quotation_ids === '0' && (
-                        <Button
-                            type={ButtonType.button}
-                            text={
-                                <span className="flex items-center">
-                                    {getIcon(IconType.add)}
-                                    Add Finish Good
-                                </span>
-                            }
-                            variant={ButtonVariant.primary}
-                            onClick={() => setModalOpen(true)}
-                            size={ButtonSize.small}
-                        />
-                    )}
-                </div>
-                <table>
-                    <thead>
-                    <tr>
-                        {!formData.skip_quotation && <th>Quotation</th>}
-                        <th>Product</th>
-                        <th>Batch #</th>
-                        <th>Capacity</th>
-                        <th>Delivered Quantity</th>
-                        <th>Action</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {quotationItems.length > 0
-                        ? quotationItems.map((item: any, index: number) => {
-                            // let product = fillingMaterials.find((material: any) => material.id === item.raw_product_id);
-                            let quotation = quotations.find((quotation: any) => quotation.id === item.quotation_id);
-                            return (
-                                <tr key={index}>
-                                    {!formData.skip_quotation && (
-                                        <td>
-                                            {quotation.quotation_code}
-                                        </td>
-                                    )}
-                                    <td>
-                                        {formData.quotation_ids==='0'
-                                            ? productAssemblyOptions.find((assembly: any) => assembly.value === item.product_assembly_id)?.label
-                                            : item.product.item_code}
-                                    </td>
-                                    <td>
-                                        {item.batch_number} <br />
-                                        {item.filling?.filling_code}
-                                    </td>
-                                    <td>{item.capacity}</td>
-                                    <td>{item.delivered_quantity}</td>
-                                    <td>
-                                        <IconButton
-                                            icon={IconType.delete}
-                                            color={ButtonVariant.danger}
-                                            onClick={() => {
-                                                let updatedItems = quotationItems.filter((qItem: any) => qItem.raw_product_id !== item.raw_product_id);
-                                                setQuotationItems(updatedItems);
-                                                setItemsForSelect((prev) => {
-                                                    return [...prev, item];
-                                                });
-                                            }}
-                                        />
-                                    </td>
-                                </tr>
-                            );
-                        }) : (
-                            <tr>
-                                <td colSpan={formData.skip_quotation ? 8 : 9} className="text-center">
-                                    No Delivery Note Items Added
-                                </td>
-                            </tr>
+            <Tab.Group>
+                <Tab.List className="mt-3 flex flex-wrap border-b border-white-light dark:border-[#191e3a]">
+                    <Tab as={Fragment}>
+                        {({ selected }) => (
+                            <button
+                                className={`${
+                                    selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
+                                } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
+                            >
+                                Details
+                            </button>
                         )}
-                    </tbody>
-                </table>
-            </div>
-
+                    </Tab>
+                    <Tab as={Fragment}>
+                        {({ selected }) => (
+                            <button
+                                className={`${
+                                    selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
+                                } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
+                            >
+                                Accounting
+                            </button>
+                        )}
+                    </Tab>
+                </Tab.List>
+                <Tab.Panels className="panel rounded-none">
+                    <Tab.Panel>
+                        <div className="my-5 active table-responsive">
+                            <div
+                                className="flex mb-3 justify-start items-start md:justify-between md:items-center gap-3 flex-col md:flex-row">
+                                <h3 className="text-lg font-semibold">Quotation Items</h3>
+                                {formData.quotation_ids === '0' && (
+                                    <Button
+                                        type={ButtonType.button}
+                                        text={
+                                            <span className="flex items-center">
+                                                {getIcon(IconType.add)}
+                                                Add Finish Good
+                                            </span>
+                                        }
+                                        variant={ButtonVariant.primary}
+                                        onClick={() => setModalOpen(true)}
+                                        size={ButtonSize.small}
+                                    />
+                                )}
+                            </div>
+                            <table>
+                                <thead>
+                                <tr>
+                                    {!formData.skip_quotation && <th>Quotation</th>}
+                                    <th>Product</th>
+                                    <th>Batch #</th>
+                                    <th>Capacity</th>
+                                    <th>Delivered Quantity</th>
+                                    <th>Action</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {quotationItems.length > 0
+                                    ? quotationItems.map((item: any, index: number) => {
+                                        // let product = fillingMaterials.find((material: any) => material.id === item.raw_product_id);
+                                        let quotation = quotations.find((quotation: any) => quotation.id === item.quotation_id);
+                                        return (
+                                            <tr key={index}>
+                                                {!formData.skip_quotation && (
+                                                    <td>
+                                                        {quotation.quotation_code}
+                                                    </td>
+                                                )}
+                                                <td>
+                                                    {formData.quotation_ids === '0'
+                                                        ? productAssemblyOptions.find((assembly: any) => assembly.value === item.product_assembly_id)?.label
+                                                        : item.product.item_code}
+                                                </td>
+                                                <td>
+                                                    {item.batch_number} <br />
+                                                    {item.filling?.filling_code}
+                                                </td>
+                                                <td>{item.capacity}</td>
+                                                <td>{item.delivered_quantity}</td>
+                                                <td>
+                                                    <IconButton
+                                                        icon={IconType.delete}
+                                                        color={ButtonVariant.danger}
+                                                        onClick={() => {
+                                                            let updatedItems = quotationItems.filter((qItem: any) => qItem.raw_product_id !== item.raw_product_id);
+                                                            setQuotationItems(updatedItems);
+                                                            setItemsForSelect((prev) => {
+                                                                return [...prev, item];
+                                                            });
+                                                        }}
+                                                    />
+                                                </td>
+                                            </tr>
+                                        );
+                                    }) : (
+                                        <tr>
+                                            <td colSpan={formData.skip_quotation ? 8 : 9} className="text-center">
+                                                No Delivery Note Items Added
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </Tab.Panel>
+                    <Tab.Panel>
+                        <div>
+                            <Option
+                                divClasses="mb-5"
+                                label="Use Previous Item Accounting"
+                                type="checkbox"
+                                name="use_previous_accounting"
+                                value="1"
+                                defaultChecked={formData.use_previous_accounting === 1}
+                                onChange={(e) => {
+                                    setFormData((prevFormData: any) => ({
+                                        ...prevFormData,
+                                        use_previous_accounting: e.target.checked ? 1 : 0
+                                    }));
+                                    dispatch(clearLatestRecord());
+                                    if (e.target.checked) {
+                                        dispatch(getLatestRecord('delivery-note'));
+                                    } else {
+                                        dispatch(clearLatestRecord());
+                                    }
+                                }}
+                            />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                    <h3 className="font-bold text-lg mb-5 border-b">Accounts</h3>
+                                    <div className="space-y-3">
+                                        <div>
+                                            <label>Un-Billed Account Receivable</label>
+                                            <TreeSelect
+                                                showSearch
+                                                style={{ width: '100%' }}
+                                                value={latestRecord ? latestRecord.un_billed_receivable_account?.code : formData.un_billed_receivable_account_id}
+                                                dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+                                                placeholder="Please select Un Billed Account"
+                                                allowClear
+                                                treeDefaultExpandAll
+                                                onChange={(e) => {
+                                                    setFormData((prevFormData: any) => ({
+                                                        ...prevFormData,
+                                                        un_billed_receivable_account_id: e
+                                                    }));
+                                                }}
+                                                treeData={accountOptions}
+                                                // onPopupScroll={onPopupScroll}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </Tab.Panel>
+                </Tab.Panels>
+            </Tab.Group>
             <Textarea
-                divClasses="w-full"
+                divClasses="w-full mt-5"
                 label="Terms & Conditions"
                 name="terms_conditions"
                 value={formData.terms_conditions}

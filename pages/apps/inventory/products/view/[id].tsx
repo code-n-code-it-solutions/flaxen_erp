@@ -162,6 +162,10 @@ const View = () => {
                                 <strong>Retail Price: </strong>
                                 <span>{rawProductDetail.retail_price}</span>
                             </div>
+                            <div className="flex md:justify-start md:items-center gap-3">
+                                <strong>Stock Account: </strong>
+                                <span>{rawProductDetail?.stock_account?.code+' - '+rawProductDetail?.stock_account?.name}</span>
+                            </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full my-5">
                             <div className="flex flex-col justify-start items-start gap-3">

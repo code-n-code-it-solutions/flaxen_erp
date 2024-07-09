@@ -15,6 +15,7 @@ import {getPurchaseRequisitionByStatuses} from "@/store/slices/purchaseRequisiti
 import Option from "@/components/form/Option";
 
 interface IProps {
+    title?: string;
     rawProducts: any[];
     originalProducts?: any[];
     setRawProducts: Dispatch<SetStateAction<any[]>>;
@@ -77,6 +78,7 @@ const tableStructure = [
 ]
 
 const RawProductItemListing: FC<IProps> = ({
+                                               title='Item Details',
                                                rawProducts,
                                                originalProducts,
                                                setRawProducts,
@@ -349,7 +351,7 @@ const RawProductItemListing: FC<IProps> = ({
         <div className="table-responsive w-full">
             <div
                 className="flex justify-between items-center flex-col md:flex-row space-y-3 md:space-y-0 mb-3">
-                <h3 className="text-lg font-semibold">Item Details</h3>
+                <h3 className="text-lg font-semibold">{title}</h3>
                 {type !== RAW_PRODUCT_LIST_TYPE.GOOD_RECEIVE_NOTE && type !== RAW_PRODUCT_LIST_TYPE.PRODUCTION && type !== RAW_PRODUCT_LIST_TYPE.FILLING && type !== RAW_PRODUCT_LIST_TYPE.VENDOR_BILL &&
                     <Button
                         type={ButtonType.button}

@@ -23,8 +23,8 @@ const View = () => {
         const calculations = fillingDetail.filling_calculations.map((calculation: any) => {
             const perKgCost = calculation.product_assembly.product_assembly_items.reduce((acc: number, item: any) => acc + parseFloat(item.total), 0);
             const rawProduct = calculation.product;
-            const totalCost = ((parseFloat(calculation.capacity) * perKgCost) + parseFloat(rawProduct.valuated_unit_price));
-            const totalSalePrice = ((parseFloat(calculation.capacity) * perKgCost) + parseFloat(rawProduct.retail_price));
+            const totalCost = ((parseFloat(calculation.capacity) * perKgCost)+ parseFloat(rawProduct.valuated_unit_price)) * calculation.required_quantity;
+            const totalSalePrice = ((parseFloat(calculation.capacity) * perKgCost) + (parseFloat(rawProduct.retail_price)) * calculation.required_quantity);
 
             return {
                 productId: rawProduct.id,
@@ -43,8 +43,8 @@ const View = () => {
 
         // Sort the production fillings based on the batch usage order
         const sortedBatches = [...fillingDetail.production_fillings].sort((a: any, b: any) => {
-            const dateA:any = new Date(a.production.created_at);
-            const dateB:any = new Date(b.production.created_at);
+            const dateA: any = new Date(a.production.created_at);
+            const dateB: any = new Date(b.production.created_at);
             return batchUsageOrder === 'first-in-first-out' ? dateA - dateB : dateB - dateA;
         });
 

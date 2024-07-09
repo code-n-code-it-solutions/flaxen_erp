@@ -25,7 +25,7 @@ interface IProps {
 const FinishedGoodModal = ({
                                modalFor,
                                skip = false,
-                               considerOutOfStock=false,
+                               considerOutOfStock = false,
                                modalOpen,
                                setModalOpen,
                                handleSubmit,
@@ -52,22 +52,25 @@ const FinishedGoodModal = ({
             case 'batch_number':
                 if (value && typeof value !== 'undefined') {
                     setQuotationItem({ ...quotationItem, batch_number: value.value });
-                    setFinishGoodsList(finishedGoods.filter((item: any) => item.batch_number === value.value).map((item: any) => ({
-                        label: item.product.title + '-' + item.product.item_code + ' (' + item.finalStock + '/' + item.capacity + ')',
-                        value: item.raw_product_id,
-                        batch_number: item.batch_number,
-                        retail_price: item.retail_price,
-                        capacity: item.capacity,
-                        total_produced: item.totalProduced,
-                        total_sold: item.totalSold,
-                        final_stock: item.finalStock
-                    })));
-                    setQuotationItem({
-                        ...quotationItem,
-                        batch_number: value.value,
-                        filling_id: value.filling_id,
-                        production_id: value.production_id
-                    });
+
+                    if (finishedGoods) {
+                        let stock = finishedGoods[value.value];
+                        if (stock) {
+                            console.log(stock);
+                            setFinishGoodsList(stock.items.map((stock: any) => ({
+                                label: stock.product.title + '-' + stock.product.item_code + ' (' + stock.final_stock + ')',
+                                value: stock.raw_product_id,
+                                item: stock
+                            })));
+                        }
+                    }
+
+                    // setQuotationItem({
+                    //     ...quotationItem,
+                    //     batch_number: value.value,
+                    //     filling_id: value.filling_id,
+                    //     production_id: value.production_id
+                    // });
                 } else {
                     setFinishGoodsList([]);
                     setQuotationItem({ ...quotationItem, batch_number: '' });
@@ -78,14 +81,15 @@ const FinishedGoodModal = ({
                     setQuotationItem({
                         ...quotationItem,
                         raw_product_id: value.value,
-                        batch_number: value.batch_number,
-                        retail_price: value.retail_price,
-                        capacity: value.capacity,
-                        total_produced: value.total_produced,
-                        total_sold: value.total_sold,
-                        final_stock: value.final_stock,
-                        quantity: value.final_stock,
-                        total_cost: value.retail_price * value.final_stock
+                        batch_number: value.item.batch_number,
+                        retail_price: value.item.retail_price,
+                        capacity: value.item.capacity,
+                        product_assembly_id: value.item.product_assembly_id,
+                        filling_id: value.item.filling_id,
+                        production_id: value.item.production_id,
+                        final_stock: value.item.final_stock,
+                        quantity: value.item.final_stock,
+                        total_cost: value.item.retail_price * value.item.final_stock
                     });
                 } else {
                     setQuotationItem({ batch_number: quotationItem.batch_number, raw_product_id: '' });
@@ -124,7 +128,7 @@ const FinishedGoodModal = ({
                     if (quantity > quotationItem.final_stock) {
                         quantity = quotationItem.final_stock;
                     } else {
-                        alert('Quantity should be less than or equal to available stock.')
+                        alert('Quantity should be less than or equal to available stock.');
                     }
                 }
 
@@ -190,19 +194,24 @@ const FinishedGoodModal = ({
             setFinishGoodsList([]);
             setQuotationItem({});
             dispatch(getProductAssemblies());
-            dispatch(clearFillingState());
+            // dispatch(clearFillingState());
         }
     }, [modalOpen]);
 
     useEffect(() => {
         if (finishedGoods) {
-            console.log(finishedGoods);
-            setBatchNumberOptions(uniqBy(finishedGoods, 'batch_number').map((item: any) => ({
-                label: item.batch_number,
-                value: item.batch_number,
-                filling_id: item.filling_id,
-                production_id: item.production_id
+            // console.log(finishedGoods);
+            setBatchNumberOptions(Object.keys(finishedGoods).map((item: any) => ({
+                label: item,
+                value: item,
+                items: finishedGoods[item]
             })));
+            // setBatchNumberOptions(uniqBy(finishedGoods, 'batch_number').map((item: any) => ({
+            //     label: item.batch_number,
+            //     value: item.batch_number,
+            //     filling_id: item.filling_id,
+            //     production_id: item.production_id
+            // })));
         }
     }, [finishedGoods]);
 
@@ -229,6 +238,10 @@ const FinishedGoodModal = ({
             )));
         }
     }, [allProductAssemblies]);
+
+    useEffect(() => {
+        console.log(quotationItem);
+    }, [quotationItem]);
 
     return (
         <Modal

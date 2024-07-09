@@ -108,7 +108,8 @@ const Index = () => {
         },
         {
             headerName: 'On Hand',
-            field: 'stock.available_stock',
+            // field: 'stock.available_stock',
+            valueGetter: (row: any) => (parseFloat(row.data.stock.available_stock)+parseFloat(row.data.stock.purchase_stock)).toFixed(2),
             minWidth: 150,
             filter: false,
             floatingFilter: false,
@@ -118,7 +119,7 @@ const Index = () => {
             headerName: 'Cost Price',
             field: 'costing.valuated_opening_stock_price',
             minWidth: 150,
-            valueGetter: (row: any) => (row.data.stock.available_stock * row.data.costing.valuated_opening_stock_price).toFixed(2),
+            valueGetter: (row: any) => ((row.data.stock.available_stock+row.data.stock.purchase_stock) * row.data.costing.valuated_opening_stock_price).toFixed(2),
             filter: false,
             floatingFilter: false,
             aggFunc: 'sum'
@@ -127,7 +128,7 @@ const Index = () => {
             headerName: 'Sale Price',
             field: 'costing.valuated_selling_price',
             minWidth: 150,
-            valueGetter: (row: any) => (row.data.costing.valuated_selling_price * row.data.stock.available_stock).toFixed(2),
+            valueGetter: (row: any) => (row.data.costing.valuated_selling_price * (row.data.stock.available_stock+row.data.stock.purchase_stock)).toFixed(2),
             filter: false,
             floatingFilter: false,
             aggFunc: 'sum'
@@ -154,16 +155,19 @@ const Index = () => {
         };
 
         reportData.forEach(item => {
-            totals.stock.opening_stock += item.stock.opening_stock;
-            totals.stock.purchase_stock += item.stock.purchase_stock;
-            totals.stock.used_stock += item.stock.used_stock;
-            totals.stock.available_stock += item.stock.available_stock;
-            totals.costing.valuated_opening_stock_price += item.costing.valuated_opening_stock_price;
-            totals.costing.valuated_selling_price += item.costing.valuated_selling_price;
+            totals.stock.opening_stock += item.stock.opening_stock ? parseFloat(item.stock.opening_stock) : 0;
+            totals.stock.purchase_stock += item.stock.purchase_stock ? parseFloat(item.stock.purchase_stock) : 0;
+            totals.stock.used_stock += item.stock.used_stock ? parseFloat(item.stock.used_stock) : 0;
+            totals.stock.available_stock += item.stock.available_stock ? parseFloat(item.stock.available_stock) : 0;
+            totals.costing.valuated_opening_stock_price = parseFloat(item.costing.valuated_opening_stock_price);
+            totals.costing.valuated_selling_price = parseFloat(item.costing.valuated_selling_price);
         });
 
+        console.log(totals);
         setPinnedBottomRowData([totals]);
     };
+
+
 
 
     const handleChange = (name: string, value: any, required: boolean) => {

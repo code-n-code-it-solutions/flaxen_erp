@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { setAuthToken, setContentType } from '@/configs/api.config';
 import {
@@ -14,7 +14,7 @@ import {
     pendingProductions
 } from '@/store/slices/productionSlice';
 import { getProductAssemblies } from '@/store/slices/productAssemblySlice';
-import { clearUtilState, generateCode } from '@/store/slices/utilSlice';
+import { clearLatestRecord, clearUtilState, generateCode, getLatestRecord } from '@/store/slices/utilSlice';
 import { ButtonSize, ButtonType, ButtonVariant, FORM_CODE_TYPE, IconType, RAW_PRODUCT_LIST_TYPE } from '@/utils/enums';
 import { getWorkingShifts } from '@/store/slices/workingShiftSlice';
 import { getFillingProducts } from '@/store/slices/rawProductSlice';
@@ -23,11 +23,15 @@ import Button from '@/components/Button';
 import { Input } from '@/components/form/Input';
 import { Dropdown } from '@/components/form/Dropdown';
 import IconButton from '@/components/IconButton';
-import RawProductItemListing from '@/components/listing/RawProductItemListing';
 import RawProductModal from '@/components/modals/RawProductModal';
-import Swal from 'sweetalert2';
 import Option from '@/components/form/Option';
-import { ba } from '@fullcalendar/core/internal-common';
+import useTransformToSelectOptions from '@/hooks/useTransformToSelectOptions';
+import { Tab } from '@headlessui/react';
+import dynamic from 'next/dynamic';
+import { getAccountsTypes } from '@/store/slices/accountSlice';
+import Swal from 'sweetalert2';
+
+const TreeSelect = dynamic(() => import('antd/es/tree-select'), { ssr: false });
 
 interface IFormProps {
     id?: any;
@@ -35,8 +39,9 @@ interface IFormProps {
 
 const FillingForm = ({ id }: IFormProps) => {
     const dispatch = useAppDispatch();
+    const accountOptions = useTransformToSelectOptions(useAppSelector(state => state.account).accountTypes);
     const { token } = useAppSelector(state => state.user);
-    const { code } = useAppSelector(state => state.util);
+    const { code, latestRecord } = useAppSelector(state => state.util);
     const { allProductAssemblies } = useAppSelector(state => state.productAssembly);
     const { fillingProducts } = useAppSelector(state => state.rawProduct);
     const { allProductions, productionItems } = useAppSelector(state => state.production);
@@ -114,7 +119,7 @@ const FillingForm = ({ id }: IFormProps) => {
                     setFormData({ ...formData, [name]: '' });
                     setRawProducts([]);
                     setFillingMaterials([]);
-                    setBatchCalculations([])
+                    setBatchCalculations([]);
                 }
                 break;
             case 'usage_order':
@@ -133,7 +138,7 @@ const FillingForm = ({ id }: IFormProps) => {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        const finalData = {
+        const finalData:any = {
             ...formData,
             filling_items: rawProducts.map((item) => {
                 return {
@@ -157,24 +162,31 @@ const FillingForm = ({ id }: IFormProps) => {
         setAuthToken(token);
         setContentType('application/json');
         dispatch(clearFillingState());
-        console.log(finalData);
-        // Swal.fire({
-        //     icon: 'warning',
-        //     title: 'Retail Price Confirmation',
-        //     text: 'Did you confirm the retail price?',
-        //     showCancelButton: true,
-        //     confirmButtonText: 'Yes I did',
-        //     padding: '2em',
-        //     customClass: 'sweet-alerts'
-        // }).then((result) => {
-        //     if (result.value) {
-        //         if (id) {
-        //             dispatch(updateFilling({ id, finalData: finalData }));
-        //         } else {
-        //             dispatch(storeFilling(finalData));
-        //         }
-        //     }
-        // });
+        if(!finalData.stock_account_id || !finalData.wastage_account_id) {
+            Swal.fire('Error', 'Please select accounting for stock and wastage', 'error')
+        } else {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Retail Price Confirmation',
+                text: 'Did you confirm the retail price?',
+                showCancelButton: true,
+                confirmButtonText: 'Yes I did',
+                padding: '2em',
+                customClass: {
+                    popup: 'sweet-alerts'
+                }
+            }).then((result: any) => {
+                if (result.value) {
+                    if (id) {
+                        dispatch(updateFilling({ id, finalData: finalData }));
+                    } else {
+                        dispatch(storeFilling(finalData));
+                    }
+                }
+            });
+
+        }
+
     };
 
     useEffect(() => {
@@ -191,6 +203,8 @@ const FillingForm = ({ id }: IFormProps) => {
         setRawProducts([]);
         setFillingMaterials([]);
 
+        dispatch(getAccountsTypes({}));
+        dispatch(clearLatestRecord())
     }, []);
 
     useEffect(() => {
@@ -198,7 +212,7 @@ const FillingForm = ({ id }: IFormProps) => {
             setProductionOptions(allProductions.map((production: any) => (
                 {
                     value: production.id,
-                    label: production.batch_number + ' (' + (production.production_quantity_details.length > 0 ? production.production_quantity_details[0].remaining_quantity : 0) + ' KG)',
+                    label: production.batch_number + ' (' + (production.production_quantity_details?.length > 0 ? production.production_quantity_details[0].remaining_quantity : 0) + ' KG)',
                     production: production
                 }
             )));
@@ -342,6 +356,18 @@ const FillingForm = ({ id }: IFormProps) => {
     useEffect(() => {
         calculateBatchUsage();
     }, [fillingMaterials, formData.usage_order]);
+
+    useEffect(() => {
+        if (latestRecord) {
+            setFormData((prevFormData: any) => ({
+                ...prevFormData,
+                stock_account_id: latestRecord.stock_account_id,
+                vat_receivable_id: latestRecord.vat_receivable_id,
+                account_payable_id: latestRecord.account_payable_id,
+                vat_payable_id: latestRecord.vat_payable_id
+            }));
+        }
+    }, [latestRecord]);
 
     return (
         <form className="space-y-5" onSubmit={handleSubmit}>
@@ -559,128 +585,225 @@ const FillingForm = ({ id }: IFormProps) => {
 
             </div>
 
-            <div>
-                <div className="flex justify-between items-center gap-3 mb-3">
-                    <h5 className="text-lg font-semibold dark:text-white-light">
-                        Filling - ({noOfProductionQty} KG)
-                    </h5>
-                    {fillingRemaining > 0 && (
-                        <Button
-                            type={ButtonType.button}
-                            text="Add New Item"
-                            variant={ButtonVariant.primary}
-                            size={ButtonSize.small}
-                            onClick={() => {
-                                setModalOpen(true);
-                                setModalDetail({});
-                            }}
-                        />
-                    )}
-
-                </div>
-                <div className="table-responsive">
-                    <table>
-                        <thead>
-                        <tr>
-                            <th>Product Name</th>
-                            <th>Unit</th>
-                            <th>Unit Cost</th>
-                            <th>Qty</th>
-                            <th>Capacity</th>
-                            <th>Filling (KG)</th>
-                            <th>Required</th>
-                            <th>Total Cost</th>
-                            <th>Action</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {fillingMaterials.length > 0
-                            ? (
-                                fillingMaterials.map((row, index) => (
-                                    <tr key={index}>
-                                        <td>
-                                            {fillingMaterialOptions.find((item) => item.value === row.raw_product_id)?.label}
-                                        </td>
-                                        <td>
-                                            {unitOptions.find((item: any) => item.value === row.unit_id)?.label}
-                                        </td>
-                                        <td>{row.unit_price}</td>
-                                        <td>{row.quantity}</td>
-                                        <td>{row.capacity}</td>
-                                        <td>{row.filling_quantity}</td>
-                                        <td>{row.required_quantity}</td>
-                                        <td>{row.required_quantity * row.unit_price}</td>
-                                        <td>
-                                            <div className="flex gap-1">
-                                                <IconButton
-                                                    icon={IconType.edit}
-                                                    color={ButtonVariant.primary}
-                                                    tooltip="Edit"
-                                                    onClick={() => {
-                                                        setModalOpen(true);
-                                                        setModalDetail(row);
-                                                        setFillingRemaining(fillingRemaining + row.filling_quantity);
-                                                    }}
-                                                />
-                                                <IconButton
-                                                    icon={IconType.delete}
-                                                    color={ButtonVariant.danger}
-                                                    tooltip="Delete"
-                                                    onClick={() => {
-                                                        setFillingMaterials(fillingMaterials.filter((item) => item.raw_product_id !== row.raw_product_id));
-                                                        if (index === 0) {
-                                                            setFillingRemaining(noOfProductionQty);
-                                                        } else {
-                                                            setFillingRemaining(fillingRemaining + row.filling_quantity);
-                                                        }
-                                                    }}
-                                                />
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            )
-                            : (
-                                <tr>
-                                    <td colSpan={9} className="text-center">No data found</td>
-                                </tr>
-                            )}
-                        </tbody>
-                        {fillingMaterials.length > 0 && (
-                            <tfoot>
-                            <tr>
-                                <td colSpan={2} className="text-center">Total</td>
-                                <td>{fillingMaterials.reduce((acc, item) => acc + item.unit_price, 0)}</td>
-                                <td>{fillingMaterials.reduce((acc, item) => acc + item.quantity, 0)}</td>
-                                <td>{fillingMaterials.reduce((acc, item) => acc + item.capacity, 0)}</td>
-                                <td>{fillingMaterials.reduce((acc, item) => acc + item.filling_quantity, 0)}</td>
-                                <td>{fillingMaterials.reduce((acc, item) => acc + item.required_quantity, 0)}</td>
-                                <td>{fillingMaterials.reduce((acc, item) => acc + item.required_quantity * item.unit_price, 0)}</td>
-                                <td></td>
-                            </tr>
-                            </tfoot>
+            <Tab.Group>
+                <Tab.List className="mt-3 flex flex-wrap border-b border-white-light dark:border-[#191e3a]">
+                    <Tab as={Fragment}>
+                        {({ selected }) => (
+                            <button
+                                className={`${
+                                    selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
+                                } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
+                            >
+                                Details
+                            </button>
                         )}
-                    </table>
-                </div>
+                    </Tab>
+                    {!id && (
+                        <Tab as={Fragment}>
+                            {({ selected }) => (
+                                <button
+                                    className={`${
+                                        selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
+                                    } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
+                                >
+                                    Accounting
+                                </button>
+                            )}
+                        </Tab>
+                    )}
+                </Tab.List>
+                <Tab.Panels className="panel rounded-none">
+                    <Tab.Panel>
+                        <div className="active">
+                            <div className="flex justify-between items-center gap-3 mb-3">
+                                <h5 className="text-lg font-semibold dark:text-white-light">
+                                    Filling - ({noOfProductionQty} KG)
+                                </h5>
+                                {fillingRemaining > 0 && (
+                                    <Button
+                                        type={ButtonType.button}
+                                        text="Add New Item"
+                                        variant={ButtonVariant.primary}
+                                        size={ButtonSize.small}
+                                        onClick={() => {
+                                            setModalOpen(true);
+                                            setModalDetail({});
+                                        }}
+                                    />
+                                )}
 
-                {!hasInsufficientQuantity() && (
-                    <Button
-                        classes="!mt-6"
-                        type={ButtonType.submit}
-                        text={loading ? 'loading...' : id ? 'Update Filling' : 'Create Filling'}
-                        variant={ButtonVariant.primary}
-                    />
-                )}
+                            </div>
+                            <div className="table-responsive">
+                                <table>
+                                    <thead>
+                                    <tr>
+                                        <th>Product Name</th>
+                                        <th>Unit</th>
+                                        <th>Unit Cost</th>
+                                        <th>Qty</th>
+                                        <th>Capacity</th>
+                                        <th>Filling (KG)</th>
+                                        <th>Required</th>
+                                        <th>Total Cost</th>
+                                        <th>Action</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {fillingMaterials.length > 0
+                                        ? (
+                                            fillingMaterials.map((row, index) => (
+                                                <tr key={index}>
+                                                    <td>
+                                                        {fillingMaterialOptions.find((item) => item.value === row.raw_product_id)?.label}
+                                                    </td>
+                                                    <td>
+                                                        {unitOptions.find((item: any) => item.value === row.unit_id)?.label}
+                                                    </td>
+                                                    <td>{row.unit_price}</td>
+                                                    <td>{row.quantity}</td>
+                                                    <td>{row.capacity}</td>
+                                                    <td>{row.filling_quantity}</td>
+                                                    <td>{row.required_quantity}</td>
+                                                    <td>{row.required_quantity * row.unit_price}</td>
+                                                    <td>
+                                                        <div className="flex gap-1">
+                                                            <IconButton
+                                                                icon={IconType.edit}
+                                                                color={ButtonVariant.primary}
+                                                                tooltip="Edit"
+                                                                onClick={() => {
+                                                                    setModalOpen(true);
+                                                                    setModalDetail(row);
+                                                                    setFillingRemaining(fillingRemaining + row.filling_quantity);
+                                                                }}
+                                                            />
+                                                            <IconButton
+                                                                icon={IconType.delete}
+                                                                color={ButtonVariant.danger}
+                                                                tooltip="Delete"
+                                                                onClick={() => {
+                                                                    setFillingMaterials(fillingMaterials.filter((item) => item.raw_product_id !== row.raw_product_id));
+                                                                    if (index === 0) {
+                                                                        setFillingRemaining(noOfProductionQty);
+                                                                    } else {
+                                                                        setFillingRemaining(fillingRemaining + row.filling_quantity);
+                                                                    }
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )
+                                        : (
+                                            <tr>
+                                                <td colSpan={9} className="text-center">No data found</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                    {fillingMaterials.length > 0 && (
+                                        <tfoot>
+                                        <tr>
+                                            <td colSpan={2} className="text-center">Total</td>
+                                            <td>{fillingMaterials.reduce((acc, item) => acc + item.unit_price, 0)}</td>
+                                            <td>{fillingMaterials.reduce((acc, item) => acc + item.quantity, 0)}</td>
+                                            <td>{fillingMaterials.reduce((acc, item) => acc + item.capacity, 0)}</td>
+                                            <td>{fillingMaterials.reduce((acc, item) => acc + item.filling_quantity, 0)}</td>
+                                            <td>{fillingMaterials.reduce((acc, item) => acc + item.required_quantity, 0)}</td>
+                                            <td>{fillingMaterials.reduce((acc, item) => acc + item.required_quantity * item.unit_price, 0)}</td>
+                                            <td></td>
+                                        </tr>
+                                        </tfoot>
+                                    )}
+                                </table>
+                            </div>
 
-                <RawProductModal
-                    modalOpen={modalOpen}
-                    setModalOpen={setModalOpen}
-                    handleSubmit={(data: any) => handleFillingMaterialSubmit(data)}
-                    detail={modalDetail}
-                    listFor={RAW_PRODUCT_LIST_TYPE.FILLING}
-                    fillingRemaining={Number(fillingRemaining)}
+                            <RawProductModal
+                                modalOpen={modalOpen}
+                                setModalOpen={setModalOpen}
+                                handleSubmit={(data: any) => handleFillingMaterialSubmit(data)}
+                                detail={modalDetail}
+                                listFor={RAW_PRODUCT_LIST_TYPE.FILLING}
+                                fillingRemaining={Number(fillingRemaining)}
+                            />
+                        </div>
+                    </Tab.Panel>
+                    <Tab.Panel>
+                        <div>
+                            <Option
+                                divClasses="mb-5"
+                                label="Use Previous Item Accounting"
+                                type="checkbox"
+                                name="use_previous_accounting"
+                                value="1"
+                                defaultChecked={formData.use_previous_accounting}
+                                onChange={(e) => {
+                                    setFormData((prevFormData: any) => ({
+                                        ...prevFormData,
+                                        use_previous_accounting: e.target.checked ? 1 : 0
+                                    }));
+                                    dispatch(clearLatestRecord());
+                                    if (e.target.checked) {
+                                        dispatch(getLatestRecord('filling'));
+                                    } else {
+                                        dispatch(clearLatestRecord());
+                                    }
+                                }}
+                            />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                    <h3 className="font-bold text-lg mb-5 border-b">Accounts</h3>
+                                    <div className="space-y-3">
+                                        <div>
+                                            <label>Stock Accounting</label>
+                                            <TreeSelect
+                                                showSearch
+                                                style={{ width: '100%' }}
+                                                value={latestRecord ? latestRecord.stock_account?.code : formData.stock_account_id}
+                                                dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+                                                placeholder="Please select stock account"
+                                                allowClear
+                                                treeDefaultExpandAll
+                                                onChange={(e) => handleChange('stock_account_id', e, true)}
+                                                treeData={accountOptions}
+                                                // onPopupScroll={onPopupScroll}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-lg mb-5 border-b">Wastage</h3>
+                                    <div className="space-y-3">
+                                        <div>
+                                            <label>Wastage Accounting</label>
+                                            <TreeSelect
+                                                showSearch
+                                                style={{ width: '100%' }}
+                                                value={latestRecord ? latestRecord.wastage_account_id?.code : formData.wastage_account_id}
+                                                dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+                                                placeholder="Please select wastage account"
+                                                allowClear
+                                                treeDefaultExpandAll
+                                                onChange={(e) => handleChange('wastage_account_id', e, true)}
+                                                treeData={accountOptions}
+                                                // onPopupScroll={onPopupScroll}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </Tab.Panel>
+                </Tab.Panels>
+            </Tab.Group>
+            {!hasInsufficientQuantity() && (
+                <Button
+                    classes="!mt-6"
+                    type={ButtonType.submit}
+                    text={loading ? 'loading...' : id ? 'Update Filling' : 'Create Filling'}
+                    variant={ButtonVariant.primary}
                 />
-            </div>
+            )}
         </form>
     );
 };

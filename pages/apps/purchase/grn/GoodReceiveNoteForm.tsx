@@ -1,20 +1,28 @@
-"use client";
-import React, {useEffect, useState} from 'react';
-import {setAuthToken, setContentType} from "@/configs/api.config";
-import {useDispatch, useSelector} from "react-redux";
-import {ThunkDispatch} from "redux-thunk";
-import {IRootState, useAppDispatch, useAppSelector} from "@/store";
-import {AnyAction} from "redux";
-import {getLPOByStatuses} from "@/store/slices/localPurchaseOrderSlice";
-import {clearGoodReceiveNoteState, storeGRN} from "@/store/slices/goodReceiveNoteSlice";
-import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
-import {ButtonSize, ButtonType, ButtonVariant, FORM_CODE_TYPE, RAW_PRODUCT_LIST_TYPE} from "@/utils/enums";
-import {Dropdown} from "@/components/form/Dropdown";
-import {Input} from "@/components/form/Input";
-import RawProductItemListing from "@/components/listing/RawProductItemListing";
-import ServiceItemListing from "@/components/listing/ServiceItemListing";
+'use client';
+import React, { Fragment, useEffect, useState } from 'react';
+import { setAuthToken, setContentType } from '@/configs/api.config';
+import { useDispatch, useSelector } from 'react-redux';
+import { ThunkDispatch } from 'redux-thunk';
+import { IRootState, useAppDispatch, useAppSelector } from '@/store';
+import { AnyAction } from 'redux';
+import { getLPOByStatuses } from '@/store/slices/localPurchaseOrderSlice';
+import { clearGoodReceiveNoteState, storeGRN } from '@/store/slices/goodReceiveNoteSlice';
+import { clearLatestRecord, clearUtilState, generateCode, getLatestRecord } from '@/store/slices/utilSlice';
+import { ButtonSize, ButtonType, ButtonVariant, FORM_CODE_TYPE, RAW_PRODUCT_LIST_TYPE } from '@/utils/enums';
+import { Dropdown } from '@/components/form/Dropdown';
+import { Input } from '@/components/form/Input';
+import RawProductItemListing from '@/components/listing/RawProductItemListing';
+import ServiceItemListing from '@/components/listing/ServiceItemListing';
 import Button from '@/components/Button';
-import Modal from "@/components/Modal";
+import Modal from '@/components/Modal';
+import { Tab } from '@headlessui/react';
+import Option from '@/components/form/Option';
+import dynamic from 'next/dynamic';
+import useTransformToSelectOptions from '@/hooks/useTransformToSelectOptions';
+import { getAccountsTypes } from '@/store/slices/accountSlice';
+import Swal from 'sweetalert2';
+
+const TreeSelect = dynamic(() => import('antd/es/tree-select'), { ssr: false });
 
 interface IFormData {
     purchase_requisition_ids: string;
@@ -25,18 +33,20 @@ interface IFormData {
     status: string;
     description: string;
     items: any[];
+    use_previous_accounting: number;
 }
 
 interface IFormProps {
-    id?: any
+    id?: any;
 }
 
-const GoodReceiveNoteForm = ({id}: IFormProps) => {
+const GoodReceiveNoteForm = ({ id }: IFormProps) => {
     const dispatch = useAppDispatch();
-    const {token, user} = useAppSelector(state => state.user);
-    const {success, loading} = useAppSelector(state => state.goodReceiveNote);
-    const {allLPOs} = useAppSelector(state => state.localPurchaseOrder);
-    const {code} = useAppSelector(state => state.util);
+    const accountOptions = useTransformToSelectOptions(useAppSelector(state => state.account).accountTypes);
+    const { token, user } = useAppSelector(state => state.user);
+    const { success, loading } = useAppSelector(state => state.goodReceiveNote);
+    const { allLPOs } = useAppSelector(state => state.localPurchaseOrder);
+    const { code, latestRecord } = useAppSelector(state => state.util);
     const [itemModalOpen, setItemModalOpen] = useState<boolean>(false);
     const [rawProductModalOpen, setRawProductModalOpen] = useState<boolean>(false);
     const [rawProductForSelect, setRawProductForSelect] = useState<any[]>([]);
@@ -44,7 +54,7 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
     const [rawProducts, setRawProducts] = useState<any[]>([]);
     const [serviceItems, setServiceItems] = useState<any[]>([]);
     const [selectedLPOs, setSelectedLPOs] = useState<any[]>([]);
-    const [formData, setFormData] = useState<IFormData>({
+    const [formData, setFormData] = useState<any>({
         purchase_requisition_ids: '',
         local_purchase_order_ids: '',
         grn_number: '',
@@ -52,27 +62,28 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
         verified_by_id: 0,
         status: '',
         description: '',
-        items: []
+        items: [],
+        use_previous_accounting: 0
     });
     const [showItemDetail, setShowItemDetail] = useState<any>({
         show: false,
         type: null
     });
-    const [localPurchaseOrderOptions, setLocalPurchaseOrderOptions] = useState<any[]>([])
-    const [lpoDetails, setLPODetails] = useState<any>({})
+    const [localPurchaseOrderOptions, setLocalPurchaseOrderOptions] = useState<any[]>([]);
+    const [lpoDetails, setLPODetails] = useState<any>({});
 
-    const [showDetails, setShowDetails] = useState<boolean>(true)
+    const [showDetails, setShowDetails] = useState<boolean>(true);
 
-    const [itemDetail, setItemDetail] = useState<any>({})
+    const [itemDetail, setItemDetail] = useState<any>({});
     const [statusOptions, setStatusOptions] = useState<any[]>([
-        {value: '', label: 'Select Status'},
-        {value: 'Draft', label: 'Draft'},
-        {value: 'Pending', label: 'Proceed'},
+        { value: '', label: 'Select Status' },
+        { value: 'Draft', label: 'Draft' },
+        { value: 'Pending', label: 'Proceed' }
     ]);
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setAuthToken(token)
+        setAuthToken(token);
         // console.log(user)
         let finalData = {
             ...formData,
@@ -95,78 +106,84 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
                     discount_type: product.discount_type,
                     discount_amount_rate: product.discount_amount_rate,
                     row_total: product.row_total
-                }
+                };
             })
-        }
+        };
         if (id) {
             // dispatch(updateRawProduct(id, formData));
         } else {
             // console.log(finalData)
-            dispatch(storeGRN(finalData));
+            if(!finalData.un_billed_account_payable_id) {
+                Swal.fire('Error', 'Please select accounting for un billed account payable', 'error')
+            } else {
+                dispatch(storeGRN(finalData));
+            }
         }
     };
 
     const handleLPOChange = (e: any) => {
         if (e && typeof e !== 'undefined') {
-            setSelectedLPOs(e)
-            let lpoIds = e.filter((item: any) => item.value !== 0).map((item: any) => item.value).join(',')
-            let vendorId = e.filter((item: any) => item.value !== 0).map((item: any) => item.lpo.vendor_id)
-            let vendorIdSet = new Set(vendorId)
+            setSelectedLPOs(e);
+            let lpoIds = e.filter((item: any) => item.value !== 0).map((item: any) => item.value).join(',');
+            let vendorId = e.filter((item: any) => item.value !== 0).map((item: any) => item.lpo.vendor_id);
+            let vendorIdSet = new Set(vendorId);
             if (vendorIdSet.size > 1) {
-                alert('You cannot select multiple vendors')
-                return
+                alert('You cannot select multiple vendors');
+                return;
             }
             // console.log(e, lpoIds)
-            setFormData(prev => ({
+            setFormData((prev: any) => ({
                 ...prev,
                 local_purchase_order_ids: lpoIds,
                 vendor_id: vendorId[0]
                 // purchase_requisition_id: e.lpo.purchase_requisition_id,
                 // received_by_id: e.lpo.received_by_id,
                 // verified_by_id: e.lpo.received_by_id
-            }))
+            }));
 
             const allItems = e.filter((item: any) => item.value !== 0)
                 .flatMap((item: any) => item.lpo.raw_materials.map((i: any) => ({
                     ...i,
                     quantity: i.remaining_quantity
                 })));
-            setRawProductForSelect(allItems)
+            setRawProductForSelect(allItems);
         } else {
-            setFormData(prev => ({
+            setFormData((prev: any) => ({
                 ...prev,
                 local_purchase_order_ids: '',
                 vendor_id: ''
-            }))
-            dispatch(clearGoodReceiveNoteState())
-            setRawProductForSelect([])
-            setSelectedLPOs([])
-            setLPODetails({})
-            setRawProducts([])
+            }));
+            dispatch(clearGoodReceiveNoteState());
+            setRawProductForSelect([]);
+            setSelectedLPOs([]);
+            setLPODetails({});
+            setRawProducts([]);
         }
-    }
+    };
 
     useEffect(() => {
-        dispatch(clearGoodReceiveNoteState())
-        setAuthToken(token)
-        setContentType('application/json')
-        dispatch(getLPOByStatuses())
-        dispatch(clearUtilState())
-        dispatch(generateCode(FORM_CODE_TYPE.GOOD_RECEIVE_NOTE))
-    }, [])
+        dispatch(clearGoodReceiveNoteState());
+        setAuthToken(token);
+        setContentType('application/json');
+        dispatch(getLPOByStatuses());
+        dispatch(clearUtilState());
+        dispatch(generateCode(FORM_CODE_TYPE.GOOD_RECEIVE_NOTE));
+        dispatch(clearLatestRecord());
+        dispatch(getAccountsTypes({ids: 2}));
+    }, []);
 
     useEffect(() => {
         if (code) {
-            setFormData(prev => ({
+            setFormData((prev: any) => ({
                 ...prev,
                 grn_number: code[FORM_CODE_TYPE.GOOD_RECEIVE_NOTE]
-            }))
+            }));
         }
-    }, [code])
+    }, [code]);
 
     useEffect(() => {
         if (!rawProductModalOpen) {
-            setItemDetail({})
+            setItemDetail({});
         }
     }, [rawProductModalOpen]);
 
@@ -176,10 +193,20 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
                 value: lpo.id,
                 label: lpo.lpo_number,
                 lpo: lpo
-            })))
+            })));
         }
         // console.log(allLPOs)
-    }, [allLPOs])
+    }, [allLPOs]);
+
+    useEffect(() => {
+        if (latestRecord) {
+            setFormData((prevFormData: any) => ({
+                ...prevFormData,
+                un_billed_account_payable_id: latestRecord.un_billed_account_payable?.code,
+            }));
+            console.log(latestRecord);
+        }
+    }, [latestRecord]);
 
     // console.log(rawProductForSelect, rawProducts, originalProductState)
 
@@ -189,12 +216,12 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
                 <div className="flex justify-start flex-col items-start space-y-3 w-full">
                     <Input
                         divClasses="w-full"
-                        label='Good Receive Note Number'
-                        type='text'
-                        name='grn_number'
+                        label="Good Receive Note Number"
+                        type="text"
+                        name="grn_number"
                         value={formData.grn_number}
                         onChange={(e: any) =>
-                            setFormData(prev => ({
+                            setFormData((prev: any) => ({
                                 ...prev,
                                 grn_number: e.target.value
                             }))}
@@ -204,9 +231,9 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
                     />
                     <div className="flex justify-between items-end w-full gap-3">
                         <Dropdown
-                            divClasses='w-full'
-                            label='LPO'
-                            name='local_purchase_order_ids'
+                            divClasses="w-full"
+                            label="LPO"
+                            name="local_purchase_order_ids"
                             options={localPurchaseOrderOptions}
                             value={formData.local_purchase_order_ids}
                             onChange={(e: any) => handleLPOChange(e)}
@@ -223,22 +250,22 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
                     </div>
 
                     <Dropdown
-                        divClasses='w-full'
-                        label='Status'
-                        name='status'
+                        divClasses="w-full"
+                        label="Status"
+                        name="status"
                         options={statusOptions}
                         value={formData.status}
                         onChange={(e: any) => {
                             if (e && typeof e !== 'undefined') {
-                                setFormData(prev => ({
+                                setFormData((prev: any) => ({
                                     ...prev,
                                     status: e.value
-                                }))
+                                }));
                             } else {
-                                setFormData(prev => ({
+                                setFormData((prev: any) => ({
                                     ...prev,
                                     status: ''
-                                }))
+                                }));
                             }
                         }}
                     />
@@ -254,12 +281,98 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
                 </div>
             </div>
 
-            <RawProductItemListing
-                rawProducts={rawProducts}
-                originalProducts={originalProductState}
-                setRawProducts={setRawProducts}
-                type={RAW_PRODUCT_LIST_TYPE.GOOD_RECEIVE_NOTE}
-            />
+            <Tab.Group>
+                <Tab.List className="mt-3 flex flex-wrap border-b border-white-light dark:border-[#191e3a]">
+                    <Tab as={Fragment}>
+                        {({ selected }) => (
+                            <button
+                                className={`${
+                                    selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
+                                } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
+                            >
+                                Details
+                            </button>
+                        )}
+                    </Tab>
+                    {!id && (
+                        <Tab as={Fragment}>
+                            {({ selected }) => (
+                                <button
+                                    className={`${
+                                        selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
+                                    } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
+                                >
+                                    Accounting
+                                </button>
+                            )}
+                        </Tab>
+                    )}
+                </Tab.List>
+                <Tab.Panels className="panel rounded-none">
+                    <Tab.Panel>
+                        <div className="active">
+                            <RawProductItemListing
+                                rawProducts={rawProducts}
+                                originalProducts={originalProductState}
+                                setRawProducts={setRawProducts}
+                                type={RAW_PRODUCT_LIST_TYPE.GOOD_RECEIVE_NOTE}
+                            />
+                        </div>
+                    </Tab.Panel>
+                    <Tab.Panel>
+                        <div>
+                            <Option
+                                divClasses="mb-5"
+                                label="Use Previous Item Accounting"
+                                type="checkbox"
+                                name="use_previous_accounting"
+                                value="1"
+                                defaultChecked={formData.use_previous_accounting === 1}
+                                onChange={(e) => {
+                                    setFormData((prevFormData: any) => ({
+                                        ...prevFormData,
+                                        use_previous_accounting: e.target.checked ? 1 : 0
+                                    }));
+                                    dispatch(clearLatestRecord());
+                                    if (e.target.checked) {
+                                        dispatch(getLatestRecord('good-receive-note'));
+                                    } else {
+                                        dispatch(clearLatestRecord());
+                                    }
+                                }}
+                            />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                    <h3 className="font-bold text-lg mb-5 border-b">Accounts</h3>
+                                    <div className="space-y-3">
+                                        <div>
+                                            <label>Un-Billed Account Payable</label>
+                                            <TreeSelect
+                                                showSearch
+                                                style={{ width: '100%' }}
+                                                value={latestRecord ? latestRecord.un_billed_account_payable?.code : formData.un_billed_account_payable_id}
+                                                dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+                                                placeholder="Please select Un Billed Account"
+                                                allowClear
+                                                treeDefaultExpandAll
+                                                onChange={(e) => {
+                                                    setFormData((prevFormData: any) => ({
+                                                        ...prevFormData,
+                                                        un_billed_account_payable_id: e
+                                                    }));
+                                                }}
+                                                treeData={accountOptions}
+                                                // onPopupScroll={onPopupScroll}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </Tab.Panel>
+                </Tab.Panels>
+            </Tab.Group>
+
 
             <div className="w-full flex justify-center items-center flex-col md:flex-row gap-3">
                 <Button
@@ -270,7 +383,7 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
                 />
 
                 <Button
-                    text='Clear'
+                    text="Clear"
                     variant={ButtonVariant.info}
                     size={ButtonSize.medium}
                     onClick={() => window?.location?.reload()}
@@ -329,14 +442,14 @@ const GoodReceiveNoteForm = ({id}: IFormProps) => {
                                                 tax_amount: product.tax_amount,
                                                 grand_total: product.grand_total
                                             }
-                                        ])
+                                        ]);
 
                                         setOriginalProductState([
                                             ...originalProductState,
                                             product
-                                        ])
+                                        ]);
 
-                                        setRawProductForSelect(rawProductForSelect.filter((item: any) => item.id !== product.id))
+                                        setRawProductForSelect(rawProductForSelect.filter((item: any) => item.id !== product.id));
                                     }}
                                 />
                             </td>

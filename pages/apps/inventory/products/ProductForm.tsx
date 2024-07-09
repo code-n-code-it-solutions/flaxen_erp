@@ -4,7 +4,7 @@ import { useAppDispatch, useAppSelector } from '@/store';
 import { getUnits } from '@/store/slices/unitSlice';
 import { clearRawProductState, storeRawProduct, updateRawProduct } from '@/store/slices/rawProductSlice';
 import { setAuthToken, setContentType } from '@/configs/api.config';
-import { clearUtilState, generateCode } from '@/store/slices/utilSlice';
+import { clearLatestRecord, clearUtilState, generateCode, getLatestRecord } from '@/store/slices/utilSlice';
 import { ButtonType, ButtonVariant, FORM_CODE_TYPE } from '@/utils/enums';
 import { Dropdown } from '@/components/form/Dropdown';
 import { Input } from '@/components/form/Input';
@@ -14,9 +14,13 @@ import { serverFilePath, transformAccountsToSelectOptions } from '@/utils/helper
 import Alert from '@/components/Alert';
 import { Tab } from '@headlessui/react';
 import Option from '@/components/form/Option';
-// import useTransformToSelectOptions from '@/hooks/useTransformToSelectOptions';
-import AccountDropdowns from '@/components/form/AccountDropdowns';
-// import Treeselect, {DirectionType, IconsType, OptionType, TreeselectProps, TreeselectValue } from "react-treeselectjs"
+import dynamic from 'next/dynamic';
+import useTransformToSelectOptions from '@/hooks/useTransformToSelectOptions';
+import { getAccounts, getAccountsTypes } from '@/store/slices/accountSlice';
+import Swal from 'sweetalert2';
+
+const TreeSelect = dynamic(() => import('antd/es/tree-select'), { ssr: false });
+
 
 interface IFormProps {
     id?: any;
@@ -24,9 +28,10 @@ interface IFormProps {
 
 const ProductForm = ({ id }: IFormProps) => {
     const dispatch = useAppDispatch();
-    // const accountOptions = useTransformToSelectOptions(useAppSelector(state => state.account).accounts);
+    const accountOptions = useTransformToSelectOptions(useAppSelector(state => state.account).accountTypes);
+    // console.log(accountOptions);
     const { units } = useAppSelector(state => state.unit);
-    const { code } = useAppSelector(state => state.util);
+    const { code, latestRecord } = useAppSelector(state => state.util);
     const { loading, rawProductDetail } = useAppSelector((state) => state.rawProduct);
     const { branchList } = useAppSelector((state) => state.company);
     // const { accounts } = useAppSelector((state) => state.account);
@@ -41,8 +46,8 @@ const ProductForm = ({ id }: IFormProps) => {
     const [imagePreview, setImagePreview] = useState('');
     const [unitOptions, setUnitOptions] = useState([]);
     const [subUnitOptions, setSubUnitOptions] = useState([]);
-    const [accountsList, setAccountsList] = useState([]);
-    const [accountOptions, setAccountOptions] = useState([]);
+    // const [accountsList, setAccountsList] = useState([]);
+    // const [accountOptions, setAccountOptions] = useState([]);
     const [valuationMethodOptions, setValuationMethodOptions] = useState([
         { value: '', label: 'Select Valuation Method' },
         { value: 'LIFO', label: 'LIFO' },
@@ -120,13 +125,16 @@ const ProductForm = ({ id }: IFormProps) => {
 
         setAuthToken(token);
         setContentType('multipart/form-data');
-        console.log(formData);
-        if (id) {
-            dispatch(updateRawProduct({ id, rawProductData: formData }));
+        if (!formData.stock_account_id) {
+            Swal.fire('Error', 'Please select accounting for stock', 'error');
         } else {
-            dispatch(storeRawProduct(formData));
+            if (id) {
+                dispatch(updateRawProduct({ id, rawProductData: formData }));
+            } else {
+                dispatch(storeRawProduct(formData));
+            }
+            setValidationMessage('');
         }
-        setValidationMessage('');
     };
 
     const customStyles = {
@@ -159,7 +167,9 @@ const ProductForm = ({ id }: IFormProps) => {
 
     useEffect(() => {
         setValidationMessage('');
-        // dispatch(getAccountsByType([]));
+        dispatch(getAccountsTypes({}));
+        setFormData({});
+        dispatch(clearLatestRecord());
     }, []);
 
     useEffect(() => {
@@ -214,65 +224,17 @@ const ProductForm = ({ id }: IFormProps) => {
         }
     }, [errorMessages]);
 
-    // useEffect(() => {
-    //     if (accounts) {
-    //         setAccountOptions(transformAccountsToSelectOptions(accounts));
-    //     }
-    // }, [accounts]);
-
     useEffect(() => {
-        console.log(formData);
-    }, [formData]);
-
-    const options = [
-        {
-            name: 'England',
-            value: 1,
-            children: [
-                {
-                    name: 'London',
-                    value: 2,
-                    children: [
-                        {
-                            name: 'Chelsea',
-                            value: 3,
-                            children: []
-                        },
-                        {
-                            name: 'West End',
-                            value: 4,
-                            children: []
-                        }
-                    ]
-                },
-                {
-                    name: 'Brighton',
-                    value: 5,
-                    children: []
-                }
-            ]
-        },
-        {
-            name: 'France',
-            value: 6,
-            children: [
-                {
-                    name: 'Paris',
-                    value: 7,
-                    children: []
-                },
-                {
-                    name: 'Lyon',
-                    value: 8,
-                    children: []
-                }
-            ]
+        if (latestRecord) {
+            setFormData((prevFormData: any) => ({
+                ...prevFormData,
+                stock_account_id: latestRecord.stock_account?.code,
+                vat_receivable_id: latestRecord.vat_receivable?.code,
+                account_payable_id: latestRecord.account_payable?.code,
+                vat_payable_id: latestRecord.vat_payable?.code
+            }));
         }
-    ]
-
-    const onInput = useCallback((value: TreeselectValue) => {
-        console.log('onInput', value)
-    }, [])
+    }, [latestRecord]);
 
     return (
         <form className="space-y-5" onSubmit={handleSubmit}>
@@ -343,18 +305,19 @@ const ProductForm = ({ id }: IFormProps) => {
                             </button>
                         )}
                     </Tab>
-                    <Tab as={Fragment}>
-                        {({ selected }) => (
-                            <button
-                                className={`${
-                                    selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
-                                } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
-                            >
-                                Accounting
-                            </button>
-                        )}
-                    </Tab>
-
+                    {!id && (
+                        <Tab as={Fragment}>
+                            {({ selected }) => (
+                                <button
+                                    className={`${
+                                        selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
+                                    } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
+                                >
+                                    Accounting
+                                </button>
+                            )}
+                        </Tab>
+                    )}
                 </Tab.List>
                 <Tab.Panels className="panel rounded-none">
                     <Tab.Panel>
@@ -484,7 +447,6 @@ const ProductForm = ({ id }: IFormProps) => {
                             </div>
                         </div>
                     </Tab.Panel>
-
                     <Tab.Panel>
                         <div>
                             <Option
@@ -499,68 +461,33 @@ const ProductForm = ({ id }: IFormProps) => {
                                         ...prevFormData,
                                         use_previous_accounting: e.target.checked ? 1 : 0
                                     }));
+                                    dispatch(clearLatestRecord());
+                                    if (e.target.checked) {
+                                        dispatch(getLatestRecord('raw-product'));
+                                    } else {
+                                        dispatch(clearLatestRecord());
+                                    }
                                 }}
                             />
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <div>
-                                    <h3 className="font-bold text-lg mb-5 border-b">Receivables</h3>
+                                    <h3 className="font-bold text-lg mb-5 border-b">Accounts</h3>
                                     <div className="space-y-3">
-                                        {/*<Treeselect*/}
-                                        {/*    options={options}*/}
-                                        {/*    value={[4, 7, 8]}*/}
-                                        {/*    onInput={onInput}*/}
-                                        {/*/>*/}
-                                        {/*<AccountDropdowns*/}
-                                        {/*    formData={formData}*/}
-                                        {/*    setFormData={setFormData}*/}
-                                        {/*    accountNature="receivables"*/}
-                                        {/*/>*/}
-                                        {/*<Dropdown*/}
-                                        {/*    divClasses="w-full"*/}
-                                        {/*    label="Account Receivable"*/}
-                                        {/*    name="account_receivable_id"*/}
-                                        {/*    options={accountOptions}*/}
-                                        {/*    value={formData.account_receivable_id}*/}
-                                        {/*    customStyles={customStyles}*/}
-                                        {/*    onChange={(e) => handleChange('account_receivable_id', e, true)}*/}
-                                        {/*    required={true}*/}
-                                        {/*    errorMessage={errorMessages?.account_receivable_id}*/}
-                                        {/*/>*/}
-                                        <Dropdown
-                                            divClasses="w-full"
-                                            label="VAT Account Receivable"
-                                            name="vat_receivable_id"
-                                            options={unitOptions}
-                                            value={formData.account_receivable_id}
-                                            onChange={(e) => handleChange('account_receivable_id', e, true)}
-                                            required={true}
-                                            errorMessage={errorMessages?.account_receivable_id}
-                                        />
-                                    </div>
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-lg mb-5 border-b">Payable</h3>
-                                    <div className="space-y-3">
-                                        <Dropdown
-                                            divClasses="w-full"
-                                            label="Account Payable"
-                                            name="account_payable_id"
-                                            options={unitOptions}
-                                            value={formData.account_payable_id}
-                                            onChange={(e) => handleChange('account_payable_id', e, true)}
-                                            required={true}
-                                            errorMessage={errorMessages?.account_payable_id}
-                                        />
-                                        <Dropdown
-                                            divClasses="w-full"
-                                            label="VAT Account Payable"
-                                            name="vat_payable_id"
-                                            options={unitOptions}
-                                            value={formData.account_receivable_id}
-                                            onChange={(e) => handleChange('account_receivable_id', e, true)}
-                                            required={true}
-                                            errorMessage={errorMessages?.account_receivable_id}
-                                        />
+                                        <div>
+                                            <label>Stock Accounting</label>
+                                            <TreeSelect
+                                                showSearch
+                                                style={{ width: '100%' }}
+                                                value={latestRecord ? latestRecord.stock_account?.code : formData.stock_account_id}
+                                                dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+                                                placeholder="Please select stock account"
+                                                allowClear
+                                                treeDefaultExpandAll
+                                                onChange={(e) => handleChange('stock_account_id', e, true)}
+                                                treeData={accountOptions}
+                                                // onPopupScroll={onPopupScroll}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
