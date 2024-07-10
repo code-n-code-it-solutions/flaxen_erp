@@ -14,7 +14,7 @@ interface IProps {
     required?: boolean;
     disabled?: boolean;
     onChange: (e: any) => void;
-    errorMessage?: string;
+    errorMessage?: string | string[];
     isMasked: boolean;
     maskPattern?: any[];
     styles?: any;

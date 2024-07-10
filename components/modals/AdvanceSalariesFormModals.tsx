@@ -12,28 +12,39 @@ interface IProps {
     handleSubmit: (value: any) => void;
 }
 
-const AdvanceSalariesFormModal = ({ modalOpen, setModalOpen, handleSubmit }: IProps) => {
+const AdvanceSalariesFormModals = ({ modalOpen, setModalOpen, handleSubmit }: IProps) => {
     const [formData, setFormData] = useState<any>({ number_of_salaries: 1, months: [] });
     const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
     const [employee, setEmployee] = useState<string | null>(null);
+    const [error, setError] = useState<string>('');
+
+    useEffect(() => {
+        console.log('Selected Months:', selectedMonths);
+    }, [selectedMonths]);
 
     const handleFormSubmit = () => {
+        if (selectedMonths.length !== formData.number_of_salaries) {
+            setError(`Please select exactly ${formData.number_of_salaries} month(s)`);
+            return;
+        }
+        setError('');
         console.log('Form Data:', { ...formData, employee });
         handleSubmit({ ...formData, employee });
+        setModalOpen(false);
     };
 
     const handleNumberOfSalariesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = parseInt(e.target.value);
-        setFormData({ ...formData, number_of_salaries: value, months: [] });
+        setFormData({ ...formData, number_of_salaries: value });
         setSelectedMonths([]);
+        setError('');
     };
 
     const handleMonthsChange = (selectedOptions: any) => {
-        const value = selectedOptions ? selectedOptions.map((option: any) => option.value).join(',') : '';
-        if (selectedOptions.length <= formData.number_of_salaries) {
-            setSelectedMonths(selectedOptions.map((option: any) => option.value));
-            setFormData({ ...formData, months: value });
-        }
+        const value = selectedOptions ? selectedOptions.map((option: any) => option.value) : [];
+        setSelectedMonths(value);
+        setFormData({ ...formData, months: value });
+        setError('');
     };
 
     useEffect(() => {
@@ -41,8 +52,16 @@ const AdvanceSalariesFormModal = ({ modalOpen, setModalOpen, handleSubmit }: IPr
             setFormData({ number_of_salaries: 1, months: [] });
             setSelectedMonths([]);
             setEmployee(null);
+            setError('');
         }
     }, [modalOpen]);
+
+    // Filter months based on number of salaries
+    const filteredMonths = months.map(month => ({
+        label: month,
+        value: month,
+        isDisabled: selectedMonths.length >= formData.number_of_salaries && !selectedMonths.includes(month)
+    }));
 
     return (
         <Modal
@@ -82,14 +101,15 @@ const AdvanceSalariesFormModal = ({ modalOpen, setModalOpen, handleSubmit }: IPr
                 divClasses='w-full'
                 label='Months'
                 name='months'
-                options={months.map(month => ({ label: month, value: month, isDisabled: selectedMonths.length >= formData.number_of_salaries && !selectedMonths.includes(month) }))}
+                options={filteredMonths}
                 required={true}
                 value={selectedMonths.join(',')}
                 onChange={handleMonthsChange}
                 isMulti={true}
             />
+            {error && <div className="text-red-500 mt-2">{error}</div>}
         </Modal>
     );
 };
 
-export default AdvanceSalariesFormModal;
+export default AdvanceSalariesFormModals;
