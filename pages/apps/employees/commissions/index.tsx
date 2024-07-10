@@ -7,14 +7,11 @@ import { useRouter } from 'next/router';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { setAuthToken, setContentType } from '@/configs/api.config';
 import AgGridComponent from '@/components/apps/AgGridComponent';
-import DisabledClickRenderer from '@/components/apps/DisabledClickRenderer';
-import { checkPermission } from '@/utils/helper';
+import { Button } from 'antd';
 import { ActionList, AppBasePath } from '@/utils/enums';
 import useSetActiveMenu from '@/hooks/useSetActiveMenu';
-import { clearCustomerPaymentState, getCustomerPayments } from '@/store/slices/customerPayment';
-import EmployeeFormModal from '@/components/modals/EmployeeFormModel';
+import CommissionsFormModal from '@/components/modals/commissionsFormModal';
 
-import { Button } from 'antd';
 
 const Index = () => {
     useSetActiveMenu(AppBasePath.Invoice_Payment);
@@ -37,7 +34,7 @@ const Index = () => {
         { headerName: 'Joining Date', field: 'joining_date', minWidth: 150 },
         { headerName: 'Department', field: 'department', minWidth: 150 },
         { headerName: 'Designation', field: 'designation', minWidth: 150 },
-        { headerName: 'Total Loan', field: 'total_loan', minWidth: 150 },
+        { headerName: 'Commission Amount', field: 'commission_amount', minWidth: 150 },
         {
             headerName: 'Action',
             field: 'action',
@@ -49,17 +46,14 @@ const Index = () => {
     ]);
 
     useEffect(() => {
-        dispatch(clearCustomerPaymentState());
         dispatch(setPageTitle('Customer Payments'));
         setAuthToken(token);
         setContentType('application/json');
-        dispatch(getCustomerPayments());
+       // dispatch(getCustomerPayments());
     }, []);
 
     const handleViewDetail = (id: any) => {
-        if (checkPermission(permittedMenus, activeMenu.route, ActionList.VIEW_DETAIL, AppBasePath.Invoice_Payment)) {
-            router.push(`/apps/loans/view/${id}`);
-        }
+        router.push(`/apps/loans/view/${id}`);
     };
 
     const showModal = () => {
@@ -67,11 +61,6 @@ const Index = () => {
     };
 
     const handleModalClose = () => {
-        setIsModalVisible(false);
-    };
-
-    const handleFormSubmit = (formData: any) => {
-        console.log('Form Data:', formData);
         setIsModalVisible(false);
     };
 
@@ -112,16 +101,15 @@ const Index = () => {
                     onSelectionChangedRows={(rows) => setSelectedRows(rows)}
                     rowMultiSelectWithClick={false}
                     onRowClicked={(params) => {
-                        checkPermission(permittedMenus, activeMenu.route, ActionList.VIEW_DETAIL, AppBasePath.Invoice_Payment) &&
                         router.push(`/apps/invoicing/customers/payments/view/${params.data.id}`);
                     }}
                 />
             </div>
-            <EmployeeFormModal 
-                modalOpen={isModalVisible} 
-                setModalOpen={handleModalClose} 
-                handleSubmit={handleFormSubmit} 
-            />
+            <CommissionsFormModal 
+                modalOpen={isModalVisible}
+                setModalOpen={handleModalClose} handleSubmit={function (value: any): void {
+                    throw new Error('Function not implemented.');
+                } } listFor={undefined}            />
         </div>
     );
 };
