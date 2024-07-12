@@ -134,7 +134,9 @@ const FillingForm = ({id}: IFormProps) => {
             showCancelButton: true,
             confirmButtonText: 'Yes I did',
             padding: '2em',
-            customClass: 'sweet-alerts',
+            customClass: {
+                popup: 'sweet-alerts'
+            },
         }).then((result) => {
             if (result.value) {
                 if (id) {

@@ -32,7 +32,9 @@ const Create = () => {
                 title: 'Form Submitted!',
                 text: 'Your data has been added/updated successfully.',
                 icon: 'success',
-                customClass: 'sweet-alerts'
+                customClass: {
+                    popup: 'sweet-alerts'
+                },
             }).then((result) => {
                 if (result.isConfirmed) {
                     router.push('/erp/inventory/fillings');
