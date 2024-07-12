@@ -10,7 +10,7 @@ import PageHeader from '@/components/apps/PageHeader';
 import AgGridComponent from '@/components/apps/AgGridComponent';
 import { Dropdown } from '@/components/form/Dropdown';
 import Button from '@/components/Button';
-import { ButtonType, ButtonVariant } from '@/utils/enums';
+import { AppBasePath, ButtonType, ButtonVariant } from '@/utils/enums';
 import Modal from '@/components/Modal';
 import {
     clearMenuActionsState,
@@ -260,6 +260,7 @@ const Index = () => {
     return (
         <div className="flex flex-col gap-5">
             <PageHeader
+                appBasePath={AppBasePath.Employee_Permission}
                 key={selectedRows.length}
                 selectedRows={selectedRows.length}
                 gridRef={gridRef}
