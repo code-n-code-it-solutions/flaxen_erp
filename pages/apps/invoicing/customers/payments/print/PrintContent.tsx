@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
         fontSize: 10
     },
     table: {
-        display: 'table',
+        display: 'flex',
         width: '100%',
         marginBottom: 5,
         borderStyle: 'solid',
