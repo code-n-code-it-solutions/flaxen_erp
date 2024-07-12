@@ -11,6 +11,7 @@ import Sidebar from '@/components/Layouts/app/Sidebar';
 import Header from '@/components/Layouts/app/Header';
 import Portals from '@/components/Portals';
 import { setAuthToken } from '@/configs/api.config';
+import Footer from '@/components/Layouts/Footer';
 
 interface AppLayoutProps extends PropsWithChildren {
     menus: any[]; // Define the appropriate type based on the structure of permittedMenus
@@ -164,6 +165,7 @@ const AppLayout = ({ children }:PropsWithChildren) => {
                                 {children}
                             </div>
                             <Portals />
+                            <Footer />
                         </div>
                         {/* END CONTENT AREA */}
                     </div>

@@ -89,6 +89,7 @@ const Header = () => {
     };
 
     const [search, setSearch] = useState(false);
+
     return (
         <header className={themeConfig.semidark && themeConfig.menu === 'horizontal' ? 'dark' : ''}>
             <div className="shadow-sm">
