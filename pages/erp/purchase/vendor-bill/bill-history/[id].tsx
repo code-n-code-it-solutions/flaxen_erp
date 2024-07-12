@@ -4,7 +4,7 @@ import {useAppDispatch, useAppSelector} from "@/store";
 import {useRouter} from "next/router";
 import {setAuthToken} from "@/configs/api.config";
 import {setPageTitle} from "@/store/slices/themeConfigSlice";
-import {clearVendorBillState, getVendorBillDetail} from "@/store/slices/vendorBillSlice";
+import {clearVendorBillState} from "@/store/slices/vendorBillSlice";
 import PrintLayout from "@/components/Layouts/PrintLayout";
 
 const BillHistory = () => {
@@ -23,7 +23,7 @@ const BillHistory = () => {
 
         if (billId) {
             const id = Array.isArray(billId) ? billId[0] : billId;
-            dispatch(getVendorBillDetail(parseInt(id)));
+            // dispatch(getVendorBillDetail(parseInt(id)));
         }
     }, [router.query.id, dispatch]);
 

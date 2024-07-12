@@ -52,7 +52,9 @@ const Index = () => {
             showCancelButton: true,
             confirmButtonText: 'Delete',
             padding: '2em',
-            customClass: 'sweet-alerts',
+            customClass: {
+                popup: 'sweet-alerts'
+            },
         }).then((result) => {
             if (result.value) {
                 dispatch(deleteLPO(id));
@@ -70,10 +72,14 @@ const Index = () => {
                 title: 'Deleted!',
                 text: 'Your file has been deleted.',
                 icon: 'success',
-                customClass: 'sweet-alerts'
+                customClass: {
+                    popup: 'sweet-alerts'
+                },
             });
         } else {
-            Swal.fire({title: 'Failed!', text: 'Something went wrong.', icon: 'error', customClass: 'sweet-alerts'});
+            Swal.fire({title: 'Failed!', text: 'Something went wrong.', icon: 'error', customClass: {
+                    popup: 'sweet-alerts'
+                },});
         }
     }, [success]);
 

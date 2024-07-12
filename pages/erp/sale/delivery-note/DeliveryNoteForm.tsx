@@ -575,6 +575,7 @@ const DeliveryNoteForm = () => {
                 />
             </div>
             <FinishedGoodModal
+                modalFor={'delivery_note'}
                 modalOpen={modalOpen}
                 setModalOpen={setModalOpen}
                 handleSubmit={(item) => handleQuotationItemSubmit(item)}

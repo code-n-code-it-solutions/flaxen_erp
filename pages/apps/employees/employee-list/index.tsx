@@ -15,6 +15,7 @@ import Swal from 'sweetalert2';
 import { clearEmployeeState, getEmployees, deleteEmployee } from '@/store/slices/employeeSlice';
 import { serverFilePath } from '@/utils/helper';
 import Image from 'next/image';
+import { AppBasePath } from '@/utils/enums';
 
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
@@ -112,6 +113,7 @@ const Index = () => {
     return (
         <div className="flex flex-col gap-5">
             <PageHeader
+                appBasePath={AppBasePath.Employee}
                 key={selectedRows.length}
                 selectedRows={selectedRows.length}
                 gridRef={gridRef}

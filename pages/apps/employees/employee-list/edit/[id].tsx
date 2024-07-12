@@ -3,7 +3,7 @@ import { IRootState, useAppDispatch, useAppSelector } from '@/store';
 import { useRouter } from 'next/router';
 import { clearEmployeeState, editEmployee } from '@/store/slices/employeeSlice';
 import PageWrapper from '@/components/PageWrapper';
-import { ButtonType, ButtonVariant, IconType } from '@/utils/enums';
+import { AppBasePath, ButtonType, ButtonVariant, IconType } from '@/utils/enums';
 import EmployeeForm from '@/pages/apps/employees/employee-list/EmployeeForm';
 import AppLayout from '@/components/Layouts/AppLayout';
 import DetailPageHeader from '@/components/apps/DetailPageHeader';
@@ -30,15 +30,10 @@ const Edit = () => {
     return (
         <div>
             <DetailPageHeader
+                appBasePath={AppBasePath.Employee}
                 title="Edit Employee"
                 middleComponent={{
-                    show: true,
-                    edit: false,
-                    print: true,
-                    printLabel: true,
-                    delete: true,
-                    duplicate: true,
-                    email: true
+                    show: false,
                 }}
                 backButton={{
                     show: true,
