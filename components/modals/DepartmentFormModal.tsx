@@ -20,6 +20,7 @@ interface IProps {
 
 const DepartmentFormModal = ({modalOpen, setModalOpen, modalFormData, departments}: IProps) => {
     const dispatch = useAppDispatch()
+    const {user, token} = useAppSelector(state => state.user)
     const {department, success, loading} = useAppSelector(state => state.department)
 
     const [formData, setFormData] = useState<any>({})
@@ -58,7 +59,11 @@ const DepartmentFormModal = ({modalOpen, setModalOpen, modalFormData, department
     };
 
     const handleSubmit = () => {
-        dispatch(storeDepartment(formData))
+        dispatch(storeDepartment({
+            ...formData,
+            company_id: user.company_id,
+            branch_id: user.branch_id,
+        }))
     }
 
     useEffect(() => {

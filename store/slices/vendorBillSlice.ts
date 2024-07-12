@@ -6,6 +6,7 @@ interface IVendorBillState {
     vendorBill: any;
     vendorBillDetail: any
     vendorBills: any;
+    pendingBills: any;
     payments: any;
     payment: any;
     loading: boolean;
@@ -18,6 +19,7 @@ const initialState: IVendorBillState = {
     vendorBill: null,
     vendorBillDetail: null,
     vendorBills: null,
+    pendingBills: null,
     payments: null,
     payment: null,
     loading: false,
@@ -31,6 +33,20 @@ export const getVendorBills = createAsyncThunk(
     async (_, thunkAPI) => {
         try {
             const response = await API.get('/vendor-bill');
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const showDetails = createAsyncThunk(
+    'vendor-bill/show',
+    async (billId:number, thunkAPI) => {
+        try {
+            const response = await API.get('/vendor-bill/'+billId);
             return response.data;
         } catch (error: any) {
             const message =
@@ -82,20 +98,6 @@ export const storeVendorBill = createAsyncThunk(
     }
 );
 
-export const getVendorBillDetail = createAsyncThunk(
-    'vendor-bill/show',
-    async (id: number, thunkAPI) => {
-        try {
-            const response = await API.get('/vendor-bill/' + id);
-            return response.data;
-        } catch (error: any) {
-            const message =
-                error.response?.data?.message || error.message || 'Failed to fetch';
-            return thunkAPI.rejectWithValue(message);
-        }
-    }
-);
-
 export const deleteVendorBill = createAsyncThunk(
     'vendor-bill/delete',
     async (id: number, thunkAPI) => {
@@ -110,11 +112,11 @@ export const deleteVendorBill = createAsyncThunk(
     }
 );
 
-export const getVendorBillByStatuses = createAsyncThunk(
-    'vendor-bill/by-statuses',
-    async (statuses: any, thunkAPI) => {
+export const getPendingVendorBills = createAsyncThunk(
+    'vendor-bill/pending',
+    async (vendorId: number, thunkAPI) => {
         try {
-            const response = await API.post('/vendor-bill/by-statuses', statuses);
+            const response = await API.get('/vendor-bill/pending/'+ vendorId);
             return response.data;
         } catch (error: any) {
             const message =
@@ -135,6 +137,7 @@ export const vendorBillSlice = createSlice({
             state.error = null;
             state.success = false;
             state.vendorBillDetail = null;
+            state.pendingBills = null;
         },
     },
     extraReducers: (builder) => {
@@ -148,6 +151,18 @@ export const vendorBillSlice = createSlice({
                 state.success = action.payload.success;
             })
             .addCase(getVendorBills.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(showDetails.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(showDetails.fulfilled, (state, action) => {
+                state.loading = false;
+                state.vendorBillDetail = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(showDetails.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })
@@ -174,15 +189,15 @@ export const vendorBillSlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message;
             })
-            .addCase(getVendorBillByStatuses.pending, (state) => {
+            .addCase(getPendingVendorBills.pending, (state) => {
                 state.loading = true;
             })
-            .addCase(getVendorBillByStatuses.fulfilled, (state, action) => {
+            .addCase(getPendingVendorBills.fulfilled, (state, action) => {
                 state.loading = false;
-                state.vendorBills = action.payload.data;
+                state.pendingBills = action.payload.data;
                 state.success = action.payload.success;
             })
-            .addCase(getVendorBillByStatuses.rejected, (state, action) => {
+            .addCase(getPendingVendorBills.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })
@@ -207,18 +222,6 @@ export const vendorBillSlice = createSlice({
                 state.success = action.payload.success;
             })
             .addCase(storeBillPayments.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.error.message;
-            })
-            .addCase(getVendorBillDetail.pending, (state) => {
-                state.loading = true;
-            })
-            .addCase(getVendorBillDetail.fulfilled, (state, action) => {
-                state.loading = false;
-                state.vendorBillDetail = action.payload.data;
-                state.success = action.payload.success;
-            })
-            .addCase(getVendorBillDetail.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })

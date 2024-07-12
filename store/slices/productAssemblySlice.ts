@@ -23,6 +23,7 @@ interface ProductAssemblyState {
     productAssembly: any;
     productAssemblyDetail: any
     allProductAssemblies: any;
+    productAssembliesForPrint: any;
     assemblyItems: any;
     loading: boolean;
     error: any;
@@ -34,6 +35,7 @@ const initialState: ProductAssemblyState = {
     productAssembly: null,
     productAssemblyDetail: null,
     allProductAssemblies: null,
+    productAssembliesForPrint: null,
     assemblyItems: null,
     loading: false,
     error: null,
@@ -115,9 +117,9 @@ export const updateProductAssembly = createAsyncThunk(
 
 export const deleteProductAssembly = createAsyncThunk(
     'productAssemblies/delete',
-    async (id: number, thunkAPI) => {
+    async (ids: number[], thunkAPI) => {
         try {
-            const response = await API.delete('/product-assemblies/' + id);
+            const response = await API.post('/product-assemblies/delete', {ids});
             return response.data;
         } catch (error: any) {
             const message =
@@ -141,6 +143,21 @@ export const getAssemblyItems = createAsyncThunk(
     }
 );
 
+export const getProductAssembliesForPrint = createAsyncThunk(
+    'productAssemblies/for-print',
+    async (data: any, thunkAPI) => {
+        try {
+            const response = await API.post('/product-assemblies/print', data);
+            console.log(response.data);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 // Slice
 export const productAssemblySlice = createSlice({
     name: 'productAssemblies',
@@ -152,6 +169,7 @@ export const productAssemblySlice = createSlice({
             state.success = false;
             state.productAssemblyDetail = null;
             state.assemblyItems = null;
+            state.productAssembliesForPrint = null;
         },
     },
     extraReducers: (builder) => {
@@ -236,6 +254,18 @@ export const productAssemblySlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message;
             })
+            .addCase(getProductAssembliesForPrint.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getProductAssembliesForPrint.fulfilled, (state, action) => {
+                state.loading = false;
+                state.productAssembliesForPrint = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getProductAssembliesForPrint.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            });
     },
 });
 export const {clearProductAssemblyState} = productAssemblySlice.actions;

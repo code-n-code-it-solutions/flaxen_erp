@@ -1,11 +1,11 @@
-import React, {FC} from 'react';
+import React, { FC } from 'react';
 import Flatpickr from 'react-flatpickr';
 import 'flatpickr/dist/flatpickr.css';
-import MaskedInput from "react-text-mask";
+import MaskedInput from 'react-text-mask';
 
 interface IProps {
     divClasses?: string;
-    label: string;
+    label?: string;
     type: string;
     name: string;
     value?: string;
@@ -40,9 +40,11 @@ export const Input: FC<IProps> = ({
                                   }) => {
     return (
         <div className={divClasses}>
-            <label htmlFor={name} className="form-label flex">
-                {label} {required && <span className="text-sm text-red-500">*</span>}
-            </label>
+            {label && (
+                <label htmlFor={name} className="form-label flex">
+                    {label} {required && <span className="text-sm text-red-500">*</span>}
+                </label>
+            )}
 
             {isMasked
                 ? <MaskedInput
@@ -62,7 +64,7 @@ export const Input: FC<IProps> = ({
                 />
                 : type === 'date'
                     ? <Flatpickr
-                        value={value}
+                        value={value ? new Date(value) : new Date()}
                         placeholder={placeholder}
                         options={{
                             dateFormat: 'Y-m-d'
@@ -75,7 +77,7 @@ export const Input: FC<IProps> = ({
                             options={{
                                 noCalendar: true,
                                 enableTime: true,
-                                dateFormat: 'h:i K',
+                                dateFormat: 'h:i K'
                             }}
                             placeholder={placeholder}
                             defaultValue={value}
@@ -89,7 +91,7 @@ export const Input: FC<IProps> = ({
                             value={value}
                             onChange={onChange}
                             placeholder={placeholder}
-                            className={`form-input ${className} ${errorMessage ? 'border-red-500' : ''}`}
+                            className={`form-input ${className} ${errorMessage ? 'border-red-500' : ''} ${disabled ? 'bg-gray-200' : ''}`}
                             disabled={disabled}
                             required={required}
                             readOnly={readonly}

@@ -19,10 +19,10 @@ interface IProps {
 const PageHeader = ({title, buttons}: IProps) => {
     return (
         <div className="mb-5 flex flex-col-reverse md:flex-row items-start gap-5 md:items-center justify-between">
-            <h5 className="text-lg font-semibold dark:text-white-light">
+            <h5 className="text-lg font-semibold dark:text-white-light w-full">
                 {title}
             </h5>
-            <div className="flex justify-end items-center flex-wrap gap-3">
+            <div className="flex justify-end items-center w-full gap-1">
                 {buttons?.map((button, index) => (
                     <Button
                         key={index}
@@ -38,6 +38,7 @@ const PageHeader = ({title, buttons}: IProps) => {
                         link={button.link}
                         onClick={button.onClick}
                         tooltip={button.tooltip}
+                        classes="w-auto"
                     />
                 ))}
             </div>

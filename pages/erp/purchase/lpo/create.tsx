@@ -44,8 +44,8 @@ const Create = () => {
 
     return (
         <PageWrapper
-            embedLoader={true}
-            loading={loading}
+            embedLoader={false}
+            loading={false}
             breadCrumbItems={breadcrumbItems}
             title={'New LPO'}
             buttons={[

@@ -1,18 +1,18 @@
 import React, {useEffect} from 'react';
-import {useDispatch, useSelector} from "react-redux";
-import {ThunkDispatch} from "redux-thunk";
-import {IRootState} from "@/store";
-import {AnyAction} from "redux";
+import {useAppDispatch, useAppSelector} from "@/store";
 import PageWrapper from "@/components/PageWrapper";
 import Button from "@/components/Button";
 import {ButtonSize, ButtonType, ButtonVariant, IconType} from "@/utils/enums";
 import {getIcon} from "@/utils/helper";
 import {setPageTitle} from "@/store/slices/themeConfigSlice";
 import DeliveryNoteForm from "@/pages/erp/sale/delivery-note/DeliveryNoteForm";
+import {useRouter} from "next/router";
+import {clearDeliveryNoteState} from "@/store/slices/deliveryNoteSlice";
 
 const Create = () => {
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
-    const {token} = useSelector((state: IRootState) => state.user);
+    const dispatch = useAppDispatch();
+    const router = useRouter();
+    const {deliveryNote, success} = useAppSelector((state) => state.deliveryNote);
     const breadcrumb = [
         {
             title: 'Home',
@@ -35,6 +35,13 @@ const Create = () => {
     useEffect(() => {
         dispatch(setPageTitle('Create Delivery Note'));
     }, []);
+
+    useEffect(() => {
+        if (deliveryNote && success) {
+            router.push('/erp/sale/delivery-note')
+            dispatch(clearDeliveryNoteState());
+        }
+    }, [deliveryNote, success]);
 
     return (
         <PageWrapper

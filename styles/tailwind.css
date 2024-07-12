@@ -77,7 +77,7 @@
         @apply bg-[#fafafa]/90 px-6 pt-4 dark:bg-[#060818]/90;
     }
     .navbar-floating header > div .horizontal-menu {
-        @apply rounded-b-md shadow;
+        @apply rounded-b-md;
     }
 
     /* Sidebar */
@@ -120,7 +120,7 @@
 
     /* Horizontal layouts */
     .horizontal .horizontal-menu {
-        @apply hidden shadow-md lg:flex;
+        @apply hidden  lg:flex;
     }
     .horizontal .horizontal-logo {
         @apply flex;
@@ -746,4 +746,34 @@ pre.hljs {
     /*.print:justify-start {*/
     /*    justify-content: flex-start;*/
     /*}*/
+}
+
+.basic.tree {
+    list-style: none;
+    margin: 0;
+    padding: 20px;
+}
+.basic .tree-node,
+.basic .tree-node-group {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.basic .tree-branch-wrapper,
+.basic .tree-node__leaf {
+    outline: none;
+}
+
+.basic .tree-node--focused {
+    outline: rgb(77, 144, 254) auto 2px;
+    display: block;
+}
+
+.basic .tree-node__branch {
+    display: block;
+}
+
+.basic .tree-node {
+    cursor: pointer;
 }

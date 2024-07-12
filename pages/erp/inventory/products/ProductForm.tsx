@@ -18,6 +18,7 @@ interface IFormData {
     product_type: string;
     title: string;
     unit_id: string;
+    retail_price: number;
     sub_unit_id: string;
     purchase_description: string;
     value_per_unit: string;
@@ -49,6 +50,7 @@ const ProductForm = ({id}: IFormProps) => {
         product_type: '',
         title: '',
         unit_id: '',
+        retail_price: 0,
         sub_unit_id: '',
         purchase_description: '',
         value_per_unit: '',
@@ -270,6 +272,18 @@ const ProductForm = ({id}: IFormProps) => {
                     required={true}
                     errorMessage={errorMessages?.valuation_method}
                 />
+                <Input
+                    divClasses="w-full"
+                    label="Retail Price"
+                    type="number"
+                    name="retail_price"
+                    value={formData.retail_price.toString()}
+                    onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
+                    isMasked={false}
+                    placeholder="Enter retail price for it"
+                    required={true}
+                    errorMessage={errorMessages?.retail_price}
+                />
             </div>
 
             <div className='flex justify-between items-center flex-col md:flex-row gap-3'>
@@ -389,14 +403,14 @@ const ProductForm = ({id}: IFormProps) => {
                     errorMessage={errorMessages?.sale_description}
                 />
             </div>
-            {isFormValid && (
+            {/*{isFormValid && (*/}
                 <Button
                     type={ButtonType.submit}
                     text={loading ? 'Loading...' : id ? 'Update' : 'Create'}
                     variant={ButtonVariant.info}
                     disabled={loading}
                     classes="!mt-6"/>
-            )}
+            {/*)}*/}
         </form>
     );
 };

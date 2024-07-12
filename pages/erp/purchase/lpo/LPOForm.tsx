@@ -1,10 +1,7 @@
 "use client";
 import React, {useEffect, useState} from 'react';
 import {setAuthToken, setContentType} from "@/configs/api.config";
-import {useDispatch, useSelector} from "react-redux";
-import {ThunkDispatch} from "redux-thunk";
-import {IRootState, useAppDispatch, useAppSelector} from "@/store";
-import {AnyAction} from "redux";
+import {useAppDispatch, useAppSelector} from "@/store";
 import {
     clearPurchaseRequisitionState,
     getPurchaseRequisitionByStatuses,
@@ -17,7 +14,7 @@ import Image from "next/image";
 import {getEmployees} from "@/store/slices/employeeSlice";
 import {storeLPO} from "@/store/slices/localPurchaseOrderSlice";
 import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
-import {ButtonType, ButtonVariant, FORM_CODE_TYPE, IconType, RAW_PRODUCT_LIST_TYPE} from "@/utils/enums";
+import {ButtonSize, ButtonType, ButtonVariant, FORM_CODE_TYPE, IconType, RAW_PRODUCT_LIST_TYPE} from "@/utils/enums";
 import {getTaxCategories} from "@/store/slices/taxCategorySlice";
 import ServiceItemListing from "@/components/listing/ServiceItemListing";
 import RawProductItemListing from "@/components/listing/RawProductItemListing";
@@ -26,9 +23,10 @@ import {Input} from "@/components/form/Input";
 import Button from "@/components/Button";
 import {getIcon, serverFilePath} from "@/utils/helper";
 import Textarea from "@/components/form/Textarea";
+import Modal from "@/components/Modal";
 
 interface IFormData {
-    purchase_requisition_id: number;
+    purchase_requisition_ids: string;
     lpo_number: string;
     vendor_id: number;
     description: string;
@@ -66,13 +64,17 @@ const LPOForm = ({id}: IFormProps) => {
     const {vehicle, success, vehicles} = useAppSelector(state => state.vehicle);
     const {employees} = useAppSelector(state => state.employee);
     const {taxCategories} = useAppSelector(state => state.taxCategory);
+
+    const [itemModalOpen, setItemModalOpen] = useState<boolean>(false);
     const [showVendorDetail, setShowVendorDetail] = useState<boolean>(false);
     const [vendorDetail, setVendorDetail] = useState<any>({});
     const [rawProducts, setRawProducts] = useState<any[]>([]);
+    const [rawProductForSelect, setRawProductForSelect] = useState<any[]>([]);
+    const [originalProductState, setOriginalProductState] = useState<any[]>([]);
     const [serviceItems, setServiceItems] = useState<any[]>([]);
     const [miscellaneousItems, setMiscellaneousItems] = useState<any[]>([]);
     const [formData, setFormData] = useState<IFormData>({
-        purchase_requisition_id: 0,
+        purchase_requisition_ids: '',
         lpo_number: '',
         vendor_id: 0,
         description: '',
@@ -96,6 +98,7 @@ const LPOForm = ({id}: IFormProps) => {
     });
 
     const [purchaseRequestOptions, setPurchaseRequestOptions] = useState<any[]>([{value: 0, label: 'Skip Requisition'}])
+    const [selectedPR, setSelectedPR] = useState<any[]>([])
     const [vendorOptions, setVendorOptions] = useState<any[]>([])
     const [currencyOptions, setCurrencyOptions] = useState<any[]>([])
     const [vendorRepresentativeOptions, setVendorRepresentativeOptions] = useState<any[]>([])
@@ -161,6 +164,8 @@ const LPOForm = ({id}: IFormProps) => {
                 formData.type === 'Material'
                     ? rawProducts.map((product: any) => {
                         return {
+                            status: product.status,
+                            purchase_requisition_id: product.purchase_requisition_id,
                             raw_product_id: product.raw_product_id,
                             description: product.description || '',
                             unit_id: product.unit_id,
@@ -175,6 +180,8 @@ const LPOForm = ({id}: IFormProps) => {
                     })
                     : serviceItems.map((item: any) => {
                         return {
+                            status: item.status,
+                            purchase_requisition_id: item.purchase_requisition_id,
                             asset_id: item.asset_id,
                             service_name: item.service_name,
                             description: item.description || '',
@@ -190,6 +197,7 @@ const LPOForm = ({id}: IFormProps) => {
             // dispatch(updateRawProduct(id, formData));
         } else {
             dispatch(storeLPO(finalData));
+            // console.log(finalData)
         }
     };
 
@@ -253,69 +261,61 @@ const LPOForm = ({id}: IFormProps) => {
         }
     }
 
-    const handlePurchaseRequisitionChange = (e: any) => {
-        if (e && typeof e !== 'undefined') {
-            if (e.value === 0) {
-                dispatch(generateCode(FORM_CODE_TYPE.PURCHASE_REQUISITION))
-            } else {
+    const handlePurchaseRequisitionChange = (selections: any) => {
+        if (selections && typeof selections !== 'undefined') {
+            setSelectedPR(selections);
+
+            const nonZeroSelections = selections.filter((item: any) => item.value !== 0);
+            if (nonZeroSelections.length > 0) {
+                // Join values for non-zero selections
+                const selectedValues = nonZeroSelections.map((item: any) => item.value).join(',');
+                const selectedPRCodes = nonZeroSelections.map((item: any) => item.request.pr_code).join(', ');
+
                 setFormData(prev => ({
                     ...prev,
-                    purchase_requisition_id: e.value,
-                    internal_document_number: e.request.pr_code
-                }))
-            }
-            if (e.value !== 0) {
-                if (e.request.items?.length > 0) {
-                    if (formData.type === 'Material') {
-                        setRawProducts(prevState => (
-                            e.request.items.map((item: any) => ({
-                                raw_product_id: item.raw_product_id,
-                                quantity: parseInt(item.quantity),
-                                unit_id: item.unit_id,
-                                unit_price: parseFloat(item.unit_price),
-                                sub_total: parseFloat(item.unit_price) * parseInt(item.quantity),
-                                description: item.description || '',
-                                tax_category_id: 0,
-                                tax_rate: 0,
-                                tax_amount: 0,
-                                grand_total: item.unit_price * item.quantity
-                            }))
-                        ))
-                    } else if (formData.type === 'Service') {
-                        if (e.request.items?.length > 0) {
-                            setServiceItems(prevState => (
-                                e.request.items.map((item: any) => ({
-                                    asset_id: item.asset_id,
-                                    service_name: item.service_name,
-                                    description: item.description || '',
-                                    cost: isNaN(parseFloat(item.cost)) ? 0 : parseFloat(item.cost),
-                                    tax_category_id: item.tax_category_id,
-                                    tax_rate: isNaN(parseFloat(item.tax_rate)) ? 0 : parseFloat(item.tax_rate),
-                                    tax_amount: isNaN(parseFloat(item.tax_amount)) ? 0 : parseFloat(item.tax_amount),
-                                    grand_total: isNaN(parseFloat(item.grand_total)) ? 0 : parseFloat(item.grand_total)
-                                }))
-                            ))
-                        }
-                    } else {
-                        setRawProducts([])
-                        setServiceItems([])
-                        setMiscellaneousItems([])
-                    }
-                } else {
-                    setRawProducts([])
-                    setServiceItems([])
-                    setMiscellaneousItems([])
+                    purchase_requisition_ids: selectedValues,
+                    internal_document_number: selectedPRCodes
+                }));
+
+                // Merge all items from all non-zero selections
+                const allItems = nonZeroSelections.flatMap((item: any) => item.request.purchase_requisition_items.map((i: any) => ({
+                    ...i,
+                    quantity: i.remaining_quantity
+                })));
+
+                // Based on the form's type, set the appropriate items
+                if (formData.type === 'Material') {
+                    // setRawProducts(allItems);
+                    // setOriginalProductState(allItems);
+                    setRawProductForSelect(allItems);
+                } else if (formData.type === 'Service') {
+                    setServiceItems(allItems); // Assuming a similar structure for services
                 }
+            } else {
+                // Handle the case where all selections are zero or empty
+                setFormData(prev => ({
+                    ...prev,
+                    purchase_requisition_ids: '0',
+                    internal_document_number: ''
+                }));
+                setRawProducts([]);
+                setServiceItems([]);
+                setOriginalProductState([]);
+                setRawProductForSelect([]);
             }
         } else {
             setFormData(prev => ({
                 ...prev,
-                purchase_requisition_id: 0
-            }))
-            setRawProducts([])
-            setMiscellaneousItems([])
+                purchase_requisition_ids: '0',
+                internal_document_number: ''
+            }));
+            setRawProducts([]);
+            setServiceItems([]);
+            setSelectedPR([]);
+            setOriginalProductState([]);
+            setRawProductForSelect([]);
         }
-    }
+    };
 
     const handleVehicleSubmit = (value: any) => {
         setContentType('multipart/form-data');
@@ -404,15 +404,15 @@ const LPOForm = ({id}: IFormProps) => {
     useEffect(() => {
         if (purchaseRequests) {
             setPurchaseRequestOptions([
-                {value: 0, label: 'Skip Requisition'},
+                {value: 0, label: 'Skip Requisition', request: {}},
                 ...purchaseRequests.map((request: any) => ({
                     value: request.id,
-                    label: request.pr_title + ' (' + request.pr_code + ')',
+                    label: `${request.pr_title} (${request.pr_code})`,
                     request: request
                 }))
-            ])
+            ]);
         }
-    }, [purchaseRequests])
+    }, [purchaseRequests]);
 
     useEffect(() => {
         if (representatives) {
@@ -452,57 +452,89 @@ const LPOForm = ({id}: IFormProps) => {
         }
     }, [vehicles])
 
+    useEffect(() => {
+        const newRawProductForSelect = originalProductState.filter(op =>
+            !rawProducts.some(rp => rp.raw_product_id === op.raw_product_id && rp.purchase_requisition_id === op.purchase_requisition_id)
+        );
+
+        if (newRawProductForSelect.length > 0) {
+            setRawProductForSelect((prev: any) => [...prev, ...newRawProductForSelect])
+        }
+    }, [rawProducts, originalProductState]);
+
     return (
         <form className="space-y-5" onSubmit={(e) => handleSubmit(e)}>
             <div className="flex justify-start flex-col items-start space-y-3">
-                <Dropdown
-                    divClasses='w-full md:w-1/2'
-                    label='Type'
-                    name='type'
-                    options={lpoTypeOptions}
-                    value={formData.type}
-                    onChange={(e: any) => handleLpoTypeChange(e)}
-                />
+                <div className="flex flex-col md:flex-row gap-3 items-center w-full">
+                    <Dropdown
+                        divClasses='w-full'
+                        label='Type'
+                        name='type'
+                        options={lpoTypeOptions}
+                        value={formData.type}
+                        onChange={(e: any) => handleLpoTypeChange(e)}
+                    />
 
-                <Dropdown
-                    divClasses='w-full md:w-1/2'
-                    label='Purchase Requisition'
-                    name='purchase_requisition_id'
-                    options={purchaseRequestOptions}
-                    value={formData.purchase_requisition_id}
-                    onChange={(e: any) => handlePurchaseRequisitionChange(e)}
-                />
+                    <div className="flex justify-between items-end w-full gap-3">
+                        <Dropdown
+                            divClasses='w-full'
+                            label='Purchase Requisition'
+                            name='purchase_requisition_id'
+                            options={purchaseRequestOptions}
+                            formatOptionLabel={({value, label, request}: any) => {
+                                if (value === 0) {
+                                    return label;
+                                }
+                                return (
+                                    <div className="flex flex-col justify-start">
+                                        <span style={{fontSize: 10}}>{request.type}</span>
+                                        <span>{label}</span>
+                                    </div>
+                                );
+                            }}
+                            value={selectedPR}
+                            onChange={(e: any) => handlePurchaseRequisitionChange(e)}
+                            isMulti={true}
+                        />
+                        <Button
+                            type={ButtonType.button}
+                            text="Select Items"
+                            variant={ButtonVariant.primary}
+                            size={ButtonSize.small}
+                            onClick={() => setItemModalOpen(true)}
+                            disabled={rawProductForSelect.length === 0}
+                        />
+                    </div>
+                </div>
 
                 <div className="border rounded p-5 w-full">
                     <h3 className="text-lg font-semibold">Basic Details</h3>
                     <hr className="my-3"/>
                     <div className="grid grid-cols-1 md:grid-cols-1 gap-4 w-full my-5">
-                        <div className="w-full space-y-3">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-                                <Input
-                                    divClasses='w-full'
-                                    label='LPO Number'
-                                    type='text'
-                                    name='lpo_number'
-                                    value={formData.lpo_number}
-                                    onChange={handleChange}
-                                    isMasked={false}
-                                    placeholder='Enter LPO Number'
-                                    disabled={true}
-                                />
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+                            <Input
+                                divClasses='w-full'
+                                label='LPO Number'
+                                type='text'
+                                name='lpo_number'
+                                value={formData.lpo_number}
+                                onChange={handleChange}
+                                isMasked={false}
+                                placeholder='Enter LPO Number'
+                                disabled={true}
+                            />
 
-                                <Input
-                                    divClasses={`w-full ${formData.purchase_requisition_id !== 0 ? 'hide' : ''}`}
-                                    label='Internal Document Number'
-                                    type='text'
-                                    name='internal_document_number'
-                                    value={formData.internal_document_number}
-                                    onChange={handleChange}
-                                    placeholder="Enter Internal Document Number"
-                                    isMasked={false}
-                                    disabled={true}
-                                />
-                            </div>
+                            <Input
+                                divClasses={`w-full ${formData.purchase_requisition_ids !== '0' ? 'hide' : ''}`}
+                                label='Internal Document Number'
+                                type='text'
+                                name='internal_document_number'
+                                value={formData.internal_document_number}
+                                onChange={handleChange}
+                                placeholder="Enter Internal Document Number"
+                                isMasked={false}
+                                disabled={true}
+                            />
                             <Dropdown
                                 divClasses='w-full'
                                 label='Status'
@@ -524,64 +556,78 @@ const LPOForm = ({id}: IFormProps) => {
                                 }}
                             />
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-                                <Input
-                                    divClasses='w-full'
-                                    label='Delivery Due Days'
-                                    type='number'
-                                    name='delivery_due_in_days'
-                                    value={formData.delivery_due_in_days.toString()}
-                                    onChange={handleChange}
-                                    isMasked={false}
-                                    placeholder="Delivery Due Days"
-                                />
 
-                                <Input
-                                    divClasses='w-full'
-                                    label='Delivery Due Date'
-                                    type='text'
-                                    name='delivery_due_date'
-                                    value={formData.delivery_due_date}
-                                    onChange={handleChange}
-                                    isMasked={false}
-                                    placeholder="Delivery Due Date"
-                                    disabled={true}
-                                />
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-                                <Input
-                                    divClasses='w-full'
-                                    label='Payment Terms (Days)'
-                                    type='number'
-                                    name='payment_terms_in_days'
-                                    value={formData.payment_terms_in_days.toString()}
-                                    onChange={handleChange}
-                                    isMasked={false}
-                                    placeholder="Payment Terms (Days)"
-                                />
+                            <Input
+                                divClasses='w-full'
+                                label='Delivery Due Days'
+                                type='number'
+                                name='delivery_due_in_days'
+                                value={formData.delivery_due_in_days.toString()}
+                                onChange={handleChange}
+                                isMasked={false}
+                                placeholder="Delivery Due Days"
+                            />
 
-                                <Dropdown
-                                    divClasses='w-full'
-                                    label='Currency'
-                                    name='currency_id'
-                                    options={currencyOptions}
-                                    value={formData.currency_id}
-                                    onChange={(e: any) => {
-                                        if (e && typeof e !== 'undefined') {
-                                            setFormData(prev => ({
-                                                ...prev,
-                                                currency_id: e.value
-                                            }))
-                                        } else {
-                                            setFormData(prev => ({
-                                                ...prev,
-                                                currency_id: 0
-                                            }))
-                                        }
-                                    }}
-                                />
+                            <Input
+                                divClasses='w-full'
+                                label='Delivery Due Date'
+                                type='text'
+                                name='delivery_due_date'
+                                value={formData.delivery_due_date}
+                                onChange={handleChange}
+                                isMasked={false}
+                                placeholder="Delivery Due Date"
+                                disabled={true}
+                            />
 
-                            </div>
+                            <Input
+                                divClasses='w-full'
+                                label='Payment Terms (Days)'
+                                type='number'
+                                name='payment_terms_in_days'
+                                value={formData.payment_terms_in_days.toString()}
+                                onChange={handleChange}
+                                isMasked={false}
+                                placeholder="Payment Terms (Days)"
+                            />
+
+                            <Dropdown
+                                divClasses='w-full'
+                                label='Currency'
+                                name='currency_id'
+                                options={currencyOptions}
+                                value={formData.currency_id}
+                                onChange={(e: any) => {
+                                    if (e && typeof e !== 'undefined') {
+                                        setFormData(prev => ({
+                                            ...prev,
+                                            currency_id: e.value
+                                        }))
+                                    } else {
+                                        setFormData(prev => ({
+                                            ...prev,
+                                            currency_id: 0
+                                        }))
+                                    }
+                                }}
+                            />
+
+                            <Dropdown
+                                divClasses='w-full'
+                                label='Vendor'
+                                name='vendor_id'
+                                options={vendorOptions}
+                                value={formData.vendor_id}
+                                onChange={(e: any) => handleVendorChange(e)}
+                            />
+                            <Dropdown
+                                divClasses='w-full'
+                                label='Vendor Representative'
+                                name='vendor_representatative_id'
+                                options={vendorRepresentativeOptions}
+                                value={formData.vendor_representative_id}
+                                onChange={(e: any) => handleRepresentativeChange(e)}
+                            />
                         </div>
                         <div className="w-full space-y-3"
                              hidden={showItemDetail.type !== 'Material' && showItemDetail.type !== ''}>
@@ -605,7 +651,8 @@ const LPOForm = ({id}: IFormProps) => {
                             <div className="w-full" hidden={!showVehicleDetail}>
                                 <h4 className="font-bold text-lg">Vehicle Details</h4>
                                 <div className="flex flex-col gap-3 justify-center items-center">
-                                    <Image priority={true} src={serverFilePath(vehicleDetail.thumbnail)} alt="Vehicle Image"
+                                    <Image priority={true} src={serverFilePath(vehicleDetail.thumbnail)}
+                                           alt="Vehicle Image"
                                            height={100} width={100}/>
                                     <table>
                                         <thead>
@@ -633,103 +680,6 @@ const LPOForm = ({id}: IFormProps) => {
                     </div>
                 </div>
 
-                <div className="border rounded p-5 w-full">
-                    <div className="flex flex-col md:flex-row justify-between items-center">
-                        <h3 className="text-lg font-semibold">Vendor Details</h3>
-                        <Button
-                            type={ButtonType.link}
-                            text={
-                                <span className="flex items-center">
-                                    {getIcon(IconType.add)}
-                                    Create Vendor
-                                </span>
-                            }
-                            variant={ButtonVariant.primary}
-                            link="/admin/vendors/create"
-                        />
-                    </div>
-                    <hr className="my-3"/>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full my-5 ">
-                        <div className="w-full space-y-3">
-                            <Dropdown
-                                divClasses='w-full'
-                                label='Vendor'
-                                name='vendor_id'
-                                options={vendorOptions}
-                                value={formData.vendor_id}
-                                onChange={(e: any) => handleVendorChange(e)}
-                            />
-
-                            <div className="w-full" hidden={!showVendorDetail}>
-                                <h4 className="font-bold text-lg">Vendor Details</h4>
-                                <table>
-                                    <thead>
-                                    <tr>
-                                        <th>Vendor Number</th>
-                                        <th>Vendor Name</th>
-                                        <th>Billed From</th>
-                                        <th>Shift From</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr>
-                                        <td>{vendorDetail.vendor_number}</td>
-                                        <td>{vendorDetail.name}</td>
-                                        <td>
-                                            {vendorDetail.addresses?.map((address: any, index: number) => {
-                                                if (address.type === 'billing') {
-                                                    return address.address + ', ' + address.city?.name + ', ' + address.state?.name + ', ' + address.country?.name
-                                                }
-                                            })}
-                                        </td>
-                                        <td>
-                                            {vendorDetail.addresses?.map((address: any, index: number) => {
-                                                if (address.type === 'shifting') {
-                                                    return address.address + ', ' + address.city?.name + ', ' + address.state?.name + ', ' + address.country?.name
-                                                }
-                                            })}
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <div className="w-full space-y-3">
-                            <Dropdown
-                                divClasses='w-full'
-                                label='Vendor Representative'
-                                name='vendor_representatative_id'
-                                options={vendorRepresentativeOptions}
-                                value={formData.vendor_representative_id}
-                                onChange={(e: any) => handleRepresentativeChange(e)}
-                            />
-
-                            <div className="w-full" hidden={!showRepresentativeDetail}>
-                                <h4 className="font-bold text-lg">Representative Details</h4>
-                                <table>
-                                    <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Phone</th>
-                                        <th>Email</th>
-                                        <th>Address</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr>
-                                        <td>{representativeDetail.name}</td>
-                                        <td>{representativeDetail.phone}</td>
-                                        <td>{representativeDetail.email}</td>
-                                        <td>
-                                            {representativeDetail.address + ', ' + representativeDetail.city?.name + ', ' + representativeDetail.state?.name + ', ' + representativeDetail.country?.name}
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 <Textarea
                     divClasses='w-full'
                     label='Terms & Conditions'
@@ -745,6 +695,7 @@ const LPOForm = ({id}: IFormProps) => {
                             ? (
                                 <RawProductItemListing
                                     rawProducts={rawProducts}
+                                    originalProducts={originalProductState}
                                     type={RAW_PRODUCT_LIST_TYPE.LOCAL_PURCHASE_ORDER}
                                     setRawProducts={setRawProducts}
                                 />
@@ -784,6 +735,68 @@ const LPOForm = ({id}: IFormProps) => {
                 handleAddition={(value) => handleVehicleSubmit(value)}
                 title={'Vehicle'}
             />
+
+            <Modal
+                // key={rawProductForSelect.length}
+                show={itemModalOpen}
+                setShow={setItemModalOpen}
+                title="Select Items"
+                size={'5xl'}
+            >
+                <table>
+                    <thead>
+                    <tr>
+                        <th>PR</th>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Unit Price</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {rawProductForSelect.map((product: any, index: number) => (
+                        <tr key={index}>
+                            <td>{product.purchase_requisition?.pr_code}</td>
+                            <td>{product.raw_product?.item_code}</td>
+                            <td>{product.quantity}</td>
+                            <td>{product.unit_price}</td>
+                            <td>
+                                <Button
+                                    type={ButtonType.button}
+                                    text="Add"
+                                    variant={ButtonVariant.primary}
+                                    onClick={() => {
+                                        setRawProducts([
+                                            ...rawProducts,
+                                            {
+                                                status: 'Completed',
+                                                purchase_requisition_id: product.purchase_requisition_id, // set the parent purchase requisition id
+                                                raw_product_id: product.raw_product_id,
+                                                quantity: parseInt(product.quantity),
+                                                unit_id: product.unit_id,
+                                                unit_price: parseFloat(product.unit_price),
+                                                sub_total: parseFloat(product.unit_price) * parseInt(product.quantity),
+                                                description: product.description || '',
+                                                tax_category_id: 0,
+                                                tax_rate: 0,
+                                                tax_amount: 0,
+                                                grand_total: product.unit_price * product.quantity
+                                            }
+                                        ])
+                                        setOriginalProductState([
+                                            ...originalProductState,
+                                            product
+                                        ])
+                                        setRawProductForSelect(rawProductForSelect.filter((item: any) => item.id !== product.id))
+                                        // setItemModalOpen(false)
+                                    }}
+                                />
+                            </td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+            </Modal>
 
             {/*<LPOServiceModal*/}
             {/*    modalOpen={serviceModalOpen}*/}

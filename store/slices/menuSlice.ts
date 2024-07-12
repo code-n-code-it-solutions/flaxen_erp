@@ -1,11 +1,12 @@
-import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
-import {API} from "@/configs/api.config";
-import {configureSlice} from "@/utils/helper";
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { API } from '@/configs/api.config';
+import { configureSlice } from '@/utils/helper';
 
 interface IMenusState {
     permittedMenus: any;
     activeModule: any;
     moduleMenus: any;
+    activeMenu: any;
     loading: boolean;
     error: any;
     success: boolean;
@@ -16,19 +17,20 @@ const initialState: IMenusState = {
     permittedMenus: null,
     activeModule: null,
     moduleMenus: null,
+    activeMenu: null,
     loading: false,
     error: null,
-    success: false,
+    success: false
 };
 
 // Async thunks
 export const getPermittedMenu = createAsyncThunk(
     'menus/permitted',
-    async (_, thunkAPI) => {
+    async (pluginId: number, thunkAPI) => {
         try {
-            const response = await API.get('/menu');
+            const response = await API.get('/menu/by-plugin/' + pluginId);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -45,6 +47,7 @@ export const menuSlice = createSlice({
             state.permittedMenus = null;
             state.activeModule = null;
             state.moduleMenus = null;
+            state.activeMenu = null;
             state.error = null;
             state.success = false;
         },
@@ -54,6 +57,9 @@ export const menuSlice = createSlice({
         setModuleMenus: (state, action) => {
             state.moduleMenus = action.payload;
         },
+        setActiveMenu: (state, action) => {
+            state.activeMenu = action.payload;
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -68,12 +74,14 @@ export const menuSlice = createSlice({
             .addCase(getPermittedMenu.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
-            })
-    },
+            });
+    }
 });
 export const {
     clearMenuState,
     setModuleMenus,
-    setActiveModule } = menuSlice.actions;
+    setActiveModule,
+    setActiveMenu
+} = menuSlice.actions;
 
 export const menuSliceConfig = configureSlice(menuSlice, true);

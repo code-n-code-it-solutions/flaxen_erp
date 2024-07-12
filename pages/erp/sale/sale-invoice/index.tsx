@@ -1,7 +1,7 @@
 import React, {useEffect} from 'react';
 import {useDispatch, useSelector} from "react-redux";
 import {ThunkDispatch} from "redux-thunk";
-import {IRootState} from "@/store";
+import {IRootState, useAppDispatch, useAppSelector} from "@/store";
 import {AnyAction} from "redux";
 import PageWrapper from "@/components/PageWrapper";
 import Button from "@/components/Button";
@@ -10,16 +10,16 @@ import {getIcon} from "@/utils/helper";
 import {setPageTitle} from "@/store/slices/themeConfigSlice";
 
 const Index = () => {
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
-    const {token} = useSelector((state: IRootState) => state.user);
+    const dispatch = useAppDispatch();
+    const {token} = useAppSelector((state) => state.user);
     const breadcrumb = [
         {
             title: 'Home',
-            href: '/main'
+            href: '/erp/main'
         },
         {
             title: 'Sale Dashboard',
-            href: '/sale'
+            href: '/erp/sale'
         },
         {
             title: 'All Sale Invoices',
@@ -47,7 +47,7 @@ const Index = () => {
                         </span>
                     }
                     variant={ButtonVariant.primary}
-                    link={'/sale/sale-invoice/create'}
+                    link={'/erp/sale/sale-invoice/create'}
                     size={ButtonSize.small}
                 />
             </div>

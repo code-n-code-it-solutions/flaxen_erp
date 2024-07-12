@@ -12,6 +12,8 @@ import {clearUtilState} from "@/store/slices/utilSlice";
 import {Dropdown} from "@/components/form/Dropdown";
 import {Input} from "@/components/form/Input";
 import Textarea from "@/components/form/Textarea";
+import {getAccountList} from "@/store/slices/accountSlice";
+import {floor} from "lodash";
 
 
 interface IProps {
@@ -32,24 +34,43 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
     const [productOptions, setProductOptions] = useState<any>([]);
     const [valuationMethod, setValuationMethod] = useState('')
     const [taxCategoryOptions, setTaxCategoryOptions] = useState<any>([]);
+    const [accounts, setAccounts] = useState<any>([]);
 
     const {token} = useSelector((state: IRootState) => state.user);
+    const {accountList, success, loading} = useSelector((state: IRootState) => state.account);
     const {units} = useSelector((state: IRootState) => state.unit);
     const {allRawProducts, fillingProducts} = useSelector((state: IRootState) => state.rawProduct);
     const {taxCategories} = useSelector((state: IRootState) => state.taxCategory);
 
+    const accountTypes = [
+        {label: '100 - Asset', value: 1},
+        {label: '200 - Liability', value: 2},
+        {label: '300 - Equity', value: 3},
+        {label: '400 - Revenue', value: 4},
+        {label: '500 - Expense', value: 5},
+        {label: '600 - Owner', value: 6},
+    ]
+
+    const discountTypes = [
+        {label: 'Percentage', value: 'percentage'},
+        {label: 'Fixed', value: 'fixed'},
+    ]
+
     const handleChange = (name: string, value: any) => {
         if (name === 'raw_product_id') {
-            let selectedProduct = allRawProducts.find((product: any) => product.id === value);
-            setValuationMethod(selectedProduct.valuation_method)
+            // console.log(allRawProducts);
+            let selectedProduct = allRawProducts?.find((product: any) => product.id === value);
+            setValuationMethod(selectedProduct?.valuation_method)
             // console.log(selectedProduct)
             if (selectedProduct) {
                 if (listFor === RAW_PRODUCT_LIST_TYPE.FILLING) {
                     setFormData({
                         ...formData,
-                        [name]: value,
+                        raw_product_id: value,
                         unit_id: selectedProduct.sub_unit_id,
                         unit_price: selectedProduct.valuated_unit_price,
+                        latest_retail_price: selectedProduct.latest_retail_price,
+                        latest_capacity: selectedProduct.latest_capacity,
                         quantity: 1,
                         capacity: 0,
                         filling_quantity: 0,
@@ -59,7 +80,7 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                 } else {
                     setFormData({
                         ...formData,
-                        [name]: value,
+                        raw_product_id: value,
                         unit_id: selectedProduct.sub_unit_id,
                         quantity: 1,
                         unit_price: selectedProduct.valuated_unit_price,
@@ -72,19 +93,32 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
             //     value = 0;
             // }
 
-            setFormData({
-                ...formData,
-                [name]: value,
-                sub_total: isNaN(formData.unit_price) ? 0 : formData.unit_price * value
-            });
+            if (listFor === RAW_PRODUCT_LIST_TYPE.EXPENSE) {
+                setFormData({
+                    ...formData,
+                    'quantity': value,
+                    sub_total: isNaN(formData.amount) ? 0 : formData.amount * value
+                });
+            } else {
+                const subTotal = isNaN(formData.unit_price) ? 0 : formData.unit_price * value;
+                const taxAmount = (formData.tax_rate * subTotal) / 100;
+                const discountAmountRate = formData.discount_type === 'percentage' ? (subTotal * (isNaN(formData.discount_amount_rate) ? 0 : formData.discount_amount_rate)) / 100 : (isNaN(formData.discount_amount_rate) ? 0 : formData.discount_amount_rate);
+
+                setFormData({
+                    ...formData,
+                    'quantity': value,
+                    sub_total: subTotal,
+                    grand_total: (subTotal + taxAmount) - discountAmountRate,
+                });
+            }
+
         } else if (name === 'unit_price') {
             if (isNaN(value)) {
                 value = 0;
             }
-            console.log(formData, value, formData.quantity)
             setFormData({
                 ...formData,
-                [name]: value,
+                'unit_price': value,
                 sub_total: isNaN(formData.quantity) ? 0 : formData.quantity * value
             });
         } else if (name === 'tax_category_id') {
@@ -95,7 +129,7 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
             if (selectedTaxCategory) {
                 setFormData({
                     ...formData,
-                    [name]: value,
+                    'tax_category_id': value,
                     tax_rate: parseFloat(selectedTaxCategory.rate),
                     tax_amount: (parseFloat(selectedTaxCategory.rate) * formData.sub_total) / 100,
                     grand_total: formData.sub_total + ((parseFloat(selectedTaxCategory.rate) * formData.sub_total) / 100)
@@ -107,7 +141,7 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
             }
             setFormData({
                 ...formData,
-                [name]: value,
+                'tax_rate': value,
                 tax_amount: (formData.sub_total * value) / 100,
                 grand_total: formData.sub_total + ((formData.sub_total * value) / 100)
             });
@@ -117,23 +151,44 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
             }
             setFormData({
                 ...formData,
-                [name]: value,
-                filling_quantity: formData.filling_quantity > 0 ? formData.filling_quantity : 0,
-                required_quantity: formData.filling_quantity / value,
+                capacity: parseFloat(value),
+                required_quantity: floor(Number(fillingRemaining) / parseFloat(value)),
+                // filling_quantity: formData.filling_quantity > 0 ? formData.filling_quantity : 0,
+                filling_quantity: floor(Number(fillingRemaining) / parseFloat(value)) * parseFloat(value),
                 total_cost: formData.unit_price * formData.filling_quantity
             });
-        } else if (name === 'filling_quantity') {
-            if (value > Number(fillingRemaining)) {
-                value = Number(fillingRemaining);
+        } else if (name === 'required_quantity') {
+            if ((formData.capacity * Number(value)) > Number(fillingRemaining)) {
+                value = floor(Number(fillingRemaining) / formData.capacity);
             } else if (value < 0 || isNaN(value)) {
                 value = 0;
             }
             setFormData({
                 ...formData,
-                [name]: value,
-                required_quantity: value / formData.capacity,
-                total_cost: formData.unit_price * value
+                required_quantity: value,
+                filling_quantity: value * formData.capacity,
+                total_cost: formData.unit_price / value
             });
+        } else if (name === 'amount') {
+            setFormData({
+                ...formData,
+                'amount': value,
+                sub_total: isNaN(value) ? 0 : formData.quantity * value
+            });
+        } else if (name === 'account_type') {
+            setFormData({...formData, 'account_type': value});
+            dispatch(getAccountList(value));
+        } else if (name === 'discount_type') {
+            // console.log(value)
+            setFormData({...formData, 'discount_type': value, 'discount_amount_rate': 0});
+        } else if (name === 'discount_amount_rate') {
+            setFormData({
+                ...formData,
+                'discount_amount_rate': value,
+                'discount_amount': formData.discount_type === 'percentage' ? (formData.sub_total * value) / 100 : value,
+                grand_total: (formData.sub_total + formData.tax_amount) - (formData.discount_type === 'percentage' ? (formData.sub_total * value) / 100 : value)
+            });
+            // console.log(formData)
         } else {
             setFormData({...formData, [name]: value});
         }
@@ -148,6 +203,7 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
             } else {
                 dispatch(getRawProducts([]));
             }
+            dispatch(getRawProducts([]));
             setFormData({})
             if (detail) {
                 setFormData(detail)
@@ -171,7 +227,7 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                 return {
                     value: rawProduct.id,
                     label: rawProduct.title + ' (' + rawProduct.item_code + ') - ' + rawProduct.valuation_method,
-                    unit_price: rawProduct.opening_stock_unit_balance
+                    unit_price: rawProduct.valuated_unit_price
                 };
             })
             setProductOptions([{value: '', label: 'Select Raw Product'}, ...rawProductOptions]);
@@ -184,7 +240,9 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                 return {
                     value: rawProduct.id,
                     label: rawProduct.title,
-                    unit_price: rawProduct.opening_stock_unit_balance
+                    unit_price: rawProduct.valuated_unit_price,
+                    latest_retail_price: rawProduct.latest_retail_price,
+                    latest_capacity: rawProduct.latest_capacity
                 };
             })
             setProductOptions([{value: '', label: 'Select Raw Product'}, ...rawProductOptions]);
@@ -204,11 +262,22 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
         }
     }, [taxCategories]);
 
+    useEffect(() => {
+        if (accountList) {
+            setAccounts(accountList?.map((account: any) => ({
+                label: `${account.account_code} - ${account.name}`,
+                value: account.id,
+                current_balance: account.current_balance
+            })) || [])
+        }
+    }, [accountList]);
+
     return (
         <Modal
             show={modalOpen}
             setShow={setModalOpen}
-            title='Add Raw Product To List'
+            title='Add Item List'
+            size={'lg'}
             footer={
                 <div className="mt-8 flex items-center justify-end">
                     <button type="button" className="btn btn-outline-danger"
@@ -222,37 +291,95 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                 </div>
             }
         >
-            <Dropdown
-                divClasses='w-full'
-                label='Raw Product'
-                name='raw_product_id'
-                options={productOptions}
-                required={true}
-                value={formData.raw_product_id}
-                isDisabled={listFor === RAW_PRODUCT_LIST_TYPE.GOOD_RECEIVE_NOTE}
-                onChange={(e) => handleChange('raw_product_id', e && typeof e !== 'undefined' ? e.value : 0)}
-            />
+            {listFor !== RAW_PRODUCT_LIST_TYPE.EXPENSE
+                ? (
+                    <>
+                        <Dropdown
+                            divClasses='w-full'
+                            label='Raw Product'
+                            name='raw_product_id'
+                            options={productOptions}
+                            required={true}
+                            value={formData.raw_product_id}
+                            isDisabled={listFor === RAW_PRODUCT_LIST_TYPE.GOOD_RECEIVE_NOTE}
+                            onChange={(e) => handleChange('raw_product_id', e && typeof e !== 'undefined' ? e.value : '')}
+                        />
+                        <Dropdown
+                            divClasses='w-full'
+                            label='Unit'
+                            name='unit_id'
+                            options={unitOptions}
+                            required={true}
+                            value={formData.unit_id}
+                            isDisabled={true}
+                            onChange={(e) => handleChange('unit_id', e && typeof e !== 'undefined' ? e.value : 0)}
+                        />
+                        <Input
+                            label='Quantity'
+                            type='number'
+                            name='quantity'
+                            value={formData.quantity}
+                            onChange={(e) => handleChange('quantity', parseFloat(e.target.value))}
+                            isMasked={false}
+                            disabled={listFor === RAW_PRODUCT_LIST_TYPE.GOOD_RECEIVE_NOTE || listFor === RAW_PRODUCT_LIST_TYPE.FILLING}
+                        />
+                    </>
 
-            <Dropdown
-                divClasses='w-full'
-                label='Unit'
-                name='unit_id'
-                options={unitOptions}
-                required={true}
-                value={formData.unit_id}
-                isDisabled={true}
-                onChange={(e) => handleChange('unit_id', e && typeof e !== 'undefined' ? e.value : 0)}
-            />
-
-            <Input
-                label='Quantity'
-                type='number'
-                name='quantity'
-                value={formData.quantity}
-                onChange={(e) => handleChange('quantity', parseFloat(e.target.value))}
-                isMasked={false}
-                disabled={listFor === RAW_PRODUCT_LIST_TYPE.GOOD_RECEIVE_NOTE || listFor === RAW_PRODUCT_LIST_TYPE.FILLING}
-            />
+                ) : (
+                    <>
+                        <Input
+                            label='Item Name'
+                            type='text'
+                            name='item_name'
+                            value={formData.item_name}
+                            onChange={(e) => handleChange('item_name', parseFloat(e.target.value))}
+                            isMasked={false}
+                        />
+                        <Dropdown
+                            divClasses='w-full'
+                            label='Account Type'
+                            name='account_type'
+                            options={accountTypes}
+                            required={true}
+                            value={formData.account_type}
+                            onChange={(e) => handleChange('account_type', e && typeof e !== 'undefined' ? e.value : 0)}
+                        />
+                        <Dropdown
+                            divClasses='w-full'
+                            label='Account'
+                            name='account_id'
+                            options={accounts}
+                            required={true}
+                            value={formData.account_id}
+                            onChange={(e) => handleChange('account_id', e && typeof e !== 'undefined' ? e.value : 0)}
+                        />
+                        <Input
+                            label='Quantity'
+                            type='number'
+                            name='quantity'
+                            value={formData.quantity}
+                            onChange={(e) => handleChange('quantity', parseFloat(e.target.value))}
+                            isMasked={false}
+                        />
+                        <Input
+                            label='Amount'
+                            type='number'
+                            name='amount'
+                            value={formData.amount}
+                            onChange={(e) => handleChange('amount', parseFloat(e.target.value))}
+                            isMasked={false}
+                        />
+                        <Input
+                            label='Sub Total'
+                            type='number'
+                            name='sub_total'
+                            value={formData.sub_total?.toFixed(2)}
+                            onChange={(e) => handleChange('sub_total', parseFloat(e.target.value))}
+                            isMasked={false}
+                            disabled={true}
+                        />
+                    </>
+                )}
 
             {listFor === RAW_PRODUCT_LIST_TYPE.FILLING && (
                 <>
@@ -265,6 +392,16 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                         isMasked={false}
                     />
 
+                    <Input
+                        divClasses="w-full"
+                        label='Required Qty'
+                        type='number'
+                        name='required_quantity'
+                        value={formData.required_quantity}
+                        onChange={(e) => handleChange('required_quantity', parseFloat(e.target.value))}
+                        isMasked={false}
+                    />
+
                     <div className="flex justify-start items-start gap-1 flex-col w-full">
                         <Input
                             divClasses='w-full'
@@ -274,19 +411,13 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                             value={formData.filling_quantity}
                             onChange={(e) => handleChange('filling_quantity', parseFloat(e.target.value))}
                             isMasked={false}
+                            disabled={true}
                         />
+
                         <small>Remaining: {Number(fillingRemaining) - formData.filling_quantity}</small>
                     </div>
 
-                    <Input
-                        label='Required Qty'
-                        type='number'
-                        name='required_quantity'
-                        value={formData.required_quantity}
-                        onChange={(e) => handleChange('required_quantity', parseFloat(e.target.value))}
-                        isMasked={false}
-                        disabled={true}
-                    />
+
                 </>
             )}
             {listFor === RAW_PRODUCT_LIST_TYPE.GOOD_RECEIVE_NOTE && (
@@ -308,7 +439,7 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                         value={formData.unit_price}
                         onChange={(e) => handleChange('unit_price', parseFloat(e.target.value))}
                         isMasked={false}
-                        disabled={true}
+                        disabled={false}
                     />
 
                     <Input
@@ -322,7 +453,7 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                     />
                 </>
             )}
-            {(listFor === RAW_PRODUCT_LIST_TYPE.LOCAL_PURCHASE_ORDER || listFor === RAW_PRODUCT_LIST_TYPE.GOOD_RECEIVE_NOTE) && (
+            {(listFor === RAW_PRODUCT_LIST_TYPE.LOCAL_PURCHASE_ORDER || listFor === RAW_PRODUCT_LIST_TYPE.GOOD_RECEIVE_NOTE || listFor === RAW_PRODUCT_LIST_TYPE.EXPENSE) && (
                 <>
                     <Dropdown
                         divClasses='w-full'
@@ -350,7 +481,24 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                         value={formData.tax_amount?.toFixed(2)}
                         onChange={(e) => handleChange('tax_amount', parseFloat(e.target.value))}
                         isMasked={false}
-                        disabled={true}
+                    />
+
+                    <Dropdown
+                        divClasses='w-full'
+                        label='Discount Type'
+                        name='discount_type'
+                        options={discountTypes}
+                        value={formData.discount_type}
+                        onChange={(e) => handleChange('discount_type', e && typeof e !== 'undefined' ? e.value : '')}
+                    />
+
+                    <Input
+                        label='Discount Rate/Amount'
+                        type='number'
+                        name='discount_amount_rate'
+                        value={formData.discount_amount_rate?.toFixed(2)}
+                        onChange={(e) => handleChange('discount_amount_rate', parseFloat(e.target.value))}
+                        isMasked={false}
                     />
 
                     <Input

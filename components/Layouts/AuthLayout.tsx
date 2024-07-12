@@ -1,41 +1,40 @@
-import {PropsWithChildren, useEffect} from 'react';
+import { PropsWithChildren, useEffect } from 'react';
 import App from '../../App';
-import {useDispatch, useSelector} from "react-redux";
-import {IRootState} from "@/store";
-import {useRouter} from "next/router";
-import {checkServerSideAuth} from "@/utils/authCheck";
-import {ThunkDispatch} from "redux-thunk";
-import {AnyAction} from "redux";
-import {logoutUser} from "@/store/slices/userSlice";
-import {clearMenuState} from "@/store/slices/menuSlice";
+import { useAppDispatch, useAppSelector } from '@/store';
+import { useRouter } from 'next/router';
+import { checkServerSideAuth } from '@/utils/authCheck';
+import { logoutUser } from '@/store/slices/userSlice';
+import { clearMenuState } from '@/store/slices/menuSlice';
+import { getBranches, setSelectedBranch, setSelectedCompany } from '@/store/slices/companySlice';
 
-const AuthLayout = ({children}: PropsWithChildren) => {
-    const {token, isLoggedIn} = useSelector((state: IRootState) => state.user);
+const AuthLayout = ({ children }: PropsWithChildren) => {
+    const { token, isLoggedIn, user } = useAppSelector((state) => state.user);
     const router = useRouter();
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
+    const dispatch = useAppDispatch();
 
     useEffect(() => {
         if (token) {
             // console.log(checkServerSideAuth(token))
             checkServerSideAuth(token)
                 .then(r => {
-                        // console.log('r', r)
+                    // console.log('r', r)
                     if (r) {
-                        router.push('/erp/main');
+                        dispatch(setSelectedCompany(user.registered_company));
+                        dispatch(setSelectedBranch(user.registered_branch));
+                        if (user.roles.map((role: any) => role.name).includes('Admin')) {
+                            router.push('/workspace');
+                        } else {
+                            router.push('/erp/main');
+                        }
+                        dispatch(getBranches(user.id));
+
                     } else {
                         dispatch(logoutUser());
                         dispatch(clearMenuState());
                     }
-                })
+                });
         }
-    }, [token, router])
-
-    useEffect(() => {
-        // console.log(isLoggedIn)
-        // if (isLoggedIn) {
-        //     router.push('/main');
-        // }
-    }, [isLoggedIn, router])
+    }, [token, router]);
 
     return (
         <App>

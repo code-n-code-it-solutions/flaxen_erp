@@ -19,7 +19,9 @@ interface IProps {
 
 const DesignationFormModal = ({modalOpen, setModalOpen, modalFormData, departments}: IProps) => {
     const dispatch = useAppDispatch()
+    const {user, token} = useAppSelector((state) => state.user);
     const {designation, loading, success} = useAppSelector((state) => state.designation);
+
     const [formData, setFormData] = useState<any>({})
     const [errorMessages, setErrorMessages] = useState<any>({})
     const [isFormValid, setIsFormValid] = useState<boolean>(false);
@@ -59,7 +61,11 @@ const DesignationFormModal = ({modalOpen, setModalOpen, modalFormData, departmen
 
     const handleSubmit = () => {
         if (isFormValid) {
-            dispatch(storeDesignation(formData))
+            dispatch(storeDesignation({
+                ...formData,
+                company_id: user.company_id,
+                branch_id: user.branch_id,
+            }))
         } else {
             setValidationMessage("Please fill the required field.");
         }

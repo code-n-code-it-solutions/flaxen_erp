@@ -10,7 +10,6 @@ const View = () => {
     const dispatch = useAppDispatch();
     const router = useRouter();
     const {loading, productAssemblyDetail} = useAppSelector(state => state.productAssembly);
-    const [printLoading, setPrintLoading] = useState<boolean>(false);
     const breadCrumbItems = [
         {
             title: 'Home',

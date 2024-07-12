@@ -13,6 +13,9 @@ export enum FORM_CODE_TYPE {
     SERVICE = 'service',
     FILLING = 'filling',
     QUOTATION = 'quotation',
+    EXPENSE = 'general_payment_voucher',
+    DELIVERY_NOTE = 'delivery_note',
+    SALE_INVOICE = 'sale_invoice',
 }
 
 export enum RAW_PRODUCT_LIST_TYPE {
@@ -24,6 +27,7 @@ export enum RAW_PRODUCT_LIST_TYPE {
     GOOD_RECEIVE_NOTE = 'good_receive_note',
     VENDOR_BILL = 'vendor_bill',
     QUOTATION = 'quotation',
+    EXPENSE = 'expense',
 }
 
 export enum ButtonType {
@@ -70,4 +74,53 @@ export enum IconType {
 
 export enum ListingType {
 
+}
+
+
+export enum ActionList {
+    CREATE = 'create',
+    VIEW_DETAIL = 'view-detail',
+    UPDATE = 'update',
+    DELETE = 'delete',
+    VIEW_ALL = 'view-all',
+    PRINT = 'print-all',
+    EXPORT = 'export',
+    EMAIL = 'email',
+    PRINT_DETAIL = 'print-detail',
+    ARCHIVE = 'archive',
+    UNARCHIVE = 'unarchive',
+    DUPLICATE = 'duplicate',
+    PRINT_LABEL = 'print-label',
+    COPY = 'copy',
+}
+
+
+export enum AppBasePath {
+    Raw_Product = '/apps/inventory/raw-product',
+    Product_Assembly = '/apps/manufacturing/formula',
+    Production = '/apps/manufacturing/operations/production',
+    Filling = '/apps/manufacturing/operations/fillings',
+    Purchase_Requisition = '/apps/purchase/purchase-requisition',
+    Local_Purchase_Order = '/apps/purchase/lpo',
+    Good_Receive_Note = '/apps/purchase/grn',
+    Vendor = '/apps/purchase/configuration/vendor',
+    Quotation = '/apps/sales/orders/quotations',
+    Delivery_Note = '/apps/sales/orders/delivery-notes',
+    Sale_Invoice = '/apps/sales/orders/sale-invoice',
+    Customer = '/apps/sales/configuration/customers',
+    Invoice = '/apps/invoicing/customers/invoices',
+    Invoice_Payment = '/apps/invoicing/customers/payments',
+    Vendor_Bill = '/apps/invoicing/vendors/bills',
+    Vendor_Payment = '/apps/invoicing/vendors/payments',
+    Raw_Material_Stock = '/apps/reporting/stocks/raw-materials',
+    Finish_Good_Stock = '/apps/reporting/stocks/finish-goods',
+    Stock_Ageing_Report = '/apps/reporting/stocks/stock-ageing',
+    Sales_Reporting = '/apps/reporting/sales',
+    Purchases_Reporting = '/apps/reporting/purchases',
+    Invoicing_Reporting = '/apps/reporting/invoicing',
+    Report_Accounts = '/apps/reporting/accounts',
+    Vendor_Report_Account = '/apps/reporting/purchases/vendors/account',
+    Vendor_Report_Statement = '/apps/reporting/purchases/vendors/statement',
+    Employee_Permission = '/apps/employees/configuration/permissions',
+    Employee = '/apps/employees/employees-list',
 }

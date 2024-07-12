@@ -1,47 +1,24 @@
 import {toggleSidebar} from '@/store/slices/themeConfigSlice';
 import {PropsWithChildren, useEffect, useState} from 'react';
-import {useDispatch, useSelector} from 'react-redux';
 import App from '../../App';
-import Footer from './Footer';
 import Header from './Header';
-import Sidebar from './Sidebar';
-import Setting from './Setting';
 import Portals from '@/components/Portals';
 import {useRouter} from 'next/router';
 import {checkServerSideAuth} from "@/utils/authCheck";
 import {logoutUser} from "@/store/slices/userSlice";
-import {ThunkDispatch} from "redux-thunk";
-import {AnyAction} from "redux";
 import {clearMenuState} from "@/store/slices/menuSlice";
-import WelcomeModule from "@/components/WelcomeModule";
-import {IRootState, useAppSelector} from "@/store";
-import {RootState} from "@reduxjs/toolkit/query";
+import {useAppDispatch, useAppSelector} from "@/store";
 
 const DefaultLayout = ({children}: PropsWithChildren) => {
     const router = useRouter();
+    const dispatch = useAppDispatch();
+    const themeConfig = useAppSelector((state) => state.themeConfig);
+    const {user} = useAppSelector((state) => state.user);
     const [showLoader, setShowLoader] = useState(true);
     const [showTopButton, setShowTopButton] = useState(false);
-    const themeConfig = useAppSelector((state: IRootState) => state.themeConfig);
     const [animation, setAnimation] = useState(themeConfig.animation);
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
 
-    const {token, isLoggedIn} = useSelector((state: IRootState) => state.user);
-    const {activeModule} = useSelector((state: IRootState) => state.menu);
-    const [moduleChanged, setModuleChanged] = useState<boolean>(false);
-
-    // Detect changes in activeModule and update the state accordingly
-    useEffect(() => {
-        if (activeModule) {
-            // When activeModule changes, show WelcomeModule
-            setModuleChanged(true);
-        }
-    }, [activeModule]);
-
-    useEffect(() => {
-        // This will reset the moduleChanged state whenever the pathname changes
-        // which means navigation to a completely different page (not module change)
-        setModuleChanged(false);
-    }, [router.pathname]);
+    const {token, isLoggedIn} = useAppSelector((state) => state.user);
 
     const goToTop = () => {
         document.body.scrollTop = 0;
@@ -77,21 +54,6 @@ const DefaultLayout = ({children}: PropsWithChildren) => {
     useEffect(() => {
         setAnimation(themeConfig.animation);
     }, [themeConfig.animation]);
-
-    // useEffect(() => {
-    //     if (activeModule) {
-    //         setModuleChanged(true)
-    //     }
-    //     return () => {
-    //         setModuleChanged(false)
-    //     }
-    // }, [])
-    //
-    // useEffect(() => {
-    //     if(router.pathname && !moduleChanged) {
-    //         setModuleChanged(false)
-    //     }
-    // }, [router.pathname]);
 
     useEffect(() => {
         setTimeout(() => {
@@ -164,28 +126,16 @@ const DefaultLayout = ({children}: PropsWithChildren) => {
                             </button>
                         )}
                     </div>
-                    {/* BEGIN APP SETTING LAUNCHER */}
-                    <Setting/>
-                    {/* END APP SETTING LAUNCHER */}
+
                     <div
                         className={`${themeConfig.navbar} main-container min-h-screen text-black dark:text-white-dark`}>
-                        {/* BEGIN SIDEBAR */}
-                        <Sidebar/>
-                        {/* END SIDEBAR */}
-                        {/* BEGIN CONTENT AREA */}
                         <div className="main-content">
-                            {/* BEGIN TOP NAVBAR */}
                             <Header/>
-                            {/* END TOP NAVBAR */}
                             <div className={`${animation} animate__animated p-6`}>
-                                {moduleChanged ? <WelcomeModule title={activeModule}/> : children}
-                                {/* BEGIN FOOTER */}
-                                <Footer/>
-                                {/* END FOOTER */}
+                                {children}
                             </div>
                             <Portals/>
                         </div>
-                        {/* END CONTENT AREA */}
                     </div>
                 </div>
             </App>

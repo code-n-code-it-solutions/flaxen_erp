@@ -1,7 +1,7 @@
 import React, {useEffect} from 'react';
 import {useDispatch, useSelector} from "react-redux";
 import {ThunkDispatch} from "redux-thunk";
-import {IRootState} from "@/store";
+import {IRootState, useAppDispatch, useAppSelector} from "@/store";
 import {AnyAction} from "redux";
 import PageWrapper from "@/components/PageWrapper";
 import Button from "@/components/Button";
@@ -9,22 +9,25 @@ import {ButtonSize, ButtonType, ButtonVariant, IconType} from "@/utils/enums";
 import {getIcon} from "@/utils/helper";
 import QuotationForm from "@/pages/erp/sale/quotation/QuotationForm";
 import {setPageTitle} from "@/store/slices/themeConfigSlice";
+import {useRouter} from "next/router";
+import {clearQuotationState} from "@/store/slices/quotationSlice";
 
 const Create = () => {
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
-    const {token} = useSelector((state: IRootState) => state.user);
+    const dispatch = useAppDispatch();
+    const router = useRouter()
+    const {quotation, success} = useAppSelector(state => state.quotation);
     const breadcrumb = [
         {
             title: 'Home',
-            href: '/main'
+            href: '/erp/main'
         },
         {
             title: 'Sale Dashboard',
-            href: '/sale'
+            href: '/erp/sale'
         },
         {
             title: 'All Quotations',
-            href: '/sale/quotation'
+            href: '/erp/sale/quotation'
         },
         {
             title: 'Create Quotation',
@@ -36,26 +39,28 @@ const Create = () => {
         dispatch(setPageTitle('Create Quotation'));
     }, []);
 
+    useEffect(() => {
+        if (quotation && success) {
+            router.push('/erp/sale/quotation')
+            dispatch(clearQuotationState());
+        }
+    }, [quotation, success]);
+
     return (
         <PageWrapper
             embedLoader={false}
             breadCrumbItems={breadcrumb}
+            title="Create Quotation"
+            buttons={[
+                {
+                    text: 'Back',
+                    icon: IconType.back,
+                    type: ButtonType.link,
+                    variant: ButtonVariant.primary,
+                    link: '/erp/sale/quotation'
+                }
+            ]}
         >
-            <div className="mb-5 flex items-center justify-between">
-                <h5 className="text-lg font-semibold dark:text-white-light">Create Quotation</h5>
-                <Button
-                    type={ButtonType.link}
-                    text={
-                        <span className="flex items-center">
-                            {getIcon(IconType.back)}
-                            Back
-                        </span>
-                    }
-                    variant={ButtonVariant.primary}
-                    link={'/sale/quotation'}
-                    size={ButtonSize.small}
-                />
-            </div>
             <QuotationForm/>
         </PageWrapper>
     );

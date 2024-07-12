@@ -1,12 +1,13 @@
-import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
-import {API} from "@/configs/api.config";
-import {configureSlice} from "@/utils/helper";
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { API } from '@/configs/api.config';
+import { configureSlice } from '@/utils/helper';
 
 interface ICustomerState {
     customer: any;
-    customerDetail: any
+    customerDetail: any;
     customers: any;
     customerTypes: any;
+    customersForPrint: any;
     loading: boolean;
     error: any;
     success: boolean;
@@ -18,9 +19,10 @@ const initialState: ICustomerState = {
     customerDetail: null,
     customers: null,
     customerTypes: null,
+    customersForPrint: null,
     loading: false,
     error: null,
-    success: false,
+    success: false
 };
 
 // Async thunks
@@ -84,7 +86,7 @@ export const updateCustomer = createAsyncThunk(
     'customer/update',
     async (data: any, thunkAPI) => {
         try {
-            const {id, formData} = data
+            const { id, formData } = data;
             const response = await API.post('/customer/update/' + id, formData);
             return response.data;
         } catch (error: any) {
@@ -109,6 +111,20 @@ export const getCustomerTypes = createAsyncThunk(
     }
 );
 
+export const getCustomersForPrint = createAsyncThunk(
+    'customer/print',
+    async (data: any, thunkAPI) => {
+        try {
+            const response = await API.post('/customer/print', data);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 // Slice
 export const customerSlice = createSlice({
     name: 'customer',
@@ -120,7 +136,8 @@ export const customerSlice = createSlice({
             state.error = null;
             state.success = false;
             state.customerDetail = null;
-        },
+            state.customersForPrint = null;
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -184,8 +201,20 @@ export const customerSlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message;
             })
-    },
+            .addCase(getCustomersForPrint.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getCustomersForPrint.fulfilled, (state, action) => {
+                state.loading = false;
+                state.customersForPrint = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getCustomersForPrint.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            });
+    }
 });
-export const {clearCustomerState} = customerSlice.actions;
+export const { clearCustomerState } = customerSlice.actions;
 export const customerSliceConfig = configureSlice(customerSlice, false);
 

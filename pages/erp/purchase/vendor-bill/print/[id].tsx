@@ -4,7 +4,7 @@ import {useAppDispatch, useAppSelector} from "@/store";
 import {useRouter} from "next/router";
 import ContentLoader from "@/components/ContentLoader";
 import {setPageTitle} from "@/store/slices/themeConfigSlice";
-import {clearVendorBillState, getVendorBillDetail} from "@/store/slices/vendorBillSlice";
+import {clearVendorBillState} from "@/store/slices/vendorBillSlice";
 import {setAuthToken} from "@/configs/api.config";
 
 const Print = () => {
@@ -22,7 +22,7 @@ const Print = () => {
 
         if (billId) {
             const id = Array.isArray(billId) ? billId[0] : billId;
-            dispatch(getVendorBillDetail(parseInt(id)));
+            // dispatch(getVendorBillDetail(parseInt(id)));
         }
     }, [router.query.id, dispatch]);
 
@@ -43,29 +43,33 @@ const Print = () => {
 
                         <div className="flex justify-between items-center">
                             <div className="flex flex-col gap-1.25">
-                                <span className="text-xs">
+                                <span>
+                                    <strong>Vendor Invoice #:</strong>
+                                    {vendorBillDetail?.invoice_number}
+                                </span>
+                                <span>
                                     <strong>LPO No:</strong>
                                     {vendorBillDetail?.local_purchase_order.lpo_number}
                                 </span>
-                                <span className="text-xs">
-                                    <strong>LPO No:</strong>
+                                <span>
+                                    <strong>GRN No:</strong>
                                     {vendorBillDetail?.good_receive_note?.grn_number}
                                 </span>
-                                <span className="text-xs">
+                                <span>
                                     <strong>Created Date:</strong>
                                     {(new Date(vendorBillDetail?.created_at)).toDateString()}
                                 </span>
                             </div>
                             <div className="flex flex-col gap-1.25">
-                                <span className="text-xs">
+                                <span>
                                     <strong>Requisition Code: </strong>
                                     {vendorBillDetail?.purchase_requisition?.pr_code}
                                 </span>
-                                <span className="text-xs">
+                                <span>
                                     <strong>Requested By:</strong>
                                     {vendorBillDetail?.purchase_requisition?.employee?.name}
                                 </span>
-                                <span className="text-xs">
+                                <span>
                                     <strong>Internal Document No:</strong>
                                     {vendorBillDetail?.local_purchase_order.internal_document_number}
                                 </span>

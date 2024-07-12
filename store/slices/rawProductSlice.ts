@@ -1,11 +1,12 @@
-import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
-import {API} from "@/configs/api.config";
-import {configureSlice} from "@/utils/helper";
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { API } from '@/configs/api.config';
+import { configureSlice } from '@/utils/helper';
 
 interface IRawProductState {
     rawProduct: any;
-    rawProductDetail: any
+    rawProductDetail: any;
     allRawProducts: any;
+    rawProductsForPrint: any;
     fillingProducts: any;
     loading: boolean;
     error: any;
@@ -17,24 +18,25 @@ const initialState: IRawProductState = {
     rawProduct: null,
     rawProductDetail: null,
     allRawProducts: null,
+    rawProductsForPrint: null,
     fillingProducts: null,
     loading: false,
     error: null,
-    success: false,
+    success: false
 };
 
 // Async thunks
 export const getRawProducts = createAsyncThunk(
     'rawProducts/all',
-    async (type:any[], thunkAPI) => {
+    async (type: any[], thunkAPI) => {
         try {
-            let param = ''
-            if (type.length>0) {
-                param = '?product_type='+type.join(',')
+            let param = '';
+            if (type.length > 0) {
+                param = '?product_type=' + type.join(',');
             }
-            const response = await API.get('/raw-products'+param);
+            const response = await API.get('/raw-products' + param);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -44,15 +46,15 @@ export const getRawProducts = createAsyncThunk(
 
 export const getFillingProducts = createAsyncThunk(
     'rawProducts/filling-products/all',
-    async (type:any[], thunkAPI) => {
+    async (type: any[], thunkAPI) => {
         try {
-            let param = ''
-            if (type.length>0) {
-                param = '?product_type='+type.join(',')
+            let param = '';
+            if (type.length > 0) {
+                param = '?product_type=' + type.join(',');
             }
-            const response = await API.get('/raw-products'+param);
+            const response = await API.get('/raw-products' + param);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -62,11 +64,26 @@ export const getFillingProducts = createAsyncThunk(
 
 export const showDetails = createAsyncThunk(
     'rawProducts/show',
-    async (id:number, thunkAPI) => {
+    async (id: number, thunkAPI) => {
         try {
-            const response = await API.get('/raw-products/'+id);
+            const response = await API.get('/raw-products/' + id);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const getProductsForPrint = createAsyncThunk(
+    'rawProducts/for-print',
+    async (data: any, thunkAPI) => {
+        try {
+            const response = await API.post('/raw-products/print', data);
+            console.log(response.data);
+            return response.data;
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -76,11 +93,11 @@ export const showDetails = createAsyncThunk(
 
 export const storeRawProduct = createAsyncThunk(
     'rawProducts/store',
-    async (productData:any, thunkAPI) => {
+    async (productData: any, thunkAPI) => {
         try {
             const response = await API.post('/raw-products', productData);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to store';
             return thunkAPI.rejectWithValue(message);
@@ -90,12 +107,12 @@ export const storeRawProduct = createAsyncThunk(
 
 export const editRawProduct = createAsyncThunk(
     'rawProducts/edit',
-    async (id:number, thunkAPI) => {
+    async (id: number, thunkAPI) => {
         try {
-            const response = await API.get('/raw-products/edit/'+id);
-            console.log(response)
+            const response = await API.get('/raw-products/edit/' + id);
+            console.log(response);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to edit';
             return thunkAPI.rejectWithValue(message);
@@ -105,12 +122,12 @@ export const editRawProduct = createAsyncThunk(
 
 export const updateRawProduct = createAsyncThunk(
     'rawProducts/update',
-    async (data:any, thunkAPI) => {
+    async (data: any, thunkAPI) => {
         try {
-            const {id, rawProductData} = data
-            const response = await API.post('/raw-products/update/'+id, rawProductData);
+            const { id, rawProductData } = data;
+            const response = await API.post('/raw-products/update/' + id, rawProductData);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to login';
             return thunkAPI.rejectWithValue(message);
@@ -121,11 +138,11 @@ export const updateRawProduct = createAsyncThunk(
 
 export const deleteRawProduct = createAsyncThunk(
     'rawProducts/delete',
-    async (id:number, thunkAPI) => {
+    async (ids: number[], thunkAPI) => {
         try {
-            const response = await API.delete('/raw-products/'+id);
+            const response = await API.post('/raw-products/delete', { ids });
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to delete';
             return thunkAPI.rejectWithValue(message);
@@ -143,7 +160,8 @@ export const rawProductSlice = createSlice({
             state.error = null;
             state.success = false;
             state.rawProductDetail = null;
-        },
+            state.rawProductsForPrint = null;
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -228,7 +246,19 @@ export const rawProductSlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message;
             })
-    },
+            .addCase(getProductsForPrint.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getProductsForPrint.fulfilled, (state, action) => {
+                state.loading = false;
+                state.rawProductsForPrint = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getProductsForPrint.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            });
+    }
 });
 export const { clearRawProductState } = rawProductSlice.actions;
 

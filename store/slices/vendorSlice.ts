@@ -6,6 +6,7 @@ interface IVendorState {
     vendor: any;
     vendorDetail: any
     allVendors: any;
+    vendorsForPrint: any
     loading: boolean;
     error: any;
     success: boolean;
@@ -17,6 +18,7 @@ const initialState: IVendorState = {
     vendor: null,
     vendorDetail: null,
     allVendors: null,
+    vendorsForPrint: null,
     loading: false,
     error: null,
     success: false,
@@ -70,9 +72,9 @@ export const showDetails = createAsyncThunk(
 
 export const deleteVendor = createAsyncThunk(
     'vendors/delete',
-    async (id:number, thunkAPI) => {
+    async (ids:any, thunkAPI) => {
         try {
-            const response = await API.delete('/vendor/'+id);
+            const response = await API.post('/vendor/delete', {ids});
             return response.data;
         } catch (error:any) {
             const message =
@@ -125,6 +127,20 @@ export const getRepresentatives = createAsyncThunk(
     }
 );
 
+export const getVendorsForPrint = createAsyncThunk(
+    'vendors/print',
+    async (data:any, thunkAPI) => {
+        try {
+            const response = await API.post('/vendor/print', data);
+            return response.data;
+        } catch (error:any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 // Slice
 export const vendorSlice = createSlice({
     name: 'vendors',
@@ -136,6 +152,7 @@ export const vendorSlice = createSlice({
             state.success = false;
             state.vendorDetail = null;
             state.representatives = null;
+            state.vendorsForPrint = null;
         },
     },
     extraReducers: (builder) => {
@@ -220,6 +237,18 @@ export const vendorSlice = createSlice({
                 state.success = action.payload.success;
             })
             .addCase(showDetails.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(getVendorsForPrint.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getVendorsForPrint.fulfilled, (state, action) => {
+                state.loading = false;
+                state.vendorsForPrint = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getVendorsForPrint.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })

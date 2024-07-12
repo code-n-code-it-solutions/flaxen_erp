@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {useDispatch, useSelector} from "react-redux";
 import {ThunkDispatch} from "redux-thunk";
-import {IRootState} from "@/store";
+import {IRootState, useAppDispatch, useAppSelector} from "@/store";
 import {AnyAction} from "redux";
 import {setAuthToken, setContentType} from "@/configs/api.config";
 import Alert from "@/components/Alert";
@@ -9,78 +9,43 @@ import {Dropdown} from "@/components/form/Dropdown";
 import {Input} from "@/components/form/Input";
 import Option from "@/components/form/Option";
 import Button from "@/components/Button";
-import {ButtonSize, ButtonType, ButtonVariant, IconType} from "@/utils/enums";
+import {ButtonSize, ButtonType, ButtonVariant, FORM_CODE_TYPE, IconType} from "@/utils/enums";
 import {getIcon} from "@/utils/helper";
 import Textarea from "@/components/form/Textarea";
+import {generateCode} from "@/store/slices/utilSlice";
+import {pendingQuotations} from "@/store/slices/quotationSlice";
+import {pendingDeliveryNotes} from "@/store/slices/deliveryNoteSlice";
+import {capitalize} from "lodash";
 
 const DeliveryNoteForm = () => {
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
-    const {token} = useSelector((state: IRootState) => state.user);
+    const dispatch = useAppDispatch();
+    const {token} = useAppSelector((state) => state.user);
+    const {code} = useAppSelector((state) => state.util);
+    const {deliveryNotes} = useAppSelector(state => state.deliveryNote)
 
     const [formData, setFormData] = useState<any>({})
-    const [customerOptions, setCustomerOptions] = useState<any[]>([])
-    const [contactPersonOptions, setContactPersonOptions] = useState<any[]>([])
-    const [quotationOptions, QuotationOptions] = useState<any[]>([])
-    const [customerDetail, setCustomerDetail] = useState<any>({})
-    const [contactPersonDetail, setContactPersonDetail] = useState<any>({})
-    const [showCustomerDetail, setShowCustomerDetail] = useState(false)
-    const [showContactPersonDetail, setShowContactPersonDetail] = useState(false)
     const [validations, setValidations] = useState<any>({})
-    const [formError, setFormError] = useState<any>('')
-    const handleChange = (name: string, value: any, required: boolean = false) => {
-        if (required && value === '') {
-            handleValidation(name, 'add')
-            return;
-        }
+    const [formError, setFormError] = useState<string>('')
+    const [deliveryNoteOptions, setDeliveryNoteOptions] = useState<any[]>([])
+    const [selectedDeliveryNote, setSelectedDeliveryNote] = useState<any>({})
 
-        if (name === 'delivery_due_in_days') {
-            const date = new Date();
-            date.setDate(date.getDate() + parseInt(value));
-            setFormData((prev: any) => ({
-                ...prev,
-                delivery_due_in_days: value,
-                delivery_due_date: date.toDateString()
-            }));
-            handleValidation(name, 'remove')
-            return;
-        }
-
-        if (name === 'quotation_id' || name === 'salesman_id' || name === 'deliver_by_id' || name === 'customer_id') {
-            if (required && (name === 'salesman_id' || name === 'deliver_by_id' || name === 'customer_id') && value === 0) {
-                handleValidation(name, 'add')
-                return;
-            } else {
-                // Remove that key and value from validation object
-                handleValidation(name, 'remove')
+    const handleChange = (name: string, value: any, required: boolean) => {
+        switch (name) {
+            case 'delivery_note_id':
                 if (value && typeof value !== 'undefined') {
-                    setFormData({...formData, [name]: value.value})
-                    if (name === 'customer_id') {
-                        const customerOption = customerOptions.find((customer: any) => customer.value === value)
-                        if (customerOption) {
-                            setCustomerDetail(customerOption.customer)
-                            setShowCustomerDetail(true)
-                        }
-                        setContactPersonOptions([])
-                        setContactPersonDetail({})
-                        setShowContactPersonDetail(false)
-                        // dispatch() i will get customer contact persons
-                    }
-
-                    if (name === 'deliver_by_id') {
-                        const contactPersonOption = contactPersonOptions.find((contactPerson: any) => contactPerson.value === value)
-                        if (contactPersonOption) {
-                            setContactPersonDetail(contactPersonOption.contactPerson)
-                            setShowContactPersonDetail(true)
-                        }
-                    }
+                    setSelectedDeliveryNote(value.data)
+                    setFormData({...formData, delivery_note_id: value.value})
+                    handleValidation('delivery_note_id', 'remove')
                 } else {
-                    setFormData({...formData, [name]: ''})
+                    setFormData({...formData, delivery_note_id: ''})
+                    handleValidation('delivery_note_id', 'add')
                 }
-            }
-            return;
+                break;
+            default:
+                setFormData({...formData, [name]: value})
+                handleValidation(name, 'remove')
+                break;
         }
-        handleValidation(name, 'remove')
-        setFormData({...formData, [name]: value})
     }
 
     const handleValidation = (name: string, type: string) => {
@@ -114,12 +79,18 @@ const DeliveryNoteForm = () => {
         }
     }
 
+    const calculateTotal = (item: any) => {
+        let totalCost = parseFloat(item.retail_price) * parseFloat(item.quantity);
+        let taxAmount = (totalCost * parseFloat(item.tax_rate)) / 100;
+        let discountAmount = item.discount_type === 'percentage' ? (totalCost * parseFloat(item.discount_amount_rate)) / 100 : parseFloat(item.discount_amount_rate);
+        return totalCost + taxAmount - discountAmount;
+    }
+
     useEffect(() => {
         setAuthToken(token)
         setContentType('application/json')
-        // dispatch() i will get all customers
-        // dispatch() i will get all salesmen
-        // dispatch() i will get all pending quotations
+        dispatch(generateCode(FORM_CODE_TYPE.SALE_INVOICE))
+        dispatch(pendingDeliveryNotes())
     }, [])
 
     useEffect(() => {
@@ -129,6 +100,22 @@ const DeliveryNoteForm = () => {
             setFormError('')
         }
     }, [validations]);
+
+    useEffect(() => {
+        if (deliveryNotes) {
+            setDeliveryNoteOptions(deliveryNotes.map((item: any) => ({
+                label: item.delivery_note_code,
+                value: item.id,
+                data: item
+            })))
+        }
+    }, [deliveryNotes])
+
+    useEffect(() => {
+        if (code) {
+            setFormData({...formData, sale_invoice_code: code[FORM_CODE_TYPE.SALE_INVOICE]})
+        }
+    }, [code]);
 
     return (
         <form onSubmit={handleSubmit}>
@@ -140,166 +127,122 @@ const DeliveryNoteForm = () => {
                 <div className="flex w-full flex-col items-start justify-start space-y-3">
                     <Dropdown
                         divClasses='w-full'
-                        label='Quotation'
-                        name='quotation_id'
-                        options={quotationOptions}
-                        value={formData.quotation_id}
-                        onChange={(e: any) => handleChange('quotation_id', e, true)}
+                        label='Delivery Notes'
+                        name='delivery_note_id'
+                        options={deliveryNoteOptions}
+                        value={formData.delivery_note_id}
+                        onChange={(e: any) => handleChange('delivery_note_id', e, true)}
                         required={true}
-                        errorMessage={validations.quotation_id}
+                        errorMessage={validations.delivery_note_id}
                     />
 
                     <Input
                         divClasses="w-full"
-                        label="Delivery Note Code"
+                        label="Sale Invoice Code"
                         type="text"
-                        name="deliver_note_code"
-                        value={formData.quotation_code}
+                        name="sale_invoice_code"
+                        value={formData.sale_invoice_code}
                         onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
                         placeholder="Enter Delivery Note Code"
                         isMasked={false}
                         disabled={true}
                     />
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-                        <Input
-                            divClasses='w-full'
-                            label='Delivery Due days'
-                            type='number'
-                            name='delivery_due_in_days'
-                            value={formData.delivery_due_in_days}
-                            onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
-                            isMasked={false}
-                            placeholder="Receipt Delivery Days"
-                            required={true}
-                            errorMessage={validations.delivery_due_in_days}
-                        />
-
-                        <Input
-                            divClasses='w-full'
-                            label='Delivery Due Date'
-                            type='text'
-                            name='delivery_due_date'
-                            value={formData.delivery_due_date}
-                            onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
-                            isMasked={false}
-                            placeholder="Receipt Delivery Due Date"
-                            disabled={true}
-                            required={true}
-                            errorMessage={validations.delivery_due_date}
-                        />
-                    </div>
 
                 </div>
                 <div className="w-full border rounded p-5 hidden md:block">
-                    <h5 className="text-lg font-semibold dark:text-white-light mb-3">Delivery Note Instructions</h5>
+                    <h5 className="text-lg font-semibold dark:text-white-light mb-3">Sale Invoice Instructions</h5>
                     <ul className="list-decimal list-inside space-y-2">
-                        <li>Delivery Note Code will be auto generated</li>
-                        <li>Delivery Due Date will be auto calculated based on Delivery Due Days</li>
-                        <li>Delivery Due Days is required field</li>
-                        <li>Select contact person from customer as delivery by</li>
-                        <li>Terms & Conditions are optional</li>
-                        <li>Double check the item details</li>
+                        <li>Fill all required fields</li>
+                        <li>Click on submit button to save the record</li>
+                        <li>Click on clear button to reset the form</li>
                     </ul>
                 </div>
             </div>
-            <div className="border rounded p-5 w-full my-5">
-                <div className="flex flex-col md:flex-row justify-between items-center">
-                    <h3 className="text-lg font-semibold">Customer</h3>
-                    <Button
-                        type={ButtonType.link}
-                        text={
-                            <span className="flex items-center">
-                                {getIcon(IconType.add)}
-                                Create Customer
-                            </span>
-                        }
-                        variant={ButtonVariant.primary}
-                        link="/crm/customer/create"
-                        size={ButtonSize.small}
-                    />
-                </div>
-                <hr className="my-3"/>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full my-5 ">
-                    <div className="w-full space-y-3">
-                        <Dropdown
-                            divClasses='w-full'
-                            label='Customer'
-                            name='customer_id'
-                            options={customerOptions}
-                            value={formData.customer_id}
-                            onChange={(e: any) => handleChange('customer_id', e && typeof e !== 'undefined' ? e.value : '', true)}
-                        />
 
-                        <div className="w-full" hidden={!showCustomerDetail}>
-                            <h4 className="font-bold text-lg">Customer Details</h4>
-                            <table>
-                                <thead>
-                                <tr>
-                                    <th>Customer Code</th>
-                                    <th>Customer Name</th>
-                                    <th>Billed From</th>
-                                    <th>Shift From</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr>
-                                    <td>{customerDetail.customer_code}</td>
-                                    <td>{customerDetail.name}</td>
-                                    <td>
-                                        {customerDetail.addresses?.map((address: any, index: number) => {
-                                            if (address.type === 'billing') {
-                                                return address.address + ', ' + address.city?.name + ', ' + address.state?.name + ', ' + address.country?.name
-                                            }
-                                        })}
-                                    </td>
-                                    <td>
-                                        {customerDetail.addresses?.map((address: any, index: number) => {
-                                            if (address.type === 'shifting') {
-                                                return address.address + ', ' + address.city?.name + ', ' + address.state?.name + ', ' + address.country?.name
-                                            }
-                                        })}
-                                    </td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
+            {Object.keys(selectedDeliveryNote).length > 0 && (
+                <div className="border rounded p-5 w-full my-5" hidden={Object.keys(selectedDeliveryNote).length === 0}>
+                    <div className="my-3 grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
+                        <span>
+                            <strong>Quotation For: </strong>
+                            {selectedDeliveryNote.delivery_note_for === 1 ? 'Finished Goods' : 'Raw Material'}
+                        </span>
+                        <span>
+                            <strong>Quotation Code: </strong>
+                            {selectedDeliveryNote.quotation.quotation_code}
+                        </span>
+                        <span>
+                            <strong>Delivery Note Code: </strong>
+                            {selectedDeliveryNote.delivery_note_code}
+                        </span>
+                        <span>
+                            <strong>Receipt Delivery In Days: </strong>
+                            {selectedDeliveryNote.receipt_delivery_due_days}
+                        </span>
+                        <span>
+                            <strong>Delivery Due In Days: </strong>
+                            {selectedDeliveryNote.delivery_due_in_days + " (" + selectedDeliveryNote.delivery_due_date + ")"}
+                        </span>
+                        <span>
+                            <strong>Salesman: </strong>
+                            {selectedDeliveryNote.salesman.name + " (" + selectedDeliveryNote.salesman.employee.employee_code + ")"}
+                        </span>
+                        <span>
+                            <strong>Customer: </strong>
+                            {selectedDeliveryNote.customer.name + " (" + selectedDeliveryNote.customer.customer_code + ")"}
+                        </span>
+                        <span>
+                            <strong>Contact Person: </strong>
+                            {selectedDeliveryNote.contact_person?.name}
+                        </span>
                     </div>
-                    <div className="w-full space-y-3">
-                        <Dropdown
-                            divClasses='w-full'
-                            label='Delivery By'
-                            name='deliver_by_id'
-                            options={contactPersonOptions}
-                            value={formData.deliver_by_id}
-                            onChange={(e: any) => handleChange('deliver_by_id', e && typeof e !== 'undefined' ? e.value : '', true)}
-                        />
 
-                        <div className="w-full" hidden={!showContactPersonDetail}>
-                            <h4 className="font-bold text-lg">Contact Person Details</h4>
-                            <table>
-                                <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Phone</th>
-                                    <th>Email</th>
-                                    <th>Address</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr>
-                                    <td>{contactPersonDetail.name}</td>
-                                    <td>{contactPersonDetail.phone}</td>
-                                    <td>{contactPersonDetail.email}</td>
-                                    <td>
-                                        {contactPersonDetail.address + ', ' + contactPersonDetail.city?.name + ', ' + contactPersonDetail.state?.name + ', ' + contactPersonDetail.country?.name}
-                                    </td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Sr.No</th>
+                            <th>Product</th>
+                            <th>Batch #</th>
+                            <th>Filling</th>
+                            <th>Available</th>
+                            <th>Retail Price</th>
+                            <th>Qty</th>
+                            <th>Tax</th>
+                            <th>Discount</th>
+                            <th>Total Cost</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {selectedDeliveryNote.delivery_note_items.map((item: any, index: number) => (
+                            <tr key={item.id}>
+                                <td>{index + 1}</td>
+                                <td>{item.product_assembly.formula_name}</td>
+                                <td>{item.batch_number}</td>
+                                <td>{item.product.title + " - " + item.product.item_code}</td>
+                                <td>{item.available_quantity}</td>
+                                <td>{item.retail_price.toFixed(2)}</td>
+                                <td>{item.quantity.toFixed(2)}</td>
+                                <td>
+                                    <div className="flex flex-col">
+                                        <span><strong>Tax: </strong>{item.tax_category.name} ({item.tax_rate}%)</span>
+                                        <span><strong>Amount: </strong>{item.tax_amount.toFixed(2)}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div className="flex flex-col">
+                                        <span><strong>Type: </strong>{capitalize(item.discount_type)}</span>
+                                        <span><strong>Rate: </strong>
+                                            {item.discount_amount_rate.toFixed(2)}{item.discount_type === 'percentage' ? '%' : ''}
+                                        </span>
+                                    </div>
+                                </td>
+                                <td>{calculateTotal(item).toFixed(2)}</td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
                 </div>
-            </div>
+            )}
+
             <Textarea
                 divClasses='w-full'
                 label='Terms & Conditions'
