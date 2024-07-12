@@ -6,7 +6,7 @@ export default function Document() {
             <Head>
                 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" />
             </Head>
-            <body>
+            <body className="flex flex-col min-h-screen">
                 <Main />
                 <NextScript />
             </body>
