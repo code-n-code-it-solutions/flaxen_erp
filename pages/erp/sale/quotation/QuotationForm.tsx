@@ -529,6 +529,7 @@ const QuotationForm = () => {
             </div>
 
             <FinishedGoodModal
+                modalFor={'quotation'}
                 modalOpen={modalOpen}
                 setModalOpen={setModalOpen}
                 handleSubmit={(item) => handleQuotationItemSubmit(item)}
