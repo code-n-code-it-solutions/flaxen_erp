@@ -111,7 +111,7 @@ const InvoiceForm = () => {
             setFormData((prevFormData: any) => ({
                 ...prevFormData,
                 account_receivable_id: latestRecord.account_receivable?.code,
-                vat_receivable_id: latestRecord.vat_receivable?.code
+                vat_payable_id: latestRecord.vat_payable?.code
             }));
         }
     }, [latestRecord]);
@@ -155,15 +155,15 @@ const InvoiceForm = () => {
                                 setFormData({
                                     ...formData,
                                     delivery_note_ids: e.map((item: any) => item.value).join(','),
-                                    customer_id: e[0].delivery_note.delivery_note_items[0].quotation.customer_id,
-                                    contact_person_id: e[0].delivery_note.delivery_note_items[0].quotation.contact_person_id,
-                                    salesman_id: e[0].delivery_note.delivery_note_items[0].quotation.salesman_id,
-                                    due_date: calculateDateFromDays(e[0].delivery_note.delivery_note_items[0].quotation.customer.due_in_days),
-                                    payment_terms: e[0].delivery_note.delivery_note_items[0].quotation.customer.due_in_days
+                                    customer_id: e[0].delivery_note.customer_id,
+                                    contact_person_id: e[0].delivery_note.contact_person_id,
+                                    salesman_id: e[0].delivery_note.salesman_id,
+                                    due_date: calculateDateFromDays(e[0].delivery_note.customer.due_in_days),
+                                    payment_terms: e[0].delivery_note.customer.due_in_days
                                 });
-                                setCustomer(e[0].delivery_note.delivery_note_items[0].quotation.customer);
-                                setContactPerson(e[0].delivery_note.delivery_note_items[0].quotation.contact_person);
-                                setSalesman(e[0].delivery_note.delivery_note_items[0].quotation.salesman);
+                                setCustomer(e[0].delivery_note.customer);
+                                setContactPerson(e[0].delivery_note.contact_person);
+                                setSalesman(e[0].delivery_note.salesman);
                                 setDeliveryNoteItems(e.map((item: any) => item.delivery_note.delivery_note_items).flat());
                             } else {
                                 setFormData({
@@ -398,19 +398,19 @@ const InvoiceForm = () => {
                                     <h3 className="font-bold text-lg mb-5 border-b">Tax Accounts</h3>
                                     <div className="space-y-3">
                                         <div>
-                                            <label>VAT Account Receivable</label>
+                                            <label>VAT Output</label>
                                             <TreeSelect
                                                 showSearch
                                                 style={{ width: '100%' }}
-                                                value={latestRecord ? latestRecord.vat_receivable_account?.code : formData.vat_receivable_id}
+                                                value={latestRecord ? latestRecord.vat_payable?.code : formData.vat_payable_id}
                                                 dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-                                                placeholder="Please select Receivable Account for VAT"
+                                                placeholder="Please select Output Account for VAT"
                                                 allowClear
                                                 treeDefaultExpandAll
                                                 onChange={(e) => {
                                                     setFormData((prevFormData: any) => ({
                                                         ...prevFormData,
-                                                        vat_receivable_id: e
+                                                        vat_payable_id: e
                                                     }));
                                                 }}
                                                 treeData={accountOptions}

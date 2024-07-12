@@ -48,24 +48,28 @@ const PrintContent = ({ content }:any) => {
                         <View key={index} style={styles.tableRow}>
                             <Text style={styles.tableCell}>{index + 1}</Text>
                             <View style={styles.tableCell}>
-                                <Text style={styles.infoText}>PR: {item.purchase_requisition?.pr_code}</Text>
-                                <Text style={styles.infoText}>By: {item.purchase_requisition?.employee?.name}</Text>
+                                <Text style={styles.infoText}>{item.purchase_requisition?.pr_code}</Text>
+                                {/*<Text style={styles.infoText}>By: {item.purchase_requisition?.employee?.name}</Text>*/}
                             </View>
                             <Text style={styles.tableCell}>{item.raw_product?.item_code}</Text>
                             <Text style={styles.tableCell}>{item.unit?.name}</Text>
                             <Text style={styles.tableCell}>{item.unit_price.toFixed(2)}</Text>
                             <View style={styles.tableCell}>
-                                <Text style={styles.infoText}>Requested: {item.request_quantity}</Text>
-                                <Text style={styles.infoText}>Processed: {item.processed_quantity}</Text>
+                                <Text style={styles.infoText}>{item.processed_quantity}</Text>
                             </View>
+                            {/*<View style={styles.tableCell}>*/}
+                            {/*    <Text style={styles.infoText}>Requested: {item.request_quantity}</Text>*/}
+                            {/*    <Text style={styles.infoText}>Processed: {item.processed_quantity}</Text>*/}
+                            {/*</View>*/}
                             <View style={styles.tableCell}>
                                 <Text style={styles.infoText}>Category: {item.tax_category ? item.tax_category.name : 'None'}</Text>
                                 <Text style={styles.infoText}>Rate: {item.tax_rate.toFixed(2)}</Text>
                                 <Text style={styles.infoText}>Amount: {item.tax_amount.toFixed(2)}</Text>
                             </View>
-                            <Text style={styles.tableCell}>{(parseFloat(item.processed_quantity) * parseFloat(item.unit_price)).toFixed(2)}</Text>
+                            <Text style={styles.tableCell}>{((parseFloat(item.processed_quantity) * parseFloat(item.unit_price)) + parseFloat(item.tax_amount)).toFixed(2)}</Text>
                         </View>
                     ))}
+
                 </View>
                 {/*<View style={styles.termsContainer}>*/}
                 {/*    <Text style={styles.infoText}>Terms and Conditions</Text>*/}

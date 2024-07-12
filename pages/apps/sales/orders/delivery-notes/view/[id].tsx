@@ -98,22 +98,18 @@ const View = () => {
                                 </span>
                             </div>
                             <div className="flex flex-col gap-2 justify-start items-start">
-                                {deliveryNoteDetail?.skip_quotation ? (
-                                    <>
-                                        <span>
-                                            <strong>Salesman: </strong>
-                                            {deliveryNoteDetail?.salesman?.name}
-                                        </span>
-                                        <span>
-                                            <strong>Customer: </strong>
-                                            {deliveryNoteDetail?.customer?.name}
-                                        </span>
-                                        <span>
-                                            <strong>Contact Person: </strong>
-                                            {deliveryNoteDetail?.contact_person?.name}
-                                        </span>
-                                    </>
-                                ) : <></>}
+                                <span>
+                                    <strong>Salesman: </strong>
+                                    {deliveryNoteDetail?.salesman?.name}
+                                </span>
+                                <span>
+                                    <strong>Customer: </strong>
+                                    {deliveryNoteDetail?.customer?.name}
+                                </span>
+                                <span>
+                                    <strong>Contact Person: </strong>
+                                    {deliveryNoteDetail?.contact_person?.name}
+                                </span>
                                 <span>
                                     <strong>Created By: </strong>
                                     {deliveryNoteDetail?.created_by?.name}
@@ -128,7 +124,7 @@ const View = () => {
                                 <tr>
                                     <th>Sr.No</th>
                                     <th>Product</th>
-                                    {!deliveryNoteDetail.skip_quotation && (<th>Quotation</th>)}
+                                    {/*{!deliveryNoteDetail.skip_quotation && (<th>Quotation</th>)}*/}
                                     <th>Batch #</th>
                                     <th>Filling Product</th>
                                     <th>Delivered Quantity</th>
@@ -141,9 +137,9 @@ const View = () => {
                                     <tr key={index}>
                                         <td>{index + 1}</td>
                                         <td>{item.product_assembly.formula_name}</td>
-                                        {!deliveryNoteDetail.skip_quotation && (
-                                            <td>{item.quotation.quotation_code}</td>
-                                        )}
+                                        {/*{!deliveryNoteDetail.skip_quotation && (*/}
+                                        {/*    <td>{item.quotation.quotation_code}</td>*/}
+                                        {/*)}*/}
                                         <td>
                                             {item.available_quantity ? (
                                                 <div>

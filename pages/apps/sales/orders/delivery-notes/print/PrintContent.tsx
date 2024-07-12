@@ -27,30 +27,29 @@ const PrintContent = ({ content }: any) => {
 
 
                     </View>
-                    {content?.skip_quotation ? (
-                        <View style={styles.infoColumn}>
-                            <Text style={styles.text}>
-                                <Text style={styles.bold}>Salesman: </Text>
-                                {content?.salesman?.name}
-                            </Text>
-                            <Text style={styles.text}>
-                                <Text style={styles.bold}>Customer: </Text>
-                                {content?.customer?.name}
-                            </Text>
-                            <Text style={styles.text}>
-                                <Text style={styles.bold}>Contact Person: </Text>
-                                {content?.contact_person?.name}
-                            </Text>
-                        </View>
-                    ) : null}
+                    <View style={styles.infoColumn}>
+                        <Text style={styles.text}>
+                            <Text style={styles.bold}>Salesman: </Text>
+                            {content?.salesman?.name}
+                        </Text>
+                        <Text style={styles.text}>
+                            <Text style={styles.bold}>Customer: </Text>
+                            {content?.customer?.name}
+                        </Text>
+                        <Text style={styles.text}>
+                            <Text style={styles.bold}>Contact Person: </Text>
+                            {content?.contact_person?.name}
+                        </Text>
+                    </View>
                 </View>
                 <Text style={styles.sectionTitle}>Item Details</Text>
                 <View style={styles.table}>
                     <View style={styles.tableHeader}>
                         <Text style={[styles.tableHeaderCell, { width: '5%' }]}>#</Text>
                         <Text style={[styles.tableHeaderCell, { width: '20%' }]}>Product</Text>
-                        {!content?.skip_quotation &&
-                            <Text style={[styles.tableHeaderCell, { width: '15%' }]}>Quotation</Text>}
+                        {/*{!content?.skip_quotation &&*/}
+                        {/*    <Text style={[styles.tableHeaderCell, { width: '15%' }]}>Quotation</Text>*/}
+                        {/*}*/}
                         <Text style={[styles.tableHeaderCell, { width: '20%' }]}>Batch #</Text>
                         <Text style={[styles.tableHeaderCell, { width: '20%' }]}>Filling Product</Text>
                         <Text style={[styles.tableHeaderCell, { width: '20%' }]}>Delivered Quantity</Text>
@@ -60,17 +59,19 @@ const PrintContent = ({ content }: any) => {
                             <Text style={[styles.tableCell, { width: '5%' }]}>{index + 1}</Text>
                             <Text
                                 style={[styles.tableCell, { width: '20%' }]}>{item.product_assembly.formula_name}</Text>
-                            {!content?.skip_quotation && <Text
-                                style={[styles.tableCell, { width: '15%' }]}>{item.quotation.quotation_code}</Text>}
+                            {/*{!content?.skip_quotation && <Text*/}
+                            {/*    style={[styles.tableCell, { width: '15%' }]}>{item.quotation.quotation_code}</Text>}*/}
                             <Text style={[styles.tableCell, { width: '20%' }]}>
-                                {item.available_quantity ? (
-                                    <>
-                                        <Text>{item.batch_number}</Text>
-                                        <Text>{item.filling.filling_code}</Text>
-                                    </>
-                                ) : (
-                                    <Text style={styles.notAvailable}>Not Available</Text>
-                                )}
+                                {item.batch_number}
+                                {/*{item.available_quantity ? (*/}
+                                {/*    <View style={{ display: 'flex', flexDirection: 'column' }}>*/}
+                                {/*        <Text>{item.batch_number}</Text>*/}
+                                {/*        <Text> </Text>*/}
+                                {/*        <Text>{item.filling.filling_code}</Text>*/}
+                                {/*    </View>*/}
+                                {/*) : (*/}
+                                {/*    <Text style={styles.notAvailable}>Not Available</Text>*/}
+                                {/*)}*/}
                             </Text>
                             <Text style={[styles.tableCell, { width: '20%' }]}>{item.product?.title}</Text>
                             <Text style={[styles.tableCell, { width: '20%' }]}>{item.delivered_quantity}</Text>

@@ -1,30 +1,47 @@
-import React, { useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import Button from '@/components/Button';
-import { ButtonType, ButtonVariant } from '@/utils/enums';
+import { ButtonSize, ButtonType, ButtonVariant } from '@/utils/enums';
 import { Input } from '@/components/form/Input';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { setAuthToken, setContentType } from '@/configs/api.config';
-import { generateCode } from '@/store/slices/utilSlice';
+import { clearLatestRecord, generateCode, getLatestRecord } from '@/store/slices/utilSlice';
 import Option from '@/components/form/Option';
 import { Dropdown } from '@/components/form/Dropdown';
 import { getPaymentMethods } from '@/store/slices/paymentMethodSlice';
 import { storeVendorPayment } from '@/store/slices/vendorPayments';
 import { getVendors } from '@/store/slices/vendorSlice';
-import { getPendingVendorBills } from '@/store/slices/vendorBillSlice';
+import { clearVendorBillState, getPendingVendorBills } from '@/store/slices/vendorBillSlice';
+import { Tab } from '@headlessui/react';
+import dynamic from 'next/dynamic';
+import useTransformToSelectOptions from '@/hooks/useTransformToSelectOptions';
+import { getAccountsTypes } from '@/store/slices/accountSlice';
+import Modal from '@/components/Modal';
+import { clearBankState, getBanks, storeBank } from '@/store/slices/bankSlice';
+import { PlusCircleIcon } from 'lucide-react';
+import BankFormModal from '@/components/modals/BankFormModal';
+
+const TreeSelect = dynamic(() => import('antd/es/tree-select'), { ssr: false });
 
 const PaymentForm = () => {
     const dispatch = useAppDispatch();
+    const accountOptions = useTransformToSelectOptions(useAppSelector(state => state.account).accountTypes);
     const { token } = useAppSelector((state) => state.user);
-    const { code } = useAppSelector((state) => state.util);
-    const { vendorBills } = useAppSelector((state) => state.vendorBill);
+    const { banks, bank } = useAppSelector((state) => state.bank);
+    const { code, latestRecord } = useAppSelector((state) => state.util);
+    const { pendingBills, loading } = useAppSelector((state) => state.vendorBill);
     const { allVendors } = useAppSelector((state) => state.vendor);
     const { paymentMethods } = useAppSelector((state) => state.paymentMethod);
 
     const [formData, setFormData] = useState<any>({});
     const [errors, setErrors] = useState<any>({});
+    const [bankOptions, setBankOptions] = useState<any[]>([]);
     const [vendorOptions, setVendorOptions] = useState<any[]>([]);
     const [paymentMethodOptions, setPaymentMethodOptions] = useState<any[]>([]);
     const [bills, setBills] = useState<any[]>([]);
+    const [chequeModal, setChequeModal] = useState<boolean>(false);
+    const [chequeList, setChequeList] = useState<any[]>([]);
+    const [chequeDetails, setChequeDetails] = useState<any>({});
+    const [bankModal, setBankModal] = useState<boolean>(false);
 
     const handleChange = (name: string, value: any, required: boolean) => {
         if (required) {
@@ -73,7 +90,8 @@ const PaymentForm = () => {
                 vendor_bill_id: billDetail.id,
                 due_amount: billDetail.due_amount,
                 paid_amount: billDetail.paid_amount
-            }))
+            })),
+            cheques: chequeList
         };
         // console.log(finalData);
         dispatch(storeVendorPayment(finalData));
@@ -85,7 +103,13 @@ const PaymentForm = () => {
         dispatch(generateCode('vendor_bill_payment'));
         dispatch(getVendors());
         dispatch(getPaymentMethods());
-        setBills([])
+        dispatch(getAccountsTypes({ id: 1 }));
+        setBills([]);
+        setChequeDetails({});
+        setFormData({
+            ...formData,
+            payment_date: new Date()
+        });
     }, []);
 
     useEffect(() => {
@@ -98,11 +122,11 @@ const PaymentForm = () => {
     }, [code]);
 
     useEffect(() => {
-        if (vendorBills) {
+        if (pendingBills) {
             // console.log(vendorBills.map((bill: any) => bill));
-            handleSetBillsList(vendorBills.map((bill: any) => bill));
+            handleSetBillsList(pendingBills.map((bill: any) => bill));
         }
-    }, [vendorBills]);
+    }, [pendingBills]);
 
     useEffect(() => {
         if (allVendors) {
@@ -121,6 +145,33 @@ const PaymentForm = () => {
             })));
         }
     }, [paymentMethods]);
+
+    useEffect(() => {
+        if (banks) {
+            setBankOptions(banks.map((bank: any) => ({
+                value: bank.id,
+                label: bank.name
+            })));
+        }
+    }, [banks]);
+
+    useEffect(() => {
+        if (bank) {
+            dispatch(getBanks());
+            setBankModal(false);
+            setChequeModal(true);
+            dispatch(clearBankState());
+        }
+    }, [bank]);
+
+    useEffect(() => {
+        if (latestRecord) {
+            setFormData((prevFormData: any) => ({
+                ...prevFormData,
+                paying_account_id: latestRecord.paying_account?.code,
+            }));
+        }
+    }, [latestRecord]);
 
     return (
         <form onSubmit={(e) => handleSubmit(e)}>
@@ -146,25 +197,25 @@ const PaymentForm = () => {
                         onChange={(e) => handleChange(e.target.name, e.target.checked ? 1 : 0, e.target.required)}
                     />
 
-                    <div className="flex gap-3">
-                        <label>Payment Type</label>
-                        <Option
-                            label="Send"
-                            type="radio"
-                            name="payment_type"
-                            value="Send"
-                            defaultChecked={formData.payment_type === 'Send'}
-                            onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
-                        />
-                        <Option
-                            label="Receive"
-                            type="radio"
-                            name="payment_type"
-                            value="Receive"
-                            defaultChecked={formData.payment_type === 'Receive'}
-                            onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
-                        />
-                    </div>
+                    {/*<div className="flex gap-3">*/}
+                    {/*    <label>Payment Type</label>*/}
+                    {/*    <Option*/}
+                    {/*        label="Send"*/}
+                    {/*        type="radio"*/}
+                    {/*        name="payment_type"*/}
+                    {/*        value="Send"*/}
+                    {/*        defaultChecked={formData.payment_type === 'Send'}*/}
+                    {/*        onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}*/}
+                    {/*    />*/}
+                    {/*    <Option*/}
+                    {/*        label="Receive"*/}
+                    {/*        type="radio"*/}
+                    {/*        name="payment_type"*/}
+                    {/*        value="Receive"*/}
+                    {/*        defaultChecked={formData.payment_type === 'Receive'}*/}
+                    {/*        onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}*/}
+                    {/*    />*/}
+                    {/*</div>*/}
 
                     <Dropdown
                         label="Vendor"
@@ -176,6 +227,8 @@ const PaymentForm = () => {
                                 handleChange('vendor_id', e.value, false);
                                 dispatch(getPendingVendorBills(e.value));
                             } else {
+                                setBills([]);
+                                dispatch(clearVendorBillState());
                                 handleChange('vendor_id', '', false);
                             }
                         }}
@@ -188,12 +241,55 @@ const PaymentForm = () => {
                         options={paymentMethodOptions}
                         onChange={(e) => {
                             if (e && typeof e !== 'undefined') {
+                                if (e.value === 2) {
+
+                                    dispatch(getBanks());
+                                } else {
+                                    setChequeList([]);
+                                }
                                 handleChange('payment_method_id', e.value, true);
                             } else {
                                 handleChange('payment_method_id', '', true);
                             }
                         }}
                     />
+
+                    {formData.payment_method_id === 2 && (
+                        <>
+                            <Dropdown
+                                label="Payment Sub Method"
+                                name="payment_sub_method"
+                                value={formData.payment_sub_method}
+                                options={[
+                                    { label: 'Credit Card', value: 'credit-card' },
+                                    { label: 'Cheque', value: 'cheque' },
+                                    { label: 'Online Transfer', value: 'online-transfer' }
+                                ]}
+                                onChange={(e) => {
+                                    if (e && typeof e !== 'undefined') {
+                                        if (e.value !== 'cheque') {
+                                            setChequeList([]);
+                                        }
+                                        handleChange('payment_sub_method', e.value, true);
+                                    } else {
+                                        handleChange('payment_sub_method', '', true);
+                                    }
+                                }}
+                            />
+                            {(formData.payment_sub_method === 'credit-card' || formData.payment_sub_method === 'online-transfer') && (
+                                <Input
+                                    divClasses="w-full"
+                                    label="Transaction Number (Optional)"
+                                    type="text"
+                                    name="transaction_number"
+                                    value={formData.transaction_number}
+                                    onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
+                                    placeholder="Enter Transaction Number"
+                                    isMasked={false}
+                                />
+                            )}
+                        </>
+                    )}
                 </div>
                 <div className="w-full flex flex-col gap-3">
                     <Input
@@ -217,79 +313,219 @@ const PaymentForm = () => {
                         placeholder="Enter Payment Date"
                         isMasked={false}
                     />
-
                 </div>
             </div>
 
-            <div className="table-responsive">
-                <table>
-                    <thead>
-                    <tr>
-                        <th>Bill Code</th>
-                        <th>Ref #</th>
-                        <th>Bill Date</th>
-                        <th>Due Date/Terms</th>
-                        <th>Total Amount</th>
-                        <th>Due Amount</th>
-                        <th>Paid Amount</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {bills.map((billDetail: any, index: number) => (
-                        <tr key={index}>
-                            <td>{billDetail.bill_number}</td>
-                            <td>{billDetail.bill_reference}</td>
-                            <td>{billDetail.bill_date}</td>
-                            <td>{billDetail.due_date ? billDetail.due_date : billDetail.payment_terms + ' Days'}</td>
-                            <td>{billDetail.total_amount.toFixed(2)}</td>
-                            <td>{billDetail.due_amount.toFixed(2)}</td>
-                            <td>
-                                <Input
-                                    divClasses="w-full"
-                                    type="number"
-                                    name={`invoices[${index}][paid_amount]`}
-                                    value={billDetail.paid_amount}
-                                    onChange={(e) => {
-                                        const paidAmount = parseFloat(e.target.value);
-                                        if (paidAmount > billDetail.due_amount) {
-                                            setErrors({
-                                                ...errors,
-                                                [`invoices[${index}][paid_amount]`]: 'Paid amount cannot exceed due amount'
-                                            });
-                                        } else {
-                                            setErrors((prevErrors: any) => {
-                                                const {
-                                                    [`invoices[${index}][paid_amount]`]: removedError,
-                                                    ...restErrors
-                                                } = prevErrors;
-                                                return restErrors;
-                                            });
-                                        }
-                                        setBills((invoices: any) => {
-                                            return invoices.map((inv: any, i: number) => {
-                                                if (i === index) {
-                                                    return {
-                                                        ...inv,
-                                                        paid_amount: paidAmount > billDetail.due_amount ? billDetail.due_amount : paidAmount
-                                                    };
-                                                }
-                                                return inv;
-                                            });
-                                        });
-                                    }}
-                                    placeholder="Enter Paid Amount"
-                                    isMasked={false}
-                                />
-                                {errors[`invoices[${index}][paid_amount]`] && (
-                                    <div
-                                        className="text-red-500 text-xs">{errors[`invoices[${index}][paid_amount]`]}</div>
-                                )}
-                            </td>
+            {formData.payment_sub_method === 'cheque' && (
+                <div className="table-responsive my-5">
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-center">
+                        <h3 className="font-bold text-lg mb-5">Cheques</h3>
+                        <Button
+                            type={ButtonType.button}
+                            text="Add Cheque"
+                            variant={ButtonVariant.primary}
+                            size={ButtonSize.small}
+                            onClick={() => {
+                                setChequeModal(true);
+                                setChequeDetails({});
+                                // setBills((prevBills: any) => [
+                                //     ...prevBills,
+                                //     {
+                                //         bill_number: '',
+                                //         bank: '',
+                                //         amount: 0,
+                                //         cheque_date: '',
+                                //         is_pdc: 0,
+                                //         pdc_date: ''
+                                //     }
+                                // ]);
+                            }}
+                        />
+                    </div>
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Cheque #</th>
+                            <th>Bank</th>
+                            <th>Amount</th>
+                            <th>Cheque Date</th>
+                            <th>Is PDC</th>
+                            <th>PDC Date</th>
                         </tr>
-                    ))}
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody>
+                        {chequeList.length > 0
+                            ? (chequeList.map((cheque: any, index: number) => (
+                                <tr key={index}>
+                                    <td>{index + 1}</td>
+                                    <td>{cheque.cheque_number}</td>
+                                    <td>{bankOptions?.find((bank: any) => bank.value === cheque.bank_id)?.name}</td>
+                                    <td>{cheque.cheque_amount}</td>
+                                    <td>{cheque.cheque_date}</td>
+                                    <td>{cheque.is_pdc === 1 ? 'Yes' : 'No'}</td>
+                                    <td>{cheque.pdc_date}</td>
+                                </tr>
+                            ))) : (
+                                <tr>
+                                    <td colSpan={7} className="text-center">No Cheques Added</td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+
+            <Tab.Group>
+                <Tab.List className="mt-3 flex flex-wrap border-b border-white-light dark:border-[#191e3a]">
+                    <Tab as={Fragment}>
+                        {({ selected }) => (
+                            <button
+                                className={`${
+                                    selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
+                                } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
+                            >
+                                Details
+                            </button>
+                        )}
+                    </Tab>
+                    <Tab as={Fragment}>
+                        {({ selected }) => (
+                            <button
+                                className={`${
+                                    selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
+                                } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
+                            >
+                                Accounting
+                            </button>
+                        )}
+                    </Tab>
+                </Tab.List>
+                <Tab.Panels className="panel rounded-none">
+                    <Tab.Panel>
+                        <div className="active table-responsive">
+                            <table>
+                                <thead>
+                                <tr>
+                                    <th>Bill Code</th>
+                                    <th>Ref #</th>
+                                    <th>Bill Date</th>
+                                    <th>Due Date/Terms</th>
+                                    <th>Total Amount</th>
+                                    <th>Due Amount</th>
+                                    <th>Paid Amount</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {!loading
+                                    ? (bills.map((billDetail: any, index: number) => (
+                                        <tr key={index}>
+                                            <td>{billDetail.bill_number}</td>
+                                            <td>{billDetail.bill_reference}</td>
+                                            <td>{billDetail.bill_date}</td>
+                                            <td>{billDetail.due_date ? billDetail.due_date : billDetail.payment_terms + ' Days'}</td>
+                                            <td>{billDetail.total_amount.toFixed(2)}</td>
+                                            <td>{billDetail.due_amount.toFixed(2)}</td>
+                                            <td>
+                                                <Input
+                                                    divClasses="w-full"
+                                                    type="number"
+                                                    name={`invoices[${index}][paid_amount]`}
+                                                    value={billDetail.paid_amount}
+                                                    onChange={(e) => {
+                                                        const paidAmount = parseFloat(e.target.value);
+                                                        if (paidAmount > billDetail.due_amount) {
+                                                            setErrors({
+                                                                ...errors,
+                                                                [`invoices[${index}][paid_amount]`]: 'Paid amount cannot exceed due amount'
+                                                            });
+                                                        } else {
+                                                            setErrors((prevErrors: any) => {
+                                                                const {
+                                                                    [`invoices[${index}][paid_amount]`]: removedError,
+                                                                    ...restErrors
+                                                                } = prevErrors;
+                                                                return restErrors;
+                                                            });
+                                                        }
+                                                        setBills((invoices: any) => {
+                                                            return invoices.map((inv: any, i: number) => {
+                                                                if (i === index) {
+                                                                    return {
+                                                                        ...inv,
+                                                                        paid_amount: paidAmount > billDetail.due_amount ? billDetail.due_amount : paidAmount
+                                                                    };
+                                                                }
+                                                                return inv;
+                                                            });
+                                                        });
+                                                    }}
+                                                    placeholder="Enter Paid Amount"
+                                                    isMasked={false}
+                                                />
+                                                {errors[`invoices[${index}][paid_amount]`] && (
+                                                    <div
+                                                        className="text-red-500 text-xs">{errors[`invoices[${index}][paid_amount]`]}</div>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))) : (
+                                        <tr>
+                                            <td colSpan={7} className="text-center">Loading...</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </Tab.Panel>
+                    <Tab.Panel>
+                        <div>
+                            <Option
+                                divClasses="mb-5"
+                                label="Use Previous Item Accounting"
+                                type="checkbox"
+                                name="use_previous_accounting"
+                                value="1"
+                                defaultChecked={formData.use_previous_accounting}
+                                onChange={(e) => {
+                                    setFormData((prevFormData: any) => ({
+                                        ...prevFormData,
+                                        use_previous_accounting: e.target.checked ? 1 : 0
+                                    }));
+                                    dispatch(clearLatestRecord());
+                                    if (e.target.checked) {
+                                        dispatch(getLatestRecord('vendor-bill-payments'));
+                                    } else {
+                                        dispatch(clearLatestRecord());
+                                    }
+                                }}
+                            />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                    <h3 className="font-bold text-lg mb-5 border-b">Accounts</h3>
+                                    <div className="space-y-3">
+                                        <div>
+                                            <label>Paying Account</label>
+                                            <TreeSelect
+                                                showSearch
+                                                style={{ width: '100%' }}
+                                                value={latestRecord ? latestRecord.paying_account?.code : formData.paying_account_id}
+                                                dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+                                                placeholder="Please select paying account"
+                                                allowClear
+                                                treeDefaultExpandAll
+                                                onChange={(e) => handleChange('paying_account_id', e, true)}
+                                                treeData={accountOptions}
+                                                // onPopupScroll={onPopupScroll}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </Tab.Panel>
+                </Tab.Panels>
+            </Tab.Group>
             <div className="flex justify-center items-center mt-3">
                 <Button
                     type={ButtonType.submit}
@@ -297,6 +533,165 @@ const PaymentForm = () => {
                     variant={ButtonVariant.primary}
                 />
             </div>
+
+            <Modal
+                title="Add Cheque"
+                show={chequeModal}
+                setShow={setChequeModal}
+                footer={
+                    <div className="flex justify-end items-center gap-3">
+                        <Button
+                            type={ButtonType.button}
+                            text="Cancel"
+                            variant={ButtonVariant.secondary}
+                            onClick={() => {
+                                setChequeModal(false);
+                                setChequeDetails({});
+                            }}
+                        />
+                        <Button
+                            type={ButtonType.button}
+                            text="Add Cheque"
+                            variant={ButtonVariant.primary}
+                            onClick={() => {
+                                setChequeList((prevCheques: any) => [
+                                    ...prevCheques,
+                                    chequeDetails
+                                ]);
+                                setChequeModal(false);
+                            }}
+                        />
+                    </div>
+                }
+            >
+                <div className="flex items-end w-full gap-1">
+                    <Dropdown
+                        divClasses="w-full"
+                        label="Bank"
+                        name="bank_id"
+                        value={chequeDetails.bank_id}
+                        options={bankOptions}
+                        onChange={(e) => {
+                            if (e && typeof e !== 'undefined') {
+                                setChequeDetails((prev: any) => ({
+                                    ...prev,
+                                    bank_id: e.value
+                                }));
+                            } else {
+                                setChequeDetails((prev: any) => ({
+                                    ...prev,
+                                    bank_id: ''
+                                }));
+                            }
+                        }}
+                    />
+                    <Button
+                        type={ButtonType.button}
+                        text={<PlusCircleIcon size={18} />}
+                        variant={ButtonVariant.primary}
+                        onClick={() => setBankModal(true)}
+                    />
+                </div>
+                <Input
+                    divClasses="w-full"
+                    label="Cheque #"
+                    type="text"
+                    name="cheque_number"
+                    value={chequeDetails.cheque_number}
+                    onChange={(e) => setChequeDetails((prev: any) => ({
+                        ...prev,
+                        cheque_number: e.target.value
+                    }))}
+                    placeholder="Enter Cheque Number"
+                    isMasked={false}
+                />
+                <Input
+                    divClasses="w-full"
+                    label="Cheque Name"
+                    type="text"
+                    name="cheque_name"
+                    value={chequeDetails.cheque_name}
+                    onChange={(e) => setChequeDetails((prev: any) => ({
+                        ...prev,
+                        cheque_name: e.target.value
+                    }))}
+                    placeholder="Enter Cheque Name"
+                    isMasked={false}
+                />
+                <Input
+                    divClasses="w-full"
+                    label="Cheque Amount"
+                    type="number"
+                    name="cheque_amount"
+                    value={chequeDetails.cheque_amount}
+                    onChange={(e) => setChequeDetails((prev: any) => ({
+                        ...prev,
+                        cheque_amount: e.target.value
+                    }))}
+                    placeholder="Enter Cheque Amount"
+                    isMasked={false}
+                />
+                <Input
+                    divClasses="w-full"
+                    label="Cheque Date"
+                    type="date"
+                    name="cheque_date"
+                    value={chequeDetails.cheque_date}
+                    onChange={(e) => setChequeDetails((prev: any) => ({
+                        ...prev,
+                        cheque_date: e[0] ? e[0].toLocaleDateString() : ''
+                    }))}
+                    placeholder="Enter Cheque Date"
+                    isMasked={false}
+                />
+                <Option
+                    divClasses="mb-5"
+                    label="Is PDC"
+                    type="checkbox"
+                    name="is_pdc"
+                    value="1"
+                    defaultChecked={chequeDetails.is_pdc === 1}
+                    onChange={(e) => {
+                        setChequeDetails((prev: any) => ({
+                            ...prev,
+                            is_pdc: e.target.checked ? 1 : 0
+                        }));
+                    }}
+                />
+                {chequeDetails.is_pdc === 1 && (
+                    <Input
+                        divClasses="w-full"
+                        label="PDC Date"
+                        type="date"
+                        name="pdc_date"
+                        value={chequeDetails.pdc_date}
+                        onChange={(e) => setChequeDetails((prev: any) => ({
+                            ...prev,
+                            pdc_date: e[0] ? e[0].toLocaleDateString() : ''
+                        }))
+                        }
+                        placeholder="Enter PDC Date"
+                        isMasked={false}
+                    />
+                )}
+            </Modal>
+            <BankFormModal
+                modalOpen={bankModal}
+                setModalOpen={setBankModal}
+                handleSubmit={(value) => {
+                    dispatch(storeBank({
+                        name: value.name,
+                        phone: value.phone,
+                        email: value.email,
+                        country_id: value.country_id,
+                        state_id: value.state_id,
+                        city_id: value.city_id,
+                        postal_code: value.postal_code,
+                        address: value.address,
+                        is_active: value.is_active
+                    }));
+                }}
+            />
         </form>
     );
 };

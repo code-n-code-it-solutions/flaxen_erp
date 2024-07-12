@@ -7,6 +7,8 @@ interface IReportState {
     rawProductStock: any;
     finishGoodStock: any;
     salesReportData: any;
+    vendorAccounts: any;
+    vendorStatement: any;
     stock: any;
     loading: boolean;
     error: any;
@@ -19,6 +21,8 @@ const initialState: IReportState = {
     rawProductStock: null,
     finishGoodStock: null,
     salesReportData: null,
+    vendorAccounts: null,
+    vendorStatement: null,
     stock: null,
     loading: false,
     error: null,
@@ -68,11 +72,25 @@ export const getSalesReport = createAsyncThunk(
     }
 );
 
-export const getVendorReport = createAsyncThunk(
-    'reports/vendor',
+export const getVendorAccountReport = createAsyncThunk(
+    'reports/vendor/account',
     async (params: any, thunkAPI) => {
         try {
-            const response = await API.post('/reports/vendor-report', params);
+            const response = await API.post('/reports/vendor-account', params);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const getVendorStatementReport = createAsyncThunk(
+    'reports/vendor/statement',
+    async (params: any, thunkAPI) => {
+        try {
+            const response = await API.post('/reports/vendor-statement', params);
             return response.data;
         } catch (error: any) {
             const message =
@@ -106,6 +124,8 @@ export const reportSlice = createSlice({
             state.rawProductStock = null;
             state.finishGoodStock = null;
             state.salesReportData = null;
+            state.vendorAccounts = null;
+            state.vendorStatement = null;
             state.stock = null;
             state.error = null;
             state.success = false;
@@ -149,15 +169,27 @@ export const reportSlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message;
             })
-            .addCase(getVendorReport.pending, (state) => {
+            .addCase(getVendorAccountReport.pending, (state) => {
                 state.loading = true;
             })
-            .addCase(getVendorReport.fulfilled, (state, action) => {
+            .addCase(getVendorAccountReport.fulfilled, (state, action) => {
                 state.loading = false;
-                state.vendor = action.payload.data;
+                state.vendorAccounts = action.payload.data;
                 state.success = action.payload.success;
             })
-            .addCase(getVendorReport.rejected, (state, action) => {
+            .addCase(getVendorAccountReport.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(getVendorStatementReport.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getVendorStatementReport.fulfilled, (state, action) => {
+                state.loading = false;
+                state.vendorStatement = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getVendorStatementReport.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })

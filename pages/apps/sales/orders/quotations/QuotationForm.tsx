@@ -543,6 +543,13 @@ const QuotationForm = () => {
 
             <div className="w-full flex justify-center items-center flex-col md:flex-row gap-3 mt-5">
                 <Button
+                    type={ButtonType.link}
+                    text="Preview"
+                    variant={ButtonVariant.success}
+                    disabled={false}
+                    link="/apps/sales/orders/quotations/preview"
+                />
+                <Button
                     type={ButtonType.submit}
                     text="Submit"
                     variant={ButtonVariant.primary}

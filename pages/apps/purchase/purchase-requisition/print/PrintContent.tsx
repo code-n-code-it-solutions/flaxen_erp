@@ -8,27 +8,38 @@ const PrintContent = ({ content }: any) => {
         if (content?.type === 'Material') {
             return content?.purchase_requisition_items?.map((item: any, index: number) => (
                 <View key={index} style={styles.tableRow}>
-                    <Text
-                        style={{ textAlign: 'center', ...styles.tableCell, ...styles.cellWidthSmall }}>{index + 1}</Text>
-                    <Text
-                        style={{ textAlign: 'center', ...styles.tableCell, ...styles.cellWidth }}>{item.raw_product?.item_code}</Text>
-                    <Text
-                        style={{ textAlign: 'center', ...styles.tableCell, ...styles.cellWidth }}>{item.unit?.name}</Text>
-                    <Text
-                        style={{ textAlign: 'center', ...styles.tableCell, ...styles.cellWidth }}>{parseFloat(item.unit_price).toFixed(2)}</Text>
+                    <Text style={{ textAlign: 'center', ...styles.tableCell, ...styles.cellWidthSmall }}>
+                        {index + 1}
+                    </Text>
+                    <Text style={{ textAlign: 'center', ...styles.tableCell, ...styles.cellWidth }}>
+                        {item.raw_product?.item_code}
+                    </Text>
+                    <Text style={{ textAlign: 'center', ...styles.tableCell, ...styles.cellWidth }}>
+                        {item.unit?.name}
+                    </Text>
+                    <Text style={{ textAlign: 'center', ...styles.tableCell, ...styles.cellWidth }}>
+                        {parseFloat(item.unit_price).toFixed(2)}
+                    </Text>
                     <View style={{ textAlign: 'left', ...styles.tableCell, ...styles.cellWidth }}>
-                        <Text><Text style={styles.bold}>Requested: </Text>{parseFloat(item.request_quantity).toFixed(2)}
+                        <Text>
+                            <Text style={styles.bold}>Requested: </Text>
+                            {parseFloat(item.request_quantity).toFixed(2)}
                         </Text>
-                        <Text><Text
-                            style={styles.bold}>Processed: </Text>{parseFloat(item.processed_quantity).toFixed(2)}
+                        <Text>
+                            <Text style={styles.bold}>Processed: </Text>
+                            {parseFloat(item.processed_quantity).toFixed(2)}
                         </Text>
-                        <Text><Text
-                            style={styles.bold}>Remaining: </Text>{parseFloat(item.remaining_quantity).toFixed(2)}
+                        <Text>
+                            <Text style={styles.bold}>Remaining: </Text>
+                            {parseFloat(item.remaining_quantity).toFixed(2)}
                         </Text>
                     </View>
-                    <Text
-                        style={{ textAlign: 'center', ...styles.tableCell, ...styles.cellWidth }}>{(parseFloat(item.request_quantity) * parseFloat(item.unit_price)).toFixed(2)}</Text>
-                    <Text style={{ textAlign: 'center', ...styles.tableCell, ...styles.cellWidth }}>{item.status}</Text>
+                    <Text style={{ textAlign: 'center', ...styles.tableCell, ...styles.cellWidth }}>
+                        {(parseFloat(item.request_quantity) * parseFloat(item.unit_price)).toFixed(2)}
+                    </Text>
+                    <Text style={{ textAlign: 'center', ...styles.tableCell, ...styles.cellWidth }}>
+                        {item.status}
+                    </Text>
                 </View>
             ));
         } else {

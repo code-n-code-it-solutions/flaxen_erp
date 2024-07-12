@@ -6,6 +6,7 @@ interface IVendorBillState {
     vendorBill: any;
     vendorBillDetail: any
     vendorBills: any;
+    pendingBills: any;
     payments: any;
     payment: any;
     loading: boolean;
@@ -18,6 +19,7 @@ const initialState: IVendorBillState = {
     vendorBill: null,
     vendorBillDetail: null,
     vendorBills: null,
+    pendingBills: null,
     payments: null,
     payment: null,
     loading: false,
@@ -135,6 +137,7 @@ export const vendorBillSlice = createSlice({
             state.error = null;
             state.success = false;
             state.vendorBillDetail = null;
+            state.pendingBills = null;
         },
     },
     extraReducers: (builder) => {
@@ -191,7 +194,7 @@ export const vendorBillSlice = createSlice({
             })
             .addCase(getPendingVendorBills.fulfilled, (state, action) => {
                 state.loading = false;
-                state.vendorBills = action.payload.data;
+                state.pendingBills = action.payload.data;
                 state.success = action.payload.success;
             })
             .addCase(getPendingVendorBills.rejected, (state, action) => {

@@ -5,8 +5,7 @@ import {setPageTitle} from '@/store/slices/themeConfigSlice';
 import Link from "next/link";
 import Breadcrumb from "@/components/Breadcrumb";
 import {ThunkDispatch} from "redux-thunk";
-import {IRootState} from "@/store";
-import {AnyAction} from "redux";
+import { IRootState, useAppDispatch } from '@/store';
 import {setAuthToken, setContentType} from "@/configs/api.config";
 import GenericTable from "@/components/GenericTable";
 import 'tippy.js/dist/tippy.css';
@@ -14,10 +13,10 @@ import Select from "react-select";
 import {getRepresentatives, getVendors} from "@/store/slices/vendorSlice";
 import Flatpickr from 'react-flatpickr';
 import 'flatpickr/dist/flatpickr.css';
-import {clearReportState, getVendorReport} from "@/store/slices/reportSlice";
+import {clearReportState, getVendorAccountReport} from "@/store/slices/reportSlice";
 
 const VendorReport = () => {
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
+    const dispatch = useAppDispatch();
     const {token} = useSelector((state: IRootState) => state.user);
     const {vendor, loading, success} = useSelector((state: IRootState) => state.report);
     const [loadingReport, setLoadingReport] = useState(false);
@@ -40,7 +39,7 @@ const VendorReport = () => {
         setContentType('application/json')
         setShowReport(true)
         console.log(vendorId, vendorRepresentativeId, fromDate, toDate)
-        dispatch(getVendorReport({
+        dispatch(getVendorAccountReport({
             vendor_id: vendorId,
             vendor_representative_id: vendorRepresentativeId,
             from_date: fromDate,
