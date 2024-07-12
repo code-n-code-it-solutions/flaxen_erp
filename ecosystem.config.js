@@ -1,10 +1,4 @@
-<<<<<<< HEAD
 module.exports = {
-=======
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var config = {
->>>>>>> ce7aef2 (server updates)
     apps: [
         {
             name: 'code-n-code',
@@ -27,7 +21,3 @@ var config = {
         },
     },
 };
-<<<<<<< HEAD
-=======
-exports.default = config;
->>>>>>> ce7aef2 (server updates)
