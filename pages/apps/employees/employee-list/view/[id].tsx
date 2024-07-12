@@ -6,7 +6,7 @@ import { clearEmployeeState, showDetails } from '@/store/slices/employeeSlice';
 import PageWrapper from '@/components/PageWrapper';
 import { getIcon, serverFilePath } from '@/utils/helper';
 import Image from 'next/image';
-import { ButtonSize, ButtonType, ButtonVariant, IconType } from '@/utils/enums';
+import { AppBasePath, ButtonSize, ButtonType, ButtonVariant, IconType } from '@/utils/enums';
 import FileDownloader from '@/components/FileDownloader';
 import AppLayout from '@/components/Layouts/AppLayout';
 import DetailPageHeader from '@/components/apps/DetailPageHeader';
@@ -31,15 +31,10 @@ const View = () => {
     return (
         <div>
             <DetailPageHeader
+                appBasePath={AppBasePath.Employee}
                 title="Employee Details"
                 middleComponent={{
-                    show: true,
-                    edit: true,
-                    print: true,
-                    printLabel: true,
-                    delete: true,
-                    duplicate: true,
-                    email: true
+                    show: false,
                 }}
                 backButton={{
                     show: true,
