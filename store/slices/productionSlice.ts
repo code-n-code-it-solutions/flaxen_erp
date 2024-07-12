@@ -7,6 +7,7 @@ interface IProductionState {
     productionDetail: any
     allProductions: any;
     productionItems: any;
+    productionsForPrint: any;
     loading: boolean;
     error: any;
     success: boolean;
@@ -18,6 +19,7 @@ const initialState: IProductionState = {
     productionDetail: null,
     allProductions: null,
     productionItems: null,
+    productionsForPrint: null,
     loading: false,
     error: null,
     success: false,
@@ -111,9 +113,9 @@ export const deleteProduction = createAsyncThunk(
 
 export const getProductionItems = createAsyncThunk(
     'productions/production-items',
-    async (id: number, thunkAPI) => {
+    async (ids: number[], thunkAPI) => {
         try {
-            const response = await API.get('/formula-production/items/' + id);
+            const response = await API.post('/formula-production/items', {ids});
             return response.data;
         } catch (error: any) {
             const message =
@@ -125,13 +127,42 @@ export const getProductionItems = createAsyncThunk(
 
 export const pendingProductions = createAsyncThunk(
     'productions/pending-productions',
-    async (_, thunkAPI) => {
+    async (productAssemblyId:number, thunkAPI) => {
         try {
-            const response = await API.get('/formula-production/production/pending');
+            const response = await API.get('/formula-production/production/pending/'+productAssemblyId);
             return response.data;
         } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to delete';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const getProductionByProductionAssembly = createAsyncThunk(
+    'productions/by-product-assembly',
+    async (productAssemblyId:number, thunkAPI) => {
+        try {
+            const response = await API.post('/formula-production/by-product-assembly', { product_assembly_id: productAssemblyId });
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to delete';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const getProductionsForPrint = createAsyncThunk(
+    'productions/for-print',
+    async (data: any, thunkAPI) => {
+        try {
+            const response = await API.post('/formula-production/print', data);
+            console.log(response.data);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
         }
     }
@@ -148,6 +179,7 @@ export const productionSlice = createSlice({
             state.success = false;
             state.productionDetail = null;
             state.productionItems = null;
+            state.productionsForPrint = null;
         },
     },
     extraReducers: (builder) => {
@@ -243,6 +275,30 @@ export const productionSlice = createSlice({
                 state.success = action.payload.success;
             })
             .addCase(pendingProductions.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(getProductionsForPrint.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getProductionsForPrint.fulfilled, (state, action) => {
+                state.loading = false;
+                state.productionsForPrint = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getProductionsForPrint.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(getProductionByProductionAssembly.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getProductionByProductionAssembly.fulfilled, (state, action) => {
+                state.loading = false;
+                state.allProductions = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getProductionByProductionAssembly.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })

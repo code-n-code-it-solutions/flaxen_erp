@@ -178,14 +178,14 @@ const VendorRepresentativeModal = ({
                         onClick={() => setModalOpen(false)}
                     />
 
-                    {isFormValid && (
+                    {/*{isFormValid && (*/}
                         <Button
                             type={ButtonType.button}
                             text={modalFormData ? 'Update' : 'Add'}
                             variant={ButtonVariant.primary}
                             onClick={() => handleSubmit(formData)}
                         />
-                    )}
+                    {/*)}*/}
                 </div>
             }
         >

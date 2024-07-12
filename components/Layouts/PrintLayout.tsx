@@ -1,61 +1,40 @@
-import React from 'react';
-import BlankLayout from "@/components/Layouts/BlankLayout";
-import Footer from "@/components/Report/Footer";
-import Button from "@/components/Button";
-import {ButtonSize, ButtonType, ButtonVariant, IconType} from "@/utils/enums";
-import {useRouter} from "next/router";
-import {getIcon} from "@/utils/helper";
-import Header from "@/components/Report/Header";
+import React, { useEffect, useState } from 'react';
+import BlankLayout from '@/components/Layouts/BlankLayout';
+import Footer from '@/components/Report/Footer';
+import { useRouter } from 'next/router';
+import Header from '@/components/Report/Header';
+import { Document, Page, PDFViewer, Text } from '@react-pdf/renderer';
+import AppLayout from '@/components/Layouts/AppLayout';
 
-const PrintLayout = ({children}: { children: React.ReactNode }) => {
-    const router = useRouter();
+const PrintLayout = ({ children }: { children: React.ReactNode }) => {
+    const [isMounted, setIsMounted] = useState<boolean>(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
     return (
-        <div className="flex justify-center flex-col gap-3 mt-3 items-center print:justify-start">
-            <div className="flex justify-between print:hidden w-[210mm]">
-                <Button
-                    type={ButtonType.button}
-                    text={
-                        <span className="flex justify-center items-center gap-2">
-                            {getIcon(IconType.back)}
-                            Back
-                        </span>
-                    }
-                    variant={ButtonVariant.secondary}
-                    onClick={() => router.back()}
-                    size={ButtonSize.small}
-                />
-
-                <Button
-                    type={ButtonType.button}
-                    text={
-                        <span className="flex justify-center items-center gap-2">
-                            {getIcon(IconType.print)}
-                            Print
-                        </span>
-                    }
-                    variant={ButtonVariant.primary}
-                    onClick={() => window.print()}
-                    size={ButtonSize.small}
-                />
-
-            </div>
-            <div
-                className="relative bg-white shadow print:shadow-none rounded w-[210mm] max-w-[210mm] page-break-after-always page-break-inside-avoid overflow-hidden">
-                <div className="absolute top-0 w-full">
-                    <Header/>
-                </div>
-                <div className="pt-[110px] pb-[30px] px-5">
-                    {children}
-                </div>
-                {/*<div className="absolute bottom-0 w-full">*/}
-                {/*    <Footer/>*/}
-                {/*</div>*/}
-            </div>
-        </div>
+        isMounted ? (
+            <div>{children}</div>
+            // <PDFViewer
+            //     style={{
+            //         width: '100%',
+            //         height: '100vh'
+            //     }}
+            //     showToolbar={true}
+            // >
+            //     <Document
+            //         title="Report Preview"
+            //         author="Flaxen Paints Industry LLC"
+            //         subject="Report Preview"
+            //         keywords="pdf, flaxen, flaxen paints, report, preview, flaxen paints industry llc"
+            //     >
+            //         {children}
+            //     </Document>
+            // </PDFViewer>
+        ) : null
     );
 };
 
-PrintLayout.getLayout = (page: any) => {
-    return <BlankLayout>{page}</BlankLayout>;
-};
+PrintLayout.getLayout = (page: any) => <BlankLayout>{page}</BlankLayout>;
 export default PrintLayout;

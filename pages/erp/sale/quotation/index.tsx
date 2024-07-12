@@ -1,21 +1,23 @@
-import React, {useEffect} from 'react';
-import {useDispatch, useSelector} from "react-redux";
-import {ThunkDispatch} from "redux-thunk";
-import {IRootState} from "@/store";
-import {AnyAction} from "redux";
+import React, {useEffect, useState} from 'react';
+import {useAppDispatch, useAppSelector} from "@/store";
 import PageWrapper from "@/components/PageWrapper";
-import Button from "@/components/Button";
-import {ButtonSize, ButtonType, ButtonVariant, IconType} from "@/utils/enums";
-import {getIcon} from "@/utils/helper";
+import {ButtonType, ButtonVariant, IconType} from "@/utils/enums";
 import {setPageTitle} from "@/store/slices/themeConfigSlice";
+import {setAuthToken} from "@/configs/api.config";
+import {getQuotations} from "@/store/slices/quotationSlice";
+import IconButton from "@/components/IconButton";
+import GenericTable from "@/components/GenericTable";
+import {capitalize} from "lodash";
 
 const Index = () => {
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
-    const {token} = useSelector((state: IRootState) => state.user);
+    const dispatch = useAppDispatch();
+    const {token} = useAppSelector(state => state.user);
+    const {quotations, loading} = useAppSelector(state => state.quotation);
+    const [rowData, setRowData] = useState<any[]>([])
     const breadcrumb = [
         {
             title: 'Home',
-            href: '/main'
+            href: '/erp/main'
         },
         {
             title: 'Sale Dashboard',
@@ -27,33 +29,94 @@ const Index = () => {
         }
     ];
 
-    const colName = ['id', 'product', 'main_uom', 'sub_uom', 'total_purchases', 'available_stock', 'used_stock'];
-    const header = ['ID', 'Product', 'Main UOM', 'Sub UOM', 'Total Purchases', 'Available Stock', 'Used Stock'];
+    useEffect(() => {
+        setAuthToken(token)
+        dispatch(setPageTitle('All Quotations'));
+        dispatch(getQuotations())
+    }, []);
 
     useEffect(() => {
-        dispatch(setPageTitle('All Quotations'));
-    }, []);
+        if (quotations) {
+            setRowData(quotations)
+        }
+    }, [quotations]);
 
     return (
         <PageWrapper
             embedLoader={false}
             breadCrumbItems={breadcrumb}
+            title="All Quotations"
+            buttons={[
+                {
+                    text: 'Create New',
+                    icon: IconType.add,
+                    type: ButtonType.link,
+                    variant: ButtonVariant.primary,
+                    link: '/erp/sale/quotation/create'
+                }
+            ]}
         >
-            <div className="mb-5 flex items-center justify-between">
-                <h5 className="text-lg font-semibold dark:text-white-light">All Quotations</h5>
-                <Button
-                    type={ButtonType.link}
-                    text={
-                        <span className="flex items-center">
-                            {getIcon(IconType.add)}
-                            Add New
-                        </span>
+            <GenericTable
+                rowData={rowData}
+                loading={loading}
+                exportTitle={'all-quotations-' + Date.now()}
+                columns={[
+                    {
+                        accessor: 'quotation_code',
+                        title: 'Quotation #',
+                        sortable: true
+                    },
+                    {
+                        accessor: 'generation_type',
+                        title: 'Generation Type',
+                        render: (row: any) => (
+                            <span>{capitalize(row.generation_type)}</span>
+                        ),
+                        sortable: true
+                    },
+                    {
+                        accessor: 'salesman.name',
+                        title: 'Salesman',
+                        sortable: true
+                    },
+                    {
+                        accessor: 'customer.name',
+                        title: 'Customer',
+                        sortable: true
+                    },
+                    {
+                        accessor: 'contact_person.name',
+                        title: 'Contact Person',
+                        sortable: true
+                    },
+                    {
+                        accessor: 'delivery_due_date',
+                        title: 'Delivery Date',
+                        sortable: true
+                    },
+                    {
+                        accessor: 'actions',
+                        title: 'Actions',
+                        render: (row: any) => (
+                            <div className="flex items-center gap-3">
+                                <IconButton
+                                    icon={IconType.print}
+                                    color={ButtonVariant.info}
+                                    link={`/erp/sale/quotation/print/${row.id}`}
+                                    tooltip='Print'
+                                />
+
+                                <IconButton
+                                    icon={IconType.view}
+                                    color={ButtonVariant.success}
+                                    link={`/erp/sale/quotation/view/${row.id}`}
+                                    tooltip='View'
+                                />
+                            </div>
+                        )
                     }
-                    variant={ButtonVariant.primary}
-                    link={'/erp/sale/quotation/create'}
-                    size={ButtonSize.small}
-                />
-            </div>
+                ]}
+            />
         </PageWrapper>
     );
 };

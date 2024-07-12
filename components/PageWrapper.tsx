@@ -10,6 +10,7 @@ interface IProps {
     children: React.ReactNode;
     embedLoader?: boolean;
     title?: string;
+    panel?: boolean;
     buttons?: {
         text: string;
         icon?: IconType;
@@ -26,13 +27,14 @@ const PageWrapper: FC<IProps> = ({
                                      children,
                                      embedLoader = false,
                                      title,
+                                     panel = true,
                                      buttons
                                  }) => {
     return (
         <div>
             {breadCrumbItems && breadCrumbItems.length > 0 && <Breadcrumb items={breadCrumbItems}/>}
             <div className="pt-5">
-                <div className="panel">
+                <div className={panel ? 'panel' : ''}>
                     {embedLoader && loading
                         ? <ContentLoader/>
                         : (

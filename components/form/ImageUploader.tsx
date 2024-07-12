@@ -7,9 +7,10 @@ interface ImageUploaderProps {
     setImage: (file: File | null) => void;
     label?: string;
     existingImage?: string;
+    isCentered?: boolean;
 }
 
-const ImageUploader: React.FC<ImageUploaderProps> = ({ image, setImage, label, existingImage }) => {
+const ImageUploader: React.FC<ImageUploaderProps> = ({ image, setImage, label, existingImage, isCentered }) => {
     const [preview, setPreview] = useState<string | null>(null);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -37,7 +38,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ image, setImage, label, e
     };
 
     return (
-        <div className="mx-auto p-4 flex flex-col justify-center items-center">
+        <div className={`${isCentered ? 'mx-auto' : ''} p-4 flex flex-col justify-center items-center`}>
             <div className={styles.imageContainer} onClick={handleClick}>
                 {preview && (
                     <Image height={96} width={96} src={preview} priority={true} alt="Preview" className={styles.image}/>

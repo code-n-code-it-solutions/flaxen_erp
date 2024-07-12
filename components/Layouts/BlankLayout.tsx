@@ -9,15 +9,15 @@ const BlankLayout = ({children}: PropsWithChildren) => {
     const token = useSelector((state: IRootState) => state.user.token);
     const router = useRouter();
 
-    useEffect(() => {
-        if (token) {
-            checkServerSideAuth(token).then(r => {
-                if (r) {
-                    router.push('/erp/main');
-                }
-            });
-        }
-    }, [token, router])
+    // useEffect(() => {
+    //     if (token) {
+    //         checkServerSideAuth(token).then(r => {
+    //             if (r) {
+    //                 router.push('/erp/main');
+    //             }
+    //         });
+    //     }
+    // }, [token, router])
 
     return (
         <App>
