@@ -248,9 +248,14 @@ const InvoiceForm = () => {
                     />
                     {formData.bill_type === 'credit' && (
                         <div className="flex flex-col gap-3 justify-start items-start">
-                            <span><strong>Payment Terms (Days):</strong> {vendor?.due_in_days}</span>
-                            <span><strong>Due
-                                Date:</strong> {calculateDateFromDays(vendor?.due_in_days, formData.bill_date)}</span>
+                            <div>
+                                <span className="font-bold">Payment Terms (Days):</span>
+                                {vendor?.due_in_days}
+                            </div>
+                            <div>
+                                <span className="font-bold">Due Date:</span>
+                                <>{calculateDateFromDays(vendor?.due_in_days, formData.bill_date)}</>
+                            </div>
                         </div>
                     )}
                 </div>
