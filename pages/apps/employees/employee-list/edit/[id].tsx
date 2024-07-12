@@ -32,13 +32,7 @@ const Edit = () => {
             <DetailPageHeader
                 title="Edit Employee"
                 middleComponent={{
-                    show: true,
-                    edit: false,
-                    print: true,
-                    printLabel: true,
-                    delete: true,
-                    duplicate: true,
-                    email: true
+                    show: false,
                 }}
                 backButton={{
                     show: true,
