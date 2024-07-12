@@ -19,7 +19,7 @@ module.exports = {
             repo: 'git@github.com:code-n-code-it-solutions/flaxen_erp.git', // Git repo
             path: '/home/codencode-erp/htdocs/erp.codencode.ae',
             'post-deploy':
-                'npm install && npm run build && pm2 reload ecosystem.config.ts --env production',
+                'npm install && npm run build && pm2 reload ecosystem.config.js --env production',
         },
     },
 };
