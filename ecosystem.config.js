@@ -12,7 +12,7 @@ module.exports = {
     ],
     deploy: {
         production: {
-            user: 'root', // e.g., 'root'
+            user: 'codencode-erp', // e.g., 'root'
             host: 'erp.codencode.ae', // e.g., '123.45.67.89'
             ref: 'origin/master', // Branch to pull
             repo: 'git@github.com:code-n-code-it-solutions/flaxen_erp.git', // Git repo
