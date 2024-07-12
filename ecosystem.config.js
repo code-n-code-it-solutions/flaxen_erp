@@ -18,8 +18,8 @@ module.exports = {
             ref: 'origin/master', // Branch to pull
             repo: 'git@github.com:code-n-code-it-solutions/flaxen_erp.git', // Git repo
             path: '/home/codencode-erp/htdocs/erp.codencode.ae',
-            'post-deploy':
-                'npm install && npm run build && pm2 reload ecosystem.config.js --env production',
+            'ssh_options': 'StrictHostKeyChecking=no',
+            'post-deploy': 'npm install && npm run build && pm2 reload ecosystem.config.js --env production',
         },
     },
 };
