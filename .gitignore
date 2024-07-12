@@ -35,4 +35,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+.env.local
+.env.development
+.env.production
+
 /configs/server.config.tsx
