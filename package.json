@@ -6,7 +6,7 @@
         "dev": "next dev",
         "build": "next build",
         "start": "next start",
-        "server-start": "next start -p 3002",
+        "server-start": "next start -p 3005",
         "lint": "next lint",
         "export": "next export"
     },
