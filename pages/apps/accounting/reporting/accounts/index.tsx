@@ -11,23 +11,23 @@ import PageWrapper from '@/components/PageWrapper';
 import { getAccounts } from '@/store/slices/accountSlice';
 import Tree from 'rc-tree';
 
-const transformDataToTreeNodes = (data:any[]) => {
-    return data.map((accountType:any) => ({
+const transformDataToTreeNodes = (data: any[]) => {
+    return data.map((accountType: any) => ({
         title: accountType.name,
         key: `account-type-${accountType.id}`,
-        children: accountType.accounts.map((account:any) => transformAccountToTreeNode(account))
+        children: accountType.accounts.map((account: any) => transformAccountToTreeNode(account))
     }));
 };
 
-const transformAccountToTreeNode = (account:any) => {
+const transformAccountToTreeNode = (account: any) => {
     return {
-        title: <CustomTreeNode title={account.name} total={account.total} />,
+        title: <CustomTreeNode title={account.code + ' - ' + account.name} total={account.total} />,
         key: `account-${account.id}`,
-        children: account.children_recursive ? account.children_recursive.map((child:any) => transformAccountToTreeNode(child)) : []
+        children: account.children_recursive ? account.children_recursive.map((child: any) => transformAccountToTreeNode(child)) : []
     };
 };
 
-const CustomTreeNode = ({ title, total }:any) => {
+const CustomTreeNode = ({ title, total }: any) => {
     console.log('title', title);
     return (
         <div className="grid grid-cols-2 gap-5">
@@ -42,17 +42,17 @@ const Index = () => {
     const router = useRouter();
 
     const dispatch = useAppDispatch();
-    const { token } = useAppSelector((state) => state.user);
-    const accounts = useAppSelector((state) => state.account).accounts
+    const { token, user, loading } = useAppSelector((state) => state.user);
+    const accounts = useAppSelector((state) => state.account).accounts;
     const [selectedRows, setSelectedRows] = useState<any[]>([]);
     const [expandedKeys, setExpandedKeys] = useState([]);
     const [selectedKeys, setSelectedKeys] = useState([]);
     const [treeData, setTreeData] = useState<any[]>([]);
-    const onExpand = (expandedKeys:any) => {
+    const onExpand = (expandedKeys: any) => {
         setExpandedKeys(expandedKeys);
     };
 
-    const onSelect = (selectedKeys:any) => {
+    const onSelect = (selectedKeys: any) => {
         setSelectedKeys(selectedKeys);
     };
 

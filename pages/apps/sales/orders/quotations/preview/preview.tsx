@@ -1,11 +1,11 @@
 import React from 'react';
 
-const SuperAdminLayout = () => {
+const Preview = () => {
     return (
         <div>
-            
+
         </div>
     );
 };
 
-export default SuperAdminLayout;
+export default Preview;

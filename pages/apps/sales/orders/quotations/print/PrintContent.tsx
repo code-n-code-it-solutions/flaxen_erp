@@ -8,7 +8,7 @@ const QuotationDetails = ({ content }: any) => {
     const calculateTotal = (item: any) => {
         let totalCost = parseFloat(item.retail_price) * parseFloat(item.quantity);
         let taxAmount = (totalCost * parseFloat(item.tax_rate)) / 100;
-        let discountAmount = item.discount_type === 'percentage' ? (totalCost * parseFloat(item.discount_amount_rate)) / 100 : parseFloat(item.discount_amount_rate);
+        let discountAmount = item.discount_type === 'percentage' ? (totalCost * Number(item.discount_amount_rate)) / 100 : Number(item.discount_amount_rate);
         return totalCost + taxAmount - discountAmount;
     };
 
@@ -58,7 +58,7 @@ const QuotationDetails = ({ content }: any) => {
                             <Text style={[styles.tableCell, { width: '10%' }]}>{item.retail_price.toFixed(2)}</Text>
                             <Text style={[styles.tableCell, { width: '7%' }]}>{item.quantity.toFixed(2)}</Text>
                             <Text style={[styles.tableCell, { width: '10%' }]}>{item.tax_amount.toFixed(2)} ({item.tax_rate}%)</Text>
-                            <Text style={[styles.tableCell, { width: '10%' }]}>{item.discount_amount_rate.toFixed(2)}{item.discount_type === 'percentage' ? '%' : '/-'}</Text>
+                            <Text style={[styles.tableCell, { width: '10%' }]}>{Number(item.discount_amount_rate).toFixed(2)}{item.discount_type === 'percentage' ? '%' : '/-'}</Text>
                             <Text style={[styles.tableCell, { width: '10%' }]}>{calculateTotal(item).toFixed(2)}</Text>
                         </View>
                     ))}

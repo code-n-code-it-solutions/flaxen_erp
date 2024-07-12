@@ -119,4 +119,6 @@ export enum AppBasePath {
     Purchases_Reporting = '/apps/reporting/purchases',
     Invoicing_Reporting = '/apps/reporting/invoicing',
     Report_Accounts = '/apps/reporting/accounts',
+    Vendor_Report_Account = '/apps/reporting/purchases/vendors/account',
+    Vendor_Report_Statement = '/apps/reporting/purchases/vendors/statement',
 }

@@ -14,6 +14,7 @@ import {Input} from "@/components/form/Input";
 import Button from "@/components/Button";
 import RawProductItemListing from "@/components/listing/RawProductItemListing";
 import ServiceItemListing from "@/components/listing/ServiceItemListing";
+import Swal from 'sweetalert2';
 
 interface IFormData {
     pr_title: string;
@@ -178,7 +179,11 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
         if (id) {
             dispatch(updatePurchaseRequisition({id, purchaseRequestData: finalData}));
         } else {
-            dispatch(storePurchaseRequest(finalData));
+            if(rawProducts.length>0) {
+                dispatch(storePurchaseRequest(finalData));
+            } else {
+                Swal.fire('Error', 'Please select at least one product', 'error')
+            }
         }
     };
 

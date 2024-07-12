@@ -33,7 +33,7 @@ const View = () => {
         let taxAmount = (totalCost * parseFloat(item.tax_rate)) / 100;
         let discountAmount = item.discount_type === 'percentage' ? (totalCost * parseFloat(item.discount_amount_rate)) / 100 : parseFloat(item.discount_amount_rate);
         return totalCost + taxAmount - discountAmount;
-    }
+    };
 
     return (
         <div>
@@ -43,14 +43,14 @@ const View = () => {
                 middleComponent={{
                     show: true,
                     edit: {
-                        show: false,
+                        show: false
                     },
                     print: {
                         show: true,
                         onClick: () => router.push('/apps/sales/orders/quotations/print/' + ids.join('/'))
                     },
                     delete: {
-                        show: false,
+                        show: false
                     },
                     duplicate: {
                         show: true,
@@ -139,17 +139,17 @@ const View = () => {
                                         <td>{item.batch_number}</td>
                                         <td>
                                             <div className="flex justify-start flex-col items-start">
-                                                <span style={{fontSize: 8}}>{item.product?.item_code}</span>
+                                                <span style={{ fontSize: 8 }}>{item.product?.item_code}</span>
                                                 <span>{item.product?.title}</span>
                                                 <span
-                                                    style={{fontSize: 8}}>{item.product?.valuation_method}</span>
+                                                    style={{ fontSize: 8 }}>{item.product?.valuation_method}</span>
                                             </div>
                                         </td>
                                         <td>{item.available_quantity}</td>
                                         <td>{item.retail_price.toFixed(2)}</td>
                                         <td>{item.quantity.toFixed(2)}</td>
                                         <td>{item.tax_amount.toFixed(2) + ' (' + item.tax_rate + '%)'}</td>
-                                        <td>{item.discount_amount_rate.toFixed(2)}{item.discount_type === 'percentage' ? '%' : '/-'}</td>
+                                        <td>{Number(item.discount_amount_rate).toFixed(2)}{item.discount_type === 'percentage' ? '%' : '/-'}</td>
                                         <td>{calculateTotal(item).toFixed(2)}</td>
 
                                     </tr>

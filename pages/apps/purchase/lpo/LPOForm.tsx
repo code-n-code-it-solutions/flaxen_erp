@@ -168,6 +168,7 @@ const LPOForm = ({ id }: IFormProps) => {
                     ? rawProducts.map((product: any) => {
                         return {
                             status: product.status,
+                            purchase_requisition_item_id: product.id,
                             purchase_requisition_id: product.purchase_requisition_id,
                             raw_product_id: product.raw_product_id,
                             description: product.description || '',
@@ -267,7 +268,7 @@ const LPOForm = ({ id }: IFormProps) => {
     const handlePurchaseRequisitionChange = (selections: any) => {
         if (selections && typeof selections !== 'undefined') {
             setSelectedPR(selections);
-
+            console.log(selections);
             const nonZeroSelections = selections.filter((item: any) => item.value !== 0);
             if (nonZeroSelections.length > 0) {
                 // Join values for non-zero selections
@@ -779,10 +780,10 @@ const LPOForm = ({ id }: IFormProps) => {
                                                 unit_price: parseFloat(product.unit_price),
                                                 sub_total: parseFloat(product.unit_price) * parseInt(product.quantity),
                                                 description: product.description || '',
-                                                tax_category_id: 0,
-                                                tax_rate: 0,
-                                                tax_amount: 0,
-                                                grand_total: product.unit_price * product.quantity
+                                                tax_category_id: taxCategories?.find((tc: any) => tc.name==='VAT')?.id || 0,
+                                                tax_rate: taxCategories?.find((tc: any) => tc.name==='VAT')?.rate || 0,
+                                                tax_amount: parseFloat(product.unit_price) * parseInt(product.quantity) * (taxCategories?.find((tc: any) => tc.name==='VAT')?.rate || 0) / 100,
+                                                grand_total: parseFloat(product.unit_price) * parseInt(product.quantity) + parseFloat(product.unit_price) * parseInt(product.quantity) * (taxCategories?.find((tc: any) => tc.name==='VAT')?.rate || 0) / 100
                                             }
                                         ]);
                                         setOriginalProductState([
