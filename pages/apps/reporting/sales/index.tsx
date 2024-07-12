@@ -366,7 +366,7 @@ const Index = () => {
                         <AgGridComponent
                             gridRef={gridRef}
                             data={reportData}
-                            colDefs={getColDef()}
+                            colDefs={getColDef() ?? []}
                             pinnedBottomRowData={pinnedBottomRowData}
                         />
                     </div>
