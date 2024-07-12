@@ -1,4 +1,3 @@
-import { BASE_URL } from '@/configs/server.config';
 import { ButtonType, IconType } from '@/utils/enums';
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
@@ -13,7 +12,7 @@ export const getRandomInt = (min: number, max: number) => {
 
 export const serverFilePath = (path: any) => {
     if (path) {
-        return BASE_URL + '/' + path;
+        return process.env.NEXT_PUBLIC_API_BASE_UR + '/' + path;
     }
     return '/assets/images/default.jpeg';
 };
