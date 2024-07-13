@@ -773,6 +773,7 @@ const LPOForm = ({ id }: IFormProps) => {
                                             ...rawProducts,
                                             {
                                                 status: 'Completed',
+                                                purchase_requisition_item_id: product.purchase_requisition_item_id, // set the parent purchase requisition id
                                                 purchase_requisition_id: product.purchase_requisition_id, // set the parent purchase requisition id
                                                 raw_product_id: product.raw_product_id,
                                                 quantity: parseInt(product.quantity),
