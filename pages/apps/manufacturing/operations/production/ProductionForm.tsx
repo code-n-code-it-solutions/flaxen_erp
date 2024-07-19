@@ -42,7 +42,6 @@ const ProductionForm = ({ id }: IFormProps) => {
                 ...prev,
                 [name]: 'This field is required'
             }));
-            return;
         } else {
             setErrorMessages((prev: any) => {
                 delete prev[name];

@@ -19,6 +19,7 @@ interface IProps {
     maskPattern?: any[];
     styles?: any;
     className?: string;
+    helperText?: string;
 }
 
 export const Input: FC<IProps> = ({
@@ -36,7 +37,8 @@ export const Input: FC<IProps> = ({
                                       required = false,
                                       disabled = false,
                                       styles,
-                                      className
+                                      className,
+                                      helperText
                                   }) => {
     return (
         <div className={divClasses}>
@@ -99,6 +101,7 @@ export const Input: FC<IProps> = ({
                         />
             }
 
+            {helperText && <p className="text-sm text-info">{helperText}</p>}
             {errorMessage && <p className="text-sm text-red-500">{errorMessage}</p>}
         </div>
     );

@@ -1,5 +1,4 @@
-import React, {Fragment, useEffect, useState} from 'react';
-import {Dialog, Transition} from "@headlessui/react";
+import React, {useEffect, useState} from 'react';
 import ImageUploader from "@/components/form/ImageUploader";
 import Modal from "@/components/Modal";
 import { Input } from '../form/Input';

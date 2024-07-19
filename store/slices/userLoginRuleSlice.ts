@@ -2,31 +2,32 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { API } from '@/configs/api.config';
 import { configureSlice } from '@/utils/helper';
 
-interface IUTILState {
-    code: any;
-    latestRecord: any;
-    rawProductCode: any;
+interface IState {
+    userLoginRule: any;
+    userLoginRuleDetail: any;
+    userLoginRules: any;
     loading: boolean;
     error: any;
     success: boolean;
 }
 
 // Initial state
-const initialState: IUTILState = {
-    code: {},
-    latestRecord: null,
-    rawProductCode: null,
+const initialState: IState = {
+    userLoginRule: null,
+    userLoginRuleDetail: null,
+    userLoginRules: null,
     loading: false,
     error: null,
     success: false
 };
 
+
 // Async thunks
-export const generateCode = createAsyncThunk(
-    'utils/generate-code',
-    async (type: string, thunkAPI) => {
+export const getUserLoginRules = createAsyncThunk(
+    'user-login-rule/get-login-rules',
+    async (userId: number, thunkAPI) => {
         try {
-            const response = await API.get('/generate-code/' + type);
+            const response = await API.get('/user/get-login-rules/' + userId);
             return response.data;
         } catch (error: any) {
             const message =
@@ -36,11 +37,11 @@ export const generateCode = createAsyncThunk(
     }
 );
 
-export const generateRawProductCode = createAsyncThunk(
-    'utils/raw-product-code',
-    async (productCategoryId: number, thunkAPI) => {
+export const storeUserLoginRule = createAsyncThunk(
+    'user-login-rule/store-login-rule',
+    async (data: any, thunkAPI) => {
         try {
-            const response = await API.get('/raw-products/generate-code/' + productCategoryId);
+            const response = await API.post('/user/store-login-rule', data);
             return response.data;
         } catch (error: any) {
             const message =
@@ -50,11 +51,11 @@ export const generateRawProductCode = createAsyncThunk(
     }
 );
 
-export const getLatestRecord = createAsyncThunk(
-    'utils/latest-record',
-    async (type: string, thunkAPI) => {
+export const deleteUserLoginRule = createAsyncThunk(
+    'user-login-rule/delete-login-rule',
+    async (ruleId: number, thunkAPI) => {
         try {
-            const response = await API.get('/latest-record/' + type);
+            const response = await API.get('/user/delete-login-rule/' + ruleId);
             return response.data;
         } catch (error: any) {
             const message =
@@ -65,60 +66,56 @@ export const getLatestRecord = createAsyncThunk(
 );
 
 // Slice
-export const utilSlice = createSlice({
-    name: 'utils',
+export const userLoginRuleSlice = createSlice({
+    name: 'user-login-rule',
     initialState,
     reducers: {
-        clearUtilState: (state) => {
-            state.code = {};
-            state.rawProductCode = null;
+        clearUserLoginRuleState: (state) => {
+            state.userLoginRule = null;
             state.error = null;
             state.success = false;
-        },
-        clearLatestRecord: (state) => {
-            state.latestRecord = null;
+            state.userLoginRuleDetail = null;
         }
     },
     extraReducers: (builder) => {
         builder
-            .addCase(generateCode.pending, (state) => {
+            .addCase(getUserLoginRules.pending, (state) => {
                 state.loading = true;
             })
-            .addCase(generateCode.fulfilled, (state, action) => {
+            .addCase(getUserLoginRules.fulfilled, (state, action) => {
                 state.loading = false;
-                state.code = action.payload.data;
+                state.userLoginRules = action.payload.data;
                 state.success = action.payload.success;
             })
-            .addCase(generateCode.rejected, (state, action) => {
+            .addCase(getUserLoginRules.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })
-            .addCase(getLatestRecord.pending, (state) => {
+            .addCase(storeUserLoginRule.pending, (state) => {
                 state.loading = true;
             })
-            .addCase(getLatestRecord.fulfilled, (state, action) => {
+            .addCase(storeUserLoginRule.fulfilled, (state, action) => {
                 state.loading = false;
-                state.latestRecord = action.payload.data;
+                state.userLoginRule = action.payload.data;
                 state.success = action.payload.success;
             })
-            .addCase(getLatestRecord.rejected, (state, action) => {
+            .addCase(storeUserLoginRule.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })
-            .addCase(generateRawProductCode.pending, (state) => {
+            .addCase(deleteUserLoginRule.pending, (state) => {
                 state.loading = true;
             })
-            .addCase(generateRawProductCode.fulfilled, (state, action) => {
+            .addCase(deleteUserLoginRule.fulfilled, (state, action) => {
                 state.loading = false;
-                state.rawProductCode = action.payload.data;
                 state.success = action.payload.success;
             })
-            .addCase(generateRawProductCode.rejected, (state, action) => {
+            .addCase(deleteUserLoginRule.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             });
     }
 });
-export const { clearUtilState, clearLatestRecord } = utilSlice.actions;
+export const { clearUserLoginRuleState } = userLoginRuleSlice.actions;
 
-export const utilSliceConfig = configureSlice(utilSlice, false);
+export const userLoginRuleSliceConfig = configureSlice(userLoginRuleSlice, false);

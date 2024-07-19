@@ -55,7 +55,6 @@ const VendorRepresentativeModal = ({
         if (required) {
             if (!value) {
                 setErrorMessages({...errorMessages, [name]: 'This field is required.'});
-                return
             } else {
                 setErrorMessages((prev: any) => {
                     delete prev[name];

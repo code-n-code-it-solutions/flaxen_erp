@@ -68,7 +68,6 @@ const FundAddFormModal = ({
     const handleChange = (name: string, value: any, required: boolean) => {
         if (required && !value) {
             setErrors({...errors, [name]: 'This field is required'})
-            return;
         } else {
             setErrors((prev: any) => {
                 delete prev[name];

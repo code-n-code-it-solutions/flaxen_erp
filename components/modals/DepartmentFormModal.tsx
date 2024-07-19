@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from 'react';
-import Select from "react-select";
 import Modal from "@/components/Modal";
 import {Input} from '@/components/form/Input'
 import Alert from "@/components/Alert";
