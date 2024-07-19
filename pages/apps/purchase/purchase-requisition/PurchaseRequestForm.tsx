@@ -95,7 +95,6 @@ const PurchaseRequestForm = ({id}: IFormProps) => {
         if (required) {
             if (!value) {
                 setErrorMessages((prev: any) => ({...prev, [name]: 'This field is required'}))
-                return;
             } else {
                 setErrorMessages((prev: any) => {
                     delete prev[name]

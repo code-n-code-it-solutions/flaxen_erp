@@ -1,9 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {setAuthToken} from "@/configs/api.config";
-import {useDispatch, useSelector} from "react-redux";
-import {ThunkDispatch} from "redux-thunk";
-import {IRootState} from "@/store";
-import {AnyAction} from "redux";
+import { useAppDispatch, useAppSelector } from '@/store';
 import BankFormModal from "@/components/modals/BankFormModal";
 import {getBanks, storeBank} from "@/store/slices/bankSlice";
 import {getCurrencies} from "@/store/slices/currencySlice";
@@ -24,10 +21,10 @@ interface IProps {
 }
 
 const BankDetailModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData, title}: IProps) => {
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
-    const {token} = useSelector((state: IRootState) => state.user);
-    const {banks, bank, success} = useSelector((state: IRootState) => state.bank);
-    const {currencies} = useSelector((state: IRootState) => state.currency);
+    const dispatch = useAppDispatch();
+    const {token} = useAppSelector((state) => state.user);
+    const {banks, bank, success} = useAppSelector((state) => state.bank);
+    const {currencies} = useAppSelector((state) => state.currency);
     const [bankFormModal, setBankFormModal] = useState<boolean>(false);
     const [errorMessages, setErrorMessages] = useState<any>({})
     const [isFormValid, setIsFormValid] = useState<boolean>(false);

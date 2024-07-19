@@ -69,7 +69,6 @@ const FillingForm = ({ id }: IFormProps) => {
     const handleChange = (name: string, value: any, required: boolean) => {
         if (required && value === '') {
             setValidationMessages({ ...validationMessages, [name]: 'This field is required.' });
-            return;
         } else {
             setValidationMessages((prev: any) => {
                 delete prev[name];

@@ -1,11 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import ImageUploader from "@/components/form/ImageUploader";
-import {useDispatch, useSelector} from "react-redux";
-import {IRootState} from "@/store";
+import { useAppDispatch, useAppSelector } from '@/store';
 import {ButtonType, ButtonVariant} from "@/utils/enums";
-import {ThunkDispatch} from "redux-thunk";
-import {AnyAction} from "redux";
-import Select from "react-select";
 import Modal from "@/components/Modal";
 import {clearCategoryState} from "@/store/slices/categorySlice";
 import Button from "@/components/Button";
@@ -23,12 +19,12 @@ interface IProps {
 }
 
 const CategoryModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData}: IProps) => {
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
+    const dispatch = useAppDispatch();
     const [formData, setFormData] = useState<any>({})
     const [image, setImage] = useState<File | null>(null);
     const [countryOptions, setCountryOptions] = useState([]);
     const [existingImage, setExistingImage] = useState('');
-    const {countries} = useSelector((state: IRootState) => state.location);
+    const {countries} = useAppSelector((state) => state.location);
 
     const handleChange = (name: string, value: any) => {
         if (name === 'country_id') {

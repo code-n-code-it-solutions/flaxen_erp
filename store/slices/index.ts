@@ -41,6 +41,10 @@ import { customerPaymentSliceConfig } from '@/store/slices/customerPayment';
 import { paymentMethodSliceConfig } from '@/store/slices/paymentMethodSlice';
 import { vendorPaymentSliceConfig } from '@/store/slices/vendorPayments';
 import { bankAccountSliceConfig } from '@/store/slices/bankAccountSlice';
+import { loginActivitySliceConfig } from '@/store/slices/loginActivitySlice';
+import { settingSliceConfig } from '@/store/slices/settingSlice';
+import { userLoginRuleSliceConfig } from '@/store/slices/userLoginRuleSlice';
+import { rawProductCategorySliceConfig } from '@/store/slices/rawProductCategorySlice';
 
 
 export const slices = {
@@ -86,7 +90,11 @@ export const slices = {
     customerPayment: customerPaymentSliceConfig,
     paymentMethod: paymentMethodSliceConfig,
     vendorPayment: vendorPaymentSliceConfig,
-    bankAccount: bankAccountSliceConfig
+    bankAccount: bankAccountSliceConfig,
+    loginActivity: loginActivitySliceConfig,
+    setting: settingSliceConfig,
+    userRuleLogin: userLoginRuleSliceConfig,
+    rawProductCategory: rawProductCategorySliceConfig,
 }
 
 
@@ -133,5 +141,9 @@ export const reducers = {
     customerPayment: customerPaymentSliceConfig.reducer,
     paymentMethod: paymentMethodSliceConfig.reducer,
     vendorPayment: vendorPaymentSliceConfig.reducer,
-    bankAccount: bankAccountSliceConfig.reducer
+    bankAccount: bankAccountSliceConfig.reducer,
+    loginActivity: loginActivitySliceConfig.reducer,
+    setting: settingSliceConfig.reducer,
+    userRuleLogin: userLoginRuleSliceConfig.reducer,
+    rawProductCategory: rawProductCategorySliceConfig.reducer,
 }

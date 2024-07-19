@@ -6,8 +6,8 @@ import Link from "next/link";
 import {getIcon} from "@/utils/helper";
 
 interface IProps {
-    icon: IconType;
-    color: ButtonVariant;
+    icon: IconType | any;
+    color: ButtonVariant | any;
     onClick?: () => void;
     classes?: string;
     link?: string;

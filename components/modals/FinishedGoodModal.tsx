@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import Button from '@/components/Button';
-import { ButtonType, ButtonVariant, RAW_PRODUCT_LIST_TYPE } from '@/utils/enums';
+import { ButtonType, ButtonVariant } from '@/utils/enums';
 import { Dropdown } from '@/components/form/Dropdown';
 import { Input } from '@/components/form/Input';
 import Modal from '@/components/Modal';
 import { IRootState, useAppDispatch, useAppSelector } from '@/store';
-import { uniqBy } from 'lodash';
 import { useSelector } from 'react-redux';
 import { getTaxCategories } from '@/store/slices/taxCategorySlice';
 import { setAuthToken } from '@/configs/api.config';

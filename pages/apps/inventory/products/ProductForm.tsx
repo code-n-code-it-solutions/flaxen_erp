@@ -4,13 +4,19 @@ import { useAppDispatch, useAppSelector } from '@/store';
 import { getUnits } from '@/store/slices/unitSlice';
 import { clearRawProductState, storeRawProduct, updateRawProduct } from '@/store/slices/rawProductSlice';
 import { setAuthToken, setContentType } from '@/configs/api.config';
-import { clearLatestRecord, clearUtilState, generateCode, getLatestRecord } from '@/store/slices/utilSlice';
+import {
+    clearLatestRecord,
+    clearUtilState,
+    generateCode,
+    generateRawProductCode,
+    getLatestRecord
+} from '@/store/slices/utilSlice';
 import { ButtonType, ButtonVariant, FORM_CODE_TYPE } from '@/utils/enums';
 import { Dropdown } from '@/components/form/Dropdown';
 import { Input } from '@/components/form/Input';
 import Textarea from '@/components/form/Textarea';
 import Button from '@/components/Button';
-import { serverFilePath, transformAccountsToSelectOptions } from '@/utils/helper';
+import { serverFilePath } from '@/utils/helper';
 import Alert from '@/components/Alert';
 import { Tab } from '@headlessui/react';
 import Option from '@/components/form/Option';
@@ -18,6 +24,13 @@ import dynamic from 'next/dynamic';
 import useTransformToSelectOptions from '@/hooks/useTransformToSelectOptions';
 import { getAccounts, getAccountsTypes } from '@/store/slices/accountSlice';
 import Swal from 'sweetalert2';
+import { PlusCircleIcon } from 'lucide-react';
+import Modal from '@/components/Modal';
+import {
+    clearRawProductCategoryState,
+    getRawProductCategories,
+    storeRawProductCategory
+} from '@/store/slices/rawProductCategorySlice';
 
 const TreeSelect = dynamic(() => import('antd/es/tree-select'), { ssr: false });
 
@@ -31,11 +44,15 @@ const ProductForm = ({ id }: IFormProps) => {
     const accountOptions = useTransformToSelectOptions(useAppSelector(state => state.account).accountTypes);
     // console.log(accountOptions);
     const { units } = useAppSelector(state => state.unit);
-    const { code, latestRecord } = useAppSelector(state => state.util);
+    const { rawProductCode, latestRecord } = useAppSelector(state => state.util);
     const { loading, rawProductDetail } = useAppSelector((state) => state.rawProduct);
+    const { rawProductCategories, rawProductCategory } = useAppSelector((state) => state.rawProductCategory);
     const { branchList } = useAppSelector((state) => state.company);
     // const { accounts } = useAppSelector((state) => state.account);
     const { token, user } = useAppSelector(state => state.user);
+    const [rawProductCategoryModal, setRawProductCategoryModal] = useState<boolean>(false);
+    const [rawProductCatData, setRawProductCatData] = useState<any>({});
+
     const [image, setImage] = useState<File | null>(null);
     const [isFormValid, setIsFormValid] = useState<boolean>(false);
     const [errorMessages, setErrorMessages] = useState<any>({});
@@ -44,6 +61,7 @@ const ProductForm = ({ id }: IFormProps) => {
 
     // const [selectedBranches, setSelectedBranches] = useState<any[]>([]);
     const [imagePreview, setImagePreview] = useState('');
+    const [rawProductCategoryOptions, setRawProductCategoryOptions] = useState([]);
     const [unitOptions, setUnitOptions] = useState([]);
     const [subUnitOptions, setSubUnitOptions] = useState([]);
     // const [accountsList, setAccountsList] = useState([]);
@@ -67,7 +85,7 @@ const ProductForm = ({ id }: IFormProps) => {
         if (required) {
             if (!value || value == '0') {
                 setErrorMessages({ ...errorMessages, [name]: 'This is required' });
-                return;
+                // return;
             } else {
                 setErrorMessages((prev: any) => {
                     delete prev[name];
@@ -77,16 +95,8 @@ const ProductForm = ({ id }: IFormProps) => {
         }
 
         switch (name) {
+            case 'raw_product_category_id':
             case 'branch_id':
-            // if (value && typeof value !== 'undefined') {
-            //     setFormData((prevFormData: any) => ({
-            //         ...prevFormData,
-            //         branch_id: value.map((v: any) => v.value).join(',')
-            //     }));
-            // } else {
-            //     setFormData((prevFormData: any) => ({ ...prevFormData, branch_id: '' }));
-            // }
-            // break;
             case 'product_type':
             case 'unit_id':
             case 'valuation_method':
@@ -153,15 +163,17 @@ const ProductForm = ({ id }: IFormProps) => {
         dispatch(clearUtilState());
         setAuthToken(token);
         setContentType('application/json');
+
     }, [dispatch, token]);
 
     useEffect(() => {
         if (!id) {
-            dispatch(generateCode(FORM_CODE_TYPE.RAW_MATERIAL));
+            // dispatch(generateCode(FORM_CODE_TYPE.RAW_MATERIAL));
             setImagePreview(serverFilePath(''));
         }
         return () => {
             dispatch(clearRawProductState());
+            dispatch(clearRawProductCategoryState());
         };
     }, [id, dispatch]);
 
@@ -170,20 +182,20 @@ const ProductForm = ({ id }: IFormProps) => {
         dispatch(getAccountsTypes({}));
         setFormData({});
         dispatch(clearLatestRecord());
+        dispatch(getRawProductCategories());
     }, []);
 
     useEffect(() => {
-        if (code) {
-            setFormData((prev: any) => ({ ...prev, item_code: code[FORM_CODE_TYPE.RAW_MATERIAL] }));
+        if (rawProductCode) {
+            setFormData((prev: any) => ({ ...prev, item_code: rawProductCode }));
         }
-    }, [code]);
+    }, [rawProductCode]);
 
     useEffect(() => {
         if (rawProductDetail) {
             setImagePreview(serverFilePath(rawProductDetail.thumbnail?.path));
             setFormData({
                 ...formData,
-                // company_id: rawProductDetail.company_id,
                 retail_price: rawProductDetail.retail_price,
                 branch_id: rawProductDetail.branch_id,
                 product_type: rawProductDetail.product_type,
@@ -236,6 +248,24 @@ const ProductForm = ({ id }: IFormProps) => {
         }
     }, [latestRecord]);
 
+    useEffect(() => {
+        if (rawProductCategory) {
+            setRawProductCatData({});
+            setRawProductCategoryModal(false);
+            dispatch(clearRawProductCategoryState());
+            dispatch(getRawProductCategories());
+        }
+    }, [rawProductCategory]);
+
+    useEffect(() => {
+        if (rawProductCategories) {
+            setRawProductCategoryOptions(rawProductCategories.map((category: any) => ({
+                value: category.id,
+                label: category.name + ' (' + category.code + ')'
+            })));
+        }
+    }, [rawProductCategories]);
+
     return (
         <form className="space-y-5" onSubmit={handleSubmit}>
             {!isFormValid && validationMessage &&
@@ -247,6 +277,37 @@ const ProductForm = ({ id }: IFormProps) => {
             }
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
                 <div className="flex flex-col items-start justify-start space-y-3">
+                    <div className="flex items-end gap-1">
+                        <Dropdown
+                            // divClasses="w-full"
+                            label="Product Category"
+                            name="raw_product_category_id"
+                            options={rawProductCategoryOptions}
+                            value={formData.raw_product_category_id}
+                            onChange={(e) => {
+                                handleChange('raw_product_category_id', e, true);
+                                if (e && typeof e !== 'undefined') {
+                                    dispatch(generateRawProductCode(e.value));
+                                } else {
+                                    dispatch(clearUtilState());
+                                    setFormData((prevFormData: any) => ({
+                                        ...prevFormData,
+                                        item_code: ''
+                                    }));
+                                }
+                            }}
+                            required={true}
+                        />
+                        <Button
+                            type={ButtonType.button}
+                            text={<PlusCircleIcon size={18} />}
+                            variant={ButtonVariant.primary}
+                            onClick={() => {
+                                setRawProductCategoryModal(true);
+                                setRawProductCatData({});
+                            }}
+                        />
+                    </div>
                     <Input
                         label="Item Code"
                         type="text"
@@ -532,6 +593,56 @@ const ProductForm = ({ id }: IFormProps) => {
                 disabled={loading}
                 classes="!mt-6" />
             {/*)}*/}
+
+            <Modal
+                title="New Raw Product Category"
+                show={rawProductCategoryModal}
+                setShow={setRawProductCategoryModal}
+                footer={
+                    <div className="flex items-center justify-end gap-3">
+                        <Button
+                            type={ButtonType.button}
+                            text="Cancel"
+                            variant={ButtonVariant.danger}
+                            onClick={() => {
+                                setRawProductCategoryModal(false);
+                                setRawProductCatData({});
+                            }}
+                        />
+                        <Button
+                            type={ButtonType.button}
+                            text="Save"
+                            variant={ButtonVariant.info}
+                            onClick={() => {
+                                dispatch(storeRawProductCategory(rawProductCatData));
+                            }}
+                        />
+                    </div>
+                }
+            >
+                <div className="grid grid-cols-1 gap-5">
+                    <Input
+                        label="Category Name"
+                        type="text"
+                        name="name"
+                        value={rawProductCatData.name}
+                        onChange={(e) => setRawProductCatData({ ...rawProductCatData, name: e.target.value })}
+                        isMasked={false}
+                        placeholder="Enter category name"
+                        required={true}
+                    />
+                    <Input
+                        label="Category Code (Short Form)"
+                        type="text"
+                        name="code"
+                        value={rawProductCatData.code}
+                        onChange={(e) => setRawProductCatData({ ...rawProductCatData, code: e.target.value })}
+                        isMasked={false}
+                        placeholder="Enter category code"
+                        required={true}
+                    />
+                </div>
+            </Modal>
         </form>
     );
 };

@@ -71,7 +71,12 @@ export const userSlice = createSlice({
     name: 'user',
     initialState,
     reducers: {
-        // Sync reducers if needed
+        clearAuthState: (state) => {
+            state.user = null;
+            state.token = '';
+            state.isLoggedIn = false;
+            state.error = null;
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -85,9 +90,10 @@ export const userSlice = createSlice({
                 state.user = action.payload.user;
             })
             .addCase(loginUser.rejected, (state, action) => {
+                console.log(action);
                 state.loading = false;
                 state.isLoggedIn = false;
-                state.error = action.error.message;
+                state.error = action.payload;
             })
             .addCase(registerUser.pending, (state) => {
                 state.loading = true;
@@ -101,21 +107,22 @@ export const userSlice = createSlice({
             .addCase(registerUser.rejected, (state, action) => {
                 state.loading = false;
                 state.isLoggedIn = false;
-                state.error = action.error.message;
+                state.error = action.payload;
             })
             .addCase(logoutUser.fulfilled, (state) => {
                 state.user = null;
                 state.token = '';
                 state.isLoggedIn = false;
             })
-            .addCase(logoutUser.rejected, (state) => {
+            .addCase(logoutUser.rejected, (state, action) => {
                 state.user = null;
                 state.token = '';
                 state.isLoggedIn = false;
+                state.error = action.payload;
             });
     }
 });
 
 // Export reducer
-
+export const {clearAuthState} = userSlice.actions;
 export const userSliceConfig = configureSlice(userSlice, true);

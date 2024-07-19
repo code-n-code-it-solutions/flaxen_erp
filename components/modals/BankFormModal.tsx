@@ -1,15 +1,12 @@
-import React, {FC, useEffect, useState} from 'react';
-import {setAuthToken} from "@/configs/api.config";
-import {useDispatch, useSelector} from "react-redux";
-import {ThunkDispatch} from "redux-thunk";
-import {IRootState} from "@/store";
-import {AnyAction} from "redux";
-import {clearLocationState, getCities, getCountries, getStates} from "@/store/slices/locationSlice";
-import {MaskConfig} from "@/configs/mask.config";
-import MaskedInput from "react-text-mask";
-import Modal from "@/components/Modal";
-import {Input} from '@/components/form/Input';
-import {Dropdown} from '@/components/form/Dropdown';
+import React, { FC, useEffect, useState } from 'react';
+import { setAuthToken } from '@/configs/api.config';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { clearLocationState, getCities, getCountries, getStates } from '@/store/slices/locationSlice';
+import { MaskConfig } from '@/configs/mask.config';
+import MaskedInput from 'react-text-mask';
+import Modal from '@/components/Modal';
+import { Input } from '@/components/form/Input';
+import { Dropdown } from '@/components/form/Dropdown';
 
 interface IProps {
     modalOpen: boolean;
@@ -24,11 +21,10 @@ const BankFormModal: FC<IProps> = ({
                                        handleSubmit,
                                        modalFormData
                                    }) => {
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
-    const {token} = useSelector((state: IRootState) => state.user);
-    const {countries, states, cities} = useSelector((state: IRootState) => state.location);
+    const dispatch = useAppDispatch();
+    const { token } = useAppSelector((state) => state.user);
+    const { countries, states, cities } = useAppSelector((state) => state.location);
 
-    const [image, setImage] = useState<File | null>(null);
     const [formData, setFormData] = useState<any>({
         name: '',
         phone: '',
@@ -41,18 +37,18 @@ const BankFormModal: FC<IProps> = ({
         city_name: '',
         postal_code: '',
         address: '',
-        is_active: true,
+        is_active: true
     });
     const [isFormValid, setIsFormValid] = useState<boolean>(false);
-    const [validationMessage, setValidationMessage] = useState("");
+    const [validationMessage, setValidationMessage] = useState('');
     const [countryOptions, setCountryOptions] = useState([]);
     const [stateOptions, setStateOptions] = useState([]);
     const [cityOptions, setCityOptions] = useState([]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const {name, value, required} = e.target;
+        const { name, value, required } = e.target;
         setFormData((prevFormData: any) => {
-            return {...prevFormData, [name]: value};
+            return { ...prevFormData, [name]: value };
         });
 
         // if (required) {
@@ -65,10 +61,10 @@ const BankFormModal: FC<IProps> = ({
     };
 
     const handleCountryChange = (e: any) => {
-        const {name, value, required} = e.target;
+        const { name, value, required } = e.target;
         if (e && e.value && typeof e !== 'undefined') {
-            setFormData((prev: any) => ({...prev, country_id: e ? e.value : 0, country_name: e ? e.label : ''}))
-            dispatch(getStates(parseInt(e.value)))
+            setFormData((prev: any) => ({ ...prev, country_id: e ? e.value : 0, country_name: e ? e.label : '' }));
+            dispatch(getStates(parseInt(e.value)));
         }
         // if (required) {
         //     if (!value) {
@@ -77,13 +73,13 @@ const BankFormModal: FC<IProps> = ({
         //         setErrorMessages({ ...errorMessages, [name]: '' });
         //     }
         // }
-    }
+    };
 
     const handleStateChange = (e: any) => {
-        const {name, value, required} = e.target;
+        const { name, value, required } = e.target;
         if (e && e.value && typeof e !== 'undefined') {
-            setFormData((prev: any) => ({...prev, state_id: e ? e.value : 0, state_name: e ? e.label : ''}))
-            dispatch(getCities({countryId: formData.country_id, stateId: parseInt(e.value)}))
+            setFormData((prev: any) => ({ ...prev, state_id: e ? e.value : 0, state_name: e ? e.label : '' }));
+            dispatch(getCities({ countryId: formData.country_id, stateId: parseInt(e.value) }));
         }
         // if (required) {
         //     if (!value) {
@@ -92,7 +88,7 @@ const BankFormModal: FC<IProps> = ({
         //         setErrorMessages({ ...errorMessages, [name]: '' });
         //     }
         // }
-    }
+    };
 
     useEffect(() => {
         if (modalOpen) {
@@ -108,41 +104,41 @@ const BankFormModal: FC<IProps> = ({
                 city_name: '',
                 postal_code: '',
                 address: '',
-                is_active: true,
+                is_active: true
             });
         }
     }, [modalOpen]);
 
     useEffect(() => {
-        dispatch(clearLocationState())
-        setAuthToken(token)
-        dispatch(getCountries())
-    }, [])
+        dispatch(clearLocationState());
+        setAuthToken(token);
+        dispatch(getCountries());
+    }, []);
 
     useEffect(() => {
         if (countries) {
             setCountryOptions(countries.map((country: any) => {
-                return {value: country.id, label: country.name}
-            }))
-            setStateOptions([])
-            setCityOptions([])
+                return { value: country.id, label: country.name };
+            }));
+            setStateOptions([]);
+            setCityOptions([]);
         }
     }, [countries]);
 
     useEffect(() => {
         if (states) {
             setStateOptions(states.map((state: any) => {
-                return {value: state.id, label: state.name}
-            }))
-            setCityOptions([])
+                return { value: state.id, label: state.name };
+            }));
+            setCityOptions([]);
         }
     }, [states]);
 
     useEffect(() => {
         if (cities) {
             setCityOptions(cities.map((city: any) => {
-                return {value: city.id, label: city.name}
-            }))
+                return { value: city.id, label: city.name };
+            }));
         }
     }, [cities]);
 
@@ -160,7 +156,7 @@ const BankFormModal: FC<IProps> = ({
         <Modal
             show={modalOpen}
             setShow={setModalOpen}
-            title='Add Bank'
+            title="Add Bank"
             footer={
                 <div className="mt-8 flex items-center justify-end">
                     <button type="button" className="btn btn-outline-danger"
@@ -181,9 +177,8 @@ const BankFormModal: FC<IProps> = ({
                                        setMessages={setValidationMessage}
                                        />} */}
             <div className="w-full">
-                {/* <label htmlFor="name">Bank Name</label> */}
                 <Input
-                    label='Bank Name'
+                    label="Bank Name"
                     type="text"
                     name="name"
                     placeholder="Enter Bank Name"
@@ -206,25 +201,20 @@ const BankFormModal: FC<IProps> = ({
                     onChange={handleChange}
                     mask={MaskConfig.phone.pattern}
                 />
-                {/*<input id="phone" type="number" name="phone"*/}
-                {/*       placeholder="Enter Bank Phone number"*/}
-                {/*       value={formData.phone} onChange={handleChange}*/}
-                {/*       className="form-input"/>*/}
             </div>
             <div className="w-full">
                 <label htmlFor="email">Bank Email (optional)</label>
                 <input id="email" type="email" name="email"
                        placeholder="Enter bank email address"
                        value={formData.email} onChange={handleChange}
-                       className="form-input"/>
+                       className="form-input" />
             </div>
             <div className="flex flex-col md:flex-row gap-3 w-full">
                 <div className="w-full">
-                    {/* <label htmlFor="country_id">Country</label> */}
                     <Dropdown
-                        divClasses='w-full'
-                        label='Country'
-                        name='country_id'
+                        divClasses="w-full"
+                        label="Country"
+                        name="country_id"
                         options={countryOptions}
                         value={formData.country_id}
                         onChange={(e: any) => handleCountryChange(e)}
@@ -233,11 +223,10 @@ const BankFormModal: FC<IProps> = ({
                     />
                 </div>
                 <div className="w-full">
-                    {/* <label htmlFor="state_id">State</label> */}
                     <Dropdown
-                        divClasses='w-full'
-                        label='State'
-                        name='state_id'
+                        divClasses="w-full"
+                        label="State"
+                        name="state_id"
                         options={stateOptions}
                         value={formData.state_id}
                         onChange={(e: any) => handleStateChange(e)}
@@ -249,11 +238,10 @@ const BankFormModal: FC<IProps> = ({
             </div>
             <div className="flex flex-col md:flex-row gap-3 w-full">
                 <div className="w-full">
-                    {/* <label htmlFor="city_id">City</label> */}
                     <Dropdown
-                        divClasses='w-full'
-                        label='City'
-                        name='city_id'
+                        divClasses="w-full"
+                        label="City"
+                        name="city_id"
                         options={stateOptions}
                         value={formData.city_id}
                         onChange={(e: any) => {
@@ -291,7 +279,7 @@ const BankFormModal: FC<IProps> = ({
                     <input id="postal_code" type="text" name="postal_code"
                            placeholder="Enter postal code"
                            value={formData.postal_code} onChange={handleChange}
-                           className="form-input"/>
+                           className="form-input" />
                 </div>
             </div>
 
@@ -299,7 +287,7 @@ const BankFormModal: FC<IProps> = ({
                 <label htmlFor="address">Bank Address (optional)</label>
                 <input id="address" type="text" name="address" placeholder="Enter address"
                        value={formData.address} onChange={handleChange}
-                       className="form-input"/>
+                       className="form-input" />
             </div>
         </Modal>
     );
