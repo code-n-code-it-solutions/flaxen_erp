@@ -174,9 +174,9 @@ const View = () => {
                                                 <th>Sr. No</th>
                                                 <th>Product</th>
                                                 <th>Unit</th>
-                                                <th>Unit Price</th>
                                                 <th>Qty</th>
-                                                <th>Total</th>
+                                                <th>Cost</th>
+                                                {/*<th>Total</th>*/}
                                             </tr>
                                             </thead>
                                             <tbody>
@@ -194,9 +194,9 @@ const View = () => {
                                                         </div>
                                                     </td>
                                                     <td>{item.unit?.name}</td>
-                                                    <td>{item.cost}</td>
                                                     <td>{item.quantity}</td>
-                                                    <td>{(parseFloat(item.cost) * parseFloat(item.quantity)).toFixed(2)}</td>
+                                                    <td>{item.cost}</td>
+                                                    {/*<td>{(parseFloat(item.cost) * parseFloat(item.quantity)).toFixed(2)}</td>*/}
                                                 </tr>
                                             ))}
                                             </tbody>
@@ -204,16 +204,16 @@ const View = () => {
                                             <tr>
                                                 <th colSpan={3}>Total</th>
                                                 <td>
-                                                    {productAssemblyDetail?.product_assembly_items.reduce((totalCost: number, item: any) => item.lab_reference === labReference ? totalCost + parseFloat(item.cost) : totalCost, 0).toFixed(2)}
-                                                </td>
-                                                <td>
                                                     {productAssemblyDetail?.product_assembly_items.reduce((totalQuantity: number, item: any) => item.lab_reference === labReference ? totalQuantity + parseFloat(item.quantity) : totalQuantity, 0).toFixed(2)}
                                                 </td>
                                                 <td>
-                                                    {productAssemblyDetail?.product_assembly_items
-                                                        .reduce((total: number, item: any) => item.lab_reference === labReference ? total + parseFloat(item.cost) * parseFloat(item.quantity) : total, 0)
-                                                        .toFixed(2)}
+                                                    {productAssemblyDetail?.product_assembly_items.reduce((totalCost: number, item: any) => item.lab_reference === labReference ? totalCost + parseFloat(item.cost) : totalCost, 0).toFixed(2)}
                                                 </td>
+                                                {/*<td>*/}
+                                                {/*    {productAssemblyDetail?.product_assembly_items*/}
+                                                {/*        .reduce((total: number, item: any) => item.lab_reference === labReference ? total + parseFloat(item.cost) * parseFloat(item.quantity) : total, 0)*/}
+                                                {/*        .toFixed(2)}*/}
+                                                {/*</td>*/}
                                             </tr>
                                             </tfoot>
                                         </table>
@@ -221,7 +221,7 @@ const View = () => {
                                 ))
                             ) : (
                                 <div className="flex justify-center items-center">
-                                    <h4 className="text-lg font-bold">No lab reference found.</h4>
+                                <h4 className="text-lg font-bold">No lab reference found.</h4>
                                 </div>
                             )}
                     </div>
