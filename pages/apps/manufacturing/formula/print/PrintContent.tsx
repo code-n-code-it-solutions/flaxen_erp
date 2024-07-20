@@ -3,7 +3,7 @@ import React from 'react';
 import Header from '@/components/Report/Header';
 
 const PrintContent = ({ content }: { content: any }) => {
-    const labReferences = content?.product_assembly_items?.map((item: any) => item.lab_reference);
+    const labReferences = Array.from(new Set(content?.product_assembly_items?.map((item: any) => item.lab_reference)));
     return (
         <Page
             size="A4"
@@ -122,7 +122,7 @@ const PrintContent = ({ content }: { content: any }) => {
                                         paddingVertical: 5
                                     }}>{item.quantity}</Text>
                                     <Text style={{ width: '20%', fontSize: 10, paddingVertical: 5 }}>
-                                        {(parseFloat(item.cost) * parseFloat(item.quantity)).toFixed(2)}
+                                        {(parseFloat(item.cost) * parseFloat(item.quantity)).toFixed(5)}
                                     </Text>
                                 </View>
                             ))}
@@ -139,13 +139,13 @@ const PrintContent = ({ content }: { content: any }) => {
                         >
                             <Text style={{ width: '50%', fontSize: 10, fontWeight: 'bold' }}>Total</Text>
                             <Text style={{ width: '15%', fontSize: 10 }}>
-                                {content?.product_assembly_items?.reduce((total: number, item: any) => item.lab_reference === labReference ? total + parseFloat(item.cost) : total, 0).toFixed(2)}
+                                {content?.product_assembly_items?.reduce((total: number, item: any) => item.lab_reference === labReference ? total + parseFloat(item.cost) : total, 0).toFixed(5)}
                             </Text>
                             <Text style={{ width: '15%', fontSize: 10 }}>
-                                {content?.product_assembly_items?.reduce((total: number, item: any) => item.lab_reference === labReference ? total + parseFloat(item.quantity) : total, 0).toFixed(2)}
+                                {content?.product_assembly_items?.reduce((total: number, item: any) => item.lab_reference === labReference ? total + parseFloat(item.quantity) : total, 0).toFixed(5)}
                             </Text>
                             <Text style={{ width: '20%', fontSize: 10 }}>
-                                {content?.product_assembly_items?.reduce((total: number, item: any) => item.lab_reference === labReference ? total + parseFloat(item.cost) * parseFloat(item.quantity) : total, 0).toFixed(2)}
+                                {content?.product_assembly_items?.reduce((total: number, item: any) => item.lab_reference === labReference ? total + parseFloat(item.cost) * parseFloat(item.quantity) : total, 0).toFixed(5)}
                             </Text>
                         </View>
                     </View>
