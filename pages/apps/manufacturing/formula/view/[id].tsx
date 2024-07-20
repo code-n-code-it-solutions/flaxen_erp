@@ -75,11 +75,13 @@ const View = () => {
         dispatch(clearLabReferenceAdded())
     }, [router.query.id, dispatch]);
 
+
     useEffect(() => {
         if (productAssemblyDetail) {
             const uniqueLabReferences = Array.from(new Set(productAssemblyDetail.product_assembly_items.map((item: any) => item.lab_reference)));
             setLabReferences(uniqueLabReferences);
         }
+
     }, [productAssemblyDetail]);
 
     useEffect(() => {
