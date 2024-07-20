@@ -46,33 +46,33 @@ const PrintContent = ({ content, itemWiseCalculations, batchCalculations }: any)
                 </View>
             </View>
 
-            <Text style={styles.sectionTitle}>Cost Calculation</Text>
-            <View style={styles.table}>
-                <View style={styles.tableHeader}>
-                    <Text style={styles.tableHeaderCell}>Filling</Text>
-                    <Text style={styles.tableHeaderCell}>No of Fillings</Text>
-                    <Text style={styles.tableHeaderCell}>Cost Goods</Text>
-                    <Text style={styles.tableHeaderCell}>Sale Price</Text>
-                    <Text style={styles.tableHeaderCell}>Total Sale Cost</Text>
-                </View>
-                {itemWiseCalculations.length > 0 ? (
-                    itemWiseCalculations.map((item: any, index: number) => (
-                        <View key={index} style={styles.tableRow}>
-                            <Text style={styles.tableCell}>{item.product?.title}</Text>
-                            <Text style={styles.tableCell}>{item.filling_quantity} (Kg)
-                                / {item.required_quantity}</Text>
-                            <Text style={styles.tableCell}>{parseFloat(item.costOfGoods).toFixed(2)}</Text>
-                            <Text style={styles.tableCell}>{parseFloat(item.salePrice).toFixed(2)}</Text>
-                            <Text
-                                style={styles.tableCell}>{(parseFloat(item.salePrice) * parseFloat(item.required_quantity)).toFixed(2)}</Text>
-                        </View>
-                    ))
-                ) : (
-                    <View style={styles.tableRow}>
-                        <Text style={styles.tableCell}>No data found</Text>
-                    </View>
-                )}
-            </View>
+            {/*<Text style={styles.sectionTitle}>Cost Calculation</Text>*/}
+            {/*<View style={styles.table}>*/}
+            {/*    <View style={styles.tableHeader}>*/}
+            {/*        <Text style={styles.tableHeaderCell}>Filling</Text>*/}
+            {/*        <Text style={styles.tableHeaderCell}>No of Fillings</Text>*/}
+            {/*        <Text style={styles.tableHeaderCell}>Cost Goods</Text>*/}
+            {/*        <Text style={styles.tableHeaderCell}>Sale Price</Text>*/}
+            {/*        <Text style={styles.tableHeaderCell}>Total Sale Cost</Text>*/}
+            {/*    </View>*/}
+            {/*    {itemWiseCalculations.length > 0 ? (*/}
+            {/*        itemWiseCalculations.map((item: any, index: number) => (*/}
+            {/*            <View key={index} style={styles.tableRow}>*/}
+            {/*                <Text style={styles.tableCell}>{item.product?.title}</Text>*/}
+            {/*                <Text style={styles.tableCell}>{item.filling_quantity} (Kg)*/}
+            {/*                    / {item.required_quantity}</Text>*/}
+            {/*                <Text style={styles.tableCell}>{parseFloat(item.costOfGoods).toFixed(2)}</Text>*/}
+            {/*                <Text style={styles.tableCell}>{parseFloat(item.salePrice).toFixed(2)}</Text>*/}
+            {/*                <Text*/}
+            {/*                    style={styles.tableCell}>{(parseFloat(item.salePrice) * parseFloat(item.required_quantity)).toFixed(2)}</Text>*/}
+            {/*            </View>*/}
+            {/*        ))*/}
+            {/*    ) : (*/}
+            {/*        <View style={styles.tableRow}>*/}
+            {/*            <Text style={styles.tableCell}>No data found</Text>*/}
+            {/*        </View>*/}
+            {/*    )}*/}
+            {/*</View>*/}
 
             <Text style={styles.sectionTitle}>Batch Used</Text>
             <View style={styles.table}>
@@ -107,10 +107,10 @@ const PrintContent = ({ content, itemWiseCalculations, batchCalculations }: any)
                     <Text style={styles.tableHeaderCell}>Product Name</Text>
                     <Text style={styles.tableHeaderCell}>Unit</Text>
                     <Text style={styles.tableHeaderCell}>Unit Cost</Text>
-                    <Text style={styles.tableHeaderCell}>Qty</Text>
+                    {/*<Text style={styles.tableHeaderCell}>Qty</Text>*/}
                     <Text style={styles.tableHeaderCell}>Capacity</Text>
-                    <Text style={styles.tableHeaderCell}>Required</Text>
-                    <Text style={styles.tableHeaderCell}>Total Cost</Text>
+                    <Text style={styles.tableHeaderCell}># Fillings</Text>
+                    <Text style={styles.tableHeaderCell}>Sale Price/Filling</Text>
                 </View>
                 {content?.filling_calculations.map((item: any, index: any) => (
                     <View key={index} style={styles.tableRow}>
@@ -118,33 +118,61 @@ const PrintContent = ({ content, itemWiseCalculations, batchCalculations }: any)
                         <Text style={styles.tableCell}>{item.product?.title}</Text>
                         <Text style={styles.tableCell}>{item.unit?.name}</Text>
                         <Text style={styles.tableCell}>{item.unit_price}</Text>
-                        <Text style={styles.tableCell}>{item.filling_quantity}</Text>
+                        {/*<Text style={styles.tableCell}>{item.filling_quantity}</Text>*/}
                         <Text style={styles.tableCell}>{item.capacity}</Text>
-                        <Text style={styles.tableCell}>{item.required_quantity.toFixed(2)}</Text>
+                        <Text style={styles.tableCell}>{item.filling_quantity + '(Kg) / ' + item.required_quantity}</Text>
                         <Text
-                            style={styles.tableCell}>{(parseFloat(item.unit_price) * parseFloat(item.required_quantity)).toFixed(2)}</Text>
+                            style={styles.tableCell}>{item.retail_price.toFixed(2)}</Text>
                     </View>
                 ))}
                 <View style={styles.tableFooter}>
                     <Text style={styles.tableFooterCell}>Total</Text>
                     <Text style={styles.tableFooterCell}></Text>
                     <Text style={styles.tableFooterCell}></Text>
+                    {/*<Text style={styles.tableFooterCell}></Text>*/}
                     <Text style={styles.tableFooterCell}>
-                        {content?.filling_calculations?.reduce((total: number, item: any) => total + parseFloat(item.unit_price), 0).toFixed(2)}
+                        {content?.filling_calculations?.reduce((total: number, item: any) => total + parseFloat(item.unit_price), 0).toFixed(4)}
                     </Text>
-                    <Text style={styles.tableFooterCell}>
-                        {content?.filling_calculations?.reduce((total: number, item: any) => total + parseFloat(item.filling_quantity), 0).toFixed(2)}
-                    </Text>
+                    {/*<Text style={styles.tableFooterCell}></Text>*/}
+                    {/*<Text style={styles.tableFooterCell}>*/}
+                    {/*    {content?.filling_calculations?.reduce((total: number, item: any) => total + parseFloat(item.filling_quantity), 0).toFixed(2)}*/}
+                    {/*</Text>*/}
                     <Text style={styles.tableFooterCell}>
                         {content?.filling_calculations?.reduce((total: number, item: any) => total + parseFloat(item.capacity), 0).toFixed(2)}
                     </Text>
+                    <Text style={styles.tableFooterCell}></Text>
+                    {/*<Text style={styles.tableFooterCell}>*/}
+                    {/*    {content?.filling_calculations?.reduce((total: number, item: any) => total + parseFloat(item.required_quantity), 0).toFixed(2)}*/}
+                    {/*</Text>*/}
                     <Text style={styles.tableFooterCell}>
-                        {content?.filling_calculations?.reduce((total: number, item: any) => total + parseFloat(item.required_quantity), 0).toFixed(2)}
-                    </Text>
-                    <Text style={styles.tableFooterCell}>
-                        {content?.filling_calculations?.reduce((total: number, item: any) => total + parseFloat(item.unit_price) * parseFloat(item.required_quantity), 0).toFixed(2)}
+                        {/*{content?.filling_calculations?.reduce((total: number, item: any) => total + parseFloat(item.unit_price) * parseFloat(item.required_quantity), 0).toFixed(2)}*/}
                     </Text>
                 </View>
+            </View>
+            <View
+                style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'flex-end',
+                    marginVertical: 10,
+                    gap: 10
+                }}
+            >
+                <Text style={styles.infoText}>
+                    Cost of Goods:
+                    {content?.filling_calculations.reduce((acc: number, item: any) => {
+                        const perKgCost = item.product_assembly.product_assembly_items.reduce((acc: number, item: any) => acc + parseFloat(item.total), 0);
+                        const rawProduct = item.product;
+                        const totalCost = ((parseFloat(item.capacity) * perKgCost) + parseFloat(rawProduct.valuated_unit_price)) * item.required_quantity;
+                        return acc + totalCost;
+                    }, 0).toFixed(3)}
+                </Text>
+                <Text style={styles.infoText}>
+                    Sale Price:
+                    {content?.filling_calculations.reduce((acc: number, item: any) => {
+                        return acc + item.required_quantity * item.retail_price;
+                    }, 0).toFixed(3)}
+                </Text>
             </View>
 
             <Footer content={content} />
