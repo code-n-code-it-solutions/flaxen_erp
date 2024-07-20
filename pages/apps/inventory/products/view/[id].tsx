@@ -119,6 +119,10 @@ const View = () => {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 w-full mt-3">
 
                             <div className="flex md:justify-start md:items-center gap-3">
+                                <strong>Product Category: </strong>
+                                <span>{rawProductDetail.raw_product_category?.name + ' (' + rawProductDetail.raw_product_category?.code + ')'}</span>
+                            </div>
+                            <div className="flex md:justify-start md:items-center gap-3">
                                 <strong>Item Code: </strong>
                                 <span>{rawProductDetail.item_code}</span>
                             </div>
@@ -164,7 +168,7 @@ const View = () => {
                             </div>
                             <div className="flex md:justify-start md:items-center gap-3">
                                 <strong>Stock Account: </strong>
-                                <span>{rawProductDetail?.stock_account?.code+' - '+rawProductDetail?.stock_account?.name}</span>
+                                <span>{rawProductDetail?.stock_account?.code + ' - ' + rawProductDetail?.stock_account?.name}</span>
                             </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full my-5">

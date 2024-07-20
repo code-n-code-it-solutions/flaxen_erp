@@ -275,7 +275,7 @@ const RawProductItemListing: FC<IProps> = ({
                 sortable: true,
                 render: (row: any, index: number) => (
                     table.numericColumns.includes(column)
-                        ? <>{parseFloat(row[column]).toFixed(2)}</>
+                        ? <>{parseFloat(row[column]).toFixed(5)}</>
                         : column === 'purchase_requisition_id'
                             ? <>{purchaseRequests?.find((item: any) => item.id === row[column])?.pr_code}</>
                             : column === 'raw_product_id'
@@ -303,7 +303,7 @@ const RawProductItemListing: FC<IProps> = ({
                     column.footer = (
                         <div className="flex gap-2 items-center">
                             <span className="h-3 w-3">{getIcon(IconType.sum)}</span>
-                            <span>{typeof columnTotals[column.accessor] === 'number' ? columnTotals[column.accessor].toFixed(2) : columnTotals[column.accessor]}</span>
+                            <span>{typeof columnTotals[column.accessor] === 'number' ? columnTotals[column.accessor].toFixed(5) : columnTotals[column.accessor]}</span>
                         </div>
                     )
                 }

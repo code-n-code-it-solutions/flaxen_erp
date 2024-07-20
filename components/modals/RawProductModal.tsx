@@ -373,7 +373,7 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                             label='Sub Total'
                             type='number'
                             name='sub_total'
-                            value={formData.sub_total?.toFixed(2)}
+                            value={formData.sub_total?.toFixed(5)}
                             onChange={(e) => handleChange('sub_total', parseFloat(e.target.value))}
                             isMasked={false}
                             disabled={true}
@@ -446,7 +446,7 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                         label='Sub Total'
                         type='number'
                         name='sub_total'
-                        value={formData.sub_total?.toFixed(2)}
+                        value={formData.sub_total?.toFixed(5)}
                         onChange={(e) => handleChange('sub_total', parseFloat(e.target.value))}
                         isMasked={false}
                         disabled={true}
@@ -478,7 +478,7 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                         label='Tax Amount'
                         type='number'
                         name='tax_amount'
-                        value={formData.tax_amount?.toFixed(2)}
+                        value={formData.tax_amount?.toFixed(5)}
                         onChange={(e) => handleChange('tax_amount', parseFloat(e.target.value))}
                         isMasked={false}
                     />
@@ -496,7 +496,7 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                         label='Discount Rate/Amount'
                         type='number'
                         name='discount_amount_rate'
-                        value={formData.discount_amount_rate?.toFixed(2)}
+                        value={formData.discount_amount_rate?.toFixed(5)}
                         onChange={(e) => handleChange('discount_amount_rate', parseFloat(e.target.value))}
                         isMasked={false}
                     />
@@ -505,7 +505,7 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                         label='Grand Total'
                         type='number'
                         name='grand_total'
-                        value={formData.grand_total?.toFixed(2)}
+                        value={formData.grand_total?.toFixed(5)}
                         onChange={(e) => handleChange('grand_total', parseFloat(e.target.value))}
                         isMasked={false}
                         disabled={true}

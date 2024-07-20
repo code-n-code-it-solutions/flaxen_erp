@@ -21,6 +21,9 @@ const PrintContent = ({ content }:any) => {
                     <Text style={styles.infoText}>
                         <Text style={styles.bold}>Formula Code: </Text> {content?.product_assembly?.formula_code}
                     </Text>
+                    <Text style={styles.infoText}>
+                        <Text style={styles.bold}>Lab Reference: </Text> {content?.lab_reference}
+                    </Text>
                 </View>
                 <View style={styles.infoColumn}>
                     <Text style={styles.infoText}>
@@ -28,9 +31,6 @@ const PrintContent = ({ content }:any) => {
                     </Text>
                     <Text style={styles.infoText}>
                         <Text style={styles.bold}>Category: </Text> {content?.product_assembly?.category?.name}
-                    </Text>
-                    <Text style={styles.infoText}>
-                        <Text style={styles.bold}>Created At: </Text> {new Date(content?.created_at).toDateString()}
                     </Text>
                 </View>
             </View>

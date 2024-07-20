@@ -99,12 +99,8 @@ const View = () => {
                                 <span>{productionDetail?.product_assembly?.category.name} </span>
                             </div>
                             <div className="flex flex-col md:flex-row justify-start items-center gap-3">
-                                <strong>Print At:</strong>
-                                <span>{(new Date()).toLocaleDateString()}</span>
-                            </div>
-                            <div className="flex flex-col md:flex-row justify-start items-center gap-3">
-                                <strong>Created At:</strong>
-                                <span>{productionDetail.created_at}</span>
+                                <strong>Lab Reference:</strong>
+                                <span>{productionDetail.lab_reference}</span>
                             </div>
                         </div>
                     </div>

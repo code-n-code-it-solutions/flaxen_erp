@@ -16,6 +16,7 @@ import useTransformToSelectOptions from '@/hooks/useTransformToSelectOptions';
 import { getAccountsTypes } from '@/store/slices/accountSlice';
 import dynamic from 'next/dynamic';
 import Swal from 'sweetalert2';
+
 const TreeSelect = dynamic(() => import('antd/es/tree-select'), { ssr: false });
 
 interface IFormProps {
@@ -35,6 +36,7 @@ const ProductionForm = ({ id }: IFormProps) => {
     const [productAssemblyOptions, setProductAssemblyOptions] = useState<any>([]);
     const [messages, setMessages] = useState('Production can\'t be proceeding. Please purchase the In-stock quantities.');
     const [errorMessages, setErrorMessages] = useState<any>({});
+    const [labReferenceOptions, setLabReferenceOptions] = useState<any[]>([]);
 
     const handleChange = (name: string, value: any, required: boolean) => {
         if (required && !value) {
@@ -50,6 +52,41 @@ const ProductionForm = ({ id }: IFormProps) => {
         }
 
         switch (name) {
+            case 'lab_reference':
+                if (value && typeof value !== 'undefined') {
+                    setFormData((prev: any) => ({
+                        ...prev,
+                        lab_reference: value.value
+                    }));
+                    // console.log(assemblyItems);
+                    let rawProducts = assemblyItems
+                        .flatMap((item: any) => {
+                            if (item.lab_reference === value.value) {
+                                return {
+                                    raw_product_id: item.raw_product_id,
+                                    description: item.description,
+                                    unit_id: item.unit_id,
+                                    unit_price: parseFloat(item.cost),
+                                    quantity: parseFloat(item.quantity),
+                                    available_quantity: parseFloat(item.available_stock),
+                                    required_quantity: parseFloat(item.quantity) * parseFloat(formData.no_of_quantity),
+                                    sub_total: (parseFloat(item.cost) * parseFloat(item.quantity) * parseFloat(formData.no_of_quantity)) / parseFloat(item.quantity)
+                                };
+                            } else {
+                                return null;
+                            }
+                        })
+                        .filter((item: any) => item !== null);
+                    // console.log(rawProducts);
+                    setRawProducts(rawProducts);
+                } else {
+                    setFormData((prev: any) => ({
+                        ...prev,
+                        lab_reference: ''
+                    }));
+                    setRawProducts([]);
+                }
+                break;
             case 'product_assembly_id':
                 if (formData.no_of_quantity > 0) {
                     if (value && typeof value !== 'undefined') {
@@ -65,6 +102,7 @@ const ProductionForm = ({ id }: IFormProps) => {
                             product_assembly_id: ''
                         }));
                         setRawProducts([]);
+                        setLabReferenceOptions([]);
                     }
                 } else {
                     alert('No of Quantity is required');
@@ -177,20 +215,15 @@ const ProductionForm = ({ id }: IFormProps) => {
 
     useEffect(() => {
         if (assemblyItems) {
-            console.log(assemblyItems);
-            let rawProducts = assemblyItems.map((item: any) => {
-                return {
-                    raw_product_id: item.raw_product_id,
-                    description: item.description,
-                    unit_id: item.unit_id,
-                    unit_price: parseFloat(item.cost),
-                    quantity: parseFloat(item.quantity),
-                    available_quantity: parseFloat(item.available_stock),
-                    required_quantity: parseFloat(item.quantity) * parseFloat(formData.no_of_quantity),
-                    sub_total: (parseFloat(item.cost) * parseFloat(item.quantity) * parseFloat(formData.no_of_quantity)) / parseFloat(item.quantity)
-                };
-            });
-            setRawProducts(rawProducts);
+            const labReferences = assemblyItems.map((item: any) => ({
+                value: item.lab_reference,
+                label: item.lab_reference
+            }));
+            const uniqueLabReferences = Array.from(new Set(labReferences.map((item: any) => item.value))).map(value => ({
+                value,
+                label: value
+            }));
+            setLabReferenceOptions(uniqueLabReferences);
         }
     }, [assemblyItems]);
 
@@ -263,6 +296,17 @@ const ProductionForm = ({ id }: IFormProps) => {
                         onChange={(e) => handleChange('product_assembly_id', e, true)}
                         required={true}
                         errorMessage={errorMessages.product_assembly_id}
+                    />
+
+                    <Dropdown
+                        divClasses="w-full"
+                        label="Lab Reference"
+                        name="lab_reference"
+                        options={labReferenceOptions}
+                        value={formData.lab_reference}
+                        onChange={(e) => handleChange('lab_reference', e, true)}
+                        required={true}
+                        errorMessage={errorMessages.lab_reference}
                     />
 
                 </div>
