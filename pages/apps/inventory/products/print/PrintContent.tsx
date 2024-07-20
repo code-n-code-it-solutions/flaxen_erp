@@ -60,6 +60,15 @@ const PrintContent = ({ content }: { content: any }) => {
                                 marginBottom: 5
                             }}
                         >
+                            Product Category: {content?.raw_product_category?.name + ' (' + content?.raw_product_category?.code + ')'}
+                        </Text>
+                        <Text
+                            style={{
+                                fontSize: 10,
+                                fontWeight: 'bold',
+                                marginBottom: 5
+                            }}
+                        >
                             Product Code: {content?.item_code}
                         </Text>
                     </View>

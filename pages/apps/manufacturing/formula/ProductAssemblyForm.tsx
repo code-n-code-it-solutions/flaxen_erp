@@ -51,6 +51,7 @@ const ProductAssemblyForm = ({id}: IFormProps) => {
                 ...formData,
                 raw_products: rawProducts.map((row: any) => {
                     return {
+                        lab_reference: formData.lab_reference,
                         raw_product_id: row.raw_product_id,
                         unit_id: row.unit_id,
                         quantity: row.quantity,
@@ -92,12 +93,14 @@ const ProductAssemblyForm = ({id}: IFormProps) => {
             setFormData((prev: any) => {
                 return {
                     ...prev,
+                    lab_reference: productAssemblyDetail.lab_reference,
                     formula_name: productAssemblyDetail.formula_name,
                     formula_code: productAssemblyDetail.formula_code,
                     category_id: productAssemblyDetail.category_id,
                     color_code_id: productAssemblyDetail.color_code_id,
                     raw_products: productAssemblyDetail.product_assembly_items.map((item: any) => {
                         return {
+                            lab_reference: productAssemblyDetail.lab_reference,
                             raw_product_id: item.raw_product_id,
                             unit_id: item.unit_id,
                             unit_price: parseFloat(item.cost),
@@ -121,7 +124,6 @@ const ProductAssemblyForm = ({id}: IFormProps) => {
                     }
                 })
             ));
-
         }
     }, [productAssemblyDetail]);
 
@@ -196,6 +198,19 @@ const ProductAssemblyForm = ({id}: IFormProps) => {
         <form className="space-y-5" onSubmit={handleSubmit}>
             <div className="flex w-full flex-row items-start justify-between gap-3">
                 <div className="flex justify-start flex-col items-start space-y-3 w-full">
+                    <Input
+                        divClasses='w-full'
+                        label='Lab Reference'
+                        type='text'
+                        name='lab_reference'
+                        value={formData.lab_reference}
+                        placeholder='Enter Lab Reference'
+                        onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
+                        isMasked={false}
+                        required={true}
+                        errorMessage={errorMessages?.lab_reference}
+                    />
+
                     <Input
                         divClasses='w-full'
                         label='Formula Name'

@@ -135,7 +135,7 @@ const ProductForm = ({ id }: IFormProps) => {
 
         setAuthToken(token);
         setContentType('multipart/form-data');
-        if (!formData.stock_account_id) {
+        if (!formData.stock_account_id && !id) {
             Swal.fire('Error', 'Please select accounting for stock', 'error');
         } else {
             if (id) {
@@ -196,6 +196,7 @@ const ProductForm = ({ id }: IFormProps) => {
             setImagePreview(serverFilePath(rawProductDetail.thumbnail?.path));
             setFormData({
                 ...formData,
+                raw_product_category_id: rawProductDetail.raw_product_category_id,
                 retail_price: rawProductDetail.retail_price,
                 branch_id: rawProductDetail.branch_id,
                 product_type: rawProductDetail.product_type,
@@ -210,7 +211,8 @@ const ProductForm = ({ id }: IFormProps) => {
                 opening_stock: rawProductDetail.opening_stock,
                 opening_stock_unit_balance: rawProductDetail.opening_stock_unit_balance,
                 opening_stock_total_balance: rawProductDetail.opening_stock_total_balance,
-                sale_description: rawProductDetail.sale_description
+                sale_description: rawProductDetail.sale_description,
+                stock_account_id: rawProductDetail.stock_account_id
             });
         } else {
             setImagePreview(serverFilePath(''));
