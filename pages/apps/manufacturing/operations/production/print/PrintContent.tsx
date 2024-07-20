@@ -19,7 +19,7 @@ const PrintContent = ({ content }:any) => {
                         <Text style={styles.bold}>No of Quantity (KG): </Text> {content?.no_of_quantity}
                     </Text>
                     <Text style={styles.infoText}>
-                        <Text style={styles.bold}>Formula Code: </Text> {content?.product_assembly?.formula_code}
+                        <Text style={styles.bold}>Formula: </Text> {content?.product_assembly?.formula_name + ' - ' + content?.product_assembly?.formula_code}
                     </Text>
                     <Text style={styles.infoText}>
                         <Text style={styles.bold}>Lab Reference: </Text> {content?.lab_reference}
