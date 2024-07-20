@@ -3,8 +3,8 @@ import React from 'react';
 import Header from '@/components/Report/Header';
 import Footer from '@/components/Report/Footer';
 
-const PrintContent = ({ content }) => {
-    const labReferences = Array.from(new Set(content?.product_assembly_items?.map((item) => item.lab_reference)));
+const PrintContent = ({ content }: any) => {
+    const labReferences = Array.from(new Set(content?.product_assembly_items?.map((item: any) => item.lab_reference)));
 
     return (
         <Page
@@ -71,7 +71,7 @@ const PrintContent = ({ content }) => {
                 </View>
             </View>
             {labReferences && labReferences.length > 0 && (
-                labReferences.map((labReference, index) => (
+                labReferences.map((labReference: any, index: number) => (
                     <View key={index}>
                         <Text style={{ fontSize: 10, fontWeight: 'bold', marginBottom: 10 }}>
                             Lab Reference: {labReference}
@@ -92,7 +92,7 @@ const PrintContent = ({ content }) => {
                                 <Text style={{ width: '15%', fontSize: 10, fontWeight: 'bold' }}>Quantity</Text>
                                 <Text style={{ width: '15%', fontSize: 10, fontWeight: 'bold' }}>Cost</Text>
                             </View>
-                            {content?.product_assembly_items?.map((item, itemIndex) => (
+                            {content?.product_assembly_items?.map((item: any, itemIndex: number) => (
                                 item.lab_reference === labReference &&
                                 <View
                                     key={itemIndex}
@@ -126,10 +126,10 @@ const PrintContent = ({ content }) => {
                             <Text style={{ width: '25%', fontSize: 10, fontWeight: 'bold' }}></Text>
                             <Text style={{ width: '15%', fontSize: 10, fontWeight: 'bold' }}>Total</Text>
                             <Text style={{ width: '15%', fontSize: 10 }}>
-                                {content?.product_assembly_items?.reduce((total, item) => item.lab_reference === labReference ? total + parseFloat(item.quantity) : total, 0).toFixed(5)}
+                                {content?.product_assembly_items?.reduce((total: number, item: any) => item.lab_reference === labReference ? total + parseFloat(item.quantity) : total, 0).toFixed(5)}
                             </Text>
                             <Text style={{ width: '15%', fontSize: 10 }}>
-                                {content?.product_assembly_items?.reduce((total, item) => item.lab_reference === labReference ? total + parseFloat(item.cost) : total, 0).toFixed(5)}
+                                {content?.product_assembly_items?.reduce((total: number, item: any) => item.lab_reference === labReference ? total + parseFloat(item.cost) : total, 0).toFixed(5)}
                             </Text>
                         </View>
                     </View>
