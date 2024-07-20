@@ -87,8 +87,8 @@ const View = () => {
                                 </span>
                             </div>
                             <div className="flex flex-col md:flex-row justify-start items-center gap-3">
-                                <strong>Formula Code:</strong>
-                                <span> {productionDetail?.product_assembly?.formula_code} </span>
+                                <strong>Formula:</strong>
+                                <span> {productionDetail?.product_assembly?.formula_name +' - '+ productionDetail?.product_assembly?.formula_code} </span>
                             </div>
 
                         </div>
