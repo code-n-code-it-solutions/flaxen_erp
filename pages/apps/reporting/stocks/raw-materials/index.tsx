@@ -109,7 +109,7 @@ const Index = () => {
         {
             headerName: 'On Hand',
             // field: 'stock.available_stock',
-            valueGetter: (row: any) => (parseFloat(row.data.stock.available_stock)+parseFloat(row.data.stock.purchase_stock)).toFixed(2),
+            valueGetter: (row: any) => (parseFloat(row.data.stock.available_stock) + parseFloat(row.data.stock.purchase_stock)).toFixed(2),
             minWidth: 150,
             filter: false,
             floatingFilter: false,
@@ -117,18 +117,18 @@ const Index = () => {
         },
         {
             headerName: 'Cost Price',
-            field: 'costing.valuated_opening_stock_price',
             minWidth: 150,
-            valueGetter: (row: any) => ((row.data.stock.available_stock+row.data.stock.purchase_stock) * row.data.costing.valuated_opening_stock_price).toFixed(2),
+            valueGetter: (row: any) => row.data.costing.total_valuated_opening_stock_price.toFixed(2),
+            // valueGetter: (row: any) => ((row.data.stock.available_stock+row.data.stock.purchase_stock) * row.data.costing.valuated_opening_stock_price).toFixed(2),
             filter: false,
             floatingFilter: false,
             aggFunc: 'sum'
         },
         {
             headerName: 'Sale Price',
-            field: 'costing.valuated_selling_price',
             minWidth: 150,
-            valueGetter: (row: any) => (row.data.costing.valuated_selling_price * (row.data.stock.available_stock+row.data.stock.purchase_stock)).toFixed(2),
+            // valueGetter: (row: any) => (row.data.costing.valuated_selling_price * (row.data.stock.available_stock+row.data.stock.purchase_stock)).toFixed(2),
+            valueGetter: (row: any) => row.data.costing.total_valuated_selling_price.toFixed(2),
             filter: false,
             floatingFilter: false,
             aggFunc: 'sum'
@@ -136,7 +136,7 @@ const Index = () => {
     ]);
 
     const calculateTotals = () => {
-        const totals = {
+        const total: any = {
             item_code: 'Total',
             title: '',
             product_type: '',
@@ -149,25 +149,32 @@ const Index = () => {
                 available_stock: 0
             },
             costing: {
-                valuated_opening_stock_price: 0,
-                valuated_selling_price: 0
+                total_valuated_opening_stock_price: 0,
+                total_valuated_selling_price: 0
             }
         };
+        console.log(reportData);
 
-        reportData.forEach(item => {
-            totals.stock.opening_stock += item.stock.opening_stock ? parseFloat(item.stock.opening_stock) : 0;
-            totals.stock.purchase_stock += item.stock.purchase_stock ? parseFloat(item.stock.purchase_stock) : 0;
-            totals.stock.used_stock += item.stock.used_stock ? parseFloat(item.stock.used_stock) : 0;
-            totals.stock.available_stock += item.stock.available_stock ? parseFloat(item.stock.available_stock) : 0;
-            totals.costing.valuated_opening_stock_price = parseFloat(item.costing.valuated_opening_stock_price);
-            totals.costing.valuated_selling_price = parseFloat(item.costing.valuated_selling_price);
+        reportData.forEach((item: any) => {
+            total.stock.opening_stock += item.stock.opening_stock;
+            total.stock.purchase_stock += item.stock.purchase_stock;
+            total.stock.sale_stock += item.stock.sale_stock;
+            total.stock.available_stock += item.stock.available_stock;
+            total.stock.used_stock += item.stock.used_stock;
+
+            total.costing.opening_stock_cost += parseFloat(item.costing.opening_stock_cost);
+            total.costing.total_valuated_opening_stock_price += parseFloat(item.costing.total_valuated_opening_stock_price);
+            total.costing.selling_price += parseFloat(item.costing.selling_price);
+            total.costing.total_valuated_selling_price += parseFloat(item.costing.total_valuated_selling_price);
+
+            total.cost_price += item.stock.available_stock * item.costing.valuated_opening_stock_price;
+            total.sale_price += item.stock.available_stock * item.costing.valuated_selling_price;
         });
 
-        console.log(totals);
-        setPinnedBottomRowData([totals]);
+
+        // console.log(reportData.reduce((acc:number, item:any)=>acc+item.costing.valuated_opening_stock_price, 0));
+        setPinnedBottomRowData([total]);
     };
-
-
 
 
     const handleChange = (name: string, value: any, required: boolean) => {

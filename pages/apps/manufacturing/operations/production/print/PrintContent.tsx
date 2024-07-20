@@ -2,6 +2,7 @@ import React from 'react';
 import { Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import Header from '@/components/Report/Header';
 import { fontSize } from 'html2canvas/dist/types/css/property-descriptors/font-size';
+import Footer from '@/components/Report/Footer';
 
 const PrintContent = ({ content }:any) => {
     return (
@@ -59,29 +60,17 @@ const PrintContent = ({ content }:any) => {
                     </View>
                 ))}
                 <View style={styles.tableFooter}>
-                    <Text style={styles.tableFooterCell}>Total</Text>
-                    <Text style={styles.tableFooterCell}>{content?.production_items?.reduce((total:number, item:any) => total + parseFloat(item.unit_cost), 0).toFixed(2)}</Text>
-                    <Text style={styles.tableFooterCell}>{content?.production_items?.reduce((total:number, item:any) => total + parseFloat(item.quantity), 0).toFixed(2)}</Text>
-                    <Text style={styles.tableFooterCell}>{content?.production_items?.reduce((total:number, item:any) => total + parseFloat(item.available_quantity), 0).toFixed(2)}</Text>
-                    <Text style={styles.tableFooterCell}>{content?.production_items?.reduce((total:number, item:any) => total + parseFloat(item.required_quantity), 0).toFixed(2)}</Text>
-                    <Text style={styles.tableFooterCell}>{content?.production_items?.reduce((total:number, item:any) => total + ((parseFloat(item.unit_cost) * parseFloat(item.quantity) * parseFloat(content.no_of_quantity)) / parseFloat(item.quantity)), 0).toFixed(2)}</Text>
+                    <Text style={styles.tableCell}>Total</Text>
+                    <Text style={styles.tableCell}></Text>
+                    <Text style={styles.tableCell}></Text>
+                    <Text style={styles.tableCell}>{content?.production_items?.reduce((total:number, item:any) => total + parseFloat(item.unit_cost), 0).toFixed(2)}</Text>
+                    <Text style={styles.tableCell}>{content?.production_items?.reduce((total:number, item:any) => total + parseFloat(item.quantity), 0).toFixed(2)}</Text>
+                    <Text style={styles.tableCell}>{content?.production_items?.reduce((total:number, item:any) => total + parseFloat(item.available_quantity), 0).toFixed(2)}</Text>
+                    <Text style={styles.tableCell}>{content?.production_items?.reduce((total:number, item:any) => total + parseFloat(item.required_quantity), 0).toFixed(2)}</Text>
+                    <Text style={styles.tableCell}>{content?.production_items?.reduce((total:number, item:any) => total + ((parseFloat(item.unit_cost) * parseFloat(item.quantity) * parseFloat(content.no_of_quantity)) / parseFloat(item.quantity)), 0).toFixed(2)}</Text>
                 </View>
             </View>
-            <View style={styles.footer}>
-                <View style={styles.footerContainer}>
-                    <Text style={styles.footerText}>
-                        <Text>Created By: </Text>
-                        {content?.created_by?.name}
-                    </Text>
-                    <Text style={styles.footerText} render={({ pageNumber, totalPages }) => (
-                        `${pageNumber} / ${totalPages}`
-                    )} fixed />
-                    <Text style={styles.footerText}>
-                        <Text>Created At: </Text>
-                        {new Date(content?.created_at).toLocaleDateString() + '  ' + new Date(content?.created_at).toLocaleTimeString()}
-                    </Text>
-                </View>
-            </View>
+            <Footer content={content} />
         </Page>
     );
 };
