@@ -31,7 +31,7 @@ const View = () => {
     const calculateTotal = (item: any) => {
         let totalCost = parseFloat(item.retail_price) * parseFloat(item.quantity);
         let taxAmount = (totalCost * parseFloat(item.tax_rate)) / 100;
-        let discountAmount = item.discount_type === 'percentage' ? (totalCost * parseFloat(item.discount_amount_rate)) / 100 : parseFloat(item.discount_amount_rate);
+        let discountAmount = item.discount_type ? item.discount_type === 'percentage' ? (totalCost * parseFloat(item.discount_amount_rate)) / 100 : parseFloat(item.discount_amount_rate) : 0;
         return totalCost + taxAmount - discountAmount;
     };
 

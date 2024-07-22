@@ -92,7 +92,7 @@ const DeliveryNoteForm = () => {
                     if (name === 'customer_id') {
                         const customerOption = customerOptions.find((customer: any) => customer.value === value.value);
                         setCustomerDetail(customerOption.customer);
-                        console.log(customerOption);
+                        // console.log(customerOption);
                         setContactPersonOptions(customerOption.customer?.contact_persons.map((contactPerson: any) => ({
                             label: contactPerson.name,
                             value: contactPerson.id,
@@ -106,7 +106,7 @@ const DeliveryNoteForm = () => {
                         let ids = value.map((quotation: any) => quotation.value);
                         let idsString = '';
                         let skip_quotation = false;
-                        console.log(value);
+                        // console.log(value);
                         if (ids.some((id: any) => id === 0)) {
                             idsString = '0';
                             skip_quotation = true;
@@ -123,10 +123,14 @@ const DeliveryNoteForm = () => {
                                     alert('You cannot select multiple customer');
                                     return;
                                 }
-                                setItemsForSelect(quotationItemList?.map((item: any) => ({
-                                    ...item,
-                                    delivered_quantity: item.quantity
-                                })));
+                                // console.log(quotationItemList);
+                                setItemsForSelect(quotationItemList?.map((item: any) => {
+                                    console.log("item", item);
+                                    return {
+                                        ...item,
+                                        delivered_quantity: item.quantity
+                                    }
+                                }));
                             }
                         }
                         setFormData((prev: any) => ({

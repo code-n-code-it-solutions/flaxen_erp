@@ -1,9 +1,37 @@
 import React from 'react';
 import { Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import Header from '@/components/Report/Header';
-import deliveryNote from '@/pages/erp/sale/delivery-note';
+import Footer from '@/components/Report/Footer';
 
 const PrintContent = ({ content, items }: any) => {
+    console.log(content, items);
+
+    const calculateTotals = (items: any) => {
+        let totalAmount = 0;
+        let taxAmount = 0;
+        let discountAmount = 0;
+        let netAmount = 0;
+        let grandTotal = 0;
+
+        items.forEach((deliveryNoteItem: any) => {
+            deliveryNoteItem.delivery_note_items.forEach((item: any) => {
+                const itemTotal = parseFloat(item.retail_price) * parseFloat(item.delivered_quantity);
+                const itemTax = item.tax_amount;
+                const itemDiscount = item.discount_amount_rate ? parseFloat(item.discount_amount_rate) : 0;
+                totalAmount += itemTotal;
+                taxAmount += itemTax;
+                discountAmount += itemDiscount;
+            });
+        });
+
+        netAmount = totalAmount + taxAmount;
+        grandTotal = netAmount - discountAmount;
+
+        return { totalAmount, taxAmount, discountAmount, netAmount, grandTotal };
+    };
+
+    const totals = calculateTotals(items);
+
     return (
         <Page size="A4" style={styles.page} wrap>
             <Header />
@@ -19,7 +47,7 @@ const PrintContent = ({ content, items }: any) => {
                         </Text>
                         <Text style={styles.text}>
                             <Text style={styles.bold}>Invoice Reference: </Text>
-                            {content?.invoice_reference}
+                            {content?.po_number}
                         </Text>
                         <Text style={styles.text}>
                             <Text style={styles.bold}>Invoice Date: </Text>
@@ -55,8 +83,10 @@ const PrintContent = ({ content, items }: any) => {
                 </View>
                 <Text style={styles.sectionTitle}>Item Details</Text>
                 {items.map((deliveryNoteItem: any, index: number) => (
-                    <View style={[styles.table, {marginBottom: 5}]} key={index}>
-                        <Text style={{textAlign: 'center', fontSize: 10, paddingVertical: 5}}>{deliveryNoteItem.delivery_note_code}</Text>
+                    <View style={[styles.table, { marginBottom: 5 }]} key={index}>
+                        <Text style={{textAlign: 'center', fontSize: 10, paddingVertical: 5}}>
+                            {deliveryNoteItem.delivery_note_code}
+                        </Text>
                         <View style={styles.tableHeader}>
                             <Text style={[styles.tableHeaderCell, { width: '5%' }]}>#</Text>
                             <Text style={[styles.tableHeaderCell, { width: '15%' }]}>Product</Text>
@@ -67,55 +97,63 @@ const PrintContent = ({ content, items }: any) => {
                             <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Discount</Text>
                             <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Total Cost</Text>
                         </View>
-                        {deliveryNoteItem.delivery_note_items.map((deliveryNoteItem: any, index: number) => (
-                            <View key={index} style={styles.tableRow}>
+                        {deliveryNoteItem.delivery_note_items.map((item: any, itemIndex: number) => (
+                            <View key={itemIndex} style={styles.tableRow}>
                                 <Text style={[styles.tableCell, { width: '5%' }]}>
-                                    {index + 1}
+                                    {itemIndex + 1}
                                 </Text>
-                                <View style={[styles.tableCell, { display: 'flex', flexDirection: 'column', width: '15%' }]}>
-                                    <Text>{deliveryNoteItem.product_assembly.formula_name}</Text>
-                                    <Text>{deliveryNoteItem.product.title + ` - ${deliveryNoteItem.capacity}KG`}</Text>
+                                <View style={[styles.tableCell, { width: '15%' }]}>
+                                    <Text>{item.product_assembly.formula_name}</Text>
+                                    <Text>{item.product.title + ` - ${item.capacity}KG`}</Text>
                                 </View>
                                 <Text style={[styles.tableCell, { width: '10%' }]}>
-                                    {parseFloat(deliveryNoteItem.retail_price).toFixed(2)}
+                                    {parseFloat(item.retail_price).toFixed(2)}
                                 </Text>
                                 <Text style={[styles.tableCell, { width: '10%' }]}>
-                                    {deliveryNoteItem.delivered_quantity}
+                                    {item.delivered_quantity}
                                 </Text>
                                 <Text style={[styles.tableCell, { width: '10%' }]}>
-                                    {(parseFloat(deliveryNoteItem.retail_price) * parseFloat(deliveryNoteItem.delivered_quantity)).toFixed(2)}
+                                    {(parseFloat(item.retail_price) * parseFloat(item.delivered_quantity)).toFixed(2)}
                                 </Text>
-                                <View style={[styles.tableCell, { display: 'flex', flexDirection: 'column', width: '15%' }]}>
-                                    <Text>Tax: {deliveryNoteItem.tax_category.name+' ('+deliveryNoteItem.tax_rate+'%)'}</Text>
-                                    <Text>Amt: {deliveryNoteItem.tax_amount.toFixed(2)}</Text>
+                                <View style={[styles.tableCell, { width: '15%' }]}>
+                                    <Text>Tax: {item.tax_category.name + ' (' + item.tax_rate + '%)'}</Text>
+                                    <Text>Amt: {item.tax_amount.toFixed(2)}</Text>
                                 </View>
                                 <Text style={[styles.tableCell, { width: '10%' }]}>
-                                    {deliveryNoteItem.discount_amount_rate.toFixed(2)}{deliveryNoteItem.discount_type === 'percentage' ? '%' : '/-'}
+                                    {item.discount_amount_rate ? item.discount_amount_rate.toFixed(2) : 'NA'}
+                                    {item.discount_type && item.discount_type === 'percentage' ? '%' : '/-'}
                                 </Text>
                                 <Text style={[styles.tableCell, { width: '10%' }]}>
-                                    {parseFloat(deliveryNoteItem.total_cost).toFixed(2)}
+                                    {parseFloat(item.total_cost).toFixed(2)}
                                 </Text>
                             </View>
                         ))}
                     </View>
                 ))}
-            </View>
-            <View style={styles.footer}>
-                <View style={styles.footerContainer}>
-                    <Text style={styles.footerText}>
-                        <Text style={styles.bold}>Created By: </Text>
-                        {content?.created_by?.name}
-                    </Text>
-                    <Text style={styles.footerText} render={({ pageNumber, totalPages }) => (
-                        `${pageNumber} / ${totalPages}`
-                    )} fixed />
-                    <Text style={styles.footerText}>
-                        <Text style={styles.bold}>Created At: </Text>
-                        {new Date(content?.created_at).toLocaleDateString() + '  ' + new Date(content?.created_at).toLocaleTimeString()}
-                    </Text>
+                <View style={styles.totalContainer}>
+                    <View style={styles.totalRow}>
+                        <Text style={styles.totalLabel}>Total Amount:</Text>
+                        <Text style={styles.totalValue}>{totals.totalAmount.toFixed(2)}</Text>
+                    </View>
+                    <View style={styles.totalRow}>
+                        <Text style={styles.totalLabel}>Tax Amount:</Text>
+                        <Text style={styles.totalValue}>{totals.taxAmount.toFixed(2)}</Text>
+                    </View>
+                    <View style={styles.totalRow}>
+                        <Text style={styles.totalLabel}>Sub Total:</Text>
+                        <Text style={styles.totalValue}>{totals.netAmount.toFixed(2)}</Text>
+                    </View>
+                    <View style={styles.totalRow}>
+                        <Text style={styles.totalLabel}>Discount Amount:</Text>
+                        <Text style={styles.totalValue}>{totals.discountAmount.toFixed(2)}</Text>
+                    </View>
+                    <View style={styles.totalRow}>
+                        <Text style={styles.totalLabel}>Grand Total:</Text>
+                        <Text style={styles.totalValue}>{totals.grandTotal.toFixed(2)}</Text>
+                    </View>
                 </View>
             </View>
-
+            <Footer content={content} />
         </Page>
     );
 };
@@ -196,8 +234,25 @@ const styles = StyleSheet.create({
         fontSize: 9,
         textAlign: 'left'
     },
-    notAvailable: {
-        color: 'red'
+    totalContainer: {
+        marginTop: 20,
+        padding: 10,
+        borderWidth: 1,
+        borderColor: '#000',
+        backgroundColor: '#f0f0f0'
+    },
+    totalRow: {
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingVertical: 2
+    },
+    totalLabel: {
+        fontSize: 10,
+        fontWeight: 'bold'
+    },
+    totalValue: {
+        fontSize: 10
     },
     footer: {
         position: 'absolute',
@@ -213,7 +268,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10
     },
     footerText: {
-        // textAlign: 'center',
         color: 'gray',
         fontSize: 8
     }

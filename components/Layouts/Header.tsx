@@ -101,19 +101,19 @@ const Header = () => {
                             {getIcon(IconType.back)}
                         </button>
                     )}
-                    <button
-                        type="button"
-                        className="collapse-icon flex flex-none rounded-full bg-white-light/40 p-2 hover:bg-white-light/90 hover:text-primary ltr:ml-2 rtl:mr-2 dark:bg-dark/40 dark:text-[#d0d2d6] dark:hover:bg-dark/60 dark:hover:text-primary lg:hidden"
-                        onClick={() => dispatch(toggleSidebar())}
-                    >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                             xmlns="http://www.w3.org/2000/svg">
-                            <path d="M20 7L4 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                            <path opacity="0.5" d="M20 12L4 12" stroke="currentColor" strokeWidth="1.5"
-                                  strokeLinecap="round" />
-                            <path d="M20 17L4 17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                        </svg>
-                    </button>
+                    {/*<button*/}
+                    {/*    type="button"*/}
+                    {/*    className="collapse-icon flex flex-none rounded-full bg-white-light/40 p-2 hover:bg-white-light/90 hover:text-primary ltr:ml-2 rtl:mr-2 dark:bg-dark/40 dark:text-[#d0d2d6] dark:hover:bg-dark/60 dark:hover:text-primary lg:hidden"*/}
+                    {/*    onClick={() => dispatch(toggleSidebar())}*/}
+                    {/*>*/}
+                    {/*    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"*/}
+                    {/*         xmlns="http://www.w3.org/2000/svg">*/}
+                    {/*        <path d="M20 7L4 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />*/}
+                    {/*        <path opacity="0.5" d="M20 12L4 12" stroke="currentColor" strokeWidth="1.5"*/}
+                    {/*              strokeLinecap="round" />*/}
+                    {/*        <path d="M20 17L4 17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />*/}
+                    {/*    </svg>*/}
+                    {/*</button>*/}
                 </div>
 
                 <div

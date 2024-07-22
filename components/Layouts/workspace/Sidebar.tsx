@@ -1,12 +1,12 @@
 import PerfectScrollbar from 'react-perfect-scrollbar';
-import {useTranslation} from 'react-i18next';
-import {useDispatch, useSelector} from 'react-redux';
+import { useTranslation } from 'react-i18next';
+import { useDispatch, useSelector } from 'react-redux';
 import Link from 'next/link';
-import {toggleSidebar} from '@/store/slices/themeConfigSlice';
+import { toggleSidebar } from '@/store/slices/themeConfigSlice';
 import AnimateHeight from 'react-animate-height';
-import {IRootState, useAppSelector} from '@/store';
-import {useState, useEffect} from 'react';
-import {useRouter} from 'next/router';
+import { IRootState, useAppSelector } from '@/store';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 
 const Sidebar = () => {
     const router = useRouter();
@@ -14,9 +14,9 @@ const Sidebar = () => {
     const [errorSubMenu, setErrorSubMenu] = useState(false);
     const themeConfig = useSelector((state: IRootState) => state.themeConfig);
     const semidark = useSelector((state: IRootState) => state.themeConfig.semidark);
-    const {permittedMenus, moduleMenus, activeModule} = useAppSelector((state) => state.menu);
+    const { permittedMenus, moduleMenus, activeModule } = useAppSelector((state) => state.menu);
     const dispatch = useDispatch();
-    const {t} = useTranslation();
+    const { t } = useTranslation();
 
     const toggleMenu = (value: string) => {
         setCurrentMenu((oldValue) => {
@@ -61,7 +61,7 @@ const Sidebar = () => {
     };
 
     useEffect(() => {
-        setActiveRoute()
+        setActiveRoute();
     }, [activeModule]);
 
     return (
@@ -87,61 +87,30 @@ const Sidebar = () => {
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                                  xmlns="http://www.w3.org/2000/svg" className="m-auto h-5 w-5">
                                 <path d="M13 19L7 12L13 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"
-                                      strokeLinejoin="round"/>
+                                      strokeLinejoin="round" />
                                 <path opacity="0.5" d="M16.9998 19L10.9998 12L16.9998 5" stroke="currentColor"
-                                      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                         </button>
                     </div>
                     <PerfectScrollbar className="relative h-[calc(100vh-80px)]">
                         <ul className="relative space-y-0.5 p-4 py-0 font-semibold">
-                            {moduleMenus?.map((menu: any, moduleIndex: number) => (
-                                menu.children?.length > 0
-                                    ? <li className="menu nav-item" key={moduleIndex}>
-                                        <button type="button"
-                                                className={`${currentMenu === menu.translation_key ? 'active' : ''} nav-link group w-full`}
-                                                onClick={() => toggleMenu(menu.translation_key)}>
-                                            <div className="flex items-center">
-                                                <div dangerouslySetInnerHTML={{__html: menu.icon}}></div>
-                                                <span
-                                                    className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t(menu.translation_key)}</span>
-                                            </div>
-
-                                            <div
-                                                className={currentMenu === menu.translation_key ? 'rotate-90' : 'rtl:rotate-180'}>
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                                                     xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M9 5L15 12L9 19" stroke="currentColor" strokeWidth="1.5"
-                                                          strokeLinecap="round" strokeLinejoin="round"/>
-                                                </svg>
-                                            </div>
-                                        </button>
-
-                                        <AnimateHeight
-                                            duration={300}
-                                            height={currentMenu === menu.translation_key ? 'auto' : 0}
-                                        >
-                                            <ul className="sub-menu text-gray-500">
-                                                {menu.children?.map((menu: any, menuIndex: number) => (
-                                                    menu.children?.length > 0
-                                                        ? <></>
-                                                        : <li key={menuIndex}>
-                                                            <Link href={menu.route}>{t(menu.translation_key)}</Link>
-                                                        </li>
-                                                ))}
-                                            </ul>
-                                        </AnimateHeight>
-                                    </li>
-                                    : <li className="nav-item" key={moduleIndex}>
-                                        <Link href={menu.route} className="group">
-                                            <div className="flex items-center">
-                                                <div dangerouslySetInnerHTML={{__html: menu.icon}}></div>
-                                                <span
-                                                    className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t(menu.translation_key)}</span>
-                                            </div>
-                                        </Link>
-                                    </li>
-                            ))}
+                            <li className="nav-item">
+                                <Link href="/workspace" className="group">
+                                    <div className="flex items-center">
+                                        <span
+                                            className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t('dashboard')}</span>
+                                    </div>
+                                </Link>
+                            </li>
+                            <li className="nav-item">
+                                <Link href="/workspace/companies" className="group">
+                                    <div className="flex items-center">
+                                        <span
+                                            className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t('companies')}</span>
+                                    </div>
+                                </Link>
+                            </li>
                         </ul>
                     </PerfectScrollbar>
                 </div>

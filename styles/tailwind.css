@@ -85,9 +85,11 @@
         @apply w-auto;
     }
 
-    .sidebar .nav-item > button,
-    .sidebar .nav-item > a {
+    .sidebar .nav-item > button {
         @apply mb-1 flex w-full items-center justify-between overflow-hidden whitespace-nowrap rounded-md p-2.5 text-[#506690] hover:bg-[#000]/[0.08] hover:text-black dark:hover:bg-[#181f32] dark:hover:text-white-dark;
+    }
+    .sidebar .nav-item > a {
+        @apply mb-1 flex w-full items-center overflow-hidden whitespace-nowrap rounded-md p-2.5 text-[#506690] hover:bg-[#000]/[0.08] hover:text-black dark:hover:bg-[#181f32] dark:hover:text-white-dark;
     }
     .sidebar .nav-item > button.active,
     .sidebar .nav-item > a.active {
