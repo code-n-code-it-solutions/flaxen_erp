@@ -27,17 +27,15 @@ const Main = () => {
     const [pluginLoading, setPluginLoading] = useState<{ [key: string]: boolean }>({});
     const [searchQuery, setSearchQuery] = useState<string>('');
 
-    const handlePluginClick = (plugin: any) => {
-        dispatch(clearMenuState());
-        dispatch(setSelectedPlugin(plugin.plugin));
-    };
+    // const handlePluginClick = (plugin: any) => {
+    //     dispatch(clearMenuState());
+    //     dispatch(setSelectedPlugin(plugin.plugin));
+    // };
 
     const handleAddFavouritePlugin = (plugin: any) => {
         setAuthToken(token);
-        // Set loading state for the plugin
         setPluginLoading(prev => ({ ...prev, [plugin.plugin.id]: true }));
 
-        // Optimistically update the is_favourite status on the client side
         const updatedPlugins = pluginList.map(p => {
             if (p.plugin.id === plugin.plugin.id) {
                 return { ...p, is_favourite: !plugin.is_favourite };
@@ -45,17 +43,15 @@ const Main = () => {
             return p;
         });
         setPluginList(updatedPlugins);
-
+        setFilteredPlugins(updatedPlugins);
         dispatch(handPluginFavourite({
             user_id: user.id,
             plugin_id: plugin.plugin.id,
             type: plugin.is_favourite ? 'remove' : 'add'
         })).then(() => {
-            // Clear loading state for the plugin
             setPluginLoading(prev => ({ ...prev, [plugin.plugin.id]: false }));
             setFavouritePlugins(updatedPlugins.filter(p => p.is_favourite));
         }).catch(() => {
-            // Revert the optimistic update if the request fails
             const revertedPlugins = pluginList.map(p => {
                 if (p.plugin.id === plugin.plugin.id) {
                     return { ...p, is_favourite: plugin.is_favourite };
@@ -63,6 +59,7 @@ const Main = () => {
                 return p;
             });
             setPluginList(revertedPlugins);
+            setFilteredPlugins(revertedPlugins);
             setPluginLoading(prev => ({ ...prev, [plugin.plugin.id]: false }));
             setFavouritePlugins(revertedPlugins.filter(p => p.is_favourite));
         });
@@ -77,7 +74,7 @@ const Main = () => {
         );
 
         const filteredTypes = pluginTypes.filter(type =>
-            filtered.some(plugin => plugin.plugin.plugin_type.id === type.id)
+            filtered.some(plugin => plugin.plugin.plugin_type.name === type)
         );
 
         setFilteredPlugins(filtered);
@@ -88,26 +85,32 @@ const Main = () => {
         setAuthToken(token);
         dispatch(clearPluginState());
         dispatch(getPermittedPlugins(user.id));
-    }, []);
+    }, [dispatch, token, user.id]);
 
     useEffect(() => {
         if (permittedPlugins) {
-            setPluginList(permittedPlugins);
-            setFilteredPlugins(permittedPlugins); // Initialize filteredPlugins with all plugins
-            const favouritePlugins: any[] = permittedPlugins.filter((plugin: any) => plugin.is_favourite);
-            const types: any[] = permittedPlugins.map((plugin: any) => plugin.plugin.plugin_type);
-            setPluginTypes(uniqBy(types, 'id'));
-            setFilteredPluginTypes(uniqBy(types, 'id')); // Initialize filteredPluginTypes with all plugin types
-            setFavouritePlugins(favouritePlugins);
+            const pluginListArray = Object.values(permittedPlugins).flat();
+            setPluginList(pluginListArray);
+            setFilteredPlugins(pluginListArray);
+
+            const types = Object.keys(permittedPlugins);
+            setPluginTypes(types);
+            setFilteredPluginTypes(types);
+
+            const favourites = pluginListArray.filter((plugin: any) => plugin.is_favourite);
+            setFavouritePlugins(favourites);
         }
     }, [permittedPlugins]);
 
     useEffect(() => {
         if (favouriteStatus) {
             dispatch(clearFavouriteState());
-            // dispatch(getPermittedPlugins(user.id));
         }
-    }, [favouriteStatus]);
+    }, [favouriteStatus, dispatch]);
+
+    useEffect(() => {
+        console.log(user);
+    }, [user]);
 
     return (
         <PageWrapper
@@ -119,8 +122,8 @@ const Main = () => {
             <div className="container md:p-5">
                 <div className="text-center mb-8 font-bold">
                     <h1 className="text-lg font-bold">
-                        {selectedCompany?.name} <br />
-                        {selectedBranch?.name}
+                        {user.registered_company?.name} <br />
+                        {user.registered_branch?.name}
                     </h1>
                     <span>(Plugin List)</span>
                 </div>
@@ -140,105 +143,46 @@ const Main = () => {
                         </div>
                     ) : (
                         <div className="">
-                            <div className="mb-5">
-                                <h2 className="text-lg font-bold mb-5 border-b w-full">Favourite Plugins</h2>
-                                <div
-                                    className="grid grid-cols-3 gap-4 md:grid-cols-8 justify-center items-center">
-                                    {favouritePlugins?.length > 0
-                                        ? favouritePlugins?.map((plugin: any, index: number) => {
-                                            return (
-                                                <div
-                                                    className="dark:bg-slate-700 bg-white bg-opacity-70 rounded-lg border dark:border-slate-400 shadow hover:shadow-md dark:hover:shadow-white"
-                                                    key={index}>
-                                                    <Link
-                                                        href={'/apps/' + plugin.plugin.name.toLowerCase().replace(' ', '-')}
-                                                        onClick={() => handlePluginClick(plugin)}
-                                                        className="cursor-pointer"
-                                                    >
-                                                        <div
-                                                            className="flex flex-col justify-center items-center gap-2 mt-2 mb-3">
-                                                            <div
-                                                                className="flex justify-center items-center p-2">
-                                                                <Image src="/assets/images/default.jpeg"
-                                                                       alt="ERP"
-                                                                       width={50} height={50} />
-                                                            </div>
-                                                            <span
-                                                                className="font-bold text-center">{plugin.plugin.name}</span>
-                                                        </div>
-                                                    </Link>
-                                                    <button
-                                                        onClick={() => handleAddFavouritePlugin(plugin)}
-                                                        className={`btn ${plugin.is_favourite ? 'btn-success' : 'btn-primary'} btn-sm w-full rounded-tl-none rounded-tr-none`}
-                                                        disabled={pluginLoading[plugin.plugin.id]}
-                                                    >
-                                                        {pluginLoading[plugin.plugin.id]
-                                                            ? 'Loading...'
-                                                            : plugin.is_favourite ? 'Remove from Favourite' : 'Add to Favourite'
-                                                        }
-                                                    </button>
-                                                </div>
-                                            );
-                                        }) : (
-                                            <div className="flex justify-center items-center p-2 col-span-8">
-                                                <span>
-                                                    No favourite plugins found. Please add some plugins to favourite
-                                                </span>
-                                            </div>
-                                        )}
-                                </div>
-                            </div>
                             {filteredPluginTypes.length > 0
-                                && filteredPluginTypes.map((type: any, index: number) => (
+                                && filteredPluginTypes.map((type:any, index:number) => (
                                     <div key={index} className="mb-5">
-                                        <h2 className="text-lg font-bold mb-5 border-b w-full">{type.name}</h2>
+                                        <h2 className="text-lg font-bold mb-5 border-b w-full">{type}</h2>
                                         <div
-                                            className="grid grid-cols-3 gap-4 md:grid-cols-8 justify-center items-center">
-                                            {filteredPlugins?.length > 0
-                                                ? filteredPlugins?.map((plugin: any, index: number) => {
-                                                    if (plugin.plugin.plugin_type.id === type.id) {
-                                                        return (
+                                            className="grid grid-cols-2 gap-4 md:grid-cols-8 justify-center items-center">
+                                            {filteredPlugins
+                                                .filter((plugin:any) => plugin.plugin.plugin_category.name === type)
+                                                .map((plugin:any, i: number) => (
+                                                    <div
+                                                        className="dark:bg-slate-700 bg-white bg-opacity-70 rounded-lg border dark:border-slate-400 shadow hover:shadow-md dark:hover:shadow-white"
+                                                        key={i}>
+                                                        <Link
+                                                            href={'/apps/' + plugin.plugin.name.toLowerCase().replace(' ', '-')}
+                                                            // onClick={() => handlePluginClick(plugin)}
+                                                            className="cursor-pointer"
+                                                        >
                                                             <div
-                                                                className="dark:bg-slate-700 bg-white bg-opacity-70 rounded-lg border dark:border-slate-400 shadow hover:shadow-md dark:hover:shadow-white"
-                                                                key={index}>
-                                                                <Link
-                                                                    href={'/apps/' + plugin.plugin.name.toLowerCase().replace(' ', '-')}
-                                                                    onClick={() => handlePluginClick(plugin)}
-                                                                    className="cursor-pointer"
-                                                                >
-                                                                    <div
-                                                                        className="flex flex-col justify-center items-center gap-2 mt-2 mb-3">
-                                                                        <div
-                                                                            className="flex justify-center items-center p-2">
-                                                                            <Image src="/assets/images/default.jpeg"
-                                                                                   alt="ERP"
-                                                                                   width={50} height={50} />
-                                                                        </div>
-                                                                        <span
-                                                                            className="font-bold text-center">{plugin.plugin.name}</span>
-                                                                    </div>
-                                                                </Link>
-                                                                <button
-                                                                    onClick={() => handleAddFavouritePlugin(plugin)}
-                                                                    className={`btn ${plugin.is_favourite ? 'btn-success' : 'btn-primary'} btn-sm w-full rounded-tl-none rounded-tr-none`}
-                                                                    disabled={pluginLoading[plugin.plugin.id]}
-                                                                >
-                                                                    {pluginLoading[plugin.plugin.id]
-                                                                        ? 'Loading...'
-                                                                        : plugin.is_favourite ? 'Remove from Favourite' : 'Add to Favourite'
-                                                                    }
-                                                                </button>
+                                                                className="flex flex-col justify-center items-center gap-2 mt-2 mb-3">
+                                                                <div className="flex justify-center items-center p-2">
+                                                                    <Image src="/assets/images/default.jpeg"
+                                                                           alt="ERP"
+                                                                           width={50} height={50} />
+                                                                </div>
+                                                                <span
+                                                                    className="font-bold text-center">{plugin.plugin.name}</span>
                                                             </div>
-                                                        );
-                                                    }
-                                                }) : (
-                                                    <div className="flex justify-center items-center p-2 col-span-8">
-                                                        <span>
-                                                            No plugins found or have no permission to any plugin. Please
-                                                            do consult with administrator
-                                                        </span>
+                                                        </Link>
+                                                        <button
+                                                            onClick={() => handleAddFavouritePlugin(plugin)}
+                                                            className={`btn ${plugin.is_favourite ? 'btn-success' : 'btn-primary'} btn-sm w-full rounded-tl-none rounded-tr-none`}
+                                                            disabled={pluginLoading[plugin.plugin.id]}
+                                                        >
+                                                            {pluginLoading[plugin.plugin.id]
+                                                                ? 'Loading...'
+                                                                : plugin.is_favourite ? 'Remove from Favourite' : 'Add to Favourite'
+                                                            }
+                                                        </button>
                                                     </div>
-                                                )}
+                                                ))}
                                         </div>
                                     </div>
                                 ))}

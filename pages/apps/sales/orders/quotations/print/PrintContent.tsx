@@ -8,7 +8,7 @@ const QuotationDetails = ({ content }: any) => {
     const calculateTotal = (item: any) => {
         let totalCost = parseFloat(item.retail_price) * parseFloat(item.quantity);
         let taxAmount = (totalCost * parseFloat(item.tax_rate)) / 100;
-        let discountAmount = item.discount_type === 'percentage' ? (totalCost * Number(item.discount_amount_rate)) / 100 : Number(item.discount_amount_rate);
+        let discountAmount = item.discount_type ? item.discount_type === 'percentage' ? (totalCost * Number(item.discount_amount_rate)) / 100 : Number(item.discount_amount_rate) : 0;
         return totalCost + taxAmount - discountAmount;
     };
 
@@ -17,58 +17,154 @@ const QuotationDetails = ({ content }: any) => {
             <Header />
             <View style={styles.container}>
                 <View style={styles.titleContainer}>
-                    <Text style={styles.title}>Quotation Details</Text>
+                    <Text style={styles.title}>Quotation</Text>
                 </View>
                 <View style={styles.infoContainer}>
-                    <View style={styles.infoColumn}>
-                        <Text style={styles.text}><Text style={styles.bold}>Quotation Code: </Text>{content?.quotation_code}</Text>
-                        <Text style={styles.text}><Text style={styles.bold}>Receipt Delivery (Days): </Text>{content?.receipt_delivery_due_days}</Text>
-                        <Text style={styles.text}><Text style={styles.bold}>Delivery: </Text>{content?.delivery_due_in_days + ' - ' + content?.delivery_due_date}</Text>
+                    <View style={[styles.infoColumn, { borderWidth: 1, borderColor: 'black', padding: 10 }]}>
+                        <Text style={styles.text}>
+                            <Text style={styles.bold}>Customer Code: </Text>
+                            {content?.customer?.customer_code}
+                        </Text>
+                        <Text style={[styles.text, { fontSize: 11 }]}>
+                            {content?.customer?.name}
+                        </Text>
+                        <Text style={styles.text}>
+                            <Text style={styles.bold}>Phone: </Text>
+                            {content?.customer?.phone}
+                        </Text>
+                        <Text style={styles.text}>
+                            <Text style={styles.bold}>Email: </Text>
+                            {content?.customer?.email}
+                        </Text>
+                        <Text style={styles.text}>
+                            <Text style={styles.bold}>Contact Person: </Text>
+                            {content?.contact_person?.name}
+                        </Text>
+                        <Text style={styles.text}>
+                            {
+                                content?.customer?.addresses[0]?.address + ' '
+                                + content?.customer?.addresses[0]?.city?.name + ', '
+                                + content?.customer?.addresses[0]?.state?.name + ' '
+                                + content?.customer?.addresses[0]?.country?.name + ' '
+                                + content?.customer?.addresses[0]?.postal_code
+                            }
+                        </Text>
+                        <Text style={styles.text}>
+                            <Text style={styles.bold}>TRN: </Text>
+                            {content?.customer?.tax_registration}
+                        </Text>
                     </View>
-                    <View style={styles.infoColumn}>
-                        <Text style={styles.text}><Text style={styles.bold}>Salesman: </Text>{content?.salesman?.name}</Text>
-                        <Text style={styles.text}><Text style={styles.bold}>Customer: </Text>{content?.customer?.name}</Text>
-                        <Text style={styles.text}><Text style={styles.bold}>Contact Person: </Text>{content?.contact_person?.name}</Text>
+                    <View style={[styles.infoColumn, { borderWidth: 1, borderColor: 'black', padding: 10 }]}>
+                        <Text style={styles.text}>
+                            <Text style={styles.bold}>Quotation #: </Text>
+                            {content?.quotation_code}
+                        </Text>
+                        <Text style={styles.text}>
+                            <Text style={styles.bold}>Sales Person: </Text>
+                            {content?.salesman?.name}
+                        </Text>
+                        {/*<Text style={styles.text}>*/}
+                        {/*    <Text style={styles.bold}>Receipt Delivery (Days): </Text>*/}
+                        {/*    {content?.receipt_delivery_due_days}*/}
+                        {/*</Text>*/}
+                        <Text style={styles.text}>
+                            <Text style={styles.bold}>Terms of Delivery: </Text>
+                            {content?.delivery_due_in_days + '(Days) - ' + content?.delivery_due_date}
+                        </Text>
+                        <Text style={styles.text}>
+                            <Text style={styles.bold}>Terms of Payments: </Text>
+                            {content?.customer?.payment_terms + ' (Days)'}
+                        </Text>
                     </View>
                 </View>
                 <Text style={styles.sectionTitle}>Item Details</Text>
                 <View style={styles.table}>
                     <View style={styles.tableHeader}>
-                        <Text style={[styles.tableHeaderCell, { width: '5%' }]}>#</Text>
-                        <Text style={[styles.tableHeaderCell, { width: '15%' }]}>Product</Text>
-                        <Text style={[styles.tableHeaderCell, { width: '20%' }]}>Batch #</Text>
-                        {/*<Text style={[styles.tableHeaderCell, { width: '10%' }]}>Filling</Text>*/}
-                        {/*<Text style={[styles.tableHeaderCell, { width: '7%' }]}>Available</Text>*/}
-                        <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Price</Text>
-                        <Text style={[styles.tableHeaderCell, { width: '7%' }]}>Qty</Text>
-                        <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Tax</Text>
+                        <Text style={[styles.tableHeaderCell, { width: '5%' }]}>Sr.No</Text>
+                        <Text style={[styles.tableHeaderCell, { width: '25%' }]}>Product</Text>
+                        <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Rate</Text>
+                        <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Qty</Text>
+                        <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Total</Text>
                         <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Discount</Text>
+                        <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Sub Total</Text>
+                        <Text style={[styles.tableHeaderCell, { width: '10%' }]}>VAT @5%</Text>
                         <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Total Cost</Text>
                     </View>
-                    {content?.quotation_items.map((item:any, index:number) => (
+                    {content?.quotation_items.map((item: any, index: number) => (
                         <View key={index} style={styles.tableRow}>
                             <Text style={[styles.tableCell, { width: '5%' }]}>{index + 1}</Text>
-                            <Text style={[styles.tableCell, { width: '15%' }]}>{item.product_assembly.formula_name}</Text>
-                            <View style={[styles.tableCell, { width: '20%', display: 'flex', flexDirection: 'column' }]}>
-                                <Text>Batch: {item.batch_number}</Text>
-                                <Text>Filling: {item.filling.filling_code}</Text>
+                            <View style={[styles.tableCell, { display: 'flex', flexDirection: 'column', width: '25%' }]}>
+                                <Text>
+                                    {item.product_assembly.formula_name}
+                                </Text>
+                                <Text>
+                                    (Color: {item.product_assembly.color_code?.code})
+                                </Text>
                             </View>
-                            {/*<Text style={[styles.tableCell, { width: '10%' }]}>{item.product?.item_code}</Text>*/}
-                            {/*<Text style={[styles.tableCell, { width: '7%' }]}>{item.available_quantity}</Text>*/}
-                            <Text style={[styles.tableCell, { width: '10%' }]}>{item.retail_price.toFixed(2)}</Text>
-                            <Text style={[styles.tableCell, { width: '7%' }]}>{item.quantity.toFixed(2)}</Text>
-                            <Text style={[styles.tableCell, { width: '10%' }]}>{item.tax_amount.toFixed(2)} ({item.tax_rate}%)</Text>
-                            <Text style={[styles.tableCell, { width: '10%' }]}>{Number(item.discount_amount_rate).toFixed(2)}{item.discount_type === 'percentage' ? '%' : '/-'}</Text>
-                            <Text style={[styles.tableCell, { width: '10%' }]}>{calculateTotal(item).toFixed(2)}</Text>
+                            <Text style={[styles.tableCell, { width: '10%' }]}>
+                                {item.retail_price.toFixed(2)}
+                            </Text>
+                            <Text style={[styles.tableCell, { width: '10%' }]}>
+                                {item.quantity.toFixed(2)}
+                            </Text>
+                            <Text style={[styles.tableCell, { width: '10%' }]}>
+                                {(parseFloat(item.retail_price) * parseFloat(item.quantity)).toFixed(2)}
+                            </Text>
+                            <Text style={[styles.tableCell, { width: '10%' }]}>
+                                {Number(item.discount_amount_rate).toFixed(2)}{item.discount_type === 'percentage' ? '%' : '/-'}
+                            </Text>
+                            <Text style={[styles.tableCell, { width: '10%' }]}>
+                                {((parseFloat(item.retail_price) * parseFloat(item.quantity)) - Number(item.discount_amount_rate)).toFixed(2)}
+                            </Text>
+                            <Text style={[styles.tableCell, { width: '10%' }]}>
+                                {item.tax_amount.toFixed(2)}
+                            </Text>
+                            <Text style={[styles.tableCell, { width: '10%' }]}>
+                                {calculateTotal(item).toFixed(2)}
+                            </Text>
                         </View>
                     ))}
                     <View style={styles.tableFooter}>
-                        <Text style={[styles.tableFooterCell, { width: '82%' }]}>Total</Text>
-                        <Text style={[styles.tableFooterCell, { width: '18%' }]}>
-                            {content?.quotation_items
-                                ?.reduce((total:number, item:any) => total + calculateTotal(item), 0)
-                                .toFixed(2)}
-                        </Text>
+                        <View style={styles.totalRow}>
+                            <Text style={styles.totalLabel}>Sub Total</Text>
+                            <Text style={styles.totalValue}>
+                                {content?.quotation_items
+                                    .reduce((total: number, item: any) => total + (parseFloat(item.quantity) * parseFloat(item.retail_price)), 0)
+                                    .toFixed(2)}
+                            </Text>
+                        </View>
+                        <View style={styles.totalRow}>
+                            <Text style={styles.totalLabel}>Discount</Text>
+                            <Text style={styles.totalValue}>
+                                {content?.quotation_items
+                                    .reduce((total: number, item: any) => total + Number(item.discount_amount_rate), 0)
+                                    .toFixed(2)}
+                            </Text>
+                        </View>
+                        <View style={styles.totalRow}>
+                            <Text style={styles.totalLabel}>Net Total</Text>
+                            <Text style={styles.totalValue}>
+                                {content?.quotation_items
+                                    .reduce((total: number, item: any) => total + (parseFloat(item.quantity) * parseFloat(item.retail_price)) - Number(item.discount_amount_rate), 0)
+                                    .toFixed(2)}
+                            </Text>
+                        </View>
+                        <View style={styles.totalRow}>
+                            <Text style={styles.totalLabel}>VAT (5%)</Text>
+                            <Text style={styles.totalValue}>
+                                {content?.quotation_items
+                                    .reduce((total: number, item: any) => total + Number(item.tax_amount), 0)
+                                    .toFixed(2)}
+                            </Text>
+                        </View>
+                        <View style={styles.totalRow}>
+                            <Text style={styles.totalLabel}>Grand Total</Text>
+                            <Text style={styles.totalValue}>
+                                {content?.quotation_items
+                                    .reduce((total: number, item: any) => total + calculateTotal(item), 0)
+                                    .toFixed(2)}
+                            </Text>
+                        </View>
                     </View>
                 </View>
             </View>
@@ -91,11 +187,11 @@ const styles = StyleSheet.create({
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        marginVertical: 10,
+        marginVertical: 10
     },
     title: {
         fontSize: 12,
-        fontWeight: 'bold',
+        fontWeight: 'bold'
     },
     infoContainer: {
         display: 'flex',
@@ -119,7 +215,7 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 10,
         fontWeight: 'bold',
-        marginVertical: 10
+        marginVertical: 5
     },
     table: {
         display: 'flex',
@@ -139,7 +235,7 @@ const styles = StyleSheet.create({
     },
     tableHeaderCell: {
         fontSize: 9,
-        textAlign: 'left',
+        textAlign: 'left'
     },
     tableRow: {
         display: 'flex',
@@ -151,19 +247,33 @@ const styles = StyleSheet.create({
     },
     tableCell: {
         fontSize: 9,
-        textAlign: 'left',
+        textAlign: 'left'
     },
     tableFooter: {
         display: 'flex',
-        flexDirection: 'row',
+        flexDirection: 'column',
         justifyContent: 'space-between',
+        alignItems: 'center',
+        gap: 5,
         borderTopWidth: 1,
         borderTopColor: '#000',
         padding: 4
     },
-    tableFooterCell: {
+    totalRow: {
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: '100%'
+    },
+    totalLabel: {
         fontSize: 9,
         fontWeight: 'bold',
+        width: '82%'
+    },
+    totalValue: {
+        fontSize: 9,
+        width: '18%',
+        textAlign: 'right'
     }
 });
 

@@ -12,14 +12,13 @@ import Header from '@/components/Layouts/app/Header';
 import Portals from '@/components/Portals';
 import { setAuthToken } from '@/configs/api.config';
 import Footer from '@/components/Layouts/Footer';
+import { setSelectedPlugin } from '@/store/slices/pluginSlice';
 
 interface AppLayoutProps extends PropsWithChildren {
     menus: any[]; // Define the appropriate type based on the structure of permittedMenus
 }
 
 const AppLayout = ({ children }:PropsWithChildren) => {
-    // console.log("Its app layout");
-    // console.log(children);
     const router = useRouter();
     const dispatch = useAppDispatch();
     const [showLoader, setShowLoader] = useState(true);
@@ -27,20 +26,26 @@ const AppLayout = ({ children }:PropsWithChildren) => {
     const themeConfig = useAppSelector((state) => state.themeConfig);
     const [animation, setAnimation] = useState(themeConfig.animation);
     const { token, isLoggedIn } = useAppSelector((state) => state.user);
-    const { permittedMenus } = useAppSelector(state => state.menu);
-    const { selectedPlugin } = useAppSelector(state => state.plugin);
+    const { permittedMenus, loading } = useAppSelector(state => state.menu);
     const [menus, setMenus] = useState<any>([]);
 
     useEffect(() => {
+        dispatch(clearMenuState());
+    }, []);
+
+    useEffect(() => {
         setAuthToken(token);
-        if (selectedPlugin) {
-            dispatch(getPermittedMenu(selectedPlugin?.id));
-        }
-    }, [selectedPlugin]);
+        dispatch(getPermittedMenu({route: router.pathname}));
+    }, [router.pathname]);
 
     useEffect(() => {
         setMenus(permittedMenus);
     }, [permittedMenus]);
+
+    useEffect(() => {
+        console.log(menus);
+        dispatch(setSelectedPlugin(menus ? menus[0]?.plugin : {}))
+    }, [menus]);
 
     const goToTop = () => {
         document.body.scrollTop = 0;
@@ -104,7 +109,7 @@ const AppLayout = ({ children }:PropsWithChildren) => {
                 {/* BEGIN MAIN CONTAINER */}
                 <div className="relative">
                     {/* screen loader  */}
-                    {showLoader && (
+                    {(showLoader || loading) && (
                         <div
                             className="screen_loader animate__animated fixed inset-0 z-[60] grid place-content-center bg-[#fafafa] dark:bg-[#060818]">
                             <svg width="64" height="64" viewBox="0 0 135 135" xmlns="http://www.w3.org/2000/svg"
@@ -154,7 +159,7 @@ const AppLayout = ({ children }:PropsWithChildren) => {
                     <div
                         className={`${themeConfig.navbar} main-container min-h-screen text-black dark:text-white-dark`}>
                         {/* BEGIN SIDEBAR */}
-                        <Sidebar />
+                        <Sidebar menus={menus} />
                         {/* END SIDEBAR */}
                         {/* BEGIN CONTENT AREA */}
                         <div className="main-content">

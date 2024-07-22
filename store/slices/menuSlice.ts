@@ -26,9 +26,9 @@ const initialState: IMenusState = {
 // Async thunks
 export const getPermittedMenu = createAsyncThunk(
     'menus/permitted',
-    async (pluginId: number, thunkAPI) => {
+    async (data: any, thunkAPI) => {
         try {
-            const response = await API.get('/menu/by-plugin/' + pluginId);
+            const response = await API.post('/menu/by-plugin', data);
             return response.data;
         } catch (error: any) {
             const message =

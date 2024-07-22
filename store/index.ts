@@ -1,17 +1,18 @@
-import {configureStore} from '@reduxjs/toolkit';
+import { configureStore } from '@reduxjs/toolkit';
 import persistedReducer from '@/store/persistor';
-import {persistStore} from "redux-persist";
-import {TypedUseSelectorHook, useDispatch, useSelector} from "react-redux";
-import {rootReducer} from "@/store/reducers";
+import { persistStore } from "redux-persist";
+import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
+import { rootReducer } from "@/store/reducers";
+
+const isDevelopment = process.env.NODE_ENV === 'development';
 
 export const store = configureStore({
     reducer: persistedReducer,
-    middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware({
-            serializableCheck: {
-                ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE', 'persist/REGISTER'],
-            },
-        }),
+    middleware: (getDefaultMiddleware) => getDefaultMiddleware({
+        serializableCheck: isDevelopment ? {
+            ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE', 'persist/REGISTER'],
+        } : false,
+    }),
 });
 
 export const persistor = persistStore(store);
