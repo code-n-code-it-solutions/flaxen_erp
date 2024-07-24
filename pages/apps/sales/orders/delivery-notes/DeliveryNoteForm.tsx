@@ -10,12 +10,10 @@ import Textarea from '@/components/form/Textarea';
 import { getCustomers } from '@/store/slices/customerSlice';
 import { pendingQuotations } from '@/store/slices/quotationSlice';
 import { clearLatestRecord, generateCode, getLatestRecord } from '@/store/slices/utilSlice';
-import { clearProductionState } from '@/store/slices/productionSlice';
 import { clearFillingState, getFinishedGoodStock } from '@/store/slices/fillingSlice';
 import { getIcon } from '@/utils/helper';
 import IconButton from '@/components/IconButton';
 import FinishedGoodModal from '@/components/modals/FinishedGoodModal';
-import { getFillingProducts } from '@/store/slices/rawProductSlice';
 import { getProductAssemblies } from '@/store/slices/productAssemblySlice';
 import { storeDeliveryNote } from '@/store/slices/deliveryNoteSlice';
 import { getEmployees } from '@/store/slices/employeeSlice';
@@ -366,6 +364,8 @@ const DeliveryNoteForm = () => {
             setFormData((prevFormData: any) => ({
                 ...prevFormData,
                 un_billed_receivable_account_id: latestRecord.un_billed_receivable_account?.code,
+                un_earned_income_account_id: latestRecord.un_earned_income_account?.code,
+                cost_of_goods_sold_account_id: latestRecord.cost_of_goods_sold_account?.code,
             }));
         }
     }, [latestRecord]);
@@ -674,6 +674,54 @@ const DeliveryNoteForm = () => {
                                                     }));
                                                 }}
                                                 treeData={accountOptions}
+                                                treeNodeFilterProp="title"
+                                                // onPopupScroll={onPopupScroll}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label>Cost of Good Sold</label>
+                                            <TreeSelect
+                                                showSearch
+                                                style={{ width: '100%' }}
+                                                value={latestRecord ? latestRecord.cost_of_goods_sold_account?.code : formData.cost_of_goods_sold_account_id}
+                                                dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+                                                placeholder="Please select Cost of Good Sold Account"
+                                                allowClear
+                                                treeDefaultExpandAll
+                                                onChange={(e) => {
+                                                    setFormData((prevFormData: any) => ({
+                                                        ...prevFormData,
+                                                        cost_of_goods_sold_account_id: e
+                                                    }));
+                                                }}
+                                                treeData={accountOptions}
+                                                treeNodeFilterProp="title"
+                                                // onPopupScroll={onPopupScroll}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-lg mb-5 border-b">Un Earned Accounting</h3>
+                                    <div className="space-y-3">
+                                        <div>
+                                            <label>Un-Earned Income Account</label>
+                                            <TreeSelect
+                                                showSearch
+                                                style={{ width: '100%' }}
+                                                value={latestRecord ? latestRecord.un_earned_income_account?.code : formData.un_earned_income_account_id}
+                                                dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+                                                placeholder="Please select Un Earned Income Account"
+                                                allowClear
+                                                treeDefaultExpandAll
+                                                onChange={(e) => {
+                                                    setFormData((prevFormData: any) => ({
+                                                        ...prevFormData,
+                                                        un_earned_income_account_id: e
+                                                    }));
+                                                }}
+                                                treeData={accountOptions}
+                                                treeNodeFilterProp="title"
                                                 // onPopupScroll={onPopupScroll}
                                             />
                                         </div>

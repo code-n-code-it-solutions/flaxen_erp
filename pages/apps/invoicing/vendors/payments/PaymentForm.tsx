@@ -517,6 +517,7 @@ const PaymentForm = () => {
                                                 onChange={(e) => handleChange('paying_account_id', e, true)}
                                                 treeData={accountOptions}
                                                 // onPopupScroll={onPopupScroll}
+                                                treeNodeFilterProp="title"
                                             />
                                         </div>
                                     </div>

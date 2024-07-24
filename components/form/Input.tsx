@@ -69,7 +69,8 @@ export const Input: FC<IProps> = ({
                         value={value ? new Date(value) : new Date()}
                         placeholder={placeholder}
                         options={{
-                            dateFormat: 'Y-m-d'
+                            dateFormat: 'Y-m-d',
+                            allowInput: true
                         }}
                         className="form-input"
                         onChange={onChange}
@@ -79,7 +80,8 @@ export const Input: FC<IProps> = ({
                             options={{
                                 noCalendar: true,
                                 enableTime: true,
-                                dateFormat: 'h:i K'
+                                dateFormat: 'h:i K',
+                                allowInput: true
                             }}
                             placeholder={placeholder}
                             defaultValue={value}

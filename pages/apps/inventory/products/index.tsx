@@ -57,7 +57,7 @@ const Index = () => {
             headerName: 'Unit',
             field: 'retail_price',
             valueGetter: (row: any) => (
-                capitalize(row.data.sub_unit.name)
+                capitalize(row.data.sub_unit?.name)
             ),
             minWidth: 150
         },

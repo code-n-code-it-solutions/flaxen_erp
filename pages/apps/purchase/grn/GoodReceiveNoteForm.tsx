@@ -363,6 +363,7 @@ const GoodReceiveNoteForm = ({ id }: IFormProps) => {
                                                 }}
                                                 treeData={accountOptions}
                                                 // onPopupScroll={onPopupScroll}
+                                                treeNodeFilterProp="title"
                                             />
                                         </div>
                                     </div>

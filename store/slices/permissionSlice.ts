@@ -4,12 +4,14 @@ import { configureSlice } from '@/utils/helper';
 
 interface IMenusState {
     permissions: any;
+    permissionUpdated: boolean;
     roles: any;
     pluginCategories: any;
     plugins: any;
     menus: any;
     menuActions: any;
     loading: boolean;
+    updateLoading: boolean;
     error: any;
     success: boolean;
 }
@@ -17,12 +19,14 @@ interface IMenusState {
 // Initial state
 const initialState: IMenusState = {
     permissions: null,
+    permissionUpdated: false,
     roles: null,
     pluginCategories: null,
     plugins: null,
     menus: null,
     menuActions: null,
     loading: false,
+    updateLoading: false,
     error: null,
     success: false
 };
@@ -30,7 +34,7 @@ const initialState: IMenusState = {
 // Async thunks
 export const getPermissions = createAsyncThunk(
     'permissions/get',
-    async (data:any, thunkAPI) => {
+    async (data: any, thunkAPI) => {
         try {
             const response = await API.post('/permission/by-employee', data);
             return response.data;
@@ -112,11 +116,11 @@ export const getMenuActions = createAsyncThunk(
     }
 );
 
-export const givePermission = createAsyncThunk(
-    'permissions/give-permission',
+export const updateUserPermission = createAsyncThunk(
+    'permissions/update-permission',
     async (data: any, thunkAPI) => {
         try {
-            const response = await API.post('/permission/give-permission', data);
+            const response = await API.post('/permission/update-permission', data);
             return response.data;
         } catch (error: any) {
             const message =
@@ -153,6 +157,7 @@ export const permissionSlice = createSlice({
             state.menus = null;
             state.menuActions = null;
             state.loading = false;
+            state.updateLoading = false;
             state.error = null;
             state.success = false;
         },
@@ -167,6 +172,9 @@ export const permissionSlice = createSlice({
         },
         clearMenuActionsState: (state) => {
             state.menuActions = null;
+        },
+        clearUpdatePermissionState: (state) => {
+            state.permissionUpdated = false;
         }
     },
     extraReducers: (builder) => {
@@ -243,6 +251,18 @@ export const permissionSlice = createSlice({
             .addCase(getMenuActions.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
+            })
+            .addCase(updateUserPermission.pending, (state) => {
+                state.updateLoading = true;
+            })
+            .addCase(updateUserPermission.fulfilled, (state, action) => {
+                state.updateLoading = false;
+                state.permissionUpdated = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(updateUserPermission.rejected, (state, action) => {
+                state.updateLoading = false;
+                state.error = action.error.message;
             });
     }
 });
@@ -250,7 +270,8 @@ export const {
     clearPermissionState,
     clearPluginState,
     clearMenusState,
-    clearMenuActionsState
+    clearMenuActionsState,
+    clearUpdatePermissionState
 } = permissionSlice.actions;
 
 export const permissionSliceConfig = configureSlice(permissionSlice, false);

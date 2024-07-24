@@ -401,6 +401,7 @@ const InvoiceForm = () => {
                                                 onChange={(e) => handleChange('account_payable_id', e, true)}
                                                 treeData={accountOptions}
                                                 // onPopupScroll={onPopupScroll}
+                                                treeNodeFilterProp="title"
                                             />
                                         </div>
                                     </div>
@@ -421,6 +422,7 @@ const InvoiceForm = () => {
                                                 onChange={(e) => handleChange('vat_receivable_id', e, true)}
                                                 treeData={accountOptions}
                                                 // onPopupScroll={onPopupScroll}
+                                                treeNodeFilterProp="title"
                                             />
                                         </div>
                                     </div>

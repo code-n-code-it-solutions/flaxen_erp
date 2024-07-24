@@ -132,7 +132,7 @@ const AgGridComponent = ({
                 columnDefs={colDefs}
                 defaultColDef={defaultColDef}
                 onGridReady={onGridReady}
-                suppressServerSideFullWidthLoadingRow={false}
+                suppressServerSideFullWidthLoadingRow={true}
                 // suppressRowClickSelection
                 cacheBlockSize={5}
                 maxBlocksInCache={0}

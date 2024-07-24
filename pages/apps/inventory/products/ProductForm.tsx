@@ -138,6 +138,10 @@ const ProductForm = ({ id }: IFormProps) => {
         if (!formData.stock_account_id && !id) {
             Swal.fire('Error', 'Please select accounting for stock', 'error');
         } else {
+            if (formData.raw_product_category_id === undefined || formData.raw_product_category_id === null || formData.raw_product_category_id === '') {
+                Swal.fire('Error', 'Please select raw product category', 'error');
+                return;
+            }
             if (id) {
                 dispatch(updateRawProduct({ id, rawProductData: formData }));
             } else {
@@ -145,17 +149,6 @@ const ProductForm = ({ id }: IFormProps) => {
             }
             setValidationMessage('');
         }
-    };
-
-    const customStyles = {
-        option: (provided: any, state: any) => ({
-            ...provided,
-            paddingLeft: `${state.data.depth * 10}px`
-        }),
-        group: (provided: any) => ({
-            ...provided,
-            paddingLeft: '10px'
-        })
     };
 
     useEffect(() => {
@@ -188,6 +181,8 @@ const ProductForm = ({ id }: IFormProps) => {
     useEffect(() => {
         if (rawProductCode) {
             setFormData((prev: any) => ({ ...prev, item_code: rawProductCode }));
+        } else {
+            setFormData((prev: any) => ({ ...prev, item_code: '' }));
         }
     }, [rawProductCode]);
 
@@ -246,6 +241,14 @@ const ProductForm = ({ id }: IFormProps) => {
                 vat_receivable_id: latestRecord.vat_receivable?.code,
                 account_payable_id: latestRecord.account_payable?.code,
                 vat_payable_id: latestRecord.vat_payable?.code
+            }));
+        } else {
+            setFormData((prevFormData: any) => ({
+                ...prevFormData,
+                stock_account_id: '',
+                vat_receivable_id: '',
+                account_payable_id: '',
+                vat_payable_id: ''
             }));
         }
     }, [latestRecord]);
@@ -549,6 +552,7 @@ const ProductForm = ({ id }: IFormProps) => {
                                                 onChange={(e) => handleChange('stock_account_id', e, true)}
                                                 treeData={accountOptions}
                                                 // onPopupScroll={onPopupScroll}
+                                                treeNodeFilterProp="title"
                                             />
                                         </div>
                                     </div>
@@ -616,7 +620,15 @@ const ProductForm = ({ id }: IFormProps) => {
                             text="Save"
                             variant={ButtonVariant.info}
                             onClick={() => {
-                                dispatch(storeRawProductCategory(rawProductCatData));
+                                if (typeof rawProductCatData.name === 'undefined' || typeof rawProductCatData.code === 'undefined' || rawProductCatData.name === '' || rawProductCatData.code === '') {
+                                    Swal.fire('Error', 'Please fill all the required fields', 'error');
+                                } else {
+                                    if (rawProductCategoryOptions.filter((cat: any) => cat.label === rawProductCatData.name).length > 0) {
+                                        Swal.fire('Error', 'Category already exists', 'error');
+                                    } else {
+                                        dispatch(storeRawProductCategory(rawProductCatData));
+                                    }
+                                }
                             }}
                         />
                     </div>
