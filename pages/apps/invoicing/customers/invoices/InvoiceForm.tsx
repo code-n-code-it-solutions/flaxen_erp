@@ -111,7 +111,8 @@ const InvoiceForm = () => {
             setFormData((prevFormData: any) => ({
                 ...prevFormData,
                 account_receivable_id: latestRecord.account_receivable?.code,
-                vat_payable_id: latestRecord.vat_payable?.code
+                vat_payable_id: latestRecord.vat_payable?.code,
+                sale_income_account_id: latestRecord.sale_income_account?.code
             }));
         }
     }, [latestRecord]);
@@ -389,6 +390,29 @@ const InvoiceForm = () => {
                                                 }}
                                                 treeData={accountOptions}
                                                 // onPopupScroll={onPopupScroll}
+                                                treeNodeFilterProp="title"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label>Sale Income Account</label>
+                                            <TreeSelect
+                                                showSearch
+                                                style={{ width: '100%' }}
+                                                value={latestRecord ? latestRecord.sale_income_account?.code : formData.sale_income_account_id}
+                                                dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+                                                placeholder="Please select Sale Income Account"
+                                                allowClear
+                                                treeDefaultExpandAll
+                                                onChange={(e) => {
+                                                    setFormData((prevFormData: any) => ({
+                                                        ...prevFormData,
+                                                        sale_income_account_id: e
+                                                    }));
+                                                }}
+                                                treeData={accountOptions}
+                                                // onPopupScroll={onPopupScroll}
+                                                treeNodeFilterProp="title"
                                             />
                                         </div>
 
@@ -415,6 +439,7 @@ const InvoiceForm = () => {
                                                 }}
                                                 treeData={accountOptions}
                                                 // onPopupScroll={onPopupScroll}
+                                                treeNodeFilterProp="title"
                                             />
                                         </div>
                                     </div>

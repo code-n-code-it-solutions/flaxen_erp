@@ -766,6 +766,7 @@ const FillingForm = ({ id }: IFormProps) => {
                                                 onChange={(e) => handleChange('stock_account_id', e, true)}
                                                 treeData={accountOptions}
                                                 // onPopupScroll={onPopupScroll}
+                                                treeNodeFilterProp="title"
                                             />
                                         </div>
                                     </div>
@@ -786,6 +787,7 @@ const FillingForm = ({ id }: IFormProps) => {
                                                 onChange={(e) => handleChange('wastage_account_id', e, true)}
                                                 treeData={accountOptions}
                                                 // onPopupScroll={onPopupScroll}
+                                                treeNodeFilterProp="title"
                                             />
                                         </div>
                                     </div>

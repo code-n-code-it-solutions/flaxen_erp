@@ -414,9 +414,9 @@ const View = () => {
                                                                             onClick={() => {
                                                                                 setNewRuleModal(true);
                                                                                 setRuleData(rule);
-                                                                                setSelectedWeekdays(rule.week_days.split(',').map((day: any) => {
+                                                                                setSelectedWeekdays(rule.week_days ? rule.week_days.split(',').map((day: any) => {
                                                                                     return { label: day, value: day };
-                                                                                }));
+                                                                                }) : []);
                                                                             }}
                                                                         >
                                                                             Edit

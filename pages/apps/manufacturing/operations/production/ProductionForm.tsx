@@ -400,6 +400,7 @@ const ProductionForm = ({ id }: IFormProps) => {
                                                 onChange={(e) => handleChange('stock_account_id', e, true)}
                                                 treeData={accountOptions}
                                                 // onPopupScroll={onPopupScroll}
+                                                treeNodeFilterProp="title"
                                             />
                                         </div>
                                     </div>
