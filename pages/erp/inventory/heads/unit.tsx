@@ -52,7 +52,7 @@ const Unit = () => {
     }, []);
 
     useEffect(() => {
-        console.log(units);
+        // console.log(units);
 
         if (units) {
             setRowData(units);

@@ -90,7 +90,7 @@ export const userSlice = createSlice({
                 state.user = action.payload.user;
             })
             .addCase(loginUser.rejected, (state, action) => {
-                console.log(action);
+                // console.log(action);
                 state.loading = false;
                 state.isLoggedIn = false;
                 state.error = action.payload;

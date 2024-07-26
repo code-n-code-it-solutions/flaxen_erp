@@ -94,7 +94,7 @@ const FundAddFormModal = ({
                 break;
             case 'account_type_to':
                 if (value && typeof value !== 'undefined') {
-                    console.log(value)
+                    // console.log(value)
                     setFormData({...formData, 'account_type': value.value})
                     setAccountListTo(accounts?.filter(account => account.account_type === value.value)
                         .map(account => ({
@@ -333,6 +333,7 @@ const FundAddFormModal = ({
                 divClasses="w-full"
                 label="Amount"
                 type="number"
+                step="any"
                 name="amount"
                 value={formData.amount}
                 onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}

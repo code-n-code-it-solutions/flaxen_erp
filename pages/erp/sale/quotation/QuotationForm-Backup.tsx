@@ -186,7 +186,7 @@ const QuotationForm = () => {
     };
 
     useEffect(() => {
-        console.log(formData)
+        // console.log(formData)
     }, [formData]);
 
     const handleFillingChange = (value: any) => {

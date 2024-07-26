@@ -45,7 +45,7 @@ export const storeVendor = createAsyncThunk(
     async (data: any, thunkAPI) => {
         try {
             const response = await API.post('/vendor', data);
-            console.log(response);
+            // console.log(response);
 
             return response.data;
         } catch (error:any) {
@@ -88,7 +88,7 @@ export const editVendor = createAsyncThunk(
     async (id:number, thunkAPI) => {
         try {
             const response = await API.get('/vendor/edit/'+id);
-            console.log(response)
+            // console.log(response)
             return response.data;
         } catch (error:any) {
             const message =

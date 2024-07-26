@@ -276,6 +276,7 @@ const ProductForm = ({id}: IFormProps) => {
                     divClasses="w-full"
                     label="Retail Price"
                     type="number"
+                    step="any"
                     name="retail_price"
                     value={formData.retail_price.toString()}
                     onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
@@ -312,6 +313,7 @@ const ProductForm = ({id}: IFormProps) => {
                     divClasses="w-full"
                     label="Value per Unit (According to sub unit)"
                     type="number"
+                    step="any"
                     name="value_per_unit"
                     value={formData.value_per_unit}
                     onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
@@ -326,6 +328,7 @@ const ProductForm = ({id}: IFormProps) => {
                     divClasses="w-full"
                     label="Min Stock Level (Main Unit)"
                     type="number"
+                    step="any"
                     name="min_stock_level"
                     value={formData.min_stock_level}
                     onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
@@ -339,6 +342,7 @@ const ProductForm = ({id}: IFormProps) => {
                     divClasses="w-full"
                     label="Opening Stock Count (Sub Unit)"
                     type="number"
+                    step="any"
                     name="opening_stock"
                     value={formData.opening_stock.toString()}
                     onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
@@ -353,6 +357,7 @@ const ProductForm = ({id}: IFormProps) => {
                         divClasses="w-full"
                         label="Opening Per Sub Unit Price"
                         type="number"
+                        step="any"
                         name="opening_stock_unit_balance"
                         value={formData.opening_stock_unit_balance.toString()}
                         onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
@@ -365,6 +370,7 @@ const ProductForm = ({id}: IFormProps) => {
                         divClasses="w-full"
                         label="Opening Stock Total Balance"
                         type="number"
+                        step="any"
                         name="opening_stock_total_balance"
                         value={formData.opening_stock_total_balance.toString()}
                         onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}

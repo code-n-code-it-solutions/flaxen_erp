@@ -210,7 +210,7 @@ const LPOForm = ({id}: IFormProps) => {
             setShowVendorDetail(true)
             setVendorDetail(e.vendor)
             dispatch(getRepresentatives(e.value))
-            console.log(e.vendor)
+            // console.log(e.vendor)
         } else {
             setShowVendorDetail(false)
             setVendorDetail({})
@@ -231,7 +231,7 @@ const LPOForm = ({id}: IFormProps) => {
 
             setRepresentativeDetail(e.representative)
             setShowRepresentativeDetail(true)
-            console.log(e.vendor)
+            // console.log(e.vendor)
         } else {
             setRepresentativeDetail({})
             setShowRepresentativeDetail(false)

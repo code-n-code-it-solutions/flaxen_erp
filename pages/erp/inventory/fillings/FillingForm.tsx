@@ -125,7 +125,7 @@ const FillingForm = ({id}: IFormProps) => {
         setAuthToken(token);
         setContentType('application/json');
         dispatch(clearFillingState());
-        console.log(finalData)
+        // console.log(finalData)
 
         Swal.fire({
             icon: 'warning',
@@ -155,7 +155,7 @@ const FillingForm = ({id}: IFormProps) => {
         if (!id) {
             dispatch(generateCode(FORM_CODE_TYPE.FILLING));
         }
-        console.log("running")
+        // console.log("running")
         dispatch(getWorkingShifts());
         dispatch(getProductions());
         dispatch(getFillingProducts(['filling-material', 'packing-material']));
@@ -261,7 +261,7 @@ const FillingForm = ({id}: IFormProps) => {
                 updatedArray.push({raw_product_id: productId, retail_price: parseFloat(value)});
             }
 
-            console.log("Updated Filling Calculation:", updatedArray); // Debugging line
+            // console.log("Updated Filling Calculation:", updatedArray); // Debugging line
             return updatedArray;
         });
     }
@@ -346,6 +346,7 @@ const FillingForm = ({id}: IFormProps) => {
                                     divClasses="w-full mb-3"
                                     label={"Retail Price of " + label + " - Capacity was: " + row.latest_capacity}
                                     type="number"
+                                    step="any"
                                     name="retail_price"
                                     value={currentValue}
                                     onChange={(e) => handleChangeRetailPrice(row.raw_product_id, e.target.value || 0)}
@@ -383,7 +384,7 @@ const FillingForm = ({id}: IFormProps) => {
                         <tbody>
                         {fillingMaterials.length > 0
                             ? (fillingMaterials.map((row, index) => {
-                                    console.log(row)
+                                    // console.log(row)
                                     const totalMaterialCost = rawProducts.reduce((acc, item) => acc + item.sub_total, 0);
                                     const perFillingCost = (totalMaterialCost / noOfProductionQty * row.capacity) + row.unit_price;
                                     const totalFillingCost = perFillingCost * row.required_quantity;

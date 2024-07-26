@@ -11,7 +11,6 @@ import { useRouter } from 'next/router';
 const Sidebar = () => {
     const router = useRouter();
     const [currentMenu, setCurrentMenu] = useState<string>('');
-    const [errorSubMenu, setErrorSubMenu] = useState(false);
     const themeConfig = useSelector((state: IRootState) => state.themeConfig);
     const semidark = useSelector((state: IRootState) => state.themeConfig.semidark);
     const { permittedMenus, moduleMenus, activeModule } = useAppSelector((state) => state.menu);
@@ -75,7 +74,7 @@ const Sidebar = () => {
                             {/*<img className="ml-[5px] w-8 flex-none" src="/assets/images/logo.svg" alt="logo" />*/}
                             <span
                                 className="align-middle text-2xl font-semibold ltr:ml-1.5 rtl:mr-1.5 dark:text-white-light lg:inline">
-                                Workspace
+                                Administration
                             </span>
                         </Link>
 
@@ -96,7 +95,7 @@ const Sidebar = () => {
                     <PerfectScrollbar className="relative h-[calc(100vh-80px)]">
                         <ul className="relative space-y-0.5 p-4 py-0 font-semibold">
                             <li className="nav-item">
-                                <Link href="/workspace" className="group">
+                                <Link href="/super-admin" className="group">
                                     <div className="flex items-center">
                                         <span
                                             className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t('dashboard')}</span>
@@ -104,10 +103,10 @@ const Sidebar = () => {
                                 </Link>
                             </li>
                             <li className="nav-item">
-                                <Link href="/workspace/companies" className="group">
+                                <Link href="/super-admin/permissions" className="group">
                                     <div className="flex items-center">
                                         <span
-                                            className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t('companies')}</span>
+                                            className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t('permissions')}</span>
                                     </div>
                                 </Link>
                             </li>

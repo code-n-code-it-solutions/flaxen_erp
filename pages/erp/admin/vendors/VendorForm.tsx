@@ -328,7 +328,7 @@ const VendorForm = ({id}: IFormProps) => {
 
     useEffect(() => {
         if (vendorDetail) {
-            console.log(vendorDetail);
+            // console.log(vendorDetail);
 
             setImagePreview(serverFilePath(vendorDetail.thumbnail?.path))
             setFormData({

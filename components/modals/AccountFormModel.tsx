@@ -224,6 +224,7 @@ const AccountFormModel = ({modalOpen, setModalOpen, modalFormData, setModalFormD
                 divClasses="w-full"
                 label="Opening Balance"
                 type="number"
+                step="any"
                 name="opening_balance"
                 value={formData.opening_balance}
                 onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}

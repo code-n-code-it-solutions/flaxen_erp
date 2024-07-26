@@ -206,7 +206,7 @@ const QuotationForm = () => {
     };
 
     useEffect(() => {
-        console.log(formData)
+        // console.log(formData)
     }, [formData]);
 
     const handleFillingChange = (value: any) => {
@@ -390,7 +390,7 @@ const QuotationForm = () => {
 
     useEffect(() => {
         if (allProductions) {
-            console.log(allProductions)
+            // console.log(allProductions)
             let options = allProductions.map((production: any) => {
                 return {
                     value: production.id,

@@ -164,7 +164,7 @@ const ProductionForm = ({id}: IFormProps) => {
 
     useEffect(() => {
         if (assemblyItems) {
-            console.log(assemblyItems)
+            // console.log(assemblyItems)
             let rawProducts = assemblyItems.map((item: any) => {
                 return {
                     raw_product_id: item.raw_product_id,
@@ -218,6 +218,7 @@ const ProductionForm = ({id}: IFormProps) => {
                         divClasses="w-full"
                         label="No of Quantity (KG)"
                         type="number"
+                        step="any"
                         name="no_of_quantity"
                         value={formData.no_of_quantity}
                         onChange={(e) => handleChange(e.target.name, Number(e.target.value), e.target.required)}

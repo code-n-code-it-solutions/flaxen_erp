@@ -369,6 +369,7 @@ const Payments = () => {
                     divClasses="w-full"
                     label="Payment Amount"
                     type="number"
+                    step="any"
                     name="payment_amount"
                     value={formData.payment_amount}
                     onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}

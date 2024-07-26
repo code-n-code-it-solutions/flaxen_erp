@@ -115,7 +115,7 @@ export const editPurchaseRequisition = createAsyncThunk(
     async (id: number, thunkAPI) => {
         try {
             const response = await API.get('/purchase-requisition/edit/' + id);
-            console.log(response)
+            // console.log(response)
             return response.data;
         } catch (error: any) {
             const message =
@@ -159,7 +159,7 @@ export const getRequisitionsForPrint = createAsyncThunk(
     async (data: any, thunkAPI) => {
         try {
             const response = await API.post('/purchase-requisition/print', data);
-            console.log(response.data);
+            // console.log(response.data);
             return response.data;
         } catch (error: any) {
             const message =

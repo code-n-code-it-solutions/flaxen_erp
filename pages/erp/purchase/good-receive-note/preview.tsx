@@ -3,7 +3,7 @@ import Header from "@/components/Report/Header";
 import Footer from "@/components/Report/Footer";
 
 const Preview = ({content}: any) => {
-    console.log(content)
+    // console.log(content)
     return (
         <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
             <div

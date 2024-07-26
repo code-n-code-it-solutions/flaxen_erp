@@ -367,6 +367,7 @@ const PaymentForm = () => {
                         divClasses="w-full"
                         label="Discount Amount"
                         type="number"
+                        step="any"
                         name="discount_amount"
                         value={formData.discount_amount}
                         onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
@@ -402,6 +403,7 @@ const PaymentForm = () => {
                                 <Input
                                     divClasses="w-full"
                                     type="number"
+                                    step="any"
                                     name={`invoices[${index}][received_amount]`}
                                     value={invoice.received_amount}
                                     onChange={(e) => {

@@ -90,7 +90,7 @@ export const editEmployee = createAsyncThunk(
     async (id: number, thunkAPI) => {
         try {
             const response = await API.get('/employee/edit/' + id);
-            console.log(response);
+            // console.log(response);
             return response.data;
         } catch (error: any) {
             const message =

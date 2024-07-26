@@ -109,7 +109,7 @@ const Main = () => {
     }, [favouriteStatus, dispatch]);
 
     useEffect(() => {
-        console.log(user);
+        // console.log(user);
     }, [user]);
 
     return (

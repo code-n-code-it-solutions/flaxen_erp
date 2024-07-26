@@ -430,6 +430,7 @@ const PaymentForm = () => {
                                                 <Input
                                                     divClasses="w-full"
                                                     type="number"
+                                                    step="any"
                                                     name={`invoices[${index}][paid_amount]`}
                                                     value={billDetail.paid_amount}
                                                     onChange={(e) => {
@@ -623,6 +624,7 @@ const PaymentForm = () => {
                     divClasses="w-full"
                     label="Cheque Amount"
                     type="number"
+                    step="any"
                     name="cheque_amount"
                     value={chequeDetails.cheque_amount}
                     onChange={(e) => setChequeDetails((prev: any) => ({

@@ -38,7 +38,7 @@ const VendorReport = () => {
         setAuthToken(token)
         setContentType('application/json')
         setShowReport(true)
-        console.log(vendorId, vendorRepresentativeId, fromDate, toDate)
+        // console.log(vendorId, vendorRepresentativeId, fromDate, toDate)
         dispatch(getVendorAccountReport({
             vendor_id: vendorId,
             vendor_representative_id: vendorRepresentativeId,

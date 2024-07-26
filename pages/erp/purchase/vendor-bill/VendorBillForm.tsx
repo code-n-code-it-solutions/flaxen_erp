@@ -52,7 +52,7 @@ const VendorBillForm = ({id}: IFormProps) => {
 
     const handleGRNChange = (e: any) => {
         if (e && typeof e !== 'undefined') {
-            console.log(e)
+            // console.log(e)
             setFormData((prev: any) => ({
                 ...prev,
                 good_receive_note_id: e.value,

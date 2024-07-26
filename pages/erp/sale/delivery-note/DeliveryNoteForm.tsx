@@ -77,7 +77,7 @@ const DeliveryNoteForm = () => {
                     if (name === 'customer_id') {
                         const customerOption = customerOptions.find((customer: any) => customer.value === value.value)
                         setCustomerDetail(customerOption.customer)
-                        console.log(customerOption)
+                        // console.log(customerOption)
                         setContactPersonOptions(customerOption.customer?.contact_persons.map((contactPerson: any) => ({
                             label: contactPerson.name,
                             value: contactPerson.id,
@@ -338,7 +338,7 @@ const DeliveryNoteForm = () => {
     }, [fillingProducts]);
 
     useEffect(() => {
-        console.log(formData)
+        // console.log(formData)
     }, [formData])
 
     return (
