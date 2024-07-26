@@ -20,6 +20,7 @@ interface IProps {
     styles?: any;
     className?: string;
     helperText?: string;
+    step?: any;
 }
 
 export const Input: FC<IProps> = ({
@@ -38,7 +39,8 @@ export const Input: FC<IProps> = ({
                                       disabled = false,
                                       styles,
                                       className,
-                                      helperText
+                                      helperText,
+                                      step
                                   }) => {
     return (
         <div className={divClasses}>
@@ -100,6 +102,7 @@ export const Input: FC<IProps> = ({
                             required={required}
                             readOnly={readonly}
                             style={styles}
+                            step={step}
                         />
             }
 

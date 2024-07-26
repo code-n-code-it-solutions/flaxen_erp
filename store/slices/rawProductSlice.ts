@@ -81,7 +81,7 @@ export const getProductsForPrint = createAsyncThunk(
     async (data: any, thunkAPI) => {
         try {
             const response = await API.post('/raw-products/print', data);
-            console.log(response.data);
+            // console.log(response.data);
             return response.data;
         } catch (error: any) {
             const message =
@@ -110,7 +110,7 @@ export const editRawProduct = createAsyncThunk(
     async (id: number, thunkAPI) => {
         try {
             const response = await API.get('/raw-products/edit/' + id);
-            console.log(response);
+            // console.log(response);
             return response.data;
         } catch (error: any) {
             const message =

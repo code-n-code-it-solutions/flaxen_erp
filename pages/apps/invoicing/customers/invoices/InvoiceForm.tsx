@@ -219,6 +219,7 @@ const InvoiceForm = () => {
                             divClasses="w-full"
                             label="Discount"
                             type="number"
+                            step="any"
                             name="discount_amount"
                             value={formData.discount_amount}
                             onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}

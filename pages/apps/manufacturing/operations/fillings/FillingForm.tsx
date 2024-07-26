@@ -562,6 +562,7 @@ const FillingForm = ({ id }: IFormProps) => {
                                         divClasses="w-full mb-3"
                                         label={'Retail Price of ' + label}
                                         type="number"
+                                        step="any"
                                         name="retail_price"
                                         value={currentValue}
                                         onChange={(e) => handleChangeRetailPrice(row.raw_product_id, e.target.value || 0)}

@@ -13,7 +13,7 @@ const Print = () => {
     const router = useRouter()
     const {token} = useAppSelector(state => state.user)
     const {deliveryNoteDetail, loading} = useAppSelector(state => state.deliveryNote)
-    console.log(deliveryNoteDetail)
+    // console.log(deliveryNoteDetail)
 
     useEffect(() => {
         setAuthToken(token)

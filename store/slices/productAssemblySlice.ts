@@ -150,7 +150,7 @@ export const getProductAssembliesForPrint = createAsyncThunk(
     async (data: any, thunkAPI) => {
         try {
             const response = await API.post('/product-assemblies/print', data);
-            console.log(response.data);
+            // console.log(response.data);
             return response.data;
         } catch (error: any) {
             const message =
@@ -165,7 +165,7 @@ export const storeLabReference = createAsyncThunk(
     async (data: any, thunkAPI) => {
         try {
             const response = await API.post('/product-assemblies/lab-reference/store', data);
-            console.log(response.data);
+            // console.log(response.data);
             return response.data;
         } catch (error: any) {
             const message =

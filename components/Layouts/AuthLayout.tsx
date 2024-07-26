@@ -21,7 +21,9 @@ const AuthLayout = ({ children }: PropsWithChildren) => {
                     if (r) {
                         dispatch(setSelectedCompany(user.registered_company));
                         dispatch(setSelectedBranch(user.registered_branch));
-                        if (user.roles.map((role: any) => role.name).includes('Admin')) {
+                        if (user.roles.map((role: any) => role.name).includes('Super Admin')) {
+                            router.push('/super-admin');
+                        } else if (user.roles.map((role: any) => role.name).includes('Admin')) {
                             router.push('/workspace');
                         } else {
                             router.push('/erp/main');

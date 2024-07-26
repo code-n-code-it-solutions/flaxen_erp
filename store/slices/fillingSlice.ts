@@ -174,7 +174,7 @@ export const getFillingsForPrint = createAsyncThunk(
     async (data: any, thunkAPI) => {
         try {
             const response = await API.post('/filling/print', data);
-            console.log(response.data);
+            // console.log(response.data);
             return response.data;
         } catch (error: any) {
             const message =

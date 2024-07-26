@@ -194,7 +194,7 @@ const FillingForm = ({id}: IFormProps) => {
     }, [code]);
 
     useEffect(() => {
-        console.log(formData)
+        // console.log(formData)
     }, [formData]);
 
     const handleFillingMaterialSubmit = (data: any) => {

@@ -142,7 +142,7 @@ const EmployeeForm = ({id}: IFormProps) => {
             })),
         }
         if (id) {
-            console.log(finalData)
+            // console.log(finalData)
             dispatch(updateEmployee({id, employeeData: finalData}));
         } else {
             dispatch(storeEmployee(finalData));

@@ -158,7 +158,7 @@ export const getProductionsForPrint = createAsyncThunk(
     async (data: any, thunkAPI) => {
         try {
             const response = await API.post('/formula-production/print', data);
-            console.log(response.data);
+            // console.log(response.data);
             return response.data;
         } catch (error: any) {
             const message =

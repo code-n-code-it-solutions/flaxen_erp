@@ -97,7 +97,7 @@ const CompanyForm = () => {
             ...formData,
             branches
         };
-        console.log(finalData);
+        // console.log(finalData);
     };
 
     const getTimezones = () => {

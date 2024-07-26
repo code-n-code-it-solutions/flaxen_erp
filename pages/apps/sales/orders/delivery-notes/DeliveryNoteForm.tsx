@@ -451,6 +451,7 @@ const DeliveryNoteForm = () => {
                                 divClasses="w-full"
                                 label="Receipt Delivery Due Days"
                                 type="number"
+                                step="any"
                                 name="receipt_delivery_due_days"
                                 value={formData.receipt_delivery_due_days?.toString()}
                                 onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
@@ -464,6 +465,7 @@ const DeliveryNoteForm = () => {
                                 divClasses="w-full"
                                 label="Delivery Due days"
                                 type="number"
+                                step="any"
                                 name="delivery_due_in_days"
                                 value={formData.delivery_due_in_days}
                                 onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
@@ -796,6 +798,7 @@ const DeliveryNoteForm = () => {
                             <td>
                                 <Input
                                     type="number"
+                                    step="any"
                                     name="delivered_quantity"
                                     value={item.delivered_quantity || ''}
                                     onChange={(e) => {

@@ -565,6 +565,7 @@ const LPOForm = ({ id }: IFormProps) => {
                                 divClasses="w-full"
                                 label="Delivery Due Days"
                                 type="number"
+                                step="any"
                                 name="delivery_due_in_days"
                                 value={formData.delivery_due_in_days.toString()}
                                 onChange={handleChange}
@@ -588,6 +589,7 @@ const LPOForm = ({ id }: IFormProps) => {
                                 divClasses="w-full"
                                 label="Payment Terms (Days)"
                                 type="number"
+                                step="any"
                                 name="payment_terms_in_days"
                                 value={formData.payment_terms_in_days.toString()}
                                 onChange={handleChange}

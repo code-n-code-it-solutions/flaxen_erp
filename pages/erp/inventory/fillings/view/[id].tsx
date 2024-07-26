@@ -132,9 +132,9 @@ const View = () => {
                                             const totalMaterialCost = fillingDetail?.filling_items.reduce((acc: number, item: any) => acc + ((parseFloat(item.unit_cost) * parseFloat(item.quantity) * parseFloat(fillingDetail?.production?.no_of_quantity)) / parseFloat(item.quantity)), 0);
                                             const perFillingCost = (totalMaterialCost / fillingDetail?.production.no_of_quantity * item.capacity) + item.unit_price;
                                             const totalFillingCost = perFillingCost * item.required_quantity;
-                                            console.log('totalMaterialCost', totalMaterialCost)
-                                            console.log('perFillingCost', perFillingCost)
-                                            console.log('totalFillingCost', totalFillingCost)
+                                            // console.log('totalMaterialCost', totalMaterialCost)
+                                            // console.log('perFillingCost', perFillingCost)
+                                            // console.log('totalFillingCost', totalFillingCost)
                                             return (
                                                 <tr key={index}>
                                                     <td>
