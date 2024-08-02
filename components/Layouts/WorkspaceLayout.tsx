@@ -21,7 +21,7 @@ const WorkspaceLayout = ({children}: { children: React.ReactElement }) => {
     const themeConfig = useAppSelector((state) => state.themeConfig);
     const [animation, setAnimation] = useState(themeConfig.animation);
 
-    const {token, isLoggedIn} = useAppSelector((state) => state.user);
+    const {token, isLoggedIn, isLocked} = useAppSelector((state) => state.user);
     const {activeModule} = useAppSelector((state) => state.menu);
     const [moduleChanged, setModuleChanged] = useState<boolean>(false);
 
@@ -94,6 +94,12 @@ const WorkspaceLayout = ({children}: { children: React.ReactElement }) => {
             router.push('/auth/signin');
         }
     }, [token, router])
+
+    useEffect(() => {
+        if(isLocked) {
+            router.push('/auth/lockscreen');
+        }
+    }, [isLocked]);
 
     return (
         isLoggedIn ?

@@ -25,7 +25,7 @@ const AppLayout = ({ children }:PropsWithChildren) => {
     const [showTopButton, setShowTopButton] = useState(false);
     const themeConfig = useAppSelector((state) => state.themeConfig);
     const [animation, setAnimation] = useState(themeConfig.animation);
-    const { token, isLoggedIn } = useAppSelector((state) => state.user);
+    const { token, isLoggedIn, isLocked } = useAppSelector((state) => state.user);
     const { permittedMenus, loading } = useAppSelector(state => state.menu);
     const [menus, setMenus] = useState<any>([]);
 
@@ -43,7 +43,7 @@ const AppLayout = ({ children }:PropsWithChildren) => {
     }, [permittedMenus]);
 
     useEffect(() => {
-        console.log(menus);
+        // console.log(menus);
         dispatch(setSelectedPlugin(menus ? menus[0]?.plugin : {}))
     }, [menus]);
 
@@ -102,6 +102,12 @@ const AppLayout = ({ children }:PropsWithChildren) => {
             router.push('/auth/signin');
         }
     }, [token, router]);
+
+    useEffect(() => {
+        if(isLocked) {
+            router.push('/auth/lockscreen');
+        }
+    }, [isLocked]);
 
     return (
         isLoggedIn ?

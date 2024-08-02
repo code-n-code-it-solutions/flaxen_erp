@@ -6,7 +6,8 @@ import { configureSlice } from '@/utils/helper';
 // Define a type for the slice state
 interface IUserState {
     user: any;
-    // permissions: any;
+    isLocked: boolean;
+    beforeLockedUrl: string;
     token: string;
     isLoggedIn: boolean;
     loading: boolean;
@@ -16,7 +17,8 @@ interface IUserState {
 // Initial state
 const initialState: IUserState = {
     user: null,
-    // permissions: null,
+    isLocked: false,
+    beforeLockedUrl: '',
     token: '',
     isLoggedIn: false,
     loading: false,
@@ -66,6 +68,20 @@ export const logoutUser = createAsyncThunk(
     }
 );
 
+export const unLockedUser = createAsyncThunk(
+    'user/unlock',
+    async (data: any, thunkAPI) => {
+        try {
+            const response = await API.post('/user/unlock', data);
+            return response.status === 200;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to unlock';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 // Slice
 export const userSlice = createSlice({
     name: 'user',
@@ -75,6 +91,19 @@ export const userSlice = createSlice({
             state.user = null;
             state.token = '';
             state.isLoggedIn = false;
+            state.error = null;
+        },
+        clearIsLocked: (state) => {
+            state.isLocked = false;
+            state.beforeLockedUrl = '';
+        },
+
+        setIsLocked: (state, action) => {
+            state.isLocked = action.payload.lockStatus;
+            state.beforeLockedUrl = action.payload.beforeLockUrl;
+        },
+
+        resetAuthError: (state) => {
             state.error = null;
         }
     },
@@ -109,6 +138,18 @@ export const userSlice = createSlice({
                 state.isLoggedIn = false;
                 state.error = action.payload;
             })
+            .addCase(unLockedUser.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(unLockedUser.fulfilled, (state, action: any) => {
+                state.loading = false;
+                state.isLocked = !state.isLocked;
+            })
+            .addCase(unLockedUser.rejected, (state, action) => {
+                state.loading = false;
+                state.isLocked = true;
+                state.error = action.payload;
+            })
             .addCase(logoutUser.fulfilled, (state) => {
                 state.user = null;
                 state.token = '';
@@ -124,5 +165,10 @@ export const userSlice = createSlice({
 });
 
 // Export reducer
-export const {clearAuthState} = userSlice.actions;
+export const {
+    clearAuthState,
+    setIsLocked,
+    clearIsLocked,
+    resetAuthError
+} = userSlice.actions;
 export const userSliceConfig = configureSlice(userSlice, true);

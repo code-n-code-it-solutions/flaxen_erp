@@ -68,17 +68,17 @@ const Index = () => {
         },
         {
             headerName: 'Valuation Price',
-            valueGetter: (row: any) => row.data.valuated_unit_price.toFixed(2),
+            valueGetter: (row: any) => row.data.valuated_unit_price.toFixed(4),
             minWidth: 150
         },
         {
             headerName: 'Sale Price',
-            valueGetter: (row: any) => parseFloat(row.data.retail_price).toFixed(2),
+            valueGetter: (row: any) => parseFloat(row.data.retail_price).toFixed(4),
             minWidth: 150
         },
         {
             headerName: 'On Hand',
-            valueGetter: (row: any) => row.data.stock_quantity.toFixed(2),
+            valueGetter: (row: any) => row.data.stock_quantity.toFixed(4),
             minWidth: 150
         }
     ]);

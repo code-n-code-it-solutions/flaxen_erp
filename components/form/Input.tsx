@@ -21,6 +21,7 @@ interface IProps {
     className?: string;
     helperText?: string;
     step?: any;
+    labelClassName?: string;
 }
 
 export const Input: FC<IProps> = ({
@@ -40,12 +41,13 @@ export const Input: FC<IProps> = ({
                                       styles,
                                       className,
                                       helperText,
-                                      step
+                                      step,
+                                      labelClassName
                                   }) => {
     return (
         <div className={divClasses}>
             {label && (
-                <label htmlFor={name} className="form-label flex">
+                <label htmlFor={name} className={`form-label flex ${labelClassName}`}>
                     {label} {required && <span className="text-sm text-red-500">*</span>}
                 </label>
             )}

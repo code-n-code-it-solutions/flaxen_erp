@@ -5,7 +5,7 @@ import 'tippy.js/dist/tippy.css';
 
 interface IProps {
     divClasses?: string | '';
-    label: string;
+    label?: string;
     name: string;
     options?: any[];
     formatOptionLabel?: (option: any) => any;
@@ -43,7 +43,7 @@ export const Dropdown: FC<IProps> = ({
                                          customStyles
                                      }) => {
     const customStyle = {
-        menuPortal: (base: any) => ({ ...base, zIndex: 1 }), // Adjust zIndex as needed
+        menuPortal: (base: any) => ({ ...base, zIndex: 9999 }), // Adjust zIndex as needed
         // option: (provided:any, state:any) => ({
         //     ...provided,
         //     paddingLeft: `${(state.data.depth || 0) * 20}px`
@@ -80,7 +80,7 @@ export const Dropdown: FC<IProps> = ({
                                 options={options}
                                 isSearchable={true}
                                 isClearable={true}
-                                placeholder={'Select ' + label}
+                                placeholder={'Select ' + label ? label : ''}
                                 onChange={onChange}
                                 isDisabled={isDisabled}
                                 isLoading={isLoading}
@@ -99,7 +99,7 @@ export const Dropdown: FC<IProps> = ({
                         options={options}
                         isSearchable={true}
                         isClearable={true}
-                        placeholder={'Select ' + label}
+                        placeholder={'Select ' + label ? label : ''}
                         onChange={onChange}
                         isDisabled={isDisabled}
                         isLoading={isLoading}

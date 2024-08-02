@@ -7,15 +7,11 @@ import { AgGridReact } from 'ag-grid-react';
 import { useRouter } from 'next/router';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { setAuthToken, setContentType } from '@/configs/api.config';
-import { ModuleRegistry } from '@ag-grid-community/core';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import AgGridComponent from '@/components/apps/AgGridComponent';
 import DisabledClickRenderer from '@/components/apps/DisabledClickRenderer';
 import { getProductions } from '@/store/slices/productionSlice';
 import { checkPermission } from '@/utils/helper';
 import useSetActiveMenu from '@/hooks/useSetActiveMenu';
-
-ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
 const Index = () => {
     useSetActiveMenu(AppBasePath.Production);

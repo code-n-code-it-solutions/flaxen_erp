@@ -18,11 +18,8 @@ import dynamic from 'next/dynamic';
 import useTransformToSelectOptions from '@/hooks/useTransformToSelectOptions';
 import { getAccountsTypes } from '@/store/slices/accountSlice';
 
-const TreeSelect = dynamic(() => import('antd/es/tree-select'), { ssr: false });
-
 const InvoiceForm = () => {
     const dispatch = useAppDispatch();
-    const accountOptions = useTransformToSelectOptions(useAppSelector(state => state.account).accountTypes);
     const { token } = useAppSelector((state) => state.user);
     const { code, latestRecord } = useAppSelector((state) => state.util);
     const { allGRNs } = useAppSelector((state) => state.goodReceiveNote);
@@ -50,18 +47,13 @@ const InvoiceForm = () => {
                 });
             }
         }
-        console.log(value);
         setFormData({ ...formData, [name]: value });
     };
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setAuthToken(token);
-        if (!formData.account_payable_id || !formData.vat_receivable_id) {
-            Swal.fire('Error', 'Please select accounting for payable and vat', 'error');
-        } else {
-            dispatch(storeVendorBill(formData));
-        }
+        dispatch(storeVendorBill(formData));
     };
 
     useEffect(() => {
@@ -72,7 +64,6 @@ const InvoiceForm = () => {
         setGoodReceiveNoteItems([]);
         setFormData({});
         setVendor({});
-        dispatch(clearLatestRecord());
         dispatch(getAccountsTypes({}));
     }, []);
 
@@ -104,16 +95,6 @@ const InvoiceForm = () => {
             })));
         }
     }, [allVendors]);
-
-    useEffect(() => {
-        if (latestRecord) {
-            setFormData((prevFormData: any) => ({
-                ...prevFormData,
-                account_payable_id: latestRecord.account_payable?.code,
-                vat_receivable_id: latestRecord.vat_account_receivable?.code
-            }));
-        }
-    }, [latestRecord]);
 
     return (
         <form onSubmit={(e) => handleSubmit(e)}>
@@ -273,17 +254,6 @@ const InvoiceForm = () => {
                             </button>
                         )}
                     </Tab>
-                    <Tab as={Fragment}>
-                        {({ selected }) => (
-                            <button
-                                className={`${
-                                    selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
-                                } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
-                            >
-                                Accounting
-                            </button>
-                        )}
-                    </Tab>
                 </Tab.List>
                 <Tab.Panels className="panel rounded-none">
                     <Tab.Panel>
@@ -359,74 +329,6 @@ const InvoiceForm = () => {
                                     </tr>
                                     </tfoot>
                                 </table>
-                            </div>
-                        </div>
-                    </Tab.Panel>
-                    <Tab.Panel>
-                        <div>
-                            <Option
-                                divClasses="mb-5"
-                                label="Use Previous Item Accounting"
-                                type="checkbox"
-                                name="use_previous_accounting"
-                                value="1"
-                                defaultChecked={formData.use_previous_accounting}
-                                onChange={(e) => {
-                                    setFormData((prevFormData: any) => ({
-                                        ...prevFormData,
-                                        use_previous_accounting: e.target.checked ? 1 : 0
-                                    }));
-                                    dispatch(clearLatestRecord());
-                                    if (e.target.checked) {
-                                        dispatch(getLatestRecord('vendor-bill'));
-                                    } else {
-                                        dispatch(clearLatestRecord());
-                                    }
-                                }}
-                            />
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <div>
-                                    <h3 className="font-bold text-lg mb-5 border-b">Accounts</h3>
-                                    <div className="space-y-3">
-                                        <div>
-                                            <label>Account Payable</label>
-                                            <TreeSelect
-                                                showSearch
-                                                style={{ width: '100%' }}
-                                                value={latestRecord ? latestRecord.account_payable?.code : formData.account_payable_id}
-                                                dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-                                                placeholder="Please select payable account"
-                                                allowClear
-                                                treeDefaultExpandAll
-                                                onChange={(e) => handleChange('account_payable_id', e, true)}
-                                                treeData={accountOptions}
-                                                // onPopupScroll={onPopupScroll}
-                                                treeNodeFilterProp="title"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-lg mb-5 border-b">VAT</h3>
-                                    <div className="space-y-3">
-                                        <div>
-                                            <label>VAT Receivable Account</label>
-                                            <TreeSelect
-                                                showSearch
-                                                style={{ width: '100%' }}
-                                                value={latestRecord ? latestRecord.vat_account_receivable?.code : formData.vat_receivable_id}
-                                                dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-                                                placeholder="Please select vat receivable account"
-                                                allowClear
-                                                treeDefaultExpandAll
-                                                onChange={(e) => handleChange('vat_receivable_id', e, true)}
-                                                treeData={accountOptions}
-                                                // onPopupScroll={onPopupScroll}
-                                                treeNodeFilterProp="title"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </Tab.Panel>

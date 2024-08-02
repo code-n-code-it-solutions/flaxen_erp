@@ -16,13 +16,6 @@ const Create = () => {
     const router = useRouter();
     const {filling, success, loading} = useAppSelector(state => state.filling);
 
-    const breadCrumbItems = [
-        {title: 'Home', href: '/erp/main'},
-        {title: 'Inventory Dashboard', href: '/erp/inventory'},
-        {title: 'All Fillings', href: '/erp/inventory/fillings'},
-        {title: 'Create New', href: '#'},
-    ];
-
     useEffect(() => {
         dispatch(clearFillingState())
         dispatch(setPageTitle('Create Productions'));
@@ -48,7 +41,6 @@ const Create = () => {
 
     return (
         <PageWrapper
-            breadCrumbItems={breadCrumbItems}
             embedLoader={false}
             title="Create Filling"
             buttons={[

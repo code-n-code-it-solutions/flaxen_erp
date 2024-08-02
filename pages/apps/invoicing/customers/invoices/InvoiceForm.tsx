@@ -16,11 +16,8 @@ import dynamic from 'next/dynamic';
 import { getAccountsTypes } from '@/store/slices/accountSlice';
 import useTransformToSelectOptions from '@/hooks/useTransformToSelectOptions';
 
-const TreeSelect = dynamic(() => import('antd/es/tree-select'), { ssr: false });
-
 const InvoiceForm = () => {
     const dispatch = useAppDispatch();
-    const accountOptions = useTransformToSelectOptions(useAppSelector(state => state.account).accountTypes);
     const { token } = useAppSelector((state) => state.user);
     const { code, latestRecord } = useAppSelector((state) => state.util);
     const { deliveryNotes } = useAppSelector((state) => state.deliveryNote);
@@ -105,17 +102,6 @@ const InvoiceForm = () => {
         const totalCost = items.reduce((acc: number, item: any) => acc + parseFloat(item.total_cost), 0);
         setReceivableAmount(totalCost - discount);
     };
-
-    useEffect(() => {
-        if (latestRecord) {
-            setFormData((prevFormData: any) => ({
-                ...prevFormData,
-                account_receivable_id: latestRecord.account_receivable?.code,
-                vat_payable_id: latestRecord.vat_payable?.code,
-                sale_income_account_id: latestRecord.sale_income_account?.code
-            }));
-        }
-    }, [latestRecord]);
 
     return (
         <form onSubmit={(e) => handleSubmit(e)}>
@@ -262,17 +248,6 @@ const InvoiceForm = () => {
                             </button>
                         )}
                     </Tab>
-                    <Tab as={Fragment}>
-                        {({ selected }) => (
-                            <button
-                                className={`${
-                                    selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
-                                } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
-                            >
-                                Accounting
-                            </button>
-                        )}
-                    </Tab>
                 </Tab.List>
                 <Tab.Panels className="panel rounded-none">
                     <Tab.Panel>
@@ -345,107 +320,6 @@ const InvoiceForm = () => {
                                 </tr>
                                 </tfoot>
                             </table>
-                        </div>
-                    </Tab.Panel>
-                    <Tab.Panel>
-                        <div>
-                            <Option
-                                divClasses="mb-5"
-                                label="Use Previous Item Accounting"
-                                type="checkbox"
-                                name="use_previous_accounting"
-                                value="1"
-                                defaultChecked={formData.use_previous_accounting === 1}
-                                onChange={(e) => {
-                                    setFormData((prevFormData: any) => ({
-                                        ...prevFormData,
-                                        use_previous_accounting: e.target.checked ? 1 : 0
-                                    }));
-                                    dispatch(clearLatestRecord());
-                                    if (e.target.checked) {
-                                        dispatch(getLatestRecord('sale-invoice'));
-                                    } else {
-                                        dispatch(clearLatestRecord());
-                                    }
-                                }}
-                            />
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <div>
-                                    <h3 className="font-bold text-lg mb-5 border-b">Accounts</h3>
-                                    <div className="space-y-3">
-                                        <div>
-                                            <label>Account Receivable</label>
-                                            <TreeSelect
-                                                showSearch
-                                                style={{ width: '100%' }}
-                                                value={latestRecord ? latestRecord.account_receivable?.code : formData.account_receivable_id}
-                                                dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-                                                placeholder="Please select Receivable Account"
-                                                allowClear
-                                                treeDefaultExpandAll
-                                                onChange={(e) => {
-                                                    setFormData((prevFormData: any) => ({
-                                                        ...prevFormData,
-                                                        account_receivable_id: e
-                                                    }));
-                                                }}
-                                                treeData={accountOptions}
-                                                // onPopupScroll={onPopupScroll}
-                                                treeNodeFilterProp="title"
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label>Sale Income Account</label>
-                                            <TreeSelect
-                                                showSearch
-                                                style={{ width: '100%' }}
-                                                value={latestRecord ? latestRecord.sale_income_account?.code : formData.sale_income_account_id}
-                                                dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-                                                placeholder="Please select Sale Income Account"
-                                                allowClear
-                                                treeDefaultExpandAll
-                                                onChange={(e) => {
-                                                    setFormData((prevFormData: any) => ({
-                                                        ...prevFormData,
-                                                        sale_income_account_id: e
-                                                    }));
-                                                }}
-                                                treeData={accountOptions}
-                                                // onPopupScroll={onPopupScroll}
-                                                treeNodeFilterProp="title"
-                                            />
-                                        </div>
-
-                                    </div>
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-lg mb-5 border-b">Tax Accounts</h3>
-                                    <div className="space-y-3">
-                                        <div>
-                                            <label>VAT Output</label>
-                                            <TreeSelect
-                                                showSearch
-                                                style={{ width: '100%' }}
-                                                value={latestRecord ? latestRecord.vat_payable?.code : formData.vat_payable_id}
-                                                dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-                                                placeholder="Please select Output Account for VAT"
-                                                allowClear
-                                                treeDefaultExpandAll
-                                                onChange={(e) => {
-                                                    setFormData((prevFormData: any) => ({
-                                                        ...prevFormData,
-                                                        vat_payable_id: e
-                                                    }));
-                                                }}
-                                                treeData={accountOptions}
-                                                // onPopupScroll={onPopupScroll}
-                                                treeNodeFilterProp="title"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </Tab.Panel>
                 </Tab.Panels>

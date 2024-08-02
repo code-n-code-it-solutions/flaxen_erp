@@ -31,15 +31,12 @@ import dynamic from 'next/dynamic';
 import { getAccountsTypes } from '@/store/slices/accountSlice';
 import Swal from 'sweetalert2';
 
-const TreeSelect = dynamic(() => import('antd/es/tree-select'), { ssr: false });
-
 interface IFormProps {
     id?: any;
 }
 
 const FillingForm = ({ id }: IFormProps) => {
     const dispatch = useAppDispatch();
-    const accountOptions = useTransformToSelectOptions(useAppSelector(state => state.account).accountTypes);
     const { token } = useAppSelector(state => state.user);
     const { code, latestRecord } = useAppSelector(state => state.util);
     const { allProductAssemblies } = useAppSelector(state => state.productAssembly);
@@ -161,30 +158,25 @@ const FillingForm = ({ id }: IFormProps) => {
         setAuthToken(token);
         setContentType('application/json');
         dispatch(clearFillingState());
-        if(!finalData.stock_account_id || !finalData.wastage_account_id) {
-            Swal.fire('Error', 'Please select accounting for stock and wastage', 'error')
-        } else {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Retail Price Confirmation',
-                text: 'Did you confirm the retail price?',
-                showCancelButton: true,
-                confirmButtonText: 'Yes I did',
-                padding: '2em',
-                customClass: {
-                    popup: 'sweet-alerts'
+        Swal.fire({
+            icon: 'warning',
+            title: 'Retail Price Confirmation',
+            text: 'Did you confirm the retail price?',
+            showCancelButton: true,
+            confirmButtonText: 'Yes I did',
+            padding: '2em',
+            customClass: {
+                popup: 'sweet-alerts'
+            }
+        }).then((result: any) => {
+            if (result.value) {
+                if (id) {
+                    dispatch(updateFilling({ id, finalData: finalData }));
+                } else {
+                    dispatch(storeFilling(finalData));
                 }
-            }).then((result: any) => {
-                if (result.value) {
-                    if (id) {
-                        dispatch(updateFilling({ id, finalData: finalData }));
-                    } else {
-                        dispatch(storeFilling(finalData));
-                    }
-                }
-            });
-
-        }
+            }
+        });
 
     };
 
@@ -203,7 +195,6 @@ const FillingForm = ({ id }: IFormProps) => {
         setFillingMaterials([]);
 
         dispatch(getAccountsTypes({}));
-        dispatch(clearLatestRecord())
     }, []);
 
     useEffect(() => {
@@ -355,18 +346,6 @@ const FillingForm = ({ id }: IFormProps) => {
     useEffect(() => {
         calculateBatchUsage();
     }, [fillingMaterials, formData.usage_order]);
-
-    useEffect(() => {
-        if (latestRecord) {
-            setFormData((prevFormData: any) => ({
-                ...prevFormData,
-                stock_account_id: latestRecord.stock_account_id,
-                vat_receivable_id: latestRecord.vat_receivable_id,
-                account_payable_id: latestRecord.account_payable_id,
-                vat_payable_id: latestRecord.vat_payable_id
-            }));
-        }
-    }, [latestRecord]);
 
     return (
         <form className="space-y-5" onSubmit={handleSubmit}>
@@ -598,19 +577,6 @@ const FillingForm = ({ id }: IFormProps) => {
                             </button>
                         )}
                     </Tab>
-                    {!id && (
-                        <Tab as={Fragment}>
-                            {({ selected }) => (
-                                <button
-                                    className={`${
-                                        selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
-                                    } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
-                                >
-                                    Accounting
-                                </button>
-                            )}
-                        </Tab>
-                    )}
                 </Tab.List>
                 <Tab.Panels className="panel rounded-none">
                     <Tab.Panel>
@@ -726,74 +692,6 @@ const FillingForm = ({ id }: IFormProps) => {
                                 listFor={RAW_PRODUCT_LIST_TYPE.FILLING}
                                 fillingRemaining={Number(fillingRemaining)}
                             />
-                        </div>
-                    </Tab.Panel>
-                    <Tab.Panel>
-                        <div>
-                            <Option
-                                divClasses="mb-5"
-                                label="Use Previous Item Accounting"
-                                type="checkbox"
-                                name="use_previous_accounting"
-                                value="1"
-                                defaultChecked={formData.use_previous_accounting}
-                                onChange={(e) => {
-                                    setFormData((prevFormData: any) => ({
-                                        ...prevFormData,
-                                        use_previous_accounting: e.target.checked ? 1 : 0
-                                    }));
-                                    dispatch(clearLatestRecord());
-                                    if (e.target.checked) {
-                                        dispatch(getLatestRecord('filling'));
-                                    } else {
-                                        dispatch(clearLatestRecord());
-                                    }
-                                }}
-                            />
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <div>
-                                    <h3 className="font-bold text-lg mb-5 border-b">Accounts</h3>
-                                    <div className="space-y-3">
-                                        <div>
-                                            <label>Stock Accounting</label>
-                                            <TreeSelect
-                                                showSearch
-                                                style={{ width: '100%' }}
-                                                value={latestRecord ? latestRecord.stock_account?.code : formData.stock_account_id}
-                                                dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-                                                placeholder="Please select stock account"
-                                                allowClear
-                                                treeDefaultExpandAll
-                                                onChange={(e) => handleChange('stock_account_id', e, true)}
-                                                treeData={accountOptions}
-                                                // onPopupScroll={onPopupScroll}
-                                                treeNodeFilterProp="title"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-lg mb-5 border-b">Wastage</h3>
-                                    <div className="space-y-3">
-                                        <div>
-                                            <label>Wastage Accounting</label>
-                                            <TreeSelect
-                                                showSearch
-                                                style={{ width: '100%' }}
-                                                value={latestRecord ? latestRecord.wastage_account_id?.code : formData.wastage_account_id}
-                                                dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-                                                placeholder="Please select wastage account"
-                                                allowClear
-                                                treeDefaultExpandAll
-                                                onChange={(e) => handleChange('wastage_account_id', e, true)}
-                                                treeData={accountOptions}
-                                                // onPopupScroll={onPopupScroll}
-                                                treeNodeFilterProp="title"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </Tab.Panel>
                 </Tab.Panels>

@@ -9,26 +9,19 @@ import { ButtonSize, ButtonType, ButtonVariant, FORM_CODE_TYPE, IconType } from 
 import Textarea from '@/components/form/Textarea';
 import { getCustomers } from '@/store/slices/customerSlice';
 import { pendingQuotations } from '@/store/slices/quotationSlice';
-import { clearLatestRecord, generateCode, getLatestRecord } from '@/store/slices/utilSlice';
+import { generateCode } from '@/store/slices/utilSlice';
 import { clearFillingState, getFinishedGoodStock } from '@/store/slices/fillingSlice';
 import { getIcon } from '@/utils/helper';
 import IconButton from '@/components/IconButton';
 import FinishedGoodModal from '@/components/modals/FinishedGoodModal';
 import { getProductAssemblies } from '@/store/slices/productAssemblySlice';
-import { storeDeliveryNote } from '@/store/slices/deliveryNoteSlice';
 import { getEmployees } from '@/store/slices/employeeSlice';
-import Option from '@/components/form/Option';
 import Modal from '@/components/Modal';
 import { Tab } from '@headlessui/react';
-import dynamic from 'next/dynamic';
-import useTransformToSelectOptions from '@/hooks/useTransformToSelectOptions';
 import { getAccountsTypes } from '@/store/slices/accountSlice';
-import Swal from 'sweetalert2';
-const TreeSelect = dynamic(() => import('antd/es/tree-select'), { ssr: false });
 
 const DeliveryNoteForm = () => {
     const dispatch = useAppDispatch();
-    const accountOptions = useTransformToSelectOptions(useAppSelector(state => state.account).accountTypes);
     const { token } = useAppSelector((state) => state.user);
     const { quotations } = useAppSelector((state) => state.quotation);
     const { customers } = useAppSelector((state) => state.customer);
@@ -206,7 +199,6 @@ const DeliveryNoteForm = () => {
             return;
         } else {
             let deliveryNoteData: any = {
-                un_billed_receivable_account_id: formData.un_billed_receivable_account_id,
                 skip_quotation: formData.skip_quotation,
                 delivery_note_for: formData.delivery_note_for,
                 receipt_delivery_due_days: formData.receipt_delivery_due_days,
@@ -236,11 +228,8 @@ const DeliveryNoteForm = () => {
                 })),
                 terms_conditions: formData.terms_conditions
             };
-            if(!deliveryNoteData.un_billed_receivable_account_id) {
-                Swal.fire('Error', 'Please select accounting for un billed receivable', 'error')
-            } else {
-                dispatch(storeDeliveryNote(deliveryNoteData));
-            }
+            console.log(deliveryNoteData);
+            // dispatch(storeDeliveryNote(deliveryNoteData));
         }
     };
 
@@ -271,10 +260,7 @@ const DeliveryNoteForm = () => {
         dispatch(getEmployees());
         dispatch(generateCode(FORM_CODE_TYPE.DELIVERY_NOTE));
         dispatch(getProductAssemblies());
-        // dispatch(getFillingProducts(['filling-material', 'packing-material']));
         setModalOpen(false);
-        // setItemModalOpen(false);
-        // dispatch(clearFillingState())
         dispatch(getAccountsTypes({ids: 1}));
     }, []);
 
@@ -358,21 +344,6 @@ const DeliveryNoteForm = () => {
             setItemsForSelect((prev: any) => [...prev, ...newItemsForSelect]);
         }
     }, [quotationStock, originalItemsState]);
-
-    useEffect(() => {
-        if (latestRecord) {
-            setFormData((prevFormData: any) => ({
-                ...prevFormData,
-                un_billed_receivable_account_id: latestRecord.un_billed_receivable_account?.code,
-                un_earned_income_account_id: latestRecord.un_earned_income_account?.code,
-                cost_of_goods_sold_account_id: latestRecord.cost_of_goods_sold_account?.code,
-            }));
-        }
-    }, [latestRecord]);
-
-    useEffect(() => {
-        console.log(itemsForSelect);
-    }, [itemsForSelect]);
 
     return (
         <form onSubmit={(e) => handleSubmit(e)}>
@@ -540,17 +511,6 @@ const DeliveryNoteForm = () => {
                             </button>
                         )}
                     </Tab>
-                    <Tab as={Fragment}>
-                        {({ selected }) => (
-                            <button
-                                className={`${
-                                    selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
-                                } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
-                            >
-                                Accounting
-                            </button>
-                        )}
-                    </Tab>
                 </Tab.List>
                 <Tab.Panels className="panel rounded-none">
                     <Tab.Panel>
@@ -631,105 +591,6 @@ const DeliveryNoteForm = () => {
                                     )}
                                 </tbody>
                             </table>
-                        </div>
-                    </Tab.Panel>
-                    <Tab.Panel>
-                        <div>
-                            <Option
-                                divClasses="mb-5"
-                                label="Use Previous Item Accounting"
-                                type="checkbox"
-                                name="use_previous_accounting"
-                                value="1"
-                                defaultChecked={formData.use_previous_accounting === 1}
-                                onChange={(e) => {
-                                    setFormData((prevFormData: any) => ({
-                                        ...prevFormData,
-                                        use_previous_accounting: e.target.checked ? 1 : 0
-                                    }));
-                                    dispatch(clearLatestRecord());
-                                    if (e.target.checked) {
-                                        dispatch(getLatestRecord('delivery-note'));
-                                    } else {
-                                        dispatch(clearLatestRecord());
-                                    }
-                                }}
-                            />
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <div>
-                                    <h3 className="font-bold text-lg mb-5 border-b">Accounts</h3>
-                                    <div className="space-y-3">
-                                        <div>
-                                            <label>Un-Billed Account Receivable</label>
-                                            <TreeSelect
-                                                showSearch
-                                                style={{ width: '100%' }}
-                                                value={latestRecord ? latestRecord.un_billed_receivable_account?.code : formData.un_billed_receivable_account_id}
-                                                dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-                                                placeholder="Please select Un Billed Account"
-                                                allowClear
-                                                treeDefaultExpandAll
-                                                onChange={(e) => {
-                                                    setFormData((prevFormData: any) => ({
-                                                        ...prevFormData,
-                                                        un_billed_receivable_account_id: e
-                                                    }));
-                                                }}
-                                                treeData={accountOptions}
-                                                treeNodeFilterProp="title"
-                                                // onPopupScroll={onPopupScroll}
-                                            />
-                                        </div>
-                                        <div>
-                                            <label>Cost of Good Sold</label>
-                                            <TreeSelect
-                                                showSearch
-                                                style={{ width: '100%' }}
-                                                value={latestRecord ? latestRecord.cost_of_goods_sold_account?.code : formData.cost_of_goods_sold_account_id}
-                                                dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-                                                placeholder="Please select Cost of Good Sold Account"
-                                                allowClear
-                                                treeDefaultExpandAll
-                                                onChange={(e) => {
-                                                    setFormData((prevFormData: any) => ({
-                                                        ...prevFormData,
-                                                        cost_of_goods_sold_account_id: e
-                                                    }));
-                                                }}
-                                                treeData={accountOptions}
-                                                treeNodeFilterProp="title"
-                                                // onPopupScroll={onPopupScroll}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-lg mb-5 border-b">Un Earned Accounting</h3>
-                                    <div className="space-y-3">
-                                        <div>
-                                            <label>Un-Earned Income Account</label>
-                                            <TreeSelect
-                                                showSearch
-                                                style={{ width: '100%' }}
-                                                value={latestRecord ? latestRecord.un_earned_income_account?.code : formData.un_earned_income_account_id}
-                                                dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-                                                placeholder="Please select Un Earned Income Account"
-                                                allowClear
-                                                treeDefaultExpandAll
-                                                onChange={(e) => {
-                                                    setFormData((prevFormData: any) => ({
-                                                        ...prevFormData,
-                                                        un_earned_income_account_id: e
-                                                    }));
-                                                }}
-                                                treeData={accountOptions}
-                                                treeNodeFilterProp="title"
-                                                // onPopupScroll={onPopupScroll}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </Tab.Panel>
                 </Tab.Panels>

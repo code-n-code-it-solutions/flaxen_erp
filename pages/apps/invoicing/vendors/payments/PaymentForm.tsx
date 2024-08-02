@@ -83,7 +83,6 @@ const PaymentForm = () => {
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        console.log(bills);
         let finalData = {
             ...formData,
             payment_details: bills.map((billDetail: any) => ({
@@ -103,13 +102,14 @@ const PaymentForm = () => {
         dispatch(generateCode('vendor_bill_payment'));
         dispatch(getVendors());
         dispatch(getPaymentMethods());
-        dispatch(getAccountsTypes({ id: 1 }));
         setBills([]);
         setChequeDetails({});
         setFormData({
             ...formData,
             payment_date: new Date()
         });
+        dispatch(clearLatestRecord());
+        dispatch(getAccountsTypes({}));
     }, []);
 
     useEffect(() => {

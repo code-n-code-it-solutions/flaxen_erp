@@ -7,16 +7,12 @@ import { AgGridReact } from 'ag-grid-react';
 import { useRouter } from 'next/router';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { setAuthToken, setContentType } from '@/configs/api.config';
-import { ModuleRegistry } from '@ag-grid-community/core';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 
 import AgGridComponent from '@/components/apps/AgGridComponent';
 import DisabledClickRenderer from '@/components/apps/DisabledClickRenderer';
 import { getFillings } from '@/store/slices/fillingSlice';
 import { checkPermission } from '@/utils/helper';
 import useSetActiveMenu from '@/hooks/useSetActiveMenu';
-
-ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
 const Index = () => {
     useSetActiveMenu(AppBasePath.Filling);
@@ -36,11 +32,6 @@ const Index = () => {
             field: 'filling_code',
             minWidth: 150,
             cellRenderer: DisabledClickRenderer
-        },
-        {
-            headerName: 'Batch Number',
-            field: 'production.batch_number',
-            minWidth: 150
         },
         {
             headerName: 'Category',

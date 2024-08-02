@@ -11,13 +11,7 @@ import { Input } from '@/components/form/Input';
 import { Dropdown } from '@/components/form/Dropdown';
 import RawProductItemListing from '@/components/listing/RawProductItemListing';
 import { Tab } from '@headlessui/react';
-import Option from '@/components/form/Option';
-import useTransformToSelectOptions from '@/hooks/useTransformToSelectOptions';
 import { getAccountsTypes } from '@/store/slices/accountSlice';
-import dynamic from 'next/dynamic';
-import Swal from 'sweetalert2';
-
-const TreeSelect = dynamic(() => import('antd/es/tree-select'), { ssr: false });
 
 interface IFormProps {
     id?: any;
@@ -25,7 +19,6 @@ interface IFormProps {
 
 const ProductionForm = ({ id }: IFormProps) => {
     const dispatch = useAppDispatch();
-    const accountOptions = useTransformToSelectOptions(useAppSelector(state => state.account).accountTypes);
     const { token } = useAppSelector(state => state.user);
     const { code, latestRecord } = useAppSelector(state => state.util);
     const { allProductAssemblies, assemblyItems } = useAppSelector(state => state.productAssembly);
@@ -139,14 +132,10 @@ const ProductionForm = ({ id }: IFormProps) => {
         setAuthToken(token);
         setContentType('application/json');
         dispatch(clearProductAssemblyState());
-        if (!finalData.stock_account_id) {
-            Swal.fire('Error', 'Please select accounting for stock', 'error');
+        if (id) {
+            dispatch(updateProduction({ id, productionData: finalData }));
         } else {
-            if (id) {
-                dispatch(updateProduction({ id, productionData: finalData }));
-            } else {
-                dispatch(storeProduction(finalData));
-            }
+            dispatch(storeProduction(finalData));
         }
     };
 
@@ -159,7 +148,6 @@ const ProductionForm = ({ id }: IFormProps) => {
         }
         return () => {
             dispatch(clearUtilState());
-            dispatch(clearLatestRecord());
         };
     }, []);
 
@@ -235,20 +223,6 @@ const ProductionForm = ({ id }: IFormProps) => {
             }));
         }
     }, [code]);
-
-    useEffect(() => {
-        if (latestRecord) {
-            setFormData((prevFormData: any) => ({
-                ...prevFormData,
-                stock_account_id: latestRecord.stock_account?.code,
-                vat_receivable_id: latestRecord.vat_receivable?.code,
-                account_payable_id: latestRecord.account_payable?.code,
-                vat_payable_id: latestRecord.vat_payable?.code
-            }));
-        }
-    }, [latestRecord]);
-
-    // console.log(latestRecord);
 
     return (
         <form className="space-y-5" onSubmit={handleSubmit}>
@@ -337,19 +311,6 @@ const ProductionForm = ({ id }: IFormProps) => {
                             </button>
                         )}
                     </Tab>
-                    {!id && (
-                        <Tab as={Fragment}>
-                            {({ selected }) => (
-                                <button
-                                    className={`${
-                                        selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
-                                    } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
-                                >
-                                    Accounting
-                                </button>
-                            )}
-                        </Tab>
-                    )}
                 </Tab.List>
                 <Tab.Panels className="panel rounded-none">
                     <Tab.Panel>
@@ -360,53 +321,6 @@ const ProductionForm = ({ id }: IFormProps) => {
                                 setRawProducts={setRawProducts}
                                 type={RAW_PRODUCT_LIST_TYPE.PRODUCTION}
                             />
-                        </div>
-                    </Tab.Panel>
-                    <Tab.Panel>
-                        <div>
-                            <Option
-                                divClasses="mb-5"
-                                label="Use Previous Item Accounting"
-                                type="checkbox"
-                                name="use_previous_accounting"
-                                value="1"
-                                defaultChecked={formData.use_previous_accounting}
-                                onChange={(e) => {
-                                    setFormData((prevFormData: any) => ({
-                                        ...prevFormData,
-                                        use_previous_accounting: e.target.checked ? 1 : 0
-                                    }));
-                                    dispatch(clearLatestRecord());
-                                    if (e.target.checked) {
-                                        dispatch(getLatestRecord('production'));
-                                    } else {
-                                        dispatch(clearLatestRecord());
-                                    }
-                                }}
-                            />
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <div>
-                                    <h3 className="font-bold text-lg mb-5 border-b">Accounts</h3>
-                                    <div className="space-y-3">
-                                        <div>
-                                            <label>Stock Accounting</label>
-                                            <TreeSelect
-                                                showSearch
-                                                style={{ width: '100%' }}
-                                                value={latestRecord ? latestRecord.stock_account?.code : formData.stock_account_id}
-                                                dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-                                                placeholder="Please select stock account"
-                                                allowClear
-                                                treeDefaultExpandAll
-                                                onChange={(e) => handleChange('stock_account_id', e, true)}
-                                                treeData={accountOptions}
-                                                // onPopupScroll={onPopupScroll}
-                                                treeNodeFilterProp="title"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </Tab.Panel>
                 </Tab.Panels>

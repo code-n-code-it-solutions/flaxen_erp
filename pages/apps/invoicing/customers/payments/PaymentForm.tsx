@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import Button from '@/components/Button';
 import { ButtonType, ButtonVariant } from '@/utils/enums';
 import { Input } from '@/components/form/Input';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { setAuthToken, setContentType } from '@/configs/api.config';
-import { generateCode } from '@/store/slices/utilSlice';
+import { clearLatestRecord, generateCode, getLatestRecord } from '@/store/slices/utilSlice';
 import { pendingDeliveryNotes } from '@/store/slices/deliveryNoteSlice';
 import { getPendingSaleInvoices } from '@/store/slices/saleInvoiceSlice';
 import Option from '@/components/form/Option';
@@ -15,11 +15,19 @@ import { storeCustomerPayment } from '@/store/slices/customerPayment';
 import { PlusCircleIcon } from 'lucide-react';
 import BankDetailModal from '@/components/modals/BankDetailModal';
 import { getAccountsByCustomer, storeBankAccount } from '@/store/slices/bankAccountSlice';
+import { Tab } from '@headlessui/react';
+import dynamic from 'next/dynamic';
+import useTransformToSelectOptions from '@/hooks/useTransformToSelectOptions';
+import { getAccountsTypes } from '@/store/slices/accountSlice';
+import Swal from 'sweetalert2';
+
+const TreeSelect = dynamic(() => import('antd/es/tree-select'), { ssr: false });
 
 const PaymentForm = () => {
     const dispatch = useAppDispatch();
+    const accountOptions = useTransformToSelectOptions(useAppSelector(state => state.account).accountTypes);
     const { token } = useAppSelector((state) => state.user);
-    const { code } = useAppSelector((state) => state.util);
+    const { code, latestRecord } = useAppSelector((state) => state.util);
     const { saleInvoices } = useAppSelector((state) => state.saleInvoice);
     const { customers } = useAppSelector((state) => state.customer);
     const { paymentMethods } = useAppSelector((state) => state.paymentMethod);
@@ -90,7 +98,15 @@ const PaymentForm = () => {
                 received_amount: invoice.received_amount
             }))
         };
-        dispatch(storeCustomerPayment(finalData));
+        if (!formData.receiving_account_id) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Please select receiving account'
+            });
+        } else {
+            dispatch(storeCustomerPayment(finalData));
+        }
     };
 
     const handleAddAccount = (value: any) => {
@@ -108,6 +124,8 @@ const PaymentForm = () => {
         dispatch(generateCode('customer_payment'));
         dispatch(getCustomers());
         dispatch(getPaymentMethods());
+        dispatch(clearLatestRecord());
+        dispatch(getAccountsTypes({}));
     }, []);
 
     useEffect(() => {
@@ -169,6 +187,15 @@ const PaymentForm = () => {
         const totalCost = items.reduce((acc: number, item: any) => acc + parseFloat(item.total_amount), 0);
         setReceivableAmount(totalCost - discount);
     };
+
+    useEffect(() => {
+        if (latestRecord) {
+            setFormData((prevFormData: any) => ({
+                ...prevFormData,
+                receiving_account_id: latestRecord.receiving_account?.code
+            }));
+        }
+    }, [latestRecord]);
 
     return (
         <form onSubmit={(e) => handleSubmit(e)}>
@@ -314,7 +341,7 @@ const PaymentForm = () => {
                                             value={formData.is_pdc}
                                             options={[
                                                 { value: 1, label: 'Yes' },
-                                                { value: 0, label: 'No' },
+                                                { value: 0, label: 'No' }
                                             ]}
                                             onChange={(e) => {
                                                 if (e && typeof e !== 'undefined') {
@@ -376,77 +403,154 @@ const PaymentForm = () => {
                     />
                 </div>
             </div>
-
-            <div className="table-responsive">
-                <table>
-                    <thead>
-                    <tr>
-                        <th>Invoice Code</th>
-                        <th>Ref #</th>
-                        <th>Invoice Date</th>
-                        <th>Due Date/Terms</th>
-                        <th>Total Amount</th>
-                        <th>Due Amount</th>
-                        <th>Received Amount</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {invoices.map((invoice: any, index: number) => (
-                        <tr key={index}>
-                            <td>{invoice.sale_invoice_code}</td>
-                            <td>{invoice.payment_reference}</td>
-                            <td>{invoice.invoice_date}</td>
-                            <td>{invoice.due_date ? invoice.due_date : invoice.payment_terms + ' Days'}</td>
-                            <td>{invoice.total_amount.toFixed(2)}</td>
-                            <td>{invoice.due_amount.toFixed(2)}</td>
-                            <td>
-                                <Input
-                                    divClasses="w-full"
-                                    type="number"
-                                    step="any"
-                                    name={`invoices[${index}][received_amount]`}
-                                    value={invoice.received_amount}
-                                    onChange={(e) => {
-                                        const receivedAmount = parseFloat(e.target.value);
-                                        if (receivedAmount > invoice.due_amount) {
-                                            setErrors({
-                                                ...errors,
-                                                [`invoices[${index}][received_amount]`]: 'Received amount cannot exceed due amount'
-                                            });
-                                        } else {
-                                            setErrors((prevErrors: any) => {
-                                                const {
-                                                    [`invoices[${index}][received_amount]`]: removedError,
-                                                    ...restErrors
-                                                } = prevErrors;
-                                                return restErrors;
-                                            });
-                                        }
-                                        setInvoices((invoices: any) => {
-                                            return invoices.map((inv: any, i: number) => {
-                                                if (i === index) {
-                                                    return {
-                                                        ...inv,
-                                                        received_amount: receivedAmount > invoice.due_amount ? invoice.due_amount : receivedAmount
-                                                    };
-                                                }
-                                                return inv;
-                                            });
-                                        });
-                                    }}
-                                    placeholder="Enter Received Amount"
-                                    isMasked={false}
-                                />
-                                {errors[`invoices[${index}][received_amount]`] && (
-                                    <div
-                                        className="text-red-500 text-xs">{errors[`invoices[${index}][received_amount]`]}</div>
-                                )}
-                            </td>
-                        </tr>
-                    ))}
-                    </tbody>
-                </table>
-            </div>
+            <Tab.Group>
+                <Tab.List className="mt-3 flex flex-wrap border-b border-white-light dark:border-[#191e3a]">
+                    <Tab as={Fragment}>
+                        {({ selected }) => (
+                            <button
+                                className={`${
+                                    selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
+                                } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
+                            >
+                                Details
+                            </button>
+                        )}
+                    </Tab>
+                    <Tab as={Fragment}>
+                        {({ selected }) => (
+                            <button
+                                className={`${
+                                    selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
+                                } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
+                            >
+                                Accounting
+                            </button>
+                        )}
+                    </Tab>
+                </Tab.List>
+                <Tab.Panels className="panel rounded-none">
+                    <Tab.Panel>
+                        <div className="active table-responsive">
+                            <table>
+                                <thead>
+                                <tr>
+                                    <th>Invoice Code</th>
+                                    <th>Ref #</th>
+                                    <th>Invoice Date</th>
+                                    <th>Due Date/Terms</th>
+                                    <th>Total Amount</th>
+                                    <th>Due Amount</th>
+                                    <th>Received Amount</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {invoices.map((invoice: any, index: number) => (
+                                    <tr key={index}>
+                                        <td>{invoice.sale_invoice_code}</td>
+                                        <td>{invoice.payment_reference}</td>
+                                        <td>{invoice.invoice_date}</td>
+                                        <td>{invoice.due_date ? invoice.due_date : invoice.payment_terms + ' Days'}</td>
+                                        <td>{invoice.total_amount.toFixed(2)}</td>
+                                        <td>{invoice.due_amount.toFixed(2)}</td>
+                                        <td>
+                                            <Input
+                                                divClasses="w-full"
+                                                type="number"
+                                                step="any"
+                                                name={`invoices[${index}][received_amount]`}
+                                                value={invoice.received_amount}
+                                                onChange={(e) => {
+                                                    const receivedAmount = parseFloat(e.target.value);
+                                                    if (receivedAmount > invoice.due_amount) {
+                                                        setErrors({
+                                                            ...errors,
+                                                            [`invoices[${index}][received_amount]`]: 'Received amount cannot exceed due amount'
+                                                        });
+                                                    } else {
+                                                        setErrors((prevErrors: any) => {
+                                                            const {
+                                                                [`invoices[${index}][received_amount]`]: removedError,
+                                                                ...restErrors
+                                                            } = prevErrors;
+                                                            return restErrors;
+                                                        });
+                                                    }
+                                                    setInvoices((invoices: any) => {
+                                                        return invoices.map((inv: any, i: number) => {
+                                                            if (i === index) {
+                                                                return {
+                                                                    ...inv,
+                                                                    received_amount: receivedAmount > invoice.due_amount ? invoice.due_amount : receivedAmount
+                                                                };
+                                                            }
+                                                            return inv;
+                                                        });
+                                                    });
+                                                }}
+                                                placeholder="Enter Received Amount"
+                                                isMasked={false}
+                                            />
+                                            {errors[`invoices[${index}][received_amount]`] && (
+                                                <div className="text-red-500 text-xs">
+                                                    {errors[`invoices[${index}][received_amount]`]}
+                                                </div>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </Tab.Panel>
+                    <Tab.Panel>
+                        <div>
+                            <Option
+                                divClasses="mb-5"
+                                label="Use Previous Item Accounting"
+                                type="checkbox"
+                                name="use_previous_accounting"
+                                value="1"
+                                defaultChecked={formData.use_previous_accounting}
+                                onChange={(e) => {
+                                    setFormData((prevFormData: any) => ({
+                                        ...prevFormData,
+                                        use_previous_accounting: e.target.checked ? 1 : 0
+                                    }));
+                                    dispatch(clearLatestRecord());
+                                    if (e.target.checked) {
+                                        dispatch(getLatestRecord('customer-payments'));
+                                    } else {
+                                        dispatch(clearLatestRecord());
+                                    }
+                                }}
+                            />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                    <h3 className="font-bold text-lg mb-5 border-b">Accounts</h3>
+                                    <div className="space-y-3">
+                                        <div>
+                                            <label>Receiving Account</label>
+                                            <TreeSelect
+                                                showSearch
+                                                style={{ width: '100%' }}
+                                                value={latestRecord ? latestRecord.receiving_account?.code : formData.receiving_account_id}
+                                                dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+                                                placeholder="Please select receiving account"
+                                                allowClear
+                                                treeDefaultExpandAll
+                                                onChange={(e) => handleChange('receiving_account_id', e, true)}
+                                                treeData={accountOptions}
+                                                // onPopupScroll={onPopupScroll}
+                                                treeNodeFilterProp="title"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </Tab.Panel>
+                </Tab.Panels>
+            </Tab.Group>
             <div className="flex justify-between items-center mt-3">
                 <div className="flex gap-3 items-center">
                     <h3 className="text-md">Receivable Amount: </h3>

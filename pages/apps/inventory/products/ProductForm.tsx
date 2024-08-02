@@ -5,11 +5,8 @@ import { getUnits } from '@/store/slices/unitSlice';
 import { clearRawProductState, storeRawProduct, updateRawProduct } from '@/store/slices/rawProductSlice';
 import { setAuthToken, setContentType } from '@/configs/api.config';
 import {
-    clearLatestRecord,
     clearUtilState,
-    generateCode,
     generateRawProductCode,
-    getLatestRecord
 } from '@/store/slices/utilSlice';
 import { ButtonType, ButtonVariant, FORM_CODE_TYPE } from '@/utils/enums';
 import { Dropdown } from '@/components/form/Dropdown';
@@ -19,10 +16,8 @@ import Button from '@/components/Button';
 import { serverFilePath } from '@/utils/helper';
 import Alert from '@/components/Alert';
 import { Tab } from '@headlessui/react';
-import Option from '@/components/form/Option';
-import dynamic from 'next/dynamic';
 import useTransformToSelectOptions from '@/hooks/useTransformToSelectOptions';
-import { getAccounts, getAccountsTypes } from '@/store/slices/accountSlice';
+import { getAccountsTypes } from '@/store/slices/accountSlice';
 import Swal from 'sweetalert2';
 import { PlusCircleIcon } from 'lucide-react';
 import Modal from '@/components/Modal';
@@ -32,23 +27,17 @@ import {
     storeRawProductCategory
 } from '@/store/slices/rawProductCategorySlice';
 
-const TreeSelect = dynamic(() => import('antd/es/tree-select'), { ssr: false });
-
-
 interface IFormProps {
     id?: any;
 }
 
 const ProductForm = ({ id }: IFormProps) => {
     const dispatch = useAppDispatch();
-    const accountOptions = useTransformToSelectOptions(useAppSelector(state => state.account).accountTypes);
-    // console.log(accountOptions);
     const { units } = useAppSelector(state => state.unit);
     const { rawProductCode, latestRecord } = useAppSelector(state => state.util);
     const { loading, rawProductDetail } = useAppSelector((state) => state.rawProduct);
     const { rawProductCategories, rawProductCategory } = useAppSelector((state) => state.rawProductCategory);
     const { branchList } = useAppSelector((state) => state.company);
-    // const { accounts } = useAppSelector((state) => state.account);
     const { token, user } = useAppSelector(state => state.user);
     const [rawProductCategoryModal, setRawProductCategoryModal] = useState<boolean>(false);
     const [rawProductCatData, setRawProductCatData] = useState<any>({});
@@ -59,13 +48,10 @@ const ProductForm = ({ id }: IFormProps) => {
     const [validationMessage, setValidationMessage] = useState<any>('');
     const [formData, setFormData] = useState<any>({});
 
-    // const [selectedBranches, setSelectedBranches] = useState<any[]>([]);
     const [imagePreview, setImagePreview] = useState('');
     const [rawProductCategoryOptions, setRawProductCategoryOptions] = useState([]);
     const [unitOptions, setUnitOptions] = useState([]);
     const [subUnitOptions, setSubUnitOptions] = useState([]);
-    // const [accountsList, setAccountsList] = useState([]);
-    // const [accountOptions, setAccountOptions] = useState([]);
     const [valuationMethodOptions, setValuationMethodOptions] = useState([
         { value: '', label: 'Select Valuation Method' },
         { value: 'LIFO', label: 'LIFO' },
@@ -135,20 +121,16 @@ const ProductForm = ({ id }: IFormProps) => {
 
         setAuthToken(token);
         setContentType('multipart/form-data');
-        if (!formData.stock_account_id && !id) {
-            Swal.fire('Error', 'Please select accounting for stock', 'error');
-        } else {
-            if (formData.raw_product_category_id === undefined || formData.raw_product_category_id === null || formData.raw_product_category_id === '') {
-                Swal.fire('Error', 'Please select raw product category', 'error');
-                return;
-            }
-            if (id) {
-                dispatch(updateRawProduct({ id, rawProductData: formData }));
-            } else {
-                dispatch(storeRawProduct(formData));
-            }
-            setValidationMessage('');
+        if (formData.raw_product_category_id === undefined || formData.raw_product_category_id === null || formData.raw_product_category_id === '') {
+            Swal.fire('Error', 'Please select raw product category', 'error');
+            return;
         }
+        if (id) {
+            dispatch(updateRawProduct({ id, rawProductData: formData }));
+        } else {
+            dispatch(storeRawProduct(formData));
+        }
+        setValidationMessage('');
     };
 
     useEffect(() => {
@@ -161,7 +143,6 @@ const ProductForm = ({ id }: IFormProps) => {
 
     useEffect(() => {
         if (!id) {
-            // dispatch(generateCode(FORM_CODE_TYPE.RAW_MATERIAL));
             setImagePreview(serverFilePath(''));
         }
         return () => {
@@ -174,7 +155,6 @@ const ProductForm = ({ id }: IFormProps) => {
         setValidationMessage('');
         dispatch(getAccountsTypes({}));
         setFormData({});
-        dispatch(clearLatestRecord());
         dispatch(getRawProductCategories());
     }, []);
 
@@ -207,7 +187,6 @@ const ProductForm = ({ id }: IFormProps) => {
                 opening_stock_unit_balance: rawProductDetail.opening_stock_unit_balance,
                 opening_stock_total_balance: rawProductDetail.opening_stock_total_balance,
                 sale_description: rawProductDetail.sale_description,
-                stock_account_id: rawProductDetail.stock_account_id
             });
         } else {
             setImagePreview(serverFilePath(''));
@@ -232,26 +211,6 @@ const ProductForm = ({ id }: IFormProps) => {
             setValidationMessage('Please fill all the required fields.');
         }
     }, [errorMessages]);
-
-    useEffect(() => {
-        if (latestRecord) {
-            setFormData((prevFormData: any) => ({
-                ...prevFormData,
-                stock_account_id: latestRecord.stock_account?.code,
-                vat_receivable_id: latestRecord.vat_receivable?.code,
-                account_payable_id: latestRecord.account_payable?.code,
-                vat_payable_id: latestRecord.vat_payable?.code
-            }));
-        } else {
-            setFormData((prevFormData: any) => ({
-                ...prevFormData,
-                stock_account_id: '',
-                vat_receivable_id: '',
-                account_payable_id: '',
-                vat_payable_id: ''
-            }));
-        }
-    }, [latestRecord]);
 
     useEffect(() => {
         if (rawProductCategory) {
@@ -371,19 +330,6 @@ const ProductForm = ({ id }: IFormProps) => {
                             </button>
                         )}
                     </Tab>
-                    {!id && (
-                        <Tab as={Fragment}>
-                            {({ selected }) => (
-                                <button
-                                    className={`${
-                                        selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
-                                    } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
-                                >
-                                    Accounting
-                                </button>
-                            )}
-                        </Tab>
-                    )}
                 </Tab.List>
                 <Tab.Panels className="panel rounded-none">
                     <Tab.Panel>
@@ -519,54 +465,6 @@ const ProductForm = ({ id }: IFormProps) => {
                             </div>
                         </div>
                     </Tab.Panel>
-                    <Tab.Panel>
-                        <div>
-                            <Option
-                                divClasses="mb-5"
-                                label="Use Previous Item Accounting"
-                                type="checkbox"
-                                name="use_previous_accounting"
-                                value="1"
-                                defaultChecked={formData.use_previous_accounting}
-                                onChange={(e) => {
-                                    setFormData((prevFormData: any) => ({
-                                        ...prevFormData,
-                                        use_previous_accounting: e.target.checked ? 1 : 0
-                                    }));
-                                    dispatch(clearLatestRecord());
-                                    if (e.target.checked) {
-                                        dispatch(getLatestRecord('raw-product'));
-                                    } else {
-                                        dispatch(clearLatestRecord());
-                                    }
-                                }}
-                            />
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <div>
-                                    <h3 className="font-bold text-lg mb-5 border-b">Accounts</h3>
-                                    <div className="space-y-3">
-                                        <div>
-                                            <label>Stock Accounting</label>
-                                            <TreeSelect
-                                                showSearch
-                                                style={{ width: '100%' }}
-                                                value={latestRecord ? latestRecord.stock_account?.code : formData.stock_account_id}
-                                                dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-                                                placeholder="Please select stock account"
-                                                allowClear
-                                                treeDefaultExpandAll
-                                                onChange={(e) => handleChange('stock_account_id', e, true)}
-                                                treeData={accountOptions}
-                                                // onPopupScroll={onPopupScroll}
-                                                treeNodeFilterProp="title"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </Tab.Panel>
-
                 </Tab.Panels>
             </Tab.Group>
 

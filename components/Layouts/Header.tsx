@@ -6,7 +6,7 @@ import { useAppDispatch, useAppSelector } from '@/store';
 import { toggleLocale, toggleSidebar, toggleTheme } from '@/store/slices/themeConfigSlice';
 import { useTranslation } from 'react-i18next';
 import Dropdown from '@/components/Dropdown';
-import { logoutUser } from '@/store/slices/userSlice';
+import { logoutUser, setIsLocked } from '@/store/slices/userSlice';
 import { clearMenuState, getPermittedMenu } from '@/store/slices/menuSlice';
 import { setAuthToken } from '@/configs/api.config';
 import { getIcon } from '@/utils/helper';
@@ -25,7 +25,7 @@ const Header = () => {
     const [notifications, setNotifications] = useState([
         {
             id: 1,
-            profile: 'user-profile.jpeg',
+            profile: 'default.jpeg',
             message: '<strong class="text-sm mr-1">John Doe</strong>invite you to <strong>Prototyping</strong>',
             time: '45 min ago'
         }
@@ -36,6 +36,10 @@ const Header = () => {
         setAuthToken(token);
         dispatch(clearMenuState());
         dispatch(logoutUser());
+    };
+
+    const handleLockScreen = () => {
+        dispatch(setIsLocked({ lockStatus: true, beforeLockUrl: router.pathname }));
     };
 
     useEffect(() => {
@@ -234,22 +238,20 @@ const Header = () => {
                             btnClassName="relative group block"
                             button={<img
                                 className="h-9 w-9 rounded-full object-cover saturate-50 group-hover:saturate-100"
-                                src="/assets/images/user-profile.jpeg" alt="userProfile" />}
+                                src="/assets/images/default.jpeg" alt="userProfile" />}
                         >
                             <ul className="w-[230px] !py-0 font-semibold text-dark dark:text-white-dark dark:text-white-light/90">
                                 <li>
                                     <div className="flex items-center px-4 py-4">
                                         <img className="h-10 w-10 rounded-md object-cover"
-                                             src="/assets/images/user-profile.jpeg" alt="userProfile" />
+                                             src="/assets/images/default.jpeg" alt="userProfile" />
                                         <div className="ltr:pl-4 rtl:pr-4">
                                             <h4 className="text-base">
-                                                John Doe
-                                                <span
-                                                    className="rounded bg-success-light px-1 text-xs text-success ltr:ml-2 rtl:ml-2">Pro</span>
+                                                {user?.name}
                                             </h4>
                                             <button type="button"
                                                     className="text-black/60 hover:text-primary dark:text-dark-light/60 dark:hover:text-white">
-                                                johndoe@gmail.com
+                                                {user?.email}
                                             </button>
                                         </div>
                                     </div>
@@ -290,7 +292,7 @@ const Header = () => {
                                     </Link>
                                 </li>
                                 <li>
-                                    <Link href="/auth/lockscreen" className="dark:hover:text-white">
+                                    <button onClick={() => handleLockScreen()} className="dark:hover:text-white">
                                         <svg className="ltr:mr-2 rtl:ml-2" width="18" height="18"
                                              viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <path
@@ -316,7 +318,7 @@ const Header = () => {
                                             </g>
                                         </svg>
                                         Lock Screen
-                                    </Link>
+                                    </button>
                                 </li>
                                 <li className="border-t border-white-light dark:border-white-light/10">
                                     <button onClick={handleLogout} className="!py-3 text-danger">

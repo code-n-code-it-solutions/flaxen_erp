@@ -13,12 +13,11 @@ const DefaultLayout = ({children}: PropsWithChildren) => {
     const router = useRouter();
     const dispatch = useAppDispatch();
     const themeConfig = useAppSelector((state) => state.themeConfig);
-    const {user} = useAppSelector((state) => state.user);
     const [showLoader, setShowLoader] = useState(true);
     const [showTopButton, setShowTopButton] = useState(false);
     const [animation, setAnimation] = useState(themeConfig.animation);
 
-    const {token, isLoggedIn} = useAppSelector((state) => state.user);
+    const {token, isLoggedIn, isLocked} = useAppSelector((state) => state.user);
 
     const goToTop = () => {
         document.body.scrollTop = 0;
@@ -75,6 +74,12 @@ const DefaultLayout = ({children}: PropsWithChildren) => {
             router.push('/auth/signin');
         }
     }, [token, router])
+
+    useEffect(() => {
+        if(isLocked) {
+            router.push('/auth/lockscreen');
+        }
+    }, [isLocked]);
 
     return (
         isLoggedIn ?
