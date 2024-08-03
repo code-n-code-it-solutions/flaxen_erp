@@ -27,13 +27,13 @@ const PluginSearchModal = ({ modalOpen, setModalOpen }: IProps) => {
         dispatch(clearMenuState());
         dispatch(setSelectedPlugin(plugin));
         setModalOpen(false);
-        router.push('/apps/' + plugin.name.toLowerCase().replace(' ', '-'));
+        router.push('/apps/' + plugin?.name.toLowerCase().replace(' ', '-'));
     };
     useEffect(() => {
         if (modalOpen) {
             setSearchQuery('');
             dispatch(clearPluginState());
-            dispatch(getPermittedPlugins(user.id));
+            // dispatch(getPermittedPlugins(user.id));
             if (searchInputRef.current) {
                 searchInputRef.current.focus();
             }
@@ -69,7 +69,7 @@ const PluginSearchModal = ({ modalOpen, setModalOpen }: IProps) => {
     }, [searchQuery, pluginList]);
 
     useEffect(() => {
-        console.log(filteredPlugins);
+        // console.log(filteredPlugins);
     }, [filteredPlugins]);
 
     return (
@@ -104,7 +104,7 @@ const PluginSearchModal = ({ modalOpen, setModalOpen }: IProps) => {
                                         >
                                             <Link
                                                 className="w-full"
-                                                href={'/apps/' + plugin.plugin.name.toLowerCase().replace(' ', '-')}
+                                                href={'/apps/' + plugin?.plugin?.name.toLowerCase().replace(' ', '-')}
                                                 onClick={() => handlePluginClick(plugin)}
                                             >
                                                 {plugin.plugin.name}

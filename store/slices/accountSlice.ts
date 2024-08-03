@@ -2,30 +2,64 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { API } from '@/configs/api.config';
 import { configureSlice } from '@/utils/helper';
 
-interface IAssetState {
+interface IState {
     accountTypes: any;
     account: any;
     accountList: any,
     accountDetail: any
     accounts: any;
+    generalJournal: any[];
+    accountingConfigurations: any[];
+    configurationUpdated: boolean;
     loading: boolean;
     error: any;
     success: boolean;
 }
 
 // Initial state
-const initialState: IAssetState = {
+const initialState: IState = {
     accountTypes: null,
     account: null,
     accountList: null,
     accountDetail: null,
     accounts: null,
+    generalJournal: [],
+    accountingConfigurations: [],
+    configurationUpdated: false,
     loading: false,
     error: null,
     success: false
 };
 
 // Async thunks
+export const getAccountConfigurations = createAsyncThunk(
+    'accounts/configurations/all',
+    async (_, thunkAPI) => {
+        try {
+            const response = await API.get('/account/configurations/all');
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const storeAccountConfigurations = createAsyncThunk(
+    'accounts/configurations/store',
+    async (data: any[], thunkAPI) => {
+        try {
+            const response = await API.post('/account/configurations/store', data);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 export const getAccounts = createAsyncThunk(
     'accounts/all',
     async (_, thunkAPI) => {
@@ -97,6 +131,20 @@ export const updateAccount = createAsyncThunk(
     }
 );
 
+export const getGeneralJournal = createAsyncThunk(
+    'accounts/general-journal',
+    async (data: any, thunkAPI) => {
+        try {
+            const response = await API.post('/account/general-journal', data);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to update';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 // Slice
 export const accountSlice = createSlice({
     name: 'accounts',
@@ -109,6 +157,11 @@ export const accountSlice = createSlice({
             state.error = null;
             state.success = false;
             state.accountDetail = null;
+            state.generalJournal = [];
+        },
+        clearAccountingConfigurations: (state) => {
+            state.accountingConfigurations = [];
+            state.configurationUpdated = false;
         }
     },
     extraReducers: (builder) => {
@@ -172,10 +225,45 @@ export const accountSlice = createSlice({
             .addCase(getAccountList.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
+            })
+            .addCase(getGeneralJournal.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getGeneralJournal.fulfilled, (state, action) => {
+                state.loading = false;
+                state.generalJournal = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getGeneralJournal.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(getAccountConfigurations.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getAccountConfigurations.fulfilled, (state, action) => {
+                state.loading = false;
+                state.accountingConfigurations = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getAccountConfigurations.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(storeAccountConfigurations.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(storeAccountConfigurations.fulfilled, (state, action) => {
+                state.loading = false;
+                state.configurationUpdated = action.payload.success;
+            })
+            .addCase(storeAccountConfigurations.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
             });
     }
 });
-export const { clearAccountState } = accountSlice.actions;
+export const { clearAccountState, clearAccountingConfigurations } = accountSlice.actions;
 
 export const accountSliceConfig = configureSlice(accountSlice, false);
 

@@ -337,7 +337,7 @@ export const formatTime = (date: any, format: string = 'hh:mm:ss', timezone = 'U
 export const truncatePathname = (pathname: string, basePath: string) => {
     const index = pathname?.indexOf(basePath);
     if (index !== -1) {
-        return pathname.substring(0, index + basePath.length);
+        return pathname?.substring(0, index + basePath.length);
     }
     return pathname;
 };

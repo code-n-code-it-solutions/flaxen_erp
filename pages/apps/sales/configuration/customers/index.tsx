@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import AppLayout from '@/components/Layouts/AppLayout';
 import PageHeader from '@/components/apps/PageHeader';
 import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import { AgGridReact } from 'ag-grid-react';
@@ -7,10 +6,8 @@ import { useRouter } from 'next/router';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { capitalize } from 'lodash';
 import { setAuthToken, setContentType } from '@/configs/api.config';
-import { deleteRawProduct, getRawProducts } from '@/store/slices/rawProductSlice';
 import AgGridComponent from '@/components/apps/AgGridComponent';
 import DisabledClickRenderer from '@/components/apps/DisabledClickRenderer';
-import Swal from 'sweetalert2';
 import { getCustomers } from '@/store/slices/customerSlice';
 import { ActionList, AppBasePath } from '@/utils/enums';
 import { checkPermission } from '@/utils/helper';
@@ -20,12 +17,12 @@ const Index = () => {
     useSetActiveMenu(AppBasePath.Customer);
     const router = useRouter();
     const dispatch = useAppDispatch();
+    const gridRef = useRef<AgGridReact<any>>(null);
     const { token } = useAppSelector((state) => state.user);
     const { permittedMenus } = useAppSelector((state) => state.menu);
     const { activeMenu } = useAppSelector((state) => state.menu);
     const { customers, loading, success } = useAppSelector((state) => state.customer);
     const [selectedRows, setSelectedRows] = useState<any[]>([]);
-    const gridRef = useRef<AgGridReact<any>>(null);
     const [colDefs, setColDefs] = useState<any>([
         {
             headerName: 'Code',
@@ -123,5 +120,5 @@ const Index = () => {
     );
 };
 
-Index.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
+// Index.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
 export default Index;

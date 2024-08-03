@@ -33,7 +33,7 @@ const PageWrapper: FC<IProps> = ({
     return (
         <div>
             {breadCrumbItems && breadCrumbItems.length > 0 && <Breadcrumb items={breadCrumbItems}/>}
-            <div className="pt-5">
+            <div>
                 <div className={panel ? 'panel' : ''}>
                     {embedLoader && loading
                         ? <ContentLoader/>

@@ -38,16 +38,17 @@ const CustomTreeNode = ({ title, total }: any) => {
 };
 
 const Index = () => {
-    // useSetActiveMenu(AppBasePath.Report_Accounts);
+    useSetActiveMenu(AppBasePath.Report_Accounts);
     const router = useRouter();
 
     const dispatch = useAppDispatch();
     const { token, user, loading } = useAppSelector((state) => state.user);
     const accounts = useAppSelector((state) => state.account).accounts;
     const [selectedRows, setSelectedRows] = useState<any[]>([]);
-    const [expandedKeys, setExpandedKeys] = useState([]);
-    const [selectedKeys, setSelectedKeys] = useState([]);
+    const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
+    const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
     const [treeData, setTreeData] = useState<any[]>([]);
+
     const onExpand = (expandedKeys: any) => {
         setExpandedKeys(expandedKeys);
     };
@@ -65,14 +66,33 @@ const Index = () => {
 
     useEffect(() => {
         if (accounts) {
-            setTreeData(transformDataToTreeNodes(accounts));
+            const treeNodes = transformDataToTreeNodes(accounts);
+            setTreeData(treeNodes);
+            const allKeys = getAllKeys(treeNodes);
+            setExpandedKeys(allKeys);
         }
     }, [accounts]);
 
+    const getAllKeys = (nodes: any[]): string[] => {
+        let keys: string[] = [];
+        nodes.forEach(node => {
+            keys.push(node.key);
+            if (node.children && node.children.length > 0) {
+                keys = keys.concat(getAllKeys(node.children));
+            }
+        });
+        return keys;
+    };
+
+    const handleExpandAll = () => {
+        const allKeys = getAllKeys(treeData);
+        setExpandedKeys(allKeys);
+    };
+
     return (
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-3">
             <PageHeader
-                appBasePath={AppBasePath.Raw_Product}
+                appBasePath={AppBasePath.Report_Accounts}
                 key={selectedRows.length}
                 selectedRows={selectedRows.length}
                 leftComponent={{
@@ -96,6 +116,26 @@ const Index = () => {
             />
             <PageWrapper>
                 <div className="w-full">
+                    <div className="flex justify-end gap-3">
+                        <span
+                            className="text-primary underline cursor-pointer"
+                            onClick={() => handleExpandAll()}
+                        >
+                            Expand All
+                        </span>
+                        <span
+                            className="text-primary underline cursor-pointer"
+                            onClick={() => setExpandedKeys([])}
+                        >
+                            Collapse All
+                        </span>
+                        <span
+                            className="text-primary underline cursor-pointer"
+                            onClick={() => dispatch(getAccounts())}
+                        >
+                            Refresh
+                        </span>
+                    </div>
                     <Tree
                         className="my-tree w-full"
                         expandedKeys={expandedKeys}
@@ -111,5 +151,5 @@ const Index = () => {
     );
 };
 
-Index.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
+// Index.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
 export default Index;

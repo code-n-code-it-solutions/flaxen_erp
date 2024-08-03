@@ -2,19 +2,21 @@ import Link from 'next/link';
 import { useAppSelector, useAppDispatch } from '@/store';
 import { useEffect, useState } from 'react';
 import { setPageTitle } from '@/store/slices/themeConfigSlice';
-import { clearAuthState, loginUser, logoutUser } from '@/store/slices/userSlice';
+import { clearAuthState, clearIsLocked, loginUser, logoutUser } from '@/store/slices/userSlice';
 import AuthLayout from '@/components/Layouts/AuthLayout';
-import { clearMenuState } from '@/store/slices/menuSlice';
+import { clearMenuState, getPermittedMenu } from '@/store/slices/menuSlice';
 import { clearCompanySlice } from '@/store/slices/companySlice';
 import { clearSettingState, getSettings } from '@/store/slices/settingSlice';
 import Swal from 'sweetalert2';
+import { clearPluginState, getPermittedPlugins } from '@/store/slices/pluginSlice';
+import { setAuthToken } from '@/configs/api.config';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
     const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
-    const { isLoggedIn, loading, error } = useAppSelector((state) => state.user);
+    const { user, token, isLoggedIn, loading, error } = useAppSelector((state) => state.user);
     const { settings } = useAppSelector((state) => state.setting);
 
     const dispatch = useAppDispatch();
@@ -28,7 +30,7 @@ const Login = () => {
 
     useEffect(() => {
         if (settings) {
-            setIsMaintenanceMode(settings?.find((setting: any) => setting.key === 'maintenance_mode').value==='1');
+            setIsMaintenanceMode(settings?.find((setting: any) => setting.key === 'maintenance_mode').value === '1');
         }
     }, [settings]);
 
@@ -38,8 +40,11 @@ const Login = () => {
         dispatch(clearCompanySlice());
         dispatch(clearSettingState());
         dispatch(clearAuthState());
+        dispatch(clearIsLocked());
+        dispatch(clearPluginState());
+        dispatch(clearMenuState());
         dispatch(getSettings());
-        if(isMaintenanceMode) {
+        if (isMaintenanceMode) {
             Swal.fire({
                 icon: 'info',
                 title: 'Maintenance Mode',
@@ -49,6 +54,14 @@ const Login = () => {
             dispatch(loginUser({ email, password, rememberMe }));
         }
     };
+
+    useEffect(() => {
+        if(user) {
+            setAuthToken(token)
+            // dispatch(getPermittedPlugins(user.id));
+
+        }
+    }, [user]);
 
     return (
         !isLoggedIn &&
@@ -63,7 +76,7 @@ const Login = () => {
                 <h2 className="mb-3 text-2xl font-bold">Sign In</h2>
                 <p className="mb-7">Enter your email and password to login</p>
                 {error && <div className="mb-5 p-4 bg-red-100 text-red-800 rounded-md text-center">{error}</div>}
-                <form className="space-y-5" onSubmit={submitForm}>
+                <form className="space-y-5" onSubmit={(e) => submitForm(e)}>
                     <div>
                         <label htmlFor="email">Email</label>
                         <input

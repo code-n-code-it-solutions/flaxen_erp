@@ -75,8 +75,16 @@ const Index = () => {
                                 <table className="border">
                                     <tbody>
                                     <tr>
-                                        <td className="border">{company.subscription?.subscription_plan?.name}</td>
-                                        <td className="border">{company.subscription?.end_date + ' (' + company.subscription?.interval + ')'}</td>
+                                        <td className="border">{company.subscriptions?.find((item:any)=>item.is_active===1)?.subscription_plan?.name}</td>
+                                        <td className="border">{company.subscriptions?.find((item:any)=>item.is_active===1)?.end_date + ' (' + company.subscriptions?.find((item:any)=>item.is_active===1)?.interval + ')'}</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="border">Type</td>
+                                        <td className="border">{company.company_type?.name}</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="border">Sub Type</td>
+                                        <td className="border">{company.company_sub_type?.name}</td>
                                     </tr>
                                     </tbody>
                                 </table>
@@ -87,12 +95,6 @@ const Index = () => {
                                     >
                                         View Details
                                     </Link>
-                                    {/*<Link*/}
-                                    {/*    href={`/erp/main`}*/}
-                                    {/*    className="btn btn-info btn-sm"*/}
-                                    {/*>*/}
-                                    {/*    Go ERP*/}
-                                    {/*</Link>*/}
                                 </div>
                             </div>
                         </div>

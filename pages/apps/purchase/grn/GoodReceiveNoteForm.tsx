@@ -1,40 +1,18 @@
 'use client';
 import React, { Fragment, useEffect, useState } from 'react';
 import { setAuthToken, setContentType } from '@/configs/api.config';
-import { useDispatch, useSelector } from 'react-redux';
-import { ThunkDispatch } from 'redux-thunk';
-import { IRootState, useAppDispatch, useAppSelector } from '@/store';
-import { AnyAction } from 'redux';
+import { useAppDispatch, useAppSelector } from '@/store';
 import { getLPOByStatuses } from '@/store/slices/localPurchaseOrderSlice';
 import { clearGoodReceiveNoteState, storeGRN } from '@/store/slices/goodReceiveNoteSlice';
-import { clearLatestRecord, clearUtilState, generateCode, getLatestRecord } from '@/store/slices/utilSlice';
+import { clearUtilState, generateCode } from '@/store/slices/utilSlice';
 import { ButtonSize, ButtonType, ButtonVariant, FORM_CODE_TYPE, RAW_PRODUCT_LIST_TYPE } from '@/utils/enums';
 import { Dropdown } from '@/components/form/Dropdown';
 import { Input } from '@/components/form/Input';
 import RawProductItemListing from '@/components/listing/RawProductItemListing';
-import ServiceItemListing from '@/components/listing/ServiceItemListing';
 import Button from '@/components/Button';
 import Modal from '@/components/Modal';
 import { Tab } from '@headlessui/react';
-import Option from '@/components/form/Option';
-import dynamic from 'next/dynamic';
-import useTransformToSelectOptions from '@/hooks/useTransformToSelectOptions';
 import { getAccountsTypes } from '@/store/slices/accountSlice';
-import Swal from 'sweetalert2';
-
-const TreeSelect = dynamic(() => import('antd/es/tree-select'), { ssr: false });
-
-interface IFormData {
-    purchase_requisition_ids: string;
-    local_purchase_order_ids: string;
-    grn_number: string;
-    received_by_id: number;
-    verified_by_id: number;
-    status: string;
-    description: string;
-    items: any[];
-    use_previous_accounting: number;
-}
 
 interface IFormProps {
     id?: any;
@@ -42,7 +20,6 @@ interface IFormProps {
 
 const GoodReceiveNoteForm = ({ id }: IFormProps) => {
     const dispatch = useAppDispatch();
-    const accountOptions = useTransformToSelectOptions(useAppSelector(state => state.account).accountTypes);
     const { token, user } = useAppSelector(state => state.user);
     const { success, loading } = useAppSelector(state => state.goodReceiveNote);
     const { allLPOs } = useAppSelector(state => state.localPurchaseOrder);
@@ -65,10 +42,7 @@ const GoodReceiveNoteForm = ({ id }: IFormProps) => {
         items: [],
         use_previous_accounting: 0
     });
-    const [showItemDetail, setShowItemDetail] = useState<any>({
-        show: false,
-        type: null
-    });
+
     const [localPurchaseOrderOptions, setLocalPurchaseOrderOptions] = useState<any[]>([]);
     const [lpoDetails, setLPODetails] = useState<any>({});
 
@@ -113,11 +87,7 @@ const GoodReceiveNoteForm = ({ id }: IFormProps) => {
             // dispatch(updateRawProduct(id, formData));
         } else {
             // console.log(finalData)
-            if(!finalData.un_billed_account_payable_id) {
-                Swal.fire('Error', 'Please select accounting for un billed account payable', 'error')
-            } else {
-                dispatch(storeGRN(finalData));
-            }
+            dispatch(storeGRN(finalData));
         }
     };
 
@@ -168,7 +138,6 @@ const GoodReceiveNoteForm = ({ id }: IFormProps) => {
         dispatch(getLPOByStatuses());
         dispatch(clearUtilState());
         dispatch(generateCode(FORM_CODE_TYPE.GOOD_RECEIVE_NOTE));
-        dispatch(clearLatestRecord());
         dispatch(getAccountsTypes({ids: 2}));
     }, []);
 
@@ -195,20 +164,7 @@ const GoodReceiveNoteForm = ({ id }: IFormProps) => {
                 lpo: lpo
             })));
         }
-        // console.log(allLPOs)
     }, [allLPOs]);
-
-    useEffect(() => {
-        if (latestRecord) {
-            setFormData((prevFormData: any) => ({
-                ...prevFormData,
-                un_billed_account_payable_id: latestRecord.un_billed_account_payable?.code,
-            }));
-            console.log(latestRecord);
-        }
-    }, [latestRecord]);
-
-    // console.log(rawProductForSelect, rawProducts, originalProductState)
 
     return (
         <form className="space-y-5" onSubmit={(e) => handleSubmit(e)}>
@@ -317,58 +273,6 @@ const GoodReceiveNoteForm = ({ id }: IFormProps) => {
                                 setRawProducts={setRawProducts}
                                 type={RAW_PRODUCT_LIST_TYPE.GOOD_RECEIVE_NOTE}
                             />
-                        </div>
-                    </Tab.Panel>
-                    <Tab.Panel>
-                        <div>
-                            <Option
-                                divClasses="mb-5"
-                                label="Use Previous Item Accounting"
-                                type="checkbox"
-                                name="use_previous_accounting"
-                                value="1"
-                                defaultChecked={formData.use_previous_accounting === 1}
-                                onChange={(e) => {
-                                    setFormData((prevFormData: any) => ({
-                                        ...prevFormData,
-                                        use_previous_accounting: e.target.checked ? 1 : 0
-                                    }));
-                                    dispatch(clearLatestRecord());
-                                    if (e.target.checked) {
-                                        dispatch(getLatestRecord('good-receive-note'));
-                                    } else {
-                                        dispatch(clearLatestRecord());
-                                    }
-                                }}
-                            />
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <div>
-                                    <h3 className="font-bold text-lg mb-5 border-b">Accounts</h3>
-                                    <div className="space-y-3">
-                                        <div>
-                                            <label>Un-Billed Account Payable</label>
-                                            <TreeSelect
-                                                showSearch
-                                                style={{ width: '100%' }}
-                                                value={latestRecord ? latestRecord.un_billed_account_payable?.code : formData.un_billed_account_payable_id}
-                                                dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-                                                placeholder="Please select Un Billed Account"
-                                                allowClear
-                                                treeDefaultExpandAll
-                                                onChange={(e) => {
-                                                    setFormData((prevFormData: any) => ({
-                                                        ...prevFormData,
-                                                        un_billed_account_payable_id: e
-                                                    }));
-                                                }}
-                                                treeData={accountOptions}
-                                                // onPopupScroll={onPopupScroll}
-                                                treeNodeFilterProp="title"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </Tab.Panel>
                 </Tab.Panels>

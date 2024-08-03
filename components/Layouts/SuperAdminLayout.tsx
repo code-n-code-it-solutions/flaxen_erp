@@ -93,7 +93,7 @@ const SuperAdminLayout = ({children}: { children: React.ReactElement }) => {
                         if(user.roles.map((role: any) => role.name).includes('Admin')) {
                             router.push('/workspace');
                         } else {
-                            router.push('/erp/main');
+                            router.push('/apps');
                         }
                     }
                 }

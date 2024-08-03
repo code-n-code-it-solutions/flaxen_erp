@@ -1,48 +1,60 @@
-"use client";
-import {useEffect, useState} from 'react';
+'use client';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import {useRouter} from 'next/router';
-import {useAppDispatch, useAppSelector} from '@/store';
-import {toggleLocale, toggleTheme} from '@/store/slices/themeConfigSlice';
-import {useTranslation} from 'react-i18next';
-import {toggleSidebar} from '@/store/slices/themeConfigSlice';
+import { useRouter } from 'next/router';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { toggleLocale, toggleTheme } from '@/store/slices/themeConfigSlice';
+import { useTranslation } from 'react-i18next';
+import { toggleSidebar } from '@/store/slices/themeConfigSlice';
 import Dropdown from '@/components/Dropdown';
-import {logoutUser} from "@/store/slices/userSlice";
-import {clearMenuState, getPermittedMenu, setActiveModule, setModuleMenus} from "@/store/slices/menuSlice";
-import {setAuthToken} from "@/configs/api.config";
+import { logoutUser, setIsLocked } from '@/store/slices/userSlice';
+import {
+    clearMenuState,
+    getPermittedMenu,
+    setActiveMenu,
+    setActiveModule,
+    setModuleMenus
+} from '@/store/slices/menuSlice';
+import { setAuthToken } from '@/configs/api.config';
+import IconCaretDown from '@/components/Icon/IconCaretDown';
+import IconMenuDashboard from '@/components/Icon/Menu/IconMenuDashboard';
 
 const Header = () => {
     const router = useRouter();
     const dispatch = useAppDispatch();
-    const {t, i18n} = useTranslation();
-    const {isLoggedIn, token, user} = useAppSelector((state) => state.user);
-    const {permittedMenus, moduleMenus, activeModule} = useAppSelector((state) => state.menu);
+    const { t, i18n } = useTranslation();
+
+    const { isLoggedIn, token, user } = useAppSelector((state) => state.user);
     const isRtl = useAppSelector((state) => state.themeConfig.rtlClass) === 'rtl';
     const themeConfig = useAppSelector((state) => state.themeConfig);
-    const [flag, setFlag] = useState('');
-    const [notifications, setNotifications] = useState([
+
+    const [flag, setFlag] = useState<string>('');
+    const [notifications, setNotifications] = useState<any[]>([
         {
             id: 1,
-            profile: 'user-profile.jpeg',
+            profile: 'default.jpeg',
             message: '<strong class="text-sm mr-1">John Doe</strong>invite you to <strong>Prototyping</strong>',
-            time: '45 min ago',
-        },
+            time: '45 min ago'
+        }
     ]);
 
     const handleLogout = () => {
-        setAuthToken(token)
+        setAuthToken(token);
         dispatch(clearMenuState());
         dispatch(logoutUser());
-    }
+    };
+
+    const handleLockScreen = () => {
+        dispatch(setIsLocked({ lockStatus: true, beforeLockUrl: router.pathname }));
+    };
 
     useEffect(() => {
         if (!isLoggedIn) {
-            router.push('/auth/signin')
+            router.push('/auth/signin');
         } else {
-            setAuthToken(token)
-            // dispatch(getPermittedMenu());
+            setAuthToken(token);
         }
-    }, [isLoggedIn, router])
+    }, [isLoggedIn, router]);
 
     useEffect(() => {
         setFlag(localStorage.getItem('i18nextLng') || themeConfig.locale);
@@ -72,10 +84,10 @@ const Header = () => {
                         >
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                                  xmlns="http://www.w3.org/2000/svg">
-                                <path d="M20 7L4 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                                <path d="M20 7L4 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                                 <path opacity="0.5" d="M20 12L4 12" stroke="currentColor" strokeWidth="1.5"
-                                      strokeLinecap="round"/>
-                                <path d="M20 17L4 17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                                      strokeLinecap="round" />
+                                <path d="M20 17L4 17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                             </svg>
                         </button>
                     </div>
@@ -84,16 +96,56 @@ const Header = () => {
                         className="flex items-center space-x-1.5 ltr:ml-auto rtl:mr-auto rtl:space-x-reverse dark:text-[#d0d2d6] sm:flex-1 ltr:sm:ml-0 sm:rtl:mr-0 lg:space-x-2">
                         <div className="sm:ltr:mr-auto sm:rtl:ml-auto">
                             {/* horizontal menu */}
-                            <ul className="top-nav lg:flex hidden py-1.5 px-6 dark:text-white-light font-semibold text-black rtl:space-x-reverse lg:space-x-1.5 xl:space-x-8">
+                            <ul className="top-nav horizontal-menu lg:flex hidden py-1.5 px-6 dark:text-white-light font-semibold text-black rtl:space-x-reverse lg:space-x-1.5 xl:space-x-8">
                                 <li className="menu nav-item">
-                                    <Link href='/workspace' className="nav-link">
+                                    <Link href="/workspace" className="nav-link">
                                         <span className="px-1">{t('dashboard')}</span>
                                     </Link>
                                 </li>
                                 <li className="menu nav-item">
-                                    <Link href='/workspace/companies' className="nav-link">
+                                    <Link href="/workspace/companies" className="nav-link">
                                         <span className="px-1">{t('companies')}</span>
                                     </Link>
+                                </li>
+                                <li className="menu nav-item relative">
+                                    <button type="button" className="nav-link">
+                                        <div className="flex items-center">
+                                            <span className="px-1">{t('accounting')}</span>
+                                        </div>
+                                        <div className="right_arrow">
+                                            <IconCaretDown />
+                                        </div>
+                                    </button>
+                                    <ul className="sub-menu">
+                                        <li>
+                                            <Link
+                                                href="/workspace/accounting/accounting-report">{t('accounting_report')}</Link>
+                                        </li>
+                                        <li>
+                                            <Link
+                                                href="/workspace/accounting/general-journal">{t('general_journal')}</Link>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li className="menu nav-item relative">
+                                    <button type="button" className="nav-link">
+                                        <div className="flex items-center">
+                                            <span className="px-1">{t('billings')}</span>
+                                        </div>
+                                        <div className="right_arrow">
+                                            <IconCaretDown />
+                                        </div>
+                                    </button>
+                                    <ul className="sub-menu">
+                                        <li>
+                                            <Link
+                                                href="/workspace/billings/payment-history">{t('payment_history')}</Link>
+                                        </li>
+                                        <li>
+                                            <Link
+                                                href="/workspace/billings/payment-methods">{t('payment_methods')}</Link>
+                                        </li>
+                                    </ul>
                                 </li>
                             </ul>
                         </div>
@@ -103,7 +155,7 @@ const Header = () => {
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                                      xmlns="http://www.w3.org/2000/svg">
                                     <circle r="3" transform="matrix(-1 0 0 1 19 5)" stroke="currentColor"
-                                            strokeWidth="1.5"/>
+                                            strokeWidth="1.5" />
                                     <path
                                         opacity="0.5"
                                         d="M14 2.20004C13.3538 2.06886 12.6849 2 12 2C6.47715 2 2 6.47715 2 12C2 13.5997 2.37562 15.1116 3.04346 16.4525C3.22094 16.8088 3.28001 17.2161 3.17712 17.6006L2.58151 19.8267C2.32295 20.793 3.20701 21.677 4.17335 21.4185L6.39939 20.8229C6.78393 20.72 7.19121 20.7791 7.54753 20.9565C8.88837 21.6244 10.4003 22 12 22C17.5228 22 22 17.5228 22 12C22 11.3151 21.9311 10.6462 21.8 10"
@@ -125,23 +177,23 @@ const Header = () => {
                                 >
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                                          xmlns="http://www.w3.org/2000/svg">
-                                        <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="1.5"/>
+                                        <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="1.5" />
                                         <path d="M12 2V4" stroke="currentColor" strokeWidth="1.5"
-                                              strokeLinecap="round"/>
+                                              strokeLinecap="round" />
                                         <path d="M12 20V22" stroke="currentColor" strokeWidth="1.5"
-                                              strokeLinecap="round"/>
+                                              strokeLinecap="round" />
                                         <path d="M4 12L2 12" stroke="currentColor" strokeWidth="1.5"
-                                              strokeLinecap="round"/>
+                                              strokeLinecap="round" />
                                         <path d="M22 12L20 12" stroke="currentColor" strokeWidth="1.5"
-                                              strokeLinecap="round"/>
+                                              strokeLinecap="round" />
                                         <path opacity="0.5" d="M19.7778 4.22266L17.5558 6.25424" stroke="currentColor"
-                                              strokeWidth="1.5" strokeLinecap="round"/>
+                                              strokeWidth="1.5" strokeLinecap="round" />
                                         <path opacity="0.5" d="M4.22217 4.22266L6.44418 6.25424" stroke="currentColor"
-                                              strokeWidth="1.5" strokeLinecap="round"/>
+                                              strokeWidth="1.5" strokeLinecap="round" />
                                         <path opacity="0.5" d="M6.44434 17.5557L4.22211 19.7779" stroke="currentColor"
-                                              strokeWidth="1.5" strokeLinecap="round"/>
+                                              strokeWidth="1.5" strokeLinecap="round" />
                                         <path opacity="0.5" d="M19.7778 19.7773L17.5558 17.5551" stroke="currentColor"
-                                              strokeWidth="1.5" strokeLinecap="round"/>
+                                              strokeWidth="1.5" strokeLinecap="round" />
                                     </svg>
                                 </button>
                             ) : (
@@ -180,9 +232,9 @@ const Header = () => {
                                             strokeWidth="1.5"
                                         />
                                         <path opacity="0.5" d="M22 21H2" stroke="currentColor" strokeWidth="1.5"
-                                              strokeLinecap="round"/>
+                                              strokeLinecap="round" />
                                         <path opacity="0.5" d="M15 15H9" stroke="currentColor" strokeWidth="1.5"
-                                              strokeLinecap="round"/>
+                                              strokeLinecap="round" />
                                     </svg>
                                 </button>
                             )}
@@ -214,7 +266,7 @@ const Header = () => {
                                                     }}
                                                 >
                                                     <img src={`/assets/images/flags/${item.code.toUpperCase()}.svg`}
-                                                         alt="flag" className="h-5 w-5 rounded-full object-cover"/>
+                                                         alt="flag" className="h-5 w-5 rounded-full object-cover" />
                                                     <span className="ltr:ml-3 rtl:mr-3">{t(item.translation_key)}</span>
                                                 </button>
                                             </li>
@@ -231,13 +283,13 @@ const Header = () => {
                                 btnClassName="relative group block"
                                 button={<img
                                     className="h-9 w-9 rounded-full object-cover saturate-50 group-hover:saturate-100"
-                                    src="/assets/images/user-profile.jpeg" alt="userProfile"/>}
+                                    src="/assets/images/default.jpeg" alt="userProfile" />}
                             >
                                 <ul className="w-[230px] !py-0 font-semibold text-dark dark:text-white-dark dark:text-white-light/90">
                                     <li>
                                         <div className="flex items-center px-4 py-4">
                                             <img className="h-10 w-10 rounded-md object-cover"
-                                                 src="/assets/images/user-profile.jpeg" alt="userProfile"/>
+                                                 src="/assets/images/default.jpeg" alt="userProfile" />
                                             <div className="ltr:pl-4 rtl:pr-4">
                                                 <h4 className="text-base">
                                                     {user?.name || 'User'}
@@ -253,20 +305,49 @@ const Header = () => {
                                             </div>
                                         </div>
                                     </li>
+                                    {/*<li>*/}
+                                    {/*    <Link href="/workspace/user" className="dark:hover:text-white">*/}
+                                    {/*        <svg className="ltr:mr-2 rtl:ml-2" width="18" height="18"*/}
+                                    {/*             viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">*/}
+                                    {/*            <circle cx="12" cy="6" r="4" stroke="currentColor" strokeWidth="1.5" />*/}
+                                    {/*            <path*/}
+                                    {/*                opacity="0.5"*/}
+                                    {/*                d="M20 17.5C20 19.9853 20 22 12 22C4 22 4 19.9853 4 17.5C4 15.0147 7.58172 13 12 13C16.4183 13 20 15.0147 20 17.5Z"*/}
+                                    {/*                stroke="currentColor"*/}
+                                    {/*                strokeWidth="1.5"*/}
+                                    {/*            />*/}
+                                    {/*        </svg>*/}
+                                    {/*        Profile*/}
+                                    {/*    </Link>*/}
+                                    {/*</li>*/}
                                     <li>
-                                        <Link href="/workspace/user" className="dark:hover:text-white">
+                                        <button className="dark:hover:text-white" onClick={() => handleLockScreen()}>
                                             <svg className="ltr:mr-2 rtl:ml-2" width="18" height="18"
                                                  viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <circle cx="12" cy="6" r="4" stroke="currentColor" strokeWidth="1.5"/>
                                                 <path
-                                                    opacity="0.5"
-                                                    d="M20 17.5C20 19.9853 20 22 12 22C4 22 4 19.9853 4 17.5C4 15.0147 7.58172 13 12 13C16.4183 13 20 15.0147 20 17.5Z"
+                                                    d="M2 16C2 13.1716 2 11.7574 2.87868 10.8787C3.75736 10 5.17157 10 8 10H16C18.8284 10 20.2426 10 21.1213 10.8787C22 11.7574 22 13.1716 22 16C22 18.8284 22 20.2426 21.1213 21.1213C20.2426 22 18.8284 22 16 22H8C5.17157 22 3.75736 22 2.87868 21.1213C2 20.2426 2 18.8284 2 16Z"
                                                     stroke="currentColor"
                                                     strokeWidth="1.5"
                                                 />
+                                                <path opacity="0.5"
+                                                      d="M6 10V8C6 4.68629 8.68629 2 12 2C15.3137 2 18 4.68629 18 8V10"
+                                                      stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                                <g opacity="0.5">
+                                                    <path
+                                                        d="M9 16C9 16.5523 8.55228 17 8 17C7.44772 17 7 16.5523 7 16C7 15.4477 7.44772 15 8 15C8.55228 15 9 15.4477 9 16Z"
+                                                        fill="currentColor" />
+                                                    <path
+                                                        d="M13 16C13 16.5523 12.5523 17 12 17C11.4477 17 11 16.5523 11 16C11 15.4477 11.4477 15 12 15C12.5523 15 13 15.4477 13 16Z"
+                                                        fill="currentColor"
+                                                    />
+                                                    <path
+                                                        d="M17 16C17 16.5523 16.5523 17 16 17C15.4477 17 15 16.5523 15 16C15 15.4477 15.4477 15 16 15C16.5523 15 17 15.4477 17 16Z"
+                                                        fill="currentColor"
+                                                    />
+                                                </g>
                                             </svg>
-                                            Profile
-                                        </Link>
+                                            Lock Screen
+                                        </button>
                                     </li>
                                     <li className="border-t border-white-light dark:border-white-light/10">
                                         <button onClick={handleLogout} className="!py-3 text-danger">
@@ -280,7 +361,7 @@ const Header = () => {
                                                     strokeLinecap="round"
                                                 />
                                                 <path d="M12 15L12 2M12 2L15 5.5M12 2L9 5.5" stroke="currentColor"
-                                                      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                                      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                             </svg>
                                             Sign Out
                                         </button>

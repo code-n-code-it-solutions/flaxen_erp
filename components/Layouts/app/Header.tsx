@@ -6,7 +6,7 @@ import { useAppDispatch, useAppSelector } from '@/store';
 import { toggleLocale, toggleSidebar, toggleTheme } from '@/store/slices/themeConfigSlice';
 import { useTranslation } from 'react-i18next';
 import Dropdown from '@/components/Dropdown';
-import { logoutUser } from '@/store/slices/userSlice';
+import { logoutUser, setIsLocked } from '@/store/slices/userSlice';
 import { clearMenuState, setActiveMenu } from '@/store/slices/menuSlice';
 import { setAuthToken } from '@/configs/api.config';
 import { getIcon } from '@/utils/helper';
@@ -35,7 +35,7 @@ const Header = ({ menus }: { menus: any[] }) => {
     const [notifications, setNotifications] = useState([
         {
             id: 1,
-            profile: 'user-profile.jpeg',
+            profile: 'default.jpeg',
             message: '<strong class="text-sm mr-1">John Doe</strong>invite you to <strong>Prototyping</strong>',
             time: '45 min ago'
         }
@@ -45,6 +45,10 @@ const Header = ({ menus }: { menus: any[] }) => {
         setAuthToken(token);
         dispatch(clearMenuState());
         dispatch(logoutUser());
+    };
+
+    const handleLockScreen = () => {
+        dispatch(setIsLocked({ lockStatus: true, beforeLockUrl: router.pathname }));
     };
 
     useEffect(() => {
@@ -85,7 +89,7 @@ const Header = ({ menus }: { menus: any[] }) => {
             <div className="shadow-sm">
                 <div className="relative flex w-full items-center bg-white px-5 py-2.5 dark:bg-black">
                     <div className="horizontal-logo flex items-center justify-between ltr:mr-2 rtl:ml-2 lg:hidden">
-                        <Link href={'/erp/main'}
+                        <Link href={'/apps'}
                               className="main-logo flex shrink-0 items-center cursor-pointer">
                             {/*<img className="inline w-8 ltr:-ml-1 rtl:-mr-1" src="/assets/images/logo.svg" alt="logo"/>*/}
                             <span
@@ -308,7 +312,7 @@ const Header = ({ menus }: { menus: any[] }) => {
                                                                 <div className="ltr:pr-3 rtl:pl-3">
                                                                     <h6
                                                                         dangerouslySetInnerHTML={{
-                                                                            __html: notification.message,
+                                                                            __html: notification.message
                                                                         }}
                                                                     ></h6>
                                                                     <span
@@ -392,20 +396,16 @@ const Header = ({ menus }: { menus: any[] }) => {
                                 btnClassName="relative group block"
                                 button={<img
                                     className="h-9 w-9 rounded-full object-cover saturate-50 group-hover:saturate-100"
-                                    src="/assets/images/user-profile.jpeg" alt="userProfile" />}
+                                    src="/assets/images/default.jpeg" alt="userProfile" />}
                             >
                                 <ul className="w-[230px] !py-0 font-semibold text-dark dark:text-white-dark dark:text-white-light/90">
                                     <li>
                                         <div className="flex items-center px-4 py-4">
                                             <img className="h-10 w-10 rounded-md object-cover"
-                                                 src="/assets/images/user-profile.jpeg" alt="userProfile" />
+                                                 src="/assets/images/default.jpeg" alt="userProfile" />
                                             <div className="ltr:pl-4 rtl:pr-4">
                                                 <h4 className="text-base">
                                                     {user?.name || 'User'}
-                                                    {/*<span*/}
-                                                    {/*    className="rounded bg-success-light px-1 text-xs text-success ltr:ml-2 rtl:ml-2">*/}
-                                                    {/*    Pro*/}
-                                                    {/*</span>*/}
                                                 </h4>
                                                 <button type="button"
                                                         className="text-[10px] text-black/60 hover:text-primary dark:text-dark-light/60 dark:hover:text-white">
@@ -414,20 +414,49 @@ const Header = ({ menus }: { menus: any[] }) => {
                                             </div>
                                         </div>
                                     </li>
+                                    {/*<li>*/}
+                                    {/*    <Link href="/workspace/user" className="dark:hover:text-white">*/}
+                                    {/*        <svg className="ltr:mr-2 rtl:ml-2" width="18" height="18"*/}
+                                    {/*             viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">*/}
+                                    {/*            <circle cx="12" cy="6" r="4" stroke="currentColor" strokeWidth="1.5" />*/}
+                                    {/*            <path*/}
+                                    {/*                opacity="0.5"*/}
+                                    {/*                d="M20 17.5C20 19.9853 20 22 12 22C4 22 4 19.9853 4 17.5C4 15.0147 7.58172 13 12 13C16.4183 13 20 15.0147 20 17.5Z"*/}
+                                    {/*                stroke="currentColor"*/}
+                                    {/*                strokeWidth="1.5"*/}
+                                    {/*            />*/}
+                                    {/*        </svg>*/}
+                                    {/*        Profile*/}
+                                    {/*    </Link>*/}
+                                    {/*</li>*/}
                                     <li>
-                                        <Link href="/workspace/user" className="dark:hover:text-white">
+                                        <button className="dark:hover:text-white" onClick={() => handleLockScreen()}>
                                             <svg className="ltr:mr-2 rtl:ml-2" width="18" height="18"
                                                  viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <circle cx="12" cy="6" r="4" stroke="currentColor" strokeWidth="1.5" />
                                                 <path
-                                                    opacity="0.5"
-                                                    d="M20 17.5C20 19.9853 20 22 12 22C4 22 4 19.9853 4 17.5C4 15.0147 7.58172 13 12 13C16.4183 13 20 15.0147 20 17.5Z"
+                                                    d="M2 16C2 13.1716 2 11.7574 2.87868 10.8787C3.75736 10 5.17157 10 8 10H16C18.8284 10 20.2426 10 21.1213 10.8787C22 11.7574 22 13.1716 22 16C22 18.8284 22 20.2426 21.1213 21.1213C20.2426 22 18.8284 22 16 22H8C5.17157 22 3.75736 22 2.87868 21.1213C2 20.2426 2 18.8284 2 16Z"
                                                     stroke="currentColor"
                                                     strokeWidth="1.5"
                                                 />
+                                                <path opacity="0.5"
+                                                      d="M6 10V8C6 4.68629 8.68629 2 12 2C15.3137 2 18 4.68629 18 8V10"
+                                                      stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                                <g opacity="0.5">
+                                                    <path
+                                                        d="M9 16C9 16.5523 8.55228 17 8 17C7.44772 17 7 16.5523 7 16C7 15.4477 7.44772 15 8 15C8.55228 15 9 15.4477 9 16Z"
+                                                        fill="currentColor" />
+                                                    <path
+                                                        d="M13 16C13 16.5523 12.5523 17 12 17C11.4477 17 11 16.5523 11 16C11 15.4477 11.4477 15 12 15C12.5523 15 13 15.4477 13 16Z"
+                                                        fill="currentColor"
+                                                    />
+                                                    <path
+                                                        d="M17 16C17 16.5523 16.5523 17 16 17C15.4477 17 15 16.5523 15 16C15 15.4477 15.4477 15 16 15C16.5523 15 17 15.4477 17 16Z"
+                                                        fill="currentColor"
+                                                    />
+                                                </g>
                                             </svg>
-                                            Profile
-                                        </Link>
+                                            Lock Screen
+                                        </button>
                                     </li>
                                     <li className="border-t border-white-light dark:border-white-light/10">
                                         <button onClick={handleLogout} className="!py-3 text-danger">

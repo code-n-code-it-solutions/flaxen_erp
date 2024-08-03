@@ -7,6 +7,7 @@ import AnimateHeight from 'react-animate-height';
 import { IRootState, useAppSelector } from '@/store';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import IconCaretDown from '@/components/Icon/IconCaretDown';
 
 const Sidebar = () => {
     const router = useRouter();
@@ -110,6 +111,60 @@ const Sidebar = () => {
                                             className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t('companies')}</span>
                                     </div>
                                 </Link>
+                            </li>
+                            <li className="menu nav-item">
+                                <button type="button"
+                                        className={`${currentMenu === 'accounting' ? 'active' : ''} nav-link group w-full`}
+                                        onClick={() => toggleMenu('accounting')}>
+                                    <div className="flex items-center">
+                                        <span
+                                            className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t('accounting')}</span>
+                                    </div>
+
+                                    <div className={currentMenu !== 'accounting' ? '-rotate-90 rtl:rotate-90' : ''}>
+                                        <IconCaretDown />
+                                    </div>
+                                </button>
+
+                                <AnimateHeight duration={300} height={currentMenu === 'accounting' ? 'auto' : 0}>
+                                    <ul className="sub-menu text-gray-500">
+                                        <li>
+                                            <Link
+                                                href="/workspace/accounting/accounting-report">{t('accounting_report')}</Link>
+                                        </li>
+                                        <li>
+                                            <Link
+                                                href="/workspace/accounting/general-journal">{t('general_journal')}</Link>
+                                        </li>
+                                    </ul>
+                                </AnimateHeight>
+                            </li>
+                            <li className="menu nav-item">
+                                <button type="button"
+                                        className={`${currentMenu === 'billings' ? 'active' : ''} nav-link group w-full`}
+                                        onClick={() => toggleMenu('billings')}>
+                                    <div className="flex items-center">
+                                        <span
+                                            className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t('billings')}</span>
+                                    </div>
+
+                                    <div className={currentMenu !== 'billings' ? '-rotate-90 rtl:rotate-90' : ''}>
+                                        <IconCaretDown />
+                                    </div>
+                                </button>
+
+                                <AnimateHeight duration={300} height={currentMenu === 'billings' ? 'auto' : 0}>
+                                    <ul className="sub-menu text-gray-500">
+                                        <li>
+                                            <Link
+                                                href="/workspace/billings/payment-history">{t('payment_history')}</Link>
+                                        </li>
+                                        <li>
+                                            <Link
+                                                href="/workspace/billings/payment-methods">{t('payment_methods')}</Link>
+                                        </li>
+                                    </ul>
+                                </AnimateHeight>
                             </li>
                         </ul>
                     </PerfectScrollbar>

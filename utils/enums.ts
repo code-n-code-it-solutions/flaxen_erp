@@ -118,10 +118,12 @@ export enum AppBasePath {
     Sales_Reporting = '/apps/reporting/sales',
     Purchases_Reporting = '/apps/reporting/purchases',
     Invoicing_Reporting = '/apps/reporting/invoicing',
-    Report_Accounts = '/apps/reporting/accounts',
+    Report_Accounts = '/apps/accounting/accounts',
+    General_Journal = '/apps/accounting/general-journal',
     Vendor_Report_Account = '/apps/reporting/purchases/vendors/account',
     Vendor_Report_Statement = '/apps/reporting/purchases/vendors/statement',
     Employee_Permission = '/apps/employees/configuration/permissions',
     Super_Admin_Permission = '/apps/super-admin/permissions',
     Employee = '/apps/employees/employees-list',
+    Credit_Notes = '/apps/sales/credit-notes',
 }
