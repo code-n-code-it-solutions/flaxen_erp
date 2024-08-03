@@ -6,6 +6,7 @@ import { configureSlice } from '@/utils/helper';
 // Define a type for the slice state
 interface IUserState {
     user: any;
+    menus: any[];
     isLocked: boolean;
     beforeLockedUrl: string;
     token: string;
@@ -17,6 +18,7 @@ interface IUserState {
 // Initial state
 const initialState: IUserState = {
     user: null,
+    menus: [],
     isLocked: false,
     beforeLockedUrl: '',
     token: '',
@@ -89,6 +91,7 @@ export const userSlice = createSlice({
     reducers: {
         clearAuthState: (state) => {
             state.user = null;
+            state.menus = [];
             state.token = '';
             state.isLoggedIn = false;
             state.error = null;
@@ -117,6 +120,7 @@ export const userSlice = createSlice({
                 state.isLoggedIn = true;
                 state.token = action.payload.token;
                 state.user = action.payload.user;
+                state.menus = action.payload.menus;
             })
             .addCase(loginUser.rejected, (state, action) => {
                 // console.log(action);
@@ -132,6 +136,7 @@ export const userSlice = createSlice({
                 state.isLoggedIn = true;
                 state.token = action.payload.token;
                 state.user = action.payload.user;
+                state.menus = action.payload.menus;
             })
             .addCase(registerUser.rejected, (state, action) => {
                 state.loading = false;

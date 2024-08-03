@@ -8,7 +8,7 @@ import { IRootState, useAppSelector } from '@/store';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 
-const Sidebar = ({ menus }: { menus: any[] }) => {
+const Sidebar = () => {
     const router = useRouter();
     const dispatch = useDispatch();
     const { t } = useTranslation();
@@ -16,6 +16,7 @@ const Sidebar = ({ menus }: { menus: any[] }) => {
     const themeConfig = useSelector((state: IRootState) => state.themeConfig);
     const semidark = useSelector((state: IRootState) => state.themeConfig.semidark);
     const { activeModule } = useAppSelector((state) => state.menu);
+    const { menus } = useAppSelector((state) => state.user);
 
     const [currentMenu, setCurrentMenu] = useState<string>('');
     const [subCurrentMenu, setSubCurrentMenu] = useState<string>('');
