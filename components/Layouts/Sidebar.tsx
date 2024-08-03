@@ -47,7 +47,7 @@ const Sidebar = ({ menus }: { menus: any[] }) => {
             initActiveMenu.classList.add('active');
             const parentMenu = initActiveMenu.closest('ul.sub-menu');
             if (parentMenu) {
-                const menuElement:any = parentMenu.closest('li.menu')?.querySelector('.nav-link');
+                const menuElement: any = parentMenu.closest('li.menu')?.querySelector('.nav-link');
                 if (menuElement) {
                     setTimeout(() => {
                         menuElement.click();
@@ -177,8 +177,7 @@ const Sidebar = ({ menus }: { menus: any[] }) => {
                                                                                         {subMenu.children.map((subSubMenu: any, j: number) => (
                                                                                             <li key={j}>
                                                                                                 <Link
-                                                                                                    href={subSubMenu.route || ''}
-                                                                                                    target="_blank">
+                                                                                                    href={subSubMenu.route || ''}>
                                                                                                     {t(subSubMenu.translation_key)}
                                                                                                 </Link>
                                                                                             </li>

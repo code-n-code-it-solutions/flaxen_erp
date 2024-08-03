@@ -22,7 +22,7 @@ const Create = () => {
     useEffect(() => {
         if (quotation && success) {
             dispatch(clearQuotationState());
-            router.push('/apps/sales/orders/quotations');
+            router.push('/apps/sales/quotations');
         }
     }, [quotation, success]);
 

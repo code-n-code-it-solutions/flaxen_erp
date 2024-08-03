@@ -21,7 +21,7 @@ const Create = () => {
 
     useEffect(() => {
         if (deliveryNote && success) {
-            router.push('/apps/sales/orders/delivery-notes');
+            router.push('/apps/sales/delivery-notes');
             dispatch(clearDeliveryNoteState());
         }
     }, [deliveryNote, success]);
