@@ -50,5 +50,5 @@ const Create = () => {
     );
 };
 
-Create.getLayout = (page: any) => <AppLayout>{page}</AppLayout>
+// Create.getLayout = (page: any) => <AppLayout>{page}</AppLayout>
 export default Create;

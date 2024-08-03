@@ -406,10 +406,6 @@ const Header = ({ menus }: { menus: any[] }) => {
                                             <div className="ltr:pl-4 rtl:pr-4">
                                                 <h4 className="text-base">
                                                     {user?.name || 'User'}
-                                                    {/*<span*/}
-                                                    {/*    className="rounded bg-success-light px-1 text-xs text-success ltr:ml-2 rtl:ml-2">*/}
-                                                    {/*    Pro*/}
-                                                    {/*</span>*/}
                                                 </h4>
                                                 <button type="button"
                                                         className="text-[10px] text-black/60 hover:text-primary dark:text-dark-light/60 dark:hover:text-white">

@@ -109,11 +109,11 @@ const PageHeader = ({ appBasePath, selectedRows, gridRef, leftComponent, rightCo
     // console.log(otherButtons);
     return (
         <div>
-            <div className="flex md:justify-end md:items-center" style={{ marginTop: -22 }}>
-                <div className="badge bg-success text-white text-xs font-semibold px-2 py-1 rounded-full">
-                    {user.registered_company ? user.registered_company.name : 'All Companies'} - {user.registered_branch ? user.registered_branch.name : 'All Branches'}
-                </div>
-            </div>
+            {/*<div className="flex md:justify-end md:items-center" style={{ marginTop: -22 }}>*/}
+            {/*    <div className="badge bg-success text-white text-xs font-semibold px-2 py-1 rounded-full">*/}
+            {/*        {user.registered_company ? user.registered_company.name : 'All Companies'} - {user.registered_branch ? user.registered_branch.name : 'All Branches'}*/}
+            {/*    </div>*/}
+            {/*</div>*/}
             <div
                 className="shadow bg-white px-5 py-5 flex flex-col md:flex-row justify-between gap-3 md:items-center panel rounded">
                 {leftComponent && (

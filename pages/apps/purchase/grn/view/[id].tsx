@@ -222,5 +222,5 @@ const View = () => {
     );
 };
 
-View.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
+// View.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
 export default View;

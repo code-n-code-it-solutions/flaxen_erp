@@ -7,10 +7,10 @@ import PageWrapper from '@/components/PageWrapper';
 import Button from '@/components/Button';
 import { getIcon } from '@/utils/helper';
 import { AppBasePath, ButtonSize, ButtonType, ButtonVariant, IconType } from '@/utils/enums';
-import CustomerForm from '@/pages/erp/crm/customer/CustomerForm';
 import { showDetails } from '@/store/slices/customerSlice';
 import AppLayout from '@/components/Layouts/AppLayout';
 import DetailPageHeader from '@/components/apps/DetailPageHeader';
+import CustomerForm from '@/pages/apps/sales/configuration/customers/CustomerForm';
 
 const Edit = () => {
     const dispatch = useAppDispatch();
@@ -58,5 +58,5 @@ const Edit = () => {
     );
 };
 
-Edit.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
+// Edit.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
 export default Edit;

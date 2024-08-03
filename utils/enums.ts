@@ -125,4 +125,5 @@ export enum AppBasePath {
     Employee_Permission = '/apps/employees/configuration/permissions',
     Super_Admin_Permission = '/apps/super-admin/permissions',
     Employee = '/apps/employees/employees-list',
+    Credit_Notes = '/apps/sales/credit-notes',
 }

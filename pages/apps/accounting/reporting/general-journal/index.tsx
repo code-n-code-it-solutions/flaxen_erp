@@ -168,7 +168,7 @@ const Index = () => {
     }, [generalJournal]);
 
     return (
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-3">
             <PageHeader
                 appBasePath={AppBasePath.General_Journal}
                 key={selectedRows.length}
@@ -256,5 +256,5 @@ const Index = () => {
     );
 };
 
-Index.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
+// Index.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
 export default Index;

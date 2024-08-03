@@ -3,10 +3,10 @@ import {useAppDispatch, useAppSelector} from "@/store";
 import {useRouter} from "next/router";
 import {setPageTitle} from "@/store/slices/themeConfigSlice";
 import {clearPurchaseRequisitionState, editPurchaseRequisition} from "@/store/slices/purchaseRequisitionSlice";
-import PurchaseRequestForm from "@/pages/erp/purchase/purchase-requisition/PurchaseRequestForm";
 import {ButtonType, ButtonVariant, IconType} from "@/utils/enums";
 import PageWrapper from "@/components/PageWrapper";
 import AppLayout from '@/components/Layouts/AppLayout';
+import PurchaseRequestForm from '@/pages/apps/purchase/purchase-requisition/PurchaseRequestForm';
 
 const Edit = () => {
     const dispatch = useAppDispatch();
@@ -49,5 +49,5 @@ const Edit = () => {
     );
 };
 
-Edit.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
+// Edit.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
 export default Edit;

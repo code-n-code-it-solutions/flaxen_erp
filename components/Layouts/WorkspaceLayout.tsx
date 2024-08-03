@@ -5,7 +5,7 @@ import {checkServerSideAuth} from "@/utils/authCheck";
 import {logoutUser} from "@/store/slices/userSlice";
 import {clearMenuState} from "@/store/slices/menuSlice";
 import App from "@/App";
-import {toggleSidebar} from "@/store/slices/themeConfigSlice";
+import { toggleMenu, toggleSidebar } from '@/store/slices/themeConfigSlice';
 import Setting from "@/components/Layouts/Setting";
 import Sidebar from "@/components/Layouts/workspace/Sidebar";
 import Header from "@/components/Layouts/workspace/Header";
@@ -100,6 +100,10 @@ const WorkspaceLayout = ({children}: { children: React.ReactElement }) => {
             router.push('/auth/lockscreen');
         }
     }, [isLocked]);
+
+    useEffect(() => {
+        dispatch(toggleMenu('horizontal'));
+    }, []);
 
     return (
         isLoggedIn ?

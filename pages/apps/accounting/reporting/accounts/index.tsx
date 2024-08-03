@@ -90,7 +90,7 @@ const Index = () => {
     };
 
     return (
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-3">
             <PageHeader
                 appBasePath={AppBasePath.Report_Accounts}
                 key={selectedRows.length}
@@ -151,5 +151,5 @@ const Index = () => {
     );
 };
 
-Index.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
+// Index.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
 export default Index;

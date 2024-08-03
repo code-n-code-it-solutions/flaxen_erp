@@ -49,5 +49,5 @@ const Edit = () => {
 };
 
 
-Edit.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
+// Edit.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
 export default Edit;

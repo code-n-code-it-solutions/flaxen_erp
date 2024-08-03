@@ -35,7 +35,7 @@ const AppLayout = ({ children }:PropsWithChildren) => {
 
     useEffect(() => {
         setAuthToken(token);
-        dispatch(getPermittedMenu({route: router.pathname}));
+        // dispatch(getPermittedMenu({route: router.pathname}));
     }, [router.pathname]);
 
     useEffect(() => {
@@ -44,7 +44,7 @@ const AppLayout = ({ children }:PropsWithChildren) => {
 
     useEffect(() => {
         // console.log(menus);
-        dispatch(setSelectedPlugin(menus ? menus[0]?.plugin : {}))
+        // dispatch(setSelectedPlugin(menus ? menus[0]?.plugin : {}))
     }, [menus]);
 
     const goToTop = () => {

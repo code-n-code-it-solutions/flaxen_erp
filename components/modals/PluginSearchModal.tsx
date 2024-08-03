@@ -33,7 +33,7 @@ const PluginSearchModal = ({ modalOpen, setModalOpen }: IProps) => {
         if (modalOpen) {
             setSearchQuery('');
             dispatch(clearPluginState());
-            dispatch(getPermittedPlugins(user.id));
+            // dispatch(getPermittedPlugins(user.id));
             if (searchInputRef.current) {
                 searchInputRef.current.focus();
             }

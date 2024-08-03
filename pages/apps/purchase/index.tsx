@@ -517,7 +517,5 @@ const Index = () => {
     }
 ;
 
-Index.getLayout = (page: any) => {
-    return <AppLayout>{page}</AppLayout>;
-};
+// Index.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
 export default Index;

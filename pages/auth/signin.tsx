@@ -4,17 +4,19 @@ import { useEffect, useState } from 'react';
 import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import { clearAuthState, clearIsLocked, loginUser, logoutUser } from '@/store/slices/userSlice';
 import AuthLayout from '@/components/Layouts/AuthLayout';
-import { clearMenuState } from '@/store/slices/menuSlice';
+import { clearMenuState, getPermittedMenu } from '@/store/slices/menuSlice';
 import { clearCompanySlice } from '@/store/slices/companySlice';
 import { clearSettingState, getSettings } from '@/store/slices/settingSlice';
 import Swal from 'sweetalert2';
+import { clearPluginState, getPermittedPlugins } from '@/store/slices/pluginSlice';
+import { setAuthToken } from '@/configs/api.config';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
     const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
-    const { isLoggedIn, loading, error } = useAppSelector((state) => state.user);
+    const { user, token, isLoggedIn, loading, error } = useAppSelector((state) => state.user);
     const { settings } = useAppSelector((state) => state.setting);
 
     const dispatch = useAppDispatch();
@@ -39,6 +41,8 @@ const Login = () => {
         dispatch(clearSettingState());
         dispatch(clearAuthState());
         dispatch(clearIsLocked());
+        dispatch(clearPluginState());
+        dispatch(clearMenuState());
         dispatch(getSettings());
         if (isMaintenanceMode) {
             Swal.fire({
@@ -50,6 +54,14 @@ const Login = () => {
             dispatch(loginUser({ email, password, rememberMe }));
         }
     };
+
+    useEffect(() => {
+        if(user) {
+            setAuthToken(token)
+            // dispatch(getPermittedPlugins(user.id));
+
+        }
+    }, [user]);
 
     return (
         !isLoggedIn &&

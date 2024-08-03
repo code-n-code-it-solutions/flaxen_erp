@@ -77,9 +77,9 @@ const UnlockBox = () => {
                         type="button"
                         onClick={() => {
                             dispatch(clearIsLocked());
-                            dispatch(logoutUser())
+                            dispatch(logoutUser());
                         }}
-                        className="btn btn-primary w-full"
+                        className="btn btn-danger w-full"
                     >
                         LOGOUT
                     </button>
