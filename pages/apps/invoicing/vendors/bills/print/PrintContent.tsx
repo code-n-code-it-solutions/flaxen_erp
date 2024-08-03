@@ -1,7 +1,6 @@
 import React from 'react';
 import { Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import Header from '@/components/Report/Header';
-import deliveryNote from '@/pages/erp/sale/delivery-note';
 
 const PrintContent = ({ content, items }: any) => {
     return (
