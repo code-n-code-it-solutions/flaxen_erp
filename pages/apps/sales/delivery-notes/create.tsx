@@ -3,12 +3,11 @@ import { useAppDispatch, useAppSelector } from '@/store';
 import PageWrapper from '@/components/PageWrapper';
 import { AppBasePath } from '@/utils/enums';
 import { setPageTitle } from '@/store/slices/themeConfigSlice';
-import DeliveryNoteForm from '@/pages/apps/sales/orders/delivery-notes/DeliveryNoteForm';
 import { useRouter } from 'next/router';
 import { clearDeliveryNoteState } from '@/store/slices/deliveryNoteSlice';
 import useSetActiveMenu from '@/hooks/useSetActiveMenu';
 import DetailPageHeader from '@/components/apps/DetailPageHeader';
-import AppLayout from '@/components/Layouts/AppLayout';
+import DeliveryNoteForm from '@/pages/apps/sales/delivery-notes/DeliveryNoteForm';
 
 const Create = () => {
     useSetActiveMenu(AppBasePath.Delivery_Note);
