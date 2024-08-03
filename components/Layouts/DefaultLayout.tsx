@@ -14,11 +14,12 @@ const DefaultLayout = ({ children }: PropsWithChildren) => {
     const router = useRouter();
     const dispatch = useAppDispatch();
     const themeConfig = useAppSelector((state) => state.themeConfig);
+    const { permittedMenus, loading } = useAppSelector(state => state.menu);
+    const { token, isLoggedIn, isLocked } = useAppSelector((state) => state.user);
+
     const [showLoader, setShowLoader] = useState(true);
     const [showTopButton, setShowTopButton] = useState(false);
     const [animation, setAnimation] = useState(themeConfig.animation);
-    const { permittedMenus, loading } = useAppSelector(state => state.menu);
-    const { token, isLoggedIn, isLocked } = useAppSelector((state) => state.user);
 
     const goToTop = () => {
         document.body.scrollTop = 0;
