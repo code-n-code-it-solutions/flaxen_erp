@@ -21,17 +21,11 @@ import IconBellBing from '@/components/Icon/IconBellBing';
 import IconMenuDashboard from '@/components/Icon/Menu/IconMenuDashboard';
 import IconCaretDown from '@/components/Icon/IconCaretDown';
 import IconMenuApps from '@/components/Icon/Menu/IconMenuApps';
-import IconMenuComponents from '@/components/Icon/Menu/IconMenuComponents';
-import IconMenuElements from '@/components/Icon/Menu/IconMenuElements';
-import IconMenuDatatables from '@/components/Icon/Menu/IconMenuDatatables';
-import IconMenuForms from '@/components/Icon/Menu/IconMenuForms';
-import IconMenuPages from '@/components/Icon/Menu/IconMenuPages';
-import IconMenuMore from '@/components/Icon/Menu/IconMenuMore';
 import { logoutUser, setIsLocked } from '@/store/slices/userSlice';
 import { setAuthToken } from '@/configs/api.config';
 import { clearMenuState } from '@/store/slices/menuSlice';
 
-const Header = ({ menus }: { menus: any[] }) => {
+const Header = () => {
     const router = useRouter();
     const dispatch = useAppDispatch();
     const { t, i18n } = useTranslation();

@@ -14,8 +14,8 @@ const DefaultLayout = ({ children }: PropsWithChildren) => {
     const router = useRouter();
     const dispatch = useAppDispatch();
     const themeConfig = useAppSelector((state) => state.themeConfig);
-    const { permittedMenus, loading } = useAppSelector(state => state.menu);
-    const { token, isLoggedIn, isLocked } = useAppSelector((state) => state.user);
+    // const { permittedMenus, loading } = useAppSelector(state => state.menu);
+    const { token, isLoggedIn, isLocked, menus } = useAppSelector((state) => state.user);
 
     const [showLoader, setShowLoader] = useState(true);
     const [showTopButton, setShowTopButton] = useState(false);
@@ -85,7 +85,7 @@ const DefaultLayout = ({ children }: PropsWithChildren) => {
 
     useEffect(() => {
         dispatch(toggleMenu('vertical'));
-        dispatch(getPermittedMenu());
+        // dispatch(getPermittedMenu());
     }, []);
 
     return (
@@ -94,7 +94,7 @@ const DefaultLayout = ({ children }: PropsWithChildren) => {
                 {/* BEGIN MAIN CONTAINER */}
                 <div className="relative">
                     {/* screen loader  */}
-                    {(loading && showLoader) && (
+                    {showLoader && (
                         <div
                             className="screen_loader animate__animated fixed inset-0 z-[60] grid place-content-center bg-[#fafafa] dark:bg-[#060818]">
                             <svg width="64" height="64" viewBox="0 0 135 135" xmlns="http://www.w3.org/2000/svg"
@@ -141,9 +141,9 @@ const DefaultLayout = ({ children }: PropsWithChildren) => {
 
                     <div
                         className={`${themeConfig.navbar} main-container min-h-screen text-black dark:text-white-dark`}>
-                        <Sidebar menus={permittedMenus ? permittedMenus : []} />
+                        <Sidebar />
                         <div className="main-content">
-                            <Header menus={permittedMenus ? permittedMenus : []} />
+                            <Header />
                             <div className={`${animation} animate__animated p-6`}>
                                 {children}
                             </div>

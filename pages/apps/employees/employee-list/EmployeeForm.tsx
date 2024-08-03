@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import ImageUploader from '@/components/form/ImageUploader';
 import { setAuthToken, setContentType } from '@/configs/api.config';
 import { useAppDispatch, useAppSelector } from '@/store';
@@ -21,6 +21,7 @@ import { getIcon, serverFilePath } from '@/utils/helper';
 import FileDownloader from '@/components/FileDownloader';
 import { clearRawProductState } from '@/store/slices/rawProductSlice';
 import Alert from '@/components/Alert';
+import { Tab } from '@headlessui/react';
 
 interface IFormProps {
     id?: any;
@@ -371,256 +372,307 @@ const EmployeeForm = ({ id }: IFormProps) => {
                     required={true}
                     errorMessage={errorMessages.name}
                 />
-                <div className="flex flex-col md:flex-row gap-3 w-full">
-                    <Input
-                        divClasses="w-full"
-                        label="Phone"
-                        type="text"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={(e) => handleChange('phone', e.target.value, true)}
-                        isMasked={true}
-                        placeholder={MaskConfig.phone.placeholder}
-                        maskPattern={MaskConfig.phone.pattern}
-                        errorMessage={errorMessages.phone}
-                        required={true}
-                    />
 
-
-                    {!router.query.id && (
-                        <>
-                            <Input
-                                divClasses="w-full"
-                                label="Email Address"
-                                type="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={(e) => handleChange('email', e.target.value, true)}
-                                isMasked={false}
-                                placeholder="Enter email address"
-                                errorMessage={errorMessages.email}
-                                required={true}
-                            />
-                            <Input
-                                divClasses="w-full"
-                                label="Password"
-                                type="password"
-                                name="password"
-                                value={formData.password}
-                                onChange={(e) => handleChange('password', e.target.value, true)}
-                                isMasked={false}
-                                placeholder="Enter login password"
-                                errorMessage={errorMessages.password}
-                                required={true}
-                            />
-                        </>
-                    )}
-
-
-                </div>
-                <div className="flex flex-col md:flex-row gap-3 w-full">
-                    <Input
-                        divClasses="w-full"
-                        label="ID #"
-                        type="text"
-                        name="id_number"
-                        value={formData.id_number}
-                        onChange={(e) => handleChange('id_number', e.target.value, true)}
-                        isMasked={true}
-                        placeholder={MaskConfig.identityNumber.placeholder}
-                        maskPattern={MaskConfig.identityNumber.pattern}
-                        errorMessage={errorMessages.id_number}
-                        required={true}
-                    />
-
-                    <Input
-                        divClasses="w-full"
-                        label="Passport #"
-                        type="text"
-                        name="passport_number"
-                        value={formData.passport_number}
-                        onChange={(e) => handleChange('passport_number', e.target.value, true)}
-                        isMasked={false}
-                        placeholder="Enter passport number"
-                        errorMessage={errorMessages.passport_number}
-                        required={true}
-                    />
-                    <Input
-                        divClasses="w-full"
-                        label="Date of Joining"
-                        type="date"
-                        name="date_of_joining"
-                        value={formData.date_of_joining}
-                        onChange={(date) => handleChange('date_of_joining', date[0].toLocaleDateString(), true)}
-                        isMasked={false}
-                        placeholder="Enter date of joining"
-                        errorMessage={errorMessages.date_of_joining}
-                        required={true}
-                    />
-
-                </div>
-
-                <div className="flex flex-col md:flex-row gap-3 w-full">
-                    <Dropdown
-                        divClasses="w-full"
-                        label="Country"
-                        name="country_id"
-                        options={countryOptions}
-                        value={formData.country_id}
-                        onChange={(e: any) => handleChange('country_id', e, false)}
-                    />
-
-                    <Dropdown
-                        divClasses="w-full"
-                        label="State"
-                        name="state_id"
-                        options={stateOptions}
-                        value={formData.state_id}
-                        onChange={(e: any) => handleChange('state_id', e, false)}
-                    />
-
-                    <Dropdown
-                        divClasses="w-full"
-                        label="City"
-                        name="city_id"
-                        options={cityOptions}
-                        value={formData.city_id}
-                        onChange={(e: any) => handleChange('city_id', e, false)}
-                    />
-                </div>
-                <div className="flex flex-col md:flex-row gap-3 w-full">
-                    <Input
-                        divClasses="w-full md:w-1/3"
-                        label="Postal Code"
-                        type="text"
-                        name="postal_code"
-                        value={formData.postal_code}
-                        onChange={(e) => handleChange('postal_code', e.target.value, true)}
-                        isMasked={false}
-                        placeholder="Enter postal code"
-                    />
-                    <Input
-                        divClasses="w-full"
-                        label="Address"
-                        type="text"
-                        name="address"
-                        value={formData.address}
-                        onChange={(e) => handleChange('address', e.target.value, e.target.required)}
-                        isMasked={false}
-                        placeholder="Enter street address"
-                        required={true}
-                        errorMessage={errorMessages.address}
-                    />
-                </div>
-
-                <div className="table-responsive w-full">
-                    <div className="flex justify-between items-center flex-col md:flex-row space-y-3 md:space-y-0 mb-3">
-                        <h3 className="text-lg font-semibold">Employee Documents</h3>
-                        <Button
-                            type={ButtonType.button}
-                            variant={ButtonVariant.primary}
-                            size={ButtonSize.small}
-                            text="Add Document"
-                            onClick={() => setDocumentModalOpen(true)}
-                        />
-                    </div>
-                    <table>
-                        <thead>
-                        <tr>
-                            <th>Document</th>
-                            <th>Document Name</th>
-                            <th>Description</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {employeeDocuments.map((document, index) => (
-                            <tr key={index}>
-                                <td>
-                                    {document.document
-                                        ? <span className="flex gap-2 items-center text-primary">
-                                            <FileDownloader
-                                                file={document.document}
-                                                title={
-                                                    <span className="flex justify-center items-center gap-3">
-                                                        {getIcon(IconType.download)}
-                                                        <span>Preview</span>
-                                                    </span>
-                                                }
-                                                buttonVariant={ButtonVariant.primary}
-                                                size={ButtonSize.small}
-                                                buttonType={ButtonType.link}
-                                            />
-                                        </span>
-                                        : <span>No Preview</span>
-                                    }
-                                </td>
-                                <td>{document.name}</td>
-                                <td>{document.description}</td>
-                                {/*<td>{document.is_active ? 'Active' : 'Inactive'}</td>*/}
-                                <td>
+                <div className="w-full">
+                    <Tab.Group>
+                        <Tab.List className="flex flex-wrap border-b border-white-light dark:border-[#191e3a]">
+                            <Tab as={Fragment}>
+                                {({ selected }) => (
                                     <button
-                                        type="button"
-                                        onClick={() => handleRemove(index, 'document')}
-                                        className="btn btn-outline-danger btn-sm"
+                                        className={`${
+                                            selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
+                                        } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
                                     >
-                                        Delete
+                                        Basic Details
                                     </button>
-                                </td>
-                            </tr>
-                        ))}
-                        </tbody>
-                    </table>
-                </div>
-
-                <div className="table-responsive w-full">
-                    <div className="flex justify-between items-center flex-col md:flex-row space-y-3 md:space-y-0 mb-3">
-                        <h3 className="text-lg font-semibold">Employee Bank Accounts</h3>
-                        <Button
-                            type={ButtonType.button}
-                            variant={ButtonVariant.primary}
-                            size={ButtonSize.small}
-                            text="Add Bank Detail"
-                            onClick={() => setBankModalOpen(true)}
-                        />
-                    </div>
-                    <table>
-                        <thead>
-                        <tr>
-                            <th>Bank</th>
-                            <th>Account No</th>
-                            <th>Account Title</th>
-                            <th>IBAN No</th>
-                            <th>Currency</th>
-                            <th>Action</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {employeeBankAccounts.map((bankAccount, index) => (
-                            <tr key={index}>
-                                <td>{bankAccount.bank_name}</td>
-                                <td>{bankAccount.account_number}</td>
-                                <td>{bankAccount.account_name}</td>
-                                <td>{bankAccount.iban}</td>
-                                <td>
-                                    {
-                                        bankAccount.currency_name + ' (' + bankAccount.currency_code + ')'
-                                    }
-                                </td>
-                                <td>
+                                )}
+                            </Tab>
+                            <Tab as={Fragment}>
+                                {({ selected }) => (
                                     <button
-                                        type="button"
-                                        onClick={() => handleRemove(index, 'bank')}
-                                        className="btn btn-outline-danger btn-sm"
+                                        className={`${
+                                            selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
+                                        } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
                                     >
-                                        Delete
+                                        Bank Details
                                     </button>
-                                </td>
-                            </tr>
-                        ))}
-                        </tbody>
-                    </table>
+                                )}
+                            </Tab>
+                            <Tab as={Fragment}>
+                                {({ selected }) => (
+                                    <button
+                                        className={`${
+                                            selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
+                                        } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
+                                    >
+                                        Documents
+                                    </button>
+                                )}
+                            </Tab>
+                        </Tab.List>
+                        <Tab.Panels className="rounded-none py-5 px-2">
+                            <Tab.Panel>
+                                <div className="active">
+                                    <div className="flex flex-col md:flex-row gap-3 w-full mb-3">
+                                        <Input
+                                            divClasses="w-full"
+                                            label="Phone"
+                                            type="text"
+                                            name="phone"
+                                            value={formData.phone}
+                                            onChange={(e) => handleChange('phone', e.target.value, true)}
+                                            isMasked={true}
+                                            placeholder={MaskConfig.phone.placeholder}
+                                            maskPattern={MaskConfig.phone.pattern}
+                                            errorMessage={errorMessages.phone}
+                                            required={true}
+                                        />
+
+
+                                        {!router.query.id && (
+                                            <>
+                                                <Input
+                                                    divClasses="w-full"
+                                                    label="Email Address"
+                                                    type="email"
+                                                    name="email"
+                                                    value={formData.email}
+                                                    onChange={(e) => handleChange('email', e.target.value, true)}
+                                                    isMasked={false}
+                                                    placeholder="Enter email address"
+                                                    errorMessage={errorMessages.email}
+                                                    required={true}
+                                                />
+                                                <Input
+                                                    divClasses="w-full"
+                                                    label="Password"
+                                                    type="password"
+                                                    name="password"
+                                                    value={formData.password}
+                                                    onChange={(e) => handleChange('password', e.target.value, true)}
+                                                    isMasked={false}
+                                                    placeholder="Enter login password"
+                                                    errorMessage={errorMessages.password}
+                                                    required={true}
+                                                />
+                                            </>
+                                        )}
+
+
+                                    </div>
+                                    <div className="flex flex-col md:flex-row gap-3 w-full mb-3">
+                                        <Input
+                                            divClasses="w-full"
+                                            label="ID #"
+                                            type="text"
+                                            name="id_number"
+                                            value={formData.id_number}
+                                            onChange={(e) => handleChange('id_number', e.target.value, true)}
+                                            isMasked={true}
+                                            placeholder={MaskConfig.identityNumber.placeholder}
+                                            maskPattern={MaskConfig.identityNumber.pattern}
+                                            errorMessage={errorMessages.id_number}
+                                            required={true}
+                                        />
+
+                                        <Input
+                                            divClasses="w-full"
+                                            label="Passport #"
+                                            type="text"
+                                            name="passport_number"
+                                            value={formData.passport_number}
+                                            onChange={(e) => handleChange('passport_number', e.target.value, true)}
+                                            isMasked={false}
+                                            placeholder="Enter passport number"
+                                            errorMessage={errorMessages.passport_number}
+                                            required={true}
+                                        />
+                                        <Input
+                                            divClasses="w-full"
+                                            label="Date of Joining"
+                                            type="date"
+                                            name="date_of_joining"
+                                            value={formData.date_of_joining}
+                                            onChange={(date) => handleChange('date_of_joining', date[0].toLocaleDateString(), true)}
+                                            isMasked={false}
+                                            placeholder="Enter date of joining"
+                                            errorMessage={errorMessages.date_of_joining}
+                                            required={true}
+                                        />
+
+                                    </div>
+
+                                    <div className="flex flex-col md:flex-row gap-3 w-full mb-3">
+                                        <Dropdown
+                                            divClasses="w-full"
+                                            label="Country"
+                                            name="country_id"
+                                            options={countryOptions}
+                                            value={formData.country_id}
+                                            onChange={(e: any) => handleChange('country_id', e, false)}
+                                        />
+
+                                        <Dropdown
+                                            divClasses="w-full"
+                                            label="State"
+                                            name="state_id"
+                                            options={stateOptions}
+                                            value={formData.state_id}
+                                            onChange={(e: any) => handleChange('state_id', e, false)}
+                                        />
+
+                                        <Dropdown
+                                            divClasses="w-full"
+                                            label="City"
+                                            name="city_id"
+                                            options={cityOptions}
+                                            value={formData.city_id}
+                                            onChange={(e: any) => handleChange('city_id', e, false)}
+                                        />
+                                    </div>
+                                    <div className="flex flex-col md:flex-row gap-3 w-full mb-3">
+                                        <Input
+                                            divClasses="w-full md:w-1/3"
+                                            label="Postal Code"
+                                            type="text"
+                                            name="postal_code"
+                                            value={formData.postal_code}
+                                            onChange={(e) => handleChange('postal_code', e.target.value, true)}
+                                            isMasked={false}
+                                            placeholder="Enter postal code"
+                                        />
+                                        <Input
+                                            divClasses="w-full"
+                                            label="Address"
+                                            type="text"
+                                            name="address"
+                                            value={formData.address}
+                                            onChange={(e) => handleChange('address', e.target.value, e.target.required)}
+                                            isMasked={false}
+                                            placeholder="Enter street address"
+                                            required={true}
+                                            errorMessage={errorMessages.address}
+                                        />
+                                    </div>
+                                </div>
+                            </Tab.Panel>
+                            <Tab.Panel>
+                                <div className="table-responsive w-full">
+                                    <div
+                                        className="flex justify-between items-center flex-col md:flex-row space-y-3 md:space-y-0 mb-3">
+                                        <h3 className="text-lg font-semibold">Employee Documents</h3>
+                                        <Button
+                                            type={ButtonType.button}
+                                            variant={ButtonVariant.primary}
+                                            size={ButtonSize.small}
+                                            text="Add Document"
+                                            onClick={() => setDocumentModalOpen(true)}
+                                        />
+                                    </div>
+                                    <table>
+                                        <thead>
+                                        <tr>
+                                            <th>Document</th>
+                                            <th>Document Name</th>
+                                            <th>Description</th>
+                                            <th>Status</th>
+                                            <th>Action</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {employeeDocuments.map((document, index) => (
+                                            <tr key={index}>
+                                                <td>
+                                                    {document.document
+                                                        ? <span className="flex gap-2 items-center text-primary">
+                                                            <FileDownloader
+                                                                file={document.document}
+                                                                title={
+                                                                    <span
+                                                                        className="flex justify-center items-center gap-3">
+                                                                        {getIcon(IconType.download)}
+                                                                        <span>Preview</span>
+                                                                    </span>
+                                                                }
+                                                                buttonVariant={ButtonVariant.primary}
+                                                                size={ButtonSize.small}
+                                                                buttonType={ButtonType.link}
+                                                            />
+                                                        </span>
+                                                        : <span>No Preview</span>
+                                                    }
+                                                </td>
+                                                <td>{document.name}</td>
+                                                <td>{document.description}</td>
+                                                {/*<td>{document.is_active ? 'Active' : 'Inactive'}</td>*/}
+                                                <td>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRemove(index, 'document')}
+                                                        className="btn btn-outline-danger btn-sm"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </Tab.Panel>
+                            <Tab.Panel>
+                                <div className="table-responsive w-full">
+                                    <div
+                                        className="flex justify-between items-center flex-col md:flex-row space-y-3 md:space-y-0 mb-3">
+                                        <h3 className="text-lg font-semibold">Employee Bank Accounts</h3>
+                                        <Button
+                                            type={ButtonType.button}
+                                            variant={ButtonVariant.primary}
+                                            size={ButtonSize.small}
+                                            text="Add Bank Detail"
+                                            onClick={() => setBankModalOpen(true)}
+                                        />
+                                    </div>
+                                    <table>
+                                        <thead>
+                                        <tr>
+                                            <th>Bank</th>
+                                            <th>Account No</th>
+                                            <th>Account Title</th>
+                                            <th>IBAN No</th>
+                                            <th>Currency</th>
+                                            <th>Action</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {employeeBankAccounts.map((bankAccount, index) => (
+                                            <tr key={index}>
+                                                <td>{bankAccount.bank_name}</td>
+                                                <td>{bankAccount.account_number}</td>
+                                                <td>{bankAccount.account_name}</td>
+                                                <td>{bankAccount.iban}</td>
+                                                <td>
+                                                    {
+                                                        bankAccount.currency_name + ' (' + bankAccount.currency_code + ')'
+                                                    }
+                                                </td>
+                                                <td>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRemove(index, 'bank')}
+                                                        className="btn btn-outline-danger btn-sm"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </Tab.Panel>
+                        </Tab.Panels>
+                    </Tab.Group>
                 </div>
 
                 <div className="w-full">

@@ -91,7 +91,7 @@ const View = () => {
     }, [userLoginRules]);
 
     return (
-        <div>
+        <div className="flex flex-col gap-3">
             <DetailPageHeader
                 appBasePath={AppBasePath.Employee}
                 title="Employee Details"
