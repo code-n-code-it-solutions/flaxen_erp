@@ -16,7 +16,6 @@ import Button from '@/components/Button';
 import { serverFilePath } from '@/utils/helper';
 import Alert from '@/components/Alert';
 import { Tab } from '@headlessui/react';
-import useTransformToSelectOptions from '@/hooks/useTransformToSelectOptions';
 import { getAccountsTypes } from '@/store/slices/accountSlice';
 import Swal from 'sweetalert2';
 import { PlusCircleIcon } from 'lucide-react';
@@ -134,9 +133,9 @@ const ProductForm = ({ id }: IFormProps) => {
     };
 
     useEffect(() => {
+        setAuthToken(token);
         dispatch(getUnits());
         dispatch(clearUtilState());
-        setAuthToken(token);
         setContentType('application/json');
 
     }, [dispatch, token]);
@@ -331,7 +330,7 @@ const ProductForm = ({ id }: IFormProps) => {
                         )}
                     </Tab>
                 </Tab.List>
-                <Tab.Panels className="panel rounded-none">
+                <Tab.Panels className="rounded-none">
                     <Tab.Panel>
                         <div className="active">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">

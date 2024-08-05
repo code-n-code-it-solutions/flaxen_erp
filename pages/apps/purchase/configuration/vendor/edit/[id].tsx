@@ -21,7 +21,7 @@ const Edit = () => {
     useEffect(() => {
         if (vendor && success) {
             dispatch(clearVendorState());
-            router.push('/erp/admin/vendors');
+            router.push('/apps/purchase/configuration/vendor');
         }
     }, [vendor, success]);
 
@@ -56,5 +56,5 @@ const Edit = () => {
     );
 };
 
-Edit.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
+// Edit.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
 export default Edit;

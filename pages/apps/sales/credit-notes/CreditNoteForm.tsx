@@ -16,7 +16,7 @@ import dynamic from 'next/dynamic';
 import { getAccountsTypes } from '@/store/slices/accountSlice';
 import useTransformToSelectOptions from '@/hooks/useTransformToSelectOptions';
 
-const InvoiceForm = () => {
+const CreditNoteForm = () => {
     const dispatch = useAppDispatch();
     const { token } = useAppSelector((state) => state.user);
     const { code, latestRecord } = useAppSelector((state) => state.util);
@@ -335,4 +335,4 @@ const InvoiceForm = () => {
     );
 };
 
-export default InvoiceForm;
+export default CreditNoteForm;

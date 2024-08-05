@@ -1,44 +1,43 @@
 import React, { useEffect } from 'react';
-import AppLayout from '@/components/Layouts/AppLayout';
 import DetailPageHeader from '@/components/apps/DetailPageHeader';
 import { AppBasePath } from '@/utils/enums';
-import InvoiceForm from '@/pages/apps/invoicing/customers/invoices/InvoiceForm';
 import PageWrapper from '@/components/PageWrapper';
 import useSetActiveMenu from '@/hooks/useSetActiveMenu';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import { useRouter } from 'next/router';
-import { clearSaleInvoiceState } from '@/store/slices/saleInvoiceSlice';
+import { clearCreditNoteState } from '@/store/slices/creditNoteSlice';
+import CreditNoteForm from '@/pages/apps/sales/credit-notes/CreditNoteForm';
 
 const Create = () => {
-    useSetActiveMenu(AppBasePath.Credit_Notes)
+    useSetActiveMenu(AppBasePath.Credit_Notes);
     const dispatch = useAppDispatch();
     const router = useRouter();
 
-    const {saleInvoice, success} = useAppSelector(state => state.saleInvoice);
+    const { creditNote, success } = useAppSelector(state => state.creditNote);
 
     useEffect(() => {
-        dispatch(clearSaleInvoiceState())
-        dispatch(setPageTitle('New Invoice'));
+        dispatch(clearCreditNoteState());
+        dispatch(setPageTitle('New Credit Note'));
     }, []);
 
     useEffect(() => {
-        if(success && saleInvoice) {
+        if (success && creditNote) {
             router.push('/apps/sales/credit-notes');
         }
-    }, [success, saleInvoice]);
+    }, [success, creditNote]);
 
     return (
         <div>
             <DetailPageHeader
-                appBasePath={AppBasePath.Invoice}
-                title="Create Invoice"
+                appBasePath={AppBasePath.Credit_Notes}
+                title="Create Credit Note"
                 middleComponent={{
                     show: false
                 }}
                 backButton={{
                     show: true,
-                    backLink: '/apps/invoicing/customers/invoices'
+                    backLink: '/apps/sales/credit-notes'
                 }}
             />
             <PageWrapper
@@ -46,11 +45,10 @@ const Create = () => {
                 embedLoader={true}
                 loading={false}
             >
-                <InvoiceForm />
+                <CreditNoteForm />
             </PageWrapper>
-
         </div>
-);
+    );
 };
 
 // Create.getLayout = (page: any) =><AppLayout>{page}</AppLayout>
