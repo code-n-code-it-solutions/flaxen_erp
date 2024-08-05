@@ -4,11 +4,9 @@ import { useRouter } from 'next/router';
 import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import { clearFillingState, showDetails } from '@/store/slices/fillingSlice';
 import PageWrapper from '@/components/PageWrapper';
-import { AppBasePath, ButtonType, ButtonVariant, IconType } from '@/utils/enums';
-import AppLayout from '@/components/Layouts/AppLayout';
+import { AppBasePath} from '@/utils/enums';
 import DetailPageHeader from '@/components/apps/DetailPageHeader';
 import useSetActiveMenu from '@/hooks/useSetActiveMenu';
-import { getFillingProducts } from '@/store/slices/rawProductSlice';
 
 const View = () => {
     useSetActiveMenu(AppBasePath.Filling);
