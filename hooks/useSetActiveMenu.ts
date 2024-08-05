@@ -8,16 +8,17 @@ import { setActiveMenu } from '@/store/slices/menuSlice'; // or use a custom hoo
 
 const useSetActiveMenu = (appBasePath: string) => {
     const dispatch = useDispatch();
-    const { permittedMenus } = useAppSelector(state => state.menu);
+    const { menus } = useAppSelector(state => state.user);
     const router = useRouter();
 
     useEffect(() => {
         const pathname = truncatePathname(router.pathname, appBasePath);
-        const activeMenu = findActiveMenu(permittedMenus, pathname);
+        const activeMenu = findActiveMenu(menus.map((menu: any) => menu.menus).flat(), pathname);
+        console.log(menus.map((menu: any) => menu.menus).flat(), pathname, activeMenu);
         if (activeMenu) {
             dispatch(setActiveMenu(activeMenu));
         }
-    }, [dispatch, permittedMenus, router.pathname]);
+    }, [dispatch, router.pathname]);
 };
 
 export default useSetActiveMenu;

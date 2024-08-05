@@ -6,7 +6,6 @@ import { clearRawProductState, deleteRawProduct, showDetails } from '@/store/sli
 import PageWrapper from '@/components/PageWrapper';
 import { serverFilePath } from '@/utils/helper';
 import Image from 'next/image';
-import AppLayout from '@/components/Layouts/AppLayout';
 import DetailPageHeader from '@/components/apps/DetailPageHeader';
 import Swal from 'sweetalert2';
 import { AppBasePath } from '@/utils/enums';

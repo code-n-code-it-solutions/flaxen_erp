@@ -32,7 +32,7 @@ const View = () => {
     return (
         <div>
             <DetailPageHeader
-                appBasePath={AppBasePath.Filling}
+                appBasePath={AppBasePath.Vendor}
                 title="Vendor Details"
                 middleComponent={{
                     show: true,
@@ -215,5 +215,5 @@ const View = () => {
     );
 };
 
-View.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
+// View.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
 export default View;

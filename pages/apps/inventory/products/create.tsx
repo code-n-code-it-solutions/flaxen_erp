@@ -28,7 +28,7 @@ const Create = () => {
     }, [rawProduct]);
 
     return (
-        <div>
+        <div className="flex flex-col gap-3">
             <DetailPageHeader
                 appBasePath={AppBasePath.Raw_Product}
                 title="New Product"

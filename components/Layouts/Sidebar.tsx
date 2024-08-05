@@ -7,6 +7,7 @@ import AnimateHeight from 'react-animate-height';
 import { IRootState, useAppSelector } from '@/store';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { setActiveMenu } from '@/store/slices/menuSlice';
 
 const Sidebar = () => {
     const router = useRouter();
@@ -172,13 +173,16 @@ const Sidebar = () => {
                                                                                         </svg>
                                                                                     </div>
                                                                                 </button>
-                                                                                <AnimateHeight duration={300}
-                                                                                               height={subSubCurrentMenu === subMenu.translation_key ? 'auto' : 0}>
+                                                                                <AnimateHeight
+                                                                                    duration={300}
+                                                                                    height={subSubCurrentMenu === subMenu.translation_key ? 'auto' : 0}
+                                                                                >
                                                                                     <ul className="sub-menu text-gray-500">
                                                                                         {subMenu.children.map((subSubMenu: any, j: number) => (
                                                                                             <li key={j}>
                                                                                                 <Link
-                                                                                                    href={subSubMenu.route || ''}>
+                                                                                                    // onClick={() => dispatch(setActiveMenu(subSubMenu))}
+                                                                                                    href={subSubMenu.rouxwte || ''}>
                                                                                                     {t(subSubMenu.translation_key)}
                                                                                                 </Link>
                                                                                             </li>
@@ -189,7 +193,7 @@ const Sidebar = () => {
                                                                         ) : (
                                                                             <li key={i}>
                                                                                 <Link href={subMenu.route || ''}
-                                                                                      target="_blank">
+                                                                                      onClick={() => dispatch(setActiveMenu(subMenu))}>
                                                                                     {t(subMenu.translation_key)}
                                                                                 </Link>
                                                                             </li>
@@ -201,6 +205,7 @@ const Sidebar = () => {
                                                     ) : (
                                                         <li key={index}>
                                                             <Link
+                                                                // onClick={() => dispatch(setActiveMenu(menu))}
                                                                 href={menu.route || ''}>{t(menu.translation_key)}</Link>
                                                         </li>
                                                     )

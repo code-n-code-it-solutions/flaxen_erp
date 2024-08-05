@@ -22,7 +22,7 @@ const Create = () => {
 
     useEffect(() => {
         if (success && vendorPayment) {
-            router.push('/apps/invoicing/vendors/payments');
+            router.push('/apps/purchase/payments');
         }
     }, [success, vendorPayment]);
 

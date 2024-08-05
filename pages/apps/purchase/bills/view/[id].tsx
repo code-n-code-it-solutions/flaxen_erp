@@ -54,7 +54,7 @@ const View = () => {
                     },
                     print: {
                         show: true,
-                        onClick: () => router.push('/apps/invoicing/vendors/bills/print/' + ids.join('/'))
+                        onClick: () => router.push('/apps/purchase/bills/print/' + ids.join('/'))
                     },
                     delete: {
                         show: false
@@ -70,7 +70,7 @@ const View = () => {
                 }}
                 backButton={{
                     show: true,
-                    backLink: '/apps/invoicing/vendors/bills'
+                    backLink: '/apps/purchase/bills'
                 }}
             />
             <PageWrapper

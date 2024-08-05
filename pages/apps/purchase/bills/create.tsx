@@ -24,7 +24,7 @@ const Create = () => {
 
     useEffect(() => {
         if(success && vendorBill) {
-            router.push('/apps/invoicing/vendors/bills');
+            router.push('/apps/purchase/bills');
         }
     }, [success, vendorBill]);
 
@@ -38,7 +38,7 @@ const Create = () => {
                 }}
                 backButton={{
                     show: true,
-                    backLink: '/apps/invoicing/vendors/bills'
+                    backLink: '/apps/purchase/bills'
                 }}
             />
             <PageWrapper

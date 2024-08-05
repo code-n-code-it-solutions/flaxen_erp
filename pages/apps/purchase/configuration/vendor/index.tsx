@@ -20,8 +20,8 @@ const Index = () => {
     const router = useRouter();
     useSetActiveMenu(AppBasePath.Vendor);
     const dispatch = useAppDispatch();
-    const { token } = useAppSelector((state) => state.user);
-    const { permittedMenus, activeMenu } = useAppSelector((state) => state.menu);
+    const { token, menus } = useAppSelector((state) => state.user);
+    const { activeMenu } = useAppSelector((state) => state.menu);
     const { allVendors, loading, success } = useAppSelector(state => state.vendor);
     const [selectedRows, setSelectedRows] = useState<any[]>([]);
     const gridRef = useRef<AgGridReact<any>>(null);
@@ -169,7 +169,7 @@ const Index = () => {
                         // const displayedColumns = params.api.getAllDisplayedColumns();
                         // console.log(displayedColumns, params.column, displayedColumns[0], displayedColumns[0] === params.column);
                         // return displayedColumns[0] === params.column;
-                        checkPermission(permittedMenus, activeMenu.route, ActionList.VIEW_DETAIL, AppBasePath.Vendor) &&
+                        checkPermission(menus.map((plugin: any) => plugin.menus).flat(), activeMenu.route, ActionList.VIEW_DETAIL, AppBasePath.Vendor) &&
                         router.push(`/apps/purchase/configuration/vendor/view/${params.data.id}`);
                     }}
                 />

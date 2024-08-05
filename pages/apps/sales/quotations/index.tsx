@@ -1,15 +1,11 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import AppLayout from '@/components/Layouts/AppLayout';
+import React, { useEffect, useRef, useState } from 'react';
 import PageHeader from '@/components/apps/PageHeader';
 import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import { AgGridReact } from 'ag-grid-react';
 import { useRouter } from 'next/router';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { capitalize } from 'lodash';
 import { setAuthToken, setContentType } from '@/configs/api.config';
 import { deleteRawProduct, getRawProducts } from '@/store/slices/rawProductSlice';
-import { ModuleRegistry } from '@ag-grid-community/core';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import AgGridComponent from '@/components/apps/AgGridComponent';
 import DisabledClickRenderer from '@/components/apps/DisabledClickRenderer';
 import Swal from 'sweetalert2';
@@ -18,15 +14,12 @@ import { ActionList, AppBasePath } from '@/utils/enums';
 import { getQuotations } from '@/store/slices/quotationSlice';
 import useSetActiveMenu from '@/hooks/useSetActiveMenu';
 
-ModuleRegistry.registerModules([ClientSideRowModelModule]);
-
 const Index = () => {
     useSetActiveMenu(AppBasePath.Quotation);
     const router = useRouter();
     const dispatch = useAppDispatch();
-    const { token } = useAppSelector((state) => state.user);
+    const { token, menus } = useAppSelector((state) => state.user);
     const {quotations, loading} = useAppSelector(state => state.quotation);
-    const { permittedMenus } = useAppSelector((state) => state.menu);
     const { activeMenu } = useAppSelector((state) => state.menu);
     const [selectedRows, setSelectedRows] = useState<any[]>([]);
     const gridRef = useRef<AgGridReact<any>>(null);
@@ -161,7 +154,7 @@ const Index = () => {
                         // const displayedColumns = params.api.getAllDisplayedColumns();
                         // console.log(displayedColumns, params.column, displayedColumns[0], displayedColumns[0] === params.column);
                         // return displayedColumns[0] === params.column;
-                        checkPermission(permittedMenus, activeMenu.route, ActionList.VIEW_DETAIL, AppBasePath.Quotation) &&
+                        checkPermission(menus.map((plugin: any) => plugin.menus).flat(), activeMenu.route, ActionList.VIEW_DETAIL, AppBasePath.Quotation) &&
                         router.push(`/apps/sales/orders/quotations/view/${params.data.id}`);
                     }}
                 />

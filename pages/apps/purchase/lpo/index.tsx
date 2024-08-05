@@ -1,5 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import AppLayout from '@/components/Layouts/AppLayout';
+import React, { useEffect, useRef, useState } from 'react';
 import PageHeader from '@/components/apps/PageHeader';
 import { ActionList, AppBasePath } from '@/utils/enums';
 import { setPageTitle } from '@/store/slices/themeConfigSlice';
@@ -7,22 +6,18 @@ import { AgGridReact } from 'ag-grid-react';
 import { useRouter } from 'next/router';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { setAuthToken, setContentType } from '@/configs/api.config';
-import { ModuleRegistry } from '@ag-grid-community/core';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import AgGridComponent from '@/components/apps/AgGridComponent';
 import DisabledClickRenderer from '@/components/apps/DisabledClickRenderer';
 import { getLPO } from '@/store/slices/localPurchaseOrderSlice';
 import { checkPermission } from '@/utils/helper';
 import useSetActiveMenu from '@/hooks/useSetActiveMenu';
 
-ModuleRegistry.registerModules([ClientSideRowModelModule]);
-
 const Index = () => {
     const router = useRouter();
     useSetActiveMenu(AppBasePath.Local_Purchase_Order);
     const dispatch = useAppDispatch();
-    const { token } = useAppSelector((state) => state.user);
-    const { permittedMenus, activeMenu } = useAppSelector((state) => state.menu);
+    const { token, menus } = useAppSelector((state) => state.user);
+    const { activeMenu } = useAppSelector((state) => state.menu);
     const {allLPOs, loading, success} = useAppSelector(state => state.localPurchaseOrder);
     const [selectedRows, setSelectedRows] = useState<any[]>([]);
     const gridRef = useRef<AgGridReact<any>>(null);
@@ -108,7 +103,7 @@ const Index = () => {
                         // const displayedColumns = params.api.getAllDisplayedColumns();
                         // console.log(displayedColumns, params.column, displayedColumns[0], displayedColumns[0] === params.column);
                         // return displayedColumns[0] === params.column;
-                        checkPermission(permittedMenus, activeMenu.route, ActionList.VIEW_DETAIL, AppBasePath.Local_Purchase_Order) &&
+                        checkPermission(menus.map((plugin: any) => plugin.menus).flat(), activeMenu.route, ActionList.VIEW_DETAIL, AppBasePath.Local_Purchase_Order) &&
                         router.push(`/apps/purchase/lpo/view/${params.data.id}`);
                     }}
                 />

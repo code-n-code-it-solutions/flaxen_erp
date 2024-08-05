@@ -18,9 +18,8 @@ const Index = () => {
     useSetActiveMenu(AppBasePath.Delivery_Note);
     const router = useRouter();
     const dispatch = useAppDispatch();
-    const { token } = useAppSelector((state) => state.user);
+    const { token, menus } = useAppSelector((state) => state.user);
     const {deliveryNotes, loading} = useAppSelector(state => state.deliveryNote);
-    const { permittedMenus } = useAppSelector((state) => state.menu);
     const { activeMenu } = useAppSelector((state) => state.menu);
     const [selectedRows, setSelectedRows] = useState<any[]>([]);
     const gridRef = useRef<AgGridReact<any>>(null);
@@ -113,7 +112,7 @@ const Index = () => {
                     rowMultiSelectWithClick={false}
                     onRowClicked={(params) => {
                         console.log(params.data);
-                        checkPermission(permittedMenus, activeMenu.route, ActionList.VIEW_DETAIL, AppBasePath.Delivery_Note) &&
+                        checkPermission(menus.map((plugin: any) => plugin.menus).flat(), activeMenu.route, ActionList.VIEW_DETAIL, AppBasePath.Delivery_Note) &&
                         router.push(`/apps/sales/orders/delivery-notes/view/${params.data.id}`);
                     }}
                 />

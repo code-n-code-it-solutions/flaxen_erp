@@ -77,8 +77,7 @@ const SettingComponent = ({
 const PageHeader = ({ appBasePath, selectedRows, gridRef, leftComponent, rightComponent, showSearch, buttonActions }: IProps) => {
     // console.log(selectedRows);
     const router = useRouter();
-    const { permittedMenus } = useAppSelector((state) => state.menu);
-    const { user } = useAppSelector((state) => state.user);
+    const { menus } = useAppSelector((state) => state.user);
     const rightButtons = [
         {
             show: true,
@@ -103,8 +102,8 @@ const PageHeader = ({ appBasePath, selectedRows, gridRef, leftComponent, rightCo
         gridRef.current!.api.exportDataAsCsv();
     }, []);
 
-    const actionButtons: any = generateActionButtons(router.pathname, permittedMenus, buttonActions, appBasePath);
-    const otherButtons = generateOtherButtons(router.pathname, permittedMenus, selectedRows, appBasePath);
+    const actionButtons: any = generateActionButtons(router.pathname, menus.map((menu: any) => menu.menus).flat(), buttonActions, appBasePath);
+    const otherButtons = generateOtherButtons(router.pathname, menus.map((menu: any) => menu.menus).flat(), selectedRows, appBasePath);
 
     // console.log(otherButtons);
     return (
@@ -186,7 +185,6 @@ const PageHeader = ({ appBasePath, selectedRows, gridRef, leftComponent, rightCo
                         </div>
                     </div>)
                 }
-
             </div>
         </div>
     );
