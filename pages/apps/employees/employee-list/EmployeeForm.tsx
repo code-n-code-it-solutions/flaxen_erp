@@ -22,6 +22,7 @@ import FileDownloader from '@/components/FileDownloader';
 import { clearRawProductState } from '@/store/slices/rawProductSlice';
 import Alert from '@/components/Alert';
 import { Tab } from '@headlessui/react';
+import Option from '@/components/form/Option';
 
 interface IFormProps {
     id?: any;
@@ -554,6 +555,14 @@ const EmployeeForm = ({ id }: IFormProps) => {
                                             errorMessage={errorMessages.address}
                                         />
                                     </div>
+                                    <Option
+                                        label="Is Sales Person"
+                                        type="checkbox"
+                                        name="is_sale_person"
+                                        value="1"
+                                        defaultChecked={formData.is_sale_person === 1}
+                                        onChange={(e) => handleChange('is_sale_person', e.target.checked ? 1 : 0, e.target.required)}
+                                    />
                                 </div>
                             </Tab.Panel>
                             <Tab.Panel>

@@ -22,6 +22,7 @@ interface IProps {
     helperText?: string;
     step?: any;
     labelClassName?: string;
+    max?: number;
 }
 
 export const Input: FC<IProps> = ({
@@ -42,7 +43,8 @@ export const Input: FC<IProps> = ({
                                       className,
                                       helperText,
                                       step,
-                                      labelClassName
+                                      labelClassName,
+                                      max
                                   }) => {
     return (
         <div className={divClasses}>
@@ -105,6 +107,7 @@ export const Input: FC<IProps> = ({
                             readOnly={readonly}
                             style={styles}
                             step={step}
+                            max={max}
                         />
             }
 

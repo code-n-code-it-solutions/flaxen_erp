@@ -71,7 +71,7 @@ const Index = () => {
     }, []);
 
     return (
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-3">
             <PageHeader
                 appBasePath={AppBasePath.Customer}
                 key={selectedRows.length}

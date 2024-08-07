@@ -312,7 +312,7 @@ const ProductionForm = ({ id }: IFormProps) => {
                         )}
                     </Tab>
                 </Tab.List>
-                <Tab.Panels className="panel rounded-none">
+                <Tab.Panels className="rounded-none">
                     <Tab.Panel>
                         <div className="active">
                             <RawProductItemListing

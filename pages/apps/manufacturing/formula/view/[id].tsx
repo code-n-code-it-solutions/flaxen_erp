@@ -248,7 +248,7 @@ const View = () => {
                             text={'Submit'}
                             variant={ButtonVariant.primary}
                             onClick={() => {
-                                console.log(labReferenceData);
+                                // console.log(labReferenceData);
                                 let finalData = {
                                     product_assembly_id: productAssemblyDetail.id,
                                     raw_products: labReferenceData.map((item: any) => ({

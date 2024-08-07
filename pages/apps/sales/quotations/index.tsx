@@ -114,7 +114,7 @@ const Index = () => {
     // }, [selectedRows]);
 
     return (
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-3">
             <PageHeader
                 appBasePath={AppBasePath.Quotation}
                 key={selectedRows.length}
@@ -125,7 +125,7 @@ const Index = () => {
                         show: true,
                         type: 'link',
                         text: 'New',
-                        link: '/apps/sales/orders/quotations/create'
+                        link: '/apps/sales/quotations/create'
                     },
                     title: 'Quotations',
                     showSetting: true
@@ -135,11 +135,11 @@ const Index = () => {
                 buttonActions={{
                     delete: () => handleDelete(),
                     export: () => console.log('exported'),
-                    print: () => router.push('/apps/sales/orders/quotations/print/' + selectedRows.map(row => row.id).join('/')),
+                    print: () => router.push('/apps/sales/quotations/print/' + selectedRows.map(row => row.id).join('/')),
                     archive: () => console.log('archived'),
                     unarchive: () => console.log('unarchived'),
                     duplicate: () => console.log('duplicated'),
-                    printLabel: () => router.push('/apps/sales/orders/quotations/print-label/' + selectedRows.map(row => row.id).join('/'))
+                    printLabel: () => router.push('/apps/sales/quotations/print-label/' + selectedRows.map(row => row.id).join('/'))
                 }}
             />
             <div>
@@ -155,7 +155,7 @@ const Index = () => {
                         // console.log(displayedColumns, params.column, displayedColumns[0], displayedColumns[0] === params.column);
                         // return displayedColumns[0] === params.column;
                         checkPermission(menus.map((plugin: any) => plugin.menus).flat(), activeMenu.route, ActionList.VIEW_DETAIL, AppBasePath.Quotation) &&
-                        router.push(`/apps/sales/orders/quotations/view/${params.data.id}`);
+                        router.push(`/apps/sales/quotations/view/${params.data.id}`);
                     }}
                 />
             </div>

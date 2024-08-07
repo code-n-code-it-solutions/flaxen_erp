@@ -41,7 +41,7 @@ const View = () => {
     }, [saleInvoiceDetail]);
 
     return (
-        <div>
+        <div className="flex flex-col gap-3">
             <DetailPageHeader
                 appBasePath={AppBasePath.Invoice}
                 title="Invoice Details"
@@ -52,7 +52,7 @@ const View = () => {
                     },
                     print: {
                         show: true,
-                        onClick: () => router.push('/apps/invoicing/customers/invoices/print/' + ids.join('/'))
+                        onClick: () => router.push('/apps/sales/invoices/print/' + ids.join('/'))
                     },
                     delete: {
                         show: false
@@ -68,7 +68,7 @@ const View = () => {
                 }}
                 backButton={{
                     show: true,
-                    backLink: '/apps/invoicing/customers/invoices'
+                    backLink: '/apps/sales/invoices'
                 }}
             />
             <PageWrapper

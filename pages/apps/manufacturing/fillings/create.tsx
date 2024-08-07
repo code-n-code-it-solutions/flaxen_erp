@@ -33,7 +33,7 @@ const Create = () => {
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    router.push('/apps/manufacturing/operations/fillings');
+                    router.push('/apps/manufacturing/fillings');
                 }
             })
         }
@@ -49,7 +49,7 @@ const Create = () => {
                     type: ButtonType.link,
                     variant: ButtonVariant.primary,
                     icon: IconType.back,
-                    link: '/apps/manufacturing/operations/fillings'
+                    link: '/apps/manufacturing/fillings'
                 }
             ]}
         >

@@ -108,7 +108,7 @@ const Index = () => {
                         show: true,
                         type: 'link',
                         text: 'New',
-                        link: '/apps/invoicing/customers/invoices/create'
+                        link: '/apps/sales/invoices/create'
                     },
                     title: 'Invoices',
                     showSetting: true
@@ -117,11 +117,11 @@ const Index = () => {
                 showSearch={true}
                 buttonActions={{
                     export: () => console.log('exported'),
-                    print: () => router.push('/apps/invoicing/customers/invoices/print/' + selectedRows.map(row => row.id).join('/')),
+                    print: () => router.push('/apps/sales/invoices/print/' + selectedRows.map(row => row.id).join('/')),
                     archive: () => console.log('archived'),
                     unarchive: () => console.log('unarchived'),
                     duplicate: () => console.log('duplicated'),
-                    printLabel: () => router.push('/apps/invoicing/customers/invoices/print-label/' + selectedRows.map(row => row.id).join('/'))
+                    printLabel: () => router.push('/apps/sales/invoices/print-label/' + selectedRows.map(row => row.id).join('/'))
                 }}
             />
             <div>
@@ -137,7 +137,7 @@ const Index = () => {
                         // console.log(displayedColumns, params.column, displayedColumns[0], displayedColumns[0] === params.column);
                         // return displayedColumns[0] === params.column;
                         checkPermission(permittedMenus, activeMenu.route, ActionList.VIEW_DETAIL, AppBasePath.Invoice) &&
-                        router.push(`/apps/invoicing/customers/invoices/view/${params.data.id}`);
+                        router.push(`/apps/sales/invoices/view/${params.data.id}`);
                     }}
                 />
             </div>

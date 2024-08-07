@@ -27,7 +27,7 @@ const Create = () => {
     }, [quotation, success]);
 
     return (
-        <div>
+        <div className="flex flex-col gap-3">
             <DetailPageHeader
                 appBasePath={AppBasePath.Quotation}
                 title="Create Quotation"

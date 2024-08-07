@@ -12,13 +12,9 @@ import { getVendors } from '@/store/slices/vendorSlice';
 import { storeVendorBill } from '@/store/slices/vendorBillSlice';
 import { calculateDateFromDays } from '@/utils/helper';
 import { Tab } from '@headlessui/react';
-import Option from '@/components/form/Option';
-import Swal from 'sweetalert2';
-import dynamic from 'next/dynamic';
-import useTransformToSelectOptions from '@/hooks/useTransformToSelectOptions';
 import { getAccountsTypes } from '@/store/slices/accountSlice';
 
-const InvoiceForm = () => {
+const BillForm = () => {
     const dispatch = useAppDispatch();
     const { token } = useAppSelector((state) => state.user);
     const { code, latestRecord } = useAppSelector((state) => state.util);
@@ -346,4 +342,4 @@ const InvoiceForm = () => {
     );
 };
 
-export default InvoiceForm;
+export default BillForm;

@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import AppLayout from '@/components/Layouts/AppLayout';
 import DetailPageHeader from '@/components/apps/DetailPageHeader';
 import { AppBasePath } from '@/utils/enums';
 import PageWrapper from '@/components/PageWrapper';
@@ -7,51 +6,47 @@ import useSetActiveMenu from '@/hooks/useSetActiveMenu';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import { useRouter } from 'next/router';
-import PaymentForm from '@/pages/apps/invoicing/vendors/payments/PaymentForm';
+import CreditNoteForm from '@/pages/apps/sales/credit-notes/CreditNoteForm';
+import { clearDebitNoteState } from '@/store/slices/debitNoteSlice';
+import DebitNoteForm from '@/pages/apps/purchase/debit-notes/DebitNoteForm';
 
 const Create = () => {
-    useSetActiveMenu(AppBasePath.Vendor_Payment);
+    useSetActiveMenu(AppBasePath.Debit_Notes);
     const dispatch = useAppDispatch();
     const router = useRouter();
 
-    const { vendorPayment, success } = useAppSelector(state => state.vendorPayment);
+    const { debitNote, success } = useAppSelector(state => state.debitNote);
 
     useEffect(() => {
-        dispatch(setPageTitle('New Payment'));
+        dispatch(clearDebitNoteState());
+        dispatch(setPageTitle('New Debit Note'));
     }, []);
 
     useEffect(() => {
-        if (success && vendorPayment) {
-            router.push('/apps/invoicing/vendors/payments');
+        if (success && debitNote) {
+            router.push('/apps/purchase/debit-notes');
         }
-    }, [success, vendorPayment]);
+    }, [success, debitNote]);
 
     return (
-        <div>
+        <div className="flex flex-col gap-3">
             <DetailPageHeader
-                appBasePath={AppBasePath.Vendor_Payment}
-                title="Vendor Payment"
+                appBasePath={AppBasePath.Debit_Notes}
+                title="Create Debit Note"
                 middleComponent={{
                     show: false
                 }}
                 backButton={{
                     show: true,
-                    backLink: '/apps/invoicing/vendors/payments'
+                    backLink: '/apps/purchase/debit-notes'
                 }}
             />
-            <PageWrapper
-                breadCrumbItems={[]}
-                embedLoader={true}
-                loading={false}
-            >
-                <PaymentForm />
+            <PageWrapper>
+                <DebitNoteForm />
             </PageWrapper>
-
         </div>
     );
 };
 
-Create.getLayout = (page: any) =>
-    <AppLayout>{page}</AppLayout>
-;
+// Create.getLayout = (page: any) =><AppLayout>{page}</AppLayout>
 export default Create;

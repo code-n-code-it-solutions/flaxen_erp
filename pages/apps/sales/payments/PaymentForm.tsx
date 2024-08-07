@@ -1,11 +1,10 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import Button from '@/components/Button';
-import { ButtonType, ButtonVariant } from '@/utils/enums';
+import { ButtonSize, ButtonType, ButtonVariant } from '@/utils/enums';
 import { Input } from '@/components/form/Input';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { setAuthToken, setContentType } from '@/configs/api.config';
 import { clearLatestRecord, generateCode, getLatestRecord } from '@/store/slices/utilSlice';
-import { pendingDeliveryNotes } from '@/store/slices/deliveryNoteSlice';
 import { getPendingSaleInvoices } from '@/store/slices/saleInvoiceSlice';
 import Option from '@/components/form/Option';
 import { Dropdown } from '@/components/form/Dropdown';
@@ -20,6 +19,9 @@ import dynamic from 'next/dynamic';
 import useTransformToSelectOptions from '@/hooks/useTransformToSelectOptions';
 import { getAccountsTypes } from '@/store/slices/accountSlice';
 import Swal from 'sweetalert2';
+import { clearBankState, getBanks, storeBank } from '@/store/slices/bankSlice';
+import Modal from '@/components/Modal';
+import BankFormModal from '@/components/modals/BankFormModal';
 
 const TreeSelect = dynamic(() => import('antd/es/tree-select'), { ssr: false });
 
@@ -29,19 +31,27 @@ const PaymentForm = () => {
     const { token } = useAppSelector((state) => state.user);
     const { code, latestRecord } = useAppSelector((state) => state.util);
     const { saleInvoices } = useAppSelector((state) => state.saleInvoice);
+    const { banks, bank } = useAppSelector((state) => state.bank);
     const { customers } = useAppSelector((state) => state.customer);
     const { paymentMethods } = useAppSelector((state) => state.paymentMethod);
     const { bankAccounts, bankAccount, success } = useAppSelector((state) => state.bankAccount);
 
+    const [selectedIndex, setSelectedIndex] = useState(0);
     const [formData, setFormData] = useState<any>({});
     const [errors, setErrors] = useState<any>({});
     const [pendingInvoiceOptions, setPendingInvoiceOptions] = useState<any[]>([]);
     const [customerOptions, setCustomerOptions] = useState<any[]>([]);
     const [paymentMethodOptions, setPaymentMethodOptions] = useState<any[]>([]);
+    const [bankOptions, setBankOptions] = useState<any[]>([]);
     const [invoices, setInvoices] = useState<any[]>([]);
     const [bankAccountOptions, setBankAccountOptions] = useState<any[]>([]);
     const [bankAccountModal, setBankAccountModal] = useState<boolean>(false);
     const [receivableAmount, setReceivableAmount] = useState<number>(0);
+    const [chequeModal, setChequeModal] = useState<boolean>(false);
+    const [chequeList, setChequeList] = useState<any[]>([]);
+    const [chequeDetails, setChequeDetails] = useState<any>({});
+    const [cashAmount, setCashAmount] = useState<number>(0);
+    const [bankModal, setBankModal] = useState<boolean>(false);
 
     const handleChange = (name: string, value: any, required: boolean) => {
         if (required && value === '') {
@@ -59,12 +69,9 @@ const PaymentForm = () => {
 
         if (name === 'discount_amount') {
             setFormData({ ...formData, [name]: parseFloat(value) });
+            recalculateReceivableAmount(invoices, parseFloat(value || 0));
         } else {
             setFormData({ ...formData, [name]: value });
-        }
-
-        if (name === 'discount_amount') {
-            recalculateReceivableAmount(invoices, parseFloat(value || 0));
         }
     };
 
@@ -83,7 +90,9 @@ const PaymentForm = () => {
                 payment_terms: invoice.payment_terms,
                 total_amount: totalAmount,
                 due_amount: invoice.customer_payments?.length > 0 ? (totalAmount - invoice.customer_payments.reduce((acc: number, item: any) => acc + parseFloat(item.received_amount), 0)) : totalAmount,
-                received_amount: 0
+                received_amount: 0,
+                cheque_amount: 0,
+                cash_amount: 0
             };
         }));
     };
@@ -92,11 +101,15 @@ const PaymentForm = () => {
         e.preventDefault();
         let finalData = {
             ...formData,
+            total_received: invoices.reduce((acc, invoice) => acc + invoice.received_amount, 0),
             customer_payment_details: invoices.map((invoice: any) => ({
                 sale_invoice_id: invoice.id,
                 due_amount: invoice.due_amount,
-                received_amount: invoice.received_amount
-            }))
+                received_amount: invoice.received_amount,
+                cheque_amount: invoice.cheque_amount,
+                cash_amount: invoice.cash_amount
+            })),
+            cheques: chequeList
         };
         if (!formData.receiving_account_id) {
             Swal.fire({
@@ -126,6 +139,7 @@ const PaymentForm = () => {
         dispatch(getPaymentMethods());
         dispatch(clearLatestRecord());
         dispatch(getAccountsTypes({}));
+        setChequeDetails({});
     }, []);
 
     useEffect(() => {
@@ -184,8 +198,8 @@ const PaymentForm = () => {
     }, [invoices, formData.discount_amount]);
 
     const recalculateReceivableAmount = (items: any[], discount: number) => {
-        const totalCost = items.reduce((acc: number, item: any) => acc + parseFloat(item.total_amount), 0);
-        setReceivableAmount(totalCost - discount);
+        const totalReceived = items.reduce((acc: number, item: any) => acc + parseFloat(item.received_amount || 0), 0);
+        setReceivableAmount(totalReceived - discount);
     };
 
     useEffect(() => {
@@ -196,6 +210,105 @@ const PaymentForm = () => {
             }));
         }
     }, [latestRecord]);
+
+    useEffect(() => {
+        if (bank) {
+            dispatch(getBanks());
+            setBankModal(false);
+            setChequeModal(true);
+            dispatch(clearBankState());
+        }
+    }, [bank]);
+
+    useEffect(() => {
+        if (banks) {
+            setBankOptions(banks.map((bank: any) => ({
+                value: bank.id,
+                label: bank.name
+            })));
+        }
+    }, [banks]);
+
+    const allocateChequeAmount = (chequeAmount: number) => {
+        let remainingAmount = chequeAmount;
+        const newInvoices = invoices.map((invoice) => {
+            if (remainingAmount <= 0) {
+                return invoice;
+            }
+            const amountToAllocate = Math.min(invoice.due_amount - invoice.received_amount, remainingAmount);
+            remainingAmount -= amountToAllocate;
+            return {
+                ...invoice,
+                received_amount: invoice.received_amount + amountToAllocate,
+                cheque_amount: invoice.cheque_amount + amountToAllocate
+            };
+        });
+        setInvoices(newInvoices);
+        return remainingAmount;
+    };
+
+    const handleAddCheque = () => {
+        const totalChequeAmount = chequeDetails.cheque_amount;
+        const totalReceivedAmount = invoices.reduce((sum, invoice) => sum + invoice.received_amount, 0);
+        const totalDueAmount = invoices.reduce((sum, invoice) => sum + invoice.due_amount, 0);
+
+        if (totalReceivedAmount + totalChequeAmount > totalDueAmount) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'The total cheque amount exceeds the total due amount. Please check the cheques and try again.'
+            });
+            return;
+        }
+
+        const remainingChequeAmount = allocateChequeAmount(totalChequeAmount);
+        if (remainingChequeAmount > 0) {
+            setCashAmount((prev) => prev + remainingChequeAmount);
+        }
+        setChequeList((prevCheques) => [...prevCheques, chequeDetails]);
+        setChequeModal(false);
+        setChequeDetails({});
+    };
+
+    const handleRemoveCheque = (index: number) => {
+        const chequeToRemove = chequeList[index];
+        const newChequeList = chequeList.filter((_, i) => i !== index);
+        setChequeList(newChequeList);
+
+        let remainingAmount = chequeToRemove.cheque_amount;
+        const newInvoices = invoices.map((invoice) => {
+            if (remainingAmount <= 0) {
+                return invoice;
+            }
+            const amountToDeallocate = Math.min(invoice.cheque_amount, remainingAmount);
+            remainingAmount -= amountToDeallocate;
+            return {
+                ...invoice,
+                received_amount: invoice.received_amount - amountToDeallocate,
+                cheque_amount: invoice.cheque_amount - amountToDeallocate
+            };
+        });
+        setInvoices(newInvoices);
+    };
+
+    const handleReceivedAmountChange = (index: number, value: number) => {
+        const newInvoices = [...invoices];
+        const invoice = newInvoices[index];
+        const chequeAmount = invoice.cheque_amount;
+
+        if (value < chequeAmount) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: `The received amount cannot be less than the cheque amount (${chequeAmount}).`
+            });
+        } else {
+            invoice.received_amount = value;
+            invoice.cash_amount = value - chequeAmount;
+            setInvoices(newInvoices);
+            recalculateReceivableAmount(newInvoices, parseFloat(formData.discount_amount || 0));
+        }
+    };
 
     return (
         <form onSubmit={(e) => handleSubmit(e)}>
@@ -212,35 +325,6 @@ const PaymentForm = () => {
             />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 my-3">
                 <div className="w-full flex flex-col gap-3">
-                    <Option
-                        label="Internal Transfer"
-                        type="checkbox"
-                        name="is_internal_transfer"
-                        value={formData.is_internal_transfer}
-                        defaultChecked={formData.is_internal_transfer === 1}
-                        onChange={(e) => handleChange(e.target.name, e.target.checked ? 1 : 0, e.target.required)}
-                    />
-
-                    <div className="flex gap-3">
-                        <label>Payment Type</label>
-                        <Option
-                            label="Send"
-                            type="radio"
-                            name="payment_type"
-                            value="Send"
-                            defaultChecked={formData.payment_type === 'Send'}
-                            onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
-                        />
-                        <Option
-                            label="Receive"
-                            type="radio"
-                            name="payment_type"
-                            value="Receive"
-                            defaultChecked={formData.payment_type === 'Receive'}
-                            onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
-                        />
-                    </div>
-
                     <Dropdown
                         label="Customer"
                         name="customer_id"
@@ -256,116 +340,64 @@ const PaymentForm = () => {
                             }
                         }}
                     />
-
-                    <Dropdown
-                        label="Payment Method"
-                        name="payment_method_id"
-                        value={formData.payment_method_id}
-                        options={paymentMethodOptions}
-                        onChange={(e) => {
-                            if (e && typeof e !== 'undefined') {
-                                if (e.value === 2) {
-                                    dispatch(getAccountsByCustomer(formData.customer_id));
-                                }
-                                handleChange('payment_method_id', e.value, true);
-                            } else {
-                                handleChange('payment_method_id', '', true);
-                            }
-                        }}
-                    />
-
-                    {formData.customer_id !== '' ?
-                        (formData.payment_method_id === 2 && (
-                            <>
-                                <div className="flex flex-col md:flex-row gap-3">
-                                    <div className="flex items-end gap-1 w-full">
-                                        <Dropdown
-                                            divClasses="w-full"
-                                            label="Bank Accounts"
-                                            name="bank_account_id"
-                                            value={formData.bank_account_id}
-                                            options={bankAccountOptions}
-                                            onChange={(e) => {
-                                                if (e && typeof e !== 'undefined') {
-                                                    handleChange('bank_account_id', e.value, true);
-                                                } else {
-                                                    handleChange('bank_account_id', '', true);
-                                                }
-                                            }}
-                                        />
-                                        <Button
-                                            type={ButtonType.button}
-                                            text={<PlusCircleIcon size={18} />}
-                                            variant={ButtonVariant.primary}
-                                            onClick={() => setBankAccountModal(true)}
-                                        />
-                                    </div>
-
+                    {formData.customer_id !== '' ? (
+                        <>
+                            <Dropdown
+                                label="Payment Method"
+                                name="payment_method_id"
+                                value={formData.payment_method_id}
+                                options={paymentMethodOptions}
+                                onChange={(e) => {
+                                    if (e && typeof e !== 'undefined') {
+                                        if (e.value === 2) {
+                                            dispatch(getBanks());
+                                        } else {
+                                            setChequeList([]);
+                                        }
+                                        handleChange('payment_method_id', e.value, true);
+                                    } else {
+                                        handleChange('payment_method_id', '', true);
+                                    }
+                                }}
+                            />
+                            {formData.payment_method_id === 2 && (
+                                <>
                                     <Dropdown
-                                        divClasses="w-full"
-                                        label="Bank Options"
-                                        name="bank_option"
-                                        value={formData.bank_option}
+                                        label="Payment Sub Method"
+                                        name="payment_sub_method"
+                                        value={formData.payment_sub_method}
                                         options={[
-                                            { value: 'Bank Transfer', label: 'Bank Transfer' },
-                                            { value: 'Cheque', label: 'Cheque' },
-                                            { value: 'Credit Card', label: 'Credit Card' }
+                                            { label: 'Credit Card', value: 'credit-card' },
+                                            { label: 'Cheque', value: 'cheque' },
+                                            { label: 'Online Transfer', value: 'online-transfer' }
                                         ]}
                                         onChange={(e) => {
                                             if (e && typeof e !== 'undefined') {
-                                                handleChange('bank_option', e.value, true);
+                                                if (e.value !== 'cheque') {
+                                                    setChequeList([]);
+                                                }
+                                                handleChange('payment_sub_method', e.value, true);
                                             } else {
-                                                handleChange('bank_option', '', true);
+                                                handleChange('payment_sub_method', '', true);
                                             }
                                         }}
                                     />
-
-                                    {(formData.bank_option === 'Cheque' || formData.bank_option === 'Credit Card') && (
+                                    {(formData.payment_sub_method === 'credit-card' || formData.payment_sub_method === 'online-transfer') && (
                                         <Input
                                             divClasses="w-full"
-                                            label="Cheque No/Credit Card Number"
+                                            label="Transaction Number (Optional)"
                                             type="text"
-                                            name="cheque_card_no"
-                                            value={formData.cheque_card_no}
+                                            name="transaction_number"
+                                            value={formData.transaction_number}
                                             onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
-                                            placeholder="Enter Card or Cheque Number"
+                                            placeholder="Enter Transaction Number"
                                             isMasked={false}
                                         />
                                     )}
-                                </div>
-                                {formData.bank_option === 'Cheque' && (
-                                    <div className="flex md:items-end flex-col md:flex-row gap-3">
-                                        <Dropdown
-                                            label="Is PDC"
-                                            name="is_pdc"
-                                            value={formData.is_pdc}
-                                            options={[
-                                                { value: 1, label: 'Yes' },
-                                                { value: 0, label: 'No' }
-                                            ]}
-                                            onChange={(e) => {
-                                                if (e && typeof e !== 'undefined') {
-                                                    handleChange('is_pdc', e.value, false);
-                                                } else {
-                                                    handleChange('is_pdc', '', false);
-                                                }
-                                            }}
-                                        />
-                                        {formData.is_pdc === 1 && (
-                                            <Input
-                                                label="PDC Date"
-                                                type="date"
-                                                name="pdc_date"
-                                                value={formData.pdc_date}
-                                                onChange={(e) => handleChange('pdc_date', e[0] ? e[0].toLocaleDateString() : '', true)}
-                                                placeholder="Enter PDC Date"
-                                                isMasked={false}
-                                            />
-                                        )}
-                                    </div>
-                                )}
-                            </>
-                        )) : (<></>)}
+                                </>
+                            )}
+                        </>
+                    ) : null}
                 </div>
                 <div className="w-full flex flex-col gap-3">
                     <Input
@@ -378,7 +410,6 @@ const PaymentForm = () => {
                         placeholder="Enter Reference Number"
                         isMasked={false}
                     />
-
                     <Input
                         divClasses="w-full"
                         label="Payment Date"
@@ -389,7 +420,6 @@ const PaymentForm = () => {
                         placeholder="Enter Payment Date"
                         isMasked={false}
                     />
-
                     <Input
                         divClasses="w-full"
                         label="Discount Amount"
@@ -403,7 +433,7 @@ const PaymentForm = () => {
                     />
                 </div>
             </div>
-            <Tab.Group>
+            <Tab.Group selectedIndex={selectedIndex} onChange={setSelectedIndex}>
                 <Tab.List className="mt-3 flex flex-wrap border-b border-white-light dark:border-[#191e3a]">
                     <Tab as={Fragment}>
                         {({ selected }) => (
@@ -427,6 +457,19 @@ const PaymentForm = () => {
                             </button>
                         )}
                     </Tab>
+                    {formData.payment_sub_method === 'cheque' && (
+                        <Tab as={Fragment}>
+                            {({ selected }) => (
+                                <button
+                                    className={`${
+                                        selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
+                                    } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
+                                >
+                                    Cheques
+                                </button>
+                            )}
+                        </Tab>
+                    )}
                 </Tab.List>
                 <Tab.Panels className="panel rounded-none">
                     <Tab.Panel>
@@ -475,17 +518,7 @@ const PaymentForm = () => {
                                                             return restErrors;
                                                         });
                                                     }
-                                                    setInvoices((invoices: any) => {
-                                                        return invoices.map((inv: any, i: number) => {
-                                                            if (i === index) {
-                                                                return {
-                                                                    ...inv,
-                                                                    received_amount: receivedAmount > invoice.due_amount ? invoice.due_amount : receivedAmount
-                                                                };
-                                                            }
-                                                            return inv;
-                                                        });
-                                                    });
+                                                    handleReceivedAmountChange(index, receivedAmount);
                                                 }}
                                                 placeholder="Enter Received Amount"
                                                 isMasked={false}
@@ -540,13 +573,69 @@ const PaymentForm = () => {
                                                 treeDefaultExpandAll
                                                 onChange={(e) => handleChange('receiving_account_id', e, true)}
                                                 treeData={accountOptions}
-                                                // onPopupScroll={onPopupScroll}
-                                                treeNodeFilterProp="title"
                                             />
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </Tab.Panel>
+                    <Tab.Panel>
+                        <div className="table-responsive">
+                            <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-3">
+                                <h3 className="font-bold text-md">Cheques</h3>
+                                <Button
+                                    type={ButtonType.button}
+                                    text="Add Cheque"
+                                    variant={ButtonVariant.primary}
+                                    size={ButtonSize.small}
+                                    onClick={() => {
+                                        setChequeModal(true);
+                                        setChequeDetails({});
+                                    }}
+                                />
+                            </div>
+                            <table>
+                                <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Cheque #</th>
+                                    <th>Bank</th>
+                                    <th>Amount</th>
+                                    <th>Cheque Date</th>
+                                    <th>Is PDC</th>
+                                    <th>PDC Date</th>
+                                    <th>Action</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {chequeList.length > 0
+                                    ? (chequeList.map((cheque: any, index: number) => (
+                                        <tr key={index}>
+                                            <td>{index + 1}</td>
+                                            <td>{cheque.cheque_number}</td>
+                                            <td>{bankOptions?.find((bank: any) => bank.value === cheque.bank_id)?.label}</td>
+                                            <td>{cheque.cheque_amount}</td>
+                                            <td>{cheque.cheque_date}</td>
+                                            <td>{cheque.is_pdc === 1 ? 'Yes' : 'No'}</td>
+                                            <td>{cheque.pdc_date}</td>
+                                            <td>
+                                                <Button
+                                                    type={ButtonType.button}
+                                                    text="Remove"
+                                                    variant={ButtonVariant.danger}
+                                                    size={ButtonSize.small}
+                                                    onClick={() => handleRemoveCheque(index)}
+                                                />
+                                            </td>
+                                        </tr>
+                                    ))) : (
+                                        <tr>
+                                            <td colSpan={8} className="text-center">No Cheques Added</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
                         </div>
                     </Tab.Panel>
                 </Tab.Panels>
@@ -567,6 +656,159 @@ const PaymentForm = () => {
                 setModalOpen={setBankAccountModal}
                 handleSubmit={(value) => handleAddAccount(value)}
                 title="New Account"
+            />
+            <Modal
+                title="Add Cheque"
+                show={chequeModal}
+                setShow={setChequeModal}
+                footer={
+                    <div className="flex justify-end items-center gap-3">
+                        <Button
+                            type={ButtonType.button}
+                            text="Cancel"
+                            variant={ButtonVariant.secondary}
+                            onClick={() => {
+                                setChequeModal(false);
+                                setChequeDetails({});
+                            }}
+                        />
+                        <Button
+                            type={ButtonType.button}
+                            text="Add Cheque"
+                            variant={ButtonVariant.primary}
+                            onClick={handleAddCheque}
+                        />
+                    </div>
+                }
+            >
+                <div className="flex items-end w-full gap-1">
+                    <Dropdown
+                        divClasses="w-full"
+                        label="Bank"
+                        name="bank_id"
+                        value={chequeDetails.bank_id}
+                        options={bankOptions}
+                        onChange={(e) => {
+                            if (e && typeof e !== 'undefined') {
+                                setChequeDetails((prev: any) => ({
+                                    ...prev,
+                                    bank_id: e.value
+                                }));
+                            } else {
+                                setChequeDetails((prev: any) => ({
+                                    ...prev,
+                                    bank_id: ''
+                                }));
+                            }
+                        }}
+                    />
+                    <Button
+                        type={ButtonType.button}
+                        text={<PlusCircleIcon size={18} />}
+                        variant={ButtonVariant.primary}
+                        onClick={() => setBankModal(true)}
+                    />
+                </div>
+                <Input
+                    divClasses="w-full"
+                    label="Cheque #"
+                    type="text"
+                    name="cheque_number"
+                    value={chequeDetails.cheque_number}
+                    onChange={(e) => setChequeDetails((prev: any) => ({
+                        ...prev,
+                        cheque_number: e.target.value
+                    }))}
+                    placeholder="Enter Cheque Number"
+                    isMasked={false}
+                />
+                <Input
+                    divClasses="w-full"
+                    label="Cheque Name"
+                    type="text"
+                    name="cheque_name"
+                    value={chequeDetails.cheque_name}
+                    onChange={(e) => setChequeDetails((prev: any) => ({
+                        ...prev,
+                        cheque_name: e.target.value
+                    }))}
+                    placeholder="Enter Cheque Name"
+                    isMasked={false}
+                />
+                <Input
+                    divClasses="w-full"
+                    label="Cheque Amount"
+                    type="number"
+                    step="any"
+                    name="cheque_amount"
+                    value={chequeDetails.cheque_amount}
+                    onChange={(e) => setChequeDetails((prev: any) => ({
+                        ...prev,
+                        cheque_amount: parseFloat(e.target.value)
+                    }))}
+                    placeholder="Enter Cheque Amount"
+                    isMasked={false}
+                />
+                <Input
+                    divClasses="w-full"
+                    label="Cheque Date"
+                    type="date"
+                    name="cheque_date"
+                    value={chequeDetails.cheque_date}
+                    onChange={(e) => setChequeDetails((prev: any) => ({
+                        ...prev,
+                        cheque_date: e[0] ? e[0].toLocaleDateString() : ''
+                    }))}
+                    placeholder="Enter Cheque Date"
+                    isMasked={false}
+                />
+                <Option
+                    divClasses="mb-5"
+                    label="Is PDC"
+                    type="checkbox"
+                    name="is_pdc"
+                    value="1"
+                    defaultChecked={chequeDetails.is_pdc === 1}
+                    onChange={(e) => {
+                        setChequeDetails((prev: any) => ({
+                            ...prev,
+                            is_pdc: e.target.checked ? 1 : 0
+                        }));
+                    }}
+                />
+                {chequeDetails.is_pdc === 1 && (
+                    <Input
+                        divClasses="w-full"
+                        label="PDC Date"
+                        type="date"
+                        name="pdc_date"
+                        value={chequeDetails.pdc_date}
+                        onChange={(e) => setChequeDetails((prev: any) => ({
+                            ...prev,
+                            pdc_date: e[0] ? e[0].toLocaleDateString() : ''
+                        }))
+                        }
+                        placeholder="Enter PDC Date"
+                        isMasked={false}
+                    />
+                )}
+            </Modal>
+            <BankFormModal
+                modalOpen={bankModal}
+                setModalOpen={setBankModal}
+                handleSubmit={(value) => {
+                    dispatch(storeBank({
+                        name: value.name,
+                        phone: value.phone,
+                        email: value.email,
+                        country_id: value.country_id,
+                        state_id: value.state_id,
+                        city_id: value.city_id,
+                        postal_code: value.postal_code,
+                        address: value.address,
+                        is_active: value.is_active
+                    }));
+                }}
             />
         </form>
     );

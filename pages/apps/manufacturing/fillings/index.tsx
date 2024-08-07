@@ -48,7 +48,7 @@ const Index = () => {
             headerName: 'Color Code',
             field: 'color_code',
             cellRenderer: (row: any) => {
-                console.log(row.data);
+                // console.log(row.data);
                 return (
                     <div className="flex justify-start items-center gap-2">
                         <div className="w-6 h-6 rounded-full"
@@ -100,7 +100,7 @@ const Index = () => {
                         show: true,
                         type: 'link',
                         text: 'New',
-                        link: '/apps/manufacturing/operations/fillings/create'
+                        link: '/apps/manufacturing/fillings/create'
                     },
                     title: 'Fillings',
                     showSetting: true
@@ -110,7 +110,7 @@ const Index = () => {
                 buttonActions={{
                     delete: () => console.log('deleted'),
                     export: () => console.log('exported'),
-                    print: () => router.push('/apps/manufacturing/operations/fillings/print/' + selectedRows.map(row => row.id).join('/')),
+                    print: () => router.push('/apps/manufacturing/fillings/print/' + selectedRows.map(row => row.id).join('/')),
                     archive: () => console.log('archived'),
                     unarchive: () => console.log('unarchived'),
                     duplicate: () => console.log('duplicated'),
@@ -130,7 +130,7 @@ const Index = () => {
                         // console.log(displayedColumns, params.column, displayedColumns[0], displayedColumns[0] === params.column);
                         // return displayedColumns[0] === params.column;
                         checkPermission(menus.map((plugin: any) => plugin.menus).flat(), activeMenu.route, ActionList.VIEW_DETAIL, AppBasePath.Filling) &&
-                        router.push(`/apps/manufacturing/operations/fillings/view/${params.data.id}`);
+                        router.push(`/apps/manufacturing/fillings/view/${params.data.id}`);
                     }}
                 />
             </div>

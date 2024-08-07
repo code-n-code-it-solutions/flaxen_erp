@@ -75,7 +75,7 @@ const Index = () => {
     }, []);
 
     return (
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-3">
             <PageHeader
                 appBasePath={AppBasePath.Delivery_Note}
                 key={selectedRows.length}
@@ -86,7 +86,7 @@ const Index = () => {
                         show: true,
                         type: 'link',
                         text: 'New',
-                        link: '/apps/sales/orders/delivery-notes/create'
+                        link: '/apps/sales/delivery-notes/create'
                     },
                     title: 'DNs',
                     showSetting: true
@@ -95,11 +95,11 @@ const Index = () => {
                 showSearch={true}
                 buttonActions={{
                     export: () => console.log('exported'),
-                    print: () => router.push('/apps/sales/orders/delivery-notes/print/' + selectedRows.map(row => row.id).join('/')),
+                    print: () => router.push('/apps/sales/delivery-notes/print/' + selectedRows.map(row => row.id).join('/')),
                     archive: () => console.log('archived'),
                     unarchive: () => console.log('unarchived'),
                     duplicate: () => console.log('duplicated'),
-                    printLabel: () => router.push('/apps/sales/orders/delivery-notes/print-label/' + selectedRows.map(row => row.id).join('/'))
+                    printLabel: () => router.push('/apps/sales/delivery-notes/print-label/' + selectedRows.map(row => row.id).join('/'))
                 }}
             />
             <div>
@@ -113,7 +113,7 @@ const Index = () => {
                     onRowClicked={(params) => {
                         console.log(params.data);
                         checkPermission(menus.map((plugin: any) => plugin.menus).flat(), activeMenu.route, ActionList.VIEW_DETAIL, AppBasePath.Delivery_Note) &&
-                        router.push(`/apps/sales/orders/delivery-notes/view/${params.data.id}`);
+                        router.push(`/apps/sales/delivery-notes/view/${params.data.id}`);
                     }}
                 />
             </div>

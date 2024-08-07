@@ -58,8 +58,8 @@ const Index = () => {
     };
 
     useEffect(() => {
-        dispatch(setPageTitle('Accounts Report'));
         setAuthToken(token);
+        dispatch(setPageTitle('Accounts Report'));
         setContentType('application/json');
         dispatch(getAccounts());
     }, []);

@@ -63,7 +63,7 @@ const CategoryModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData}: I
             dispatch(getCountries())
 
             if (modalFormData) {
-                console.log(modalFormData)
+                // console.log(modalFormData)
                 setFormData(modalFormData)
                 setExistingImage(serverFilePath(modalFormData.thumbnail))
             } else {

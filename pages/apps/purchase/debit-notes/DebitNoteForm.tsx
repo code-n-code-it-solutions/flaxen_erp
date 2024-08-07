@@ -4,24 +4,23 @@ import { useAppDispatch, useAppSelector } from '@/store';
 import { generateCode } from '@/store/slices/utilSlice';
 import { setAuthToken, setContentType } from '@/configs/api.config';
 import { Dropdown } from '@/components/form/Dropdown';
+import { pendingDeliveryNotes } from '@/store/slices/deliveryNoteSlice';
 import Button from '@/components/Button';
 import { ButtonSize, ButtonType, ButtonVariant } from '@/utils/enums';
 import { capitalize } from 'lodash';
-import { clearSaleInvoiceState, getSaleInvoicesByCustomer } from '@/store/slices/saleInvoiceSlice';
+import { getSaleInvoicesByCustomer, storeSaleInvoice } from '@/store/slices/saleInvoiceSlice';
 import { calculateDateFromDays } from '@/utils/helper';
 import { Tab } from '@headlessui/react';
-import { clearEmployeeState, getEmployees } from '@/store/slices/employeeSlice';
+import { getAccountsTypes } from '@/store/slices/accountSlice';
+import { getEmployees } from '@/store/slices/employeeSlice';
 import Modal from '@/components/Modal';
-import { clearCustomerState, getCustomers } from '@/store/slices/customerSlice';
-import { storeCreditNote } from '@/store/slices/creditNoteSlice';
 
-const CreditNoteForm = () => {
+const DebitNoteForm = () => {
     const dispatch = useAppDispatch();
     const { token } = useAppSelector((state) => state.user);
     const { code } = useAppSelector((state) => state.util);
     const { saleInvoices } = useAppSelector((state) => state.saleInvoice);
     const { employees } = useAppSelector((state) => state.employee);
-    const { customers } = useAppSelector((state) => state.customer);
 
     const [formData, setFormData] = useState<any>({});
     const [errors, setErrors] = useState<any>({});
@@ -50,54 +49,23 @@ const CreditNoteForm = () => {
             dispatch(getSaleInvoicesByCustomer(value));
         }
 
+        if (name === 'sale_invoice_ids') {
+
+        }
         setFormData({ ...formData, [name]: value });
     };
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setAuthToken(token);
-        let finalData = {
-            ...formData,
-            credit_note_items: creditNoteItems.map((item: any) => {
-                return {
-                    filling_id: item.filling_id,
-                    quotation_id: item.quotation_id,
-                    delivery_note_id: item.delivery_note_id,
-                    sale_invoice_id: item.sale_invoice_id,
-                    raw_product_id: item.raw_product_id,
-                    quantity: item.quantity,
-                    returned_quantity: item.return_quantity,
-                    batch_number: item.batch_number,
-                    capacity: item.capacity,
-                    retail_price: item.retail_price,
-                    tax_category_id: item.tax_category_id,
-                    tax_rate: item.tax_rate,
-                    tax_amount: (item.return_quantity * item.retail_price * item.tax_rate) / 100,
-                    discount_type: item.discount_type,
-                    discount_amount_rate: item.discount_amount_rate,
-                    total_cost: calculateTotal(item)
-                };
-            })
-        }
-        // console.log(finalData);
-        dispatch(storeCreditNote(finalData));
+        dispatch(storeSaleInvoice(formData));
     };
 
     useEffect(() => {
         setAuthToken(token);
         setContentType('application/json');
         dispatch(generateCode('credit_note'));
-        dispatch(clearCustomerState());
-        dispatch(clearSaleInvoiceState());
-        dispatch(clearEmployeeState());
-
         dispatch(getEmployees());
-        dispatch(getCustomers());
-        setFormData({
-            credit_note_date: calculateDateFromDays(0)
-        });
-        setItemsForSelect([]);
-        setCreditNoteItems([]);
     }, []);
 
     useEffect(() => {
@@ -114,16 +82,6 @@ const CreditNoteForm = () => {
             })));
         }
     }, [employees]);
-
-    useEffect(() => {
-        if (customers) {
-            setCustomerOptions(customers.map((customer: any) => ({
-                label: customer.name + ' (' + customer.customer_code + ')',
-                value: customer.id,
-                customer
-            })));
-        }
-    }, [customers]);
 
     useEffect(() => {
         if (saleInvoices) {
@@ -146,38 +104,6 @@ const CreditNoteForm = () => {
         setTotalAmountToReturn(totalCost - discount);
     };
 
-    const handleAddItem = (item: any) => {
-        setCreditNoteItems([...creditNoteItems, { ...item }]);
-        setItemsForSelect(itemsForSelect.filter((selectItem: any) => selectItem.id !== item.id));
-        // setSelectModalOpen(false);
-    };
-
-    const handleRemoveItem = (item: any) => {
-        setItemsForSelect([...itemsForSelect, item]);
-        setCreditNoteItems(creditNoteItems.filter((creditNoteItem: any) => creditNoteItem.id !== item.id));
-    };
-
-    const handleReturnQuantityChange = (itemId: any, value: number) => {
-        setItemsForSelect(itemsForSelect.map((item: any) => {
-            if (item.id === itemId) {
-                return { ...item, return_quantity: value };
-            }
-            return item;
-        }));
-    };
-
-    const calculateTotal = (item: any) => {
-        const returnQuantity = parseFloat(item.return_quantity);
-        const retailPrice = parseFloat(item.retail_price);
-        const taxAmount = (returnQuantity * retailPrice * parseFloat(item.tax_rate)) / 100;
-        const discountAmount = item.discount_type
-            ? item.discount_type === 'percentage'
-                ? (returnQuantity * retailPrice * parseFloat(item.discount_amount_rate)) / 100
-                : parseFloat(item.discount_amount_rate)
-            : 0;
-        return returnQuantity * retailPrice + taxAmount - discountAmount;
-    }
-
     return (
         <form onSubmit={(e) => handleSubmit(e)}>
             <Input
@@ -191,102 +117,96 @@ const CreditNoteForm = () => {
                 isMasked={false}
                 disabled={true}
             />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 my-3">
-                <Dropdown
-                    divClasses="w-full"
-                    label="Customer"
-                    name="customer_id"
-                    options={customerOptions}
-                    value={formData.customer_id}
-                    onChange={(e) => {
-                        if (e && typeof e !== 'undefined') {
-                            handleChange('customer_id', e.value, true);
-                            dispatch(getSaleInvoicesByCustomer(e.value));
-                        } else {
-                            handleChange('customer_id', '', true);
-                        }
-                    }}
-                />
-                <div className="flex justify-between items-end gap-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="w-full flex flex-col gap-3">
+                    <h4 className="text-xl font-semibold text-gray-600 py-3">Credit Note Details</h4>
                     <Dropdown
                         divClasses="w-full"
-                        label="Invoices"
-                        name="sale_invoice_ids"
-                        options={invoiceOptions}
-                        value={formData.sale_invoice_ids}
+                        label="Customer"
+                        name="customer_id"
+                        options={customerOptions}
+                        value={formData.customer_id}
                         onChange={(e) => {
-                            if (e && e.length > 0 && typeof e !== 'undefined') {
-                                handleChange('sale_invoice_ids', e.map((item: any) => item.value).join(','), true);
-                                let itemList = e.map((invoice: any) => {
-                                    return invoice.saleInvoice.delivery_note_sale_invoices.map((saleInvoice: any) => {
-                                        return saleInvoice.delivery_note.delivery_note_items.map((item: any) => {
-                                            return {
-                                                ...item,
-                                                sale_invoice_id: saleInvoice.sale_invoice_id,
-                                                sale_invoice_code: invoice.label,
-                                                return_quantity: 0
-                                            };
-                                        }).flat();
-                                    }).flat();
-                                }).flat();
-                                setItemsForSelect(itemList);
+                            if (e && typeof e !== 'undefined') {
+                                handleChange('customer_id', e.value, true);
                             } else {
-                                handleChange('sale_invoice_ids', '', true);
+                                handleChange('customer_id', '', true);
                             }
                         }}
-                        isMulti={true}
                     />
-                    <Button
-                        type={ButtonType.button}
-                        text="Items"
-                        variant={ButtonVariant.primary}
-                        onClick={() => setSelectModalOpen(true)}
+                    <div className="flex justify-between items-end gap-1">
+                        <Dropdown
+                            divClasses="w-full"
+                            label="Invoices"
+                            name="sale_invoice_ids"
+                            options={invoiceOptions}
+                            value={formData.sale_invoice_ids}
+                            onChange={(e) => {
+                                if (e && e.length > 0 && typeof e !== 'undefined') {
+                                    handleChange('sale_invoice_ids', e.map((item: any) => item.value).join(','), true);
+                                } else {
+                                    handleChange('sale_invoice_ids', '', true);
+                                }
+                            }}
+                            isMulti={true}
+                        />
+                        <Button
+                            type={ButtonType.button}
+                            text="Items"
+                            variant={ButtonVariant.primary}
+                            onClick={() => setSelectModalOpen(true)}
+                        />
+                    </div>
+
+                    <Dropdown
+                        divClasses="w-full"
+                        label="Return By"
+                        name="return_by_id"
+                        options={returnByOptions}
+                        value={formData.return_by_id}
+                        onChange={(e) => {
+                            if (e && typeof e !== 'undefined') {
+                                handleChange('return_by_id', e.value, true);
+                            } else {
+                                handleChange('return_by_id', '', true);
+                            }
+                        }}
                     />
                 </div>
+                <div className="w-full flex flex-col gap-3">
+                    <h4 className="text-xl font-semibold text-gray-600 py-3">Credit Note Params</h4>
+                    <Dropdown
+                        divClasses="w-full"
+                        label="Return Type"
+                        name="return_type"
+                        options={[
+                            { value: 'credit', label: 'Credit Invoice' },
+                            { value: 'cash', label: 'Cash Invoice' }
+                        ]}
+                        value={formData.invoice_type}
+                        onChange={(e) => handleChange('return_type', e.value, true)}
+                    />
 
-                <Dropdown
-                    divClasses="w-full"
-                    label="Return By"
-                    name="return_by_id"
-                    options={returnByOptions}
-                    value={formData.return_by_id}
-                    onChange={(e) => {
-                        if (e && typeof e !== 'undefined') {
-                            handleChange('return_by_id', e.value, true);
-                        } else {
-                            handleChange('return_by_id', '', true);
-                        }
-                    }}
-                />
-
-                <Dropdown
-                    divClasses="w-full"
-                    label="Return Type"
-                    name="return_type"
-                    options={[
-                        { label: 'Cash', value: 'cash' },
-                        { label: 'Credit', value: 'credit' }
-                    ]}
-                    value={formData.return_type}
-                    onChange={(e) => {
-                        if (e && typeof e !== 'undefined') {
-                            handleChange('return_type', e.value, true);
-                        } else {
-                            handleChange('return_type', '', true);
-                        }
-                    }}
-                />
-
-                <Input
-                    divClasses="w-full"
-                    label="Return Date"
-                    type="date"
-                    name="credit_note_date"
-                    value={formData.credit_note_date}
-                    onChange={(e) => handleChange('credit_note_date', e[0] ? e[0].toLocaleDateString() : '', true)}
-                    placeholder="Enter Credit Note Date"
-                    isMasked={false}
-                />
+                    {formData.return_type === 'credit' ? (
+                        <div className="flex flex-col gap-3 justify-start items-start">
+                            <span><strong>Payment Terms (Days):</strong> {formData.payment_terms}</span>
+                            <span><strong>Due Date:</strong> {formData.due_date}</span>
+                        </div>
+                    ) : formData.return_type === 'cash' ? (
+                        <div className="flex flex-col gap-3 justify-start items-start">
+                            <Input
+                                divClasses="w-full"
+                                label="Returning Amount"
+                                type="number"
+                                name="returning_amount"
+                                value={formData.returning_amount}
+                                onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
+                                isMasked={false}
+                                required={true}
+                            />
+                        </div>
+                    ) : <></>}
+                </div>
             </div>
 
             <Tab.Group>
@@ -319,7 +239,6 @@ const CreditNoteForm = () => {
                                     <th>Tax</th>
                                     <th>Discount</th>
                                     <th className="text-center">Grand Total</th>
-                                    <th>Action</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -339,7 +258,7 @@ const CreditNoteForm = () => {
                                                 {item.tax_category ? (
                                                     <div className="flex flex-col">
                                                         <span><strong>Tax: </strong>{item.tax_category.name} ({item.tax_rate}%)</span>
-                                                        <span><strong>Amount: </strong>{((item.return_quantity * item.retail_price * item.tax_rate) / 100).toFixed(2)}
+                                                        <span><strong>Amount: </strong>{item.tax_amount.toFixed(2)}
                                                         </span>
                                                     </div>
                                                 ) : (
@@ -360,27 +279,22 @@ const CreditNoteForm = () => {
                                                 )}
                                             </td>
                                             <td className="text-center">
-                                                {
-                                                    calculateTotal(item).toFixed(2)
-                                                }
-                                            </td>
-                                            <td className="text-center">
-                                                <Button
-                                                    type={ButtonType.button}
-                                                    text="Remove"
-                                                    variant={ButtonVariant.danger}
-                                                    size={ButtonSize.small}
-                                                    onClick={() => handleRemoveItem(item)}
-                                                />
+                                                {item.total_cost.toFixed(2)}
                                             </td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={11} className="text-center">No items found</td>
+                                        <td colSpan={9} className="text-center">No items found</td>
                                     </tr>
                                 )}
                                 </tbody>
+                                {/*<tfoot>*/}
+                                {/*<tr>*/}
+                                {/*    <td colSpan={8} className="text-center font-bold">Total</td>*/}
+                                {/*    <td className="text-center font-bold">{creditNoteItems.reduce((acc, item) => acc + item.total_cost, 0).toFixed(2)}</td>*/}
+                                {/*</tr>*/}
+                                {/*</tfoot>*/}
                             </table>
                         </div>
                     </Tab.Panel>
@@ -415,32 +329,9 @@ const CreditNoteForm = () => {
                         <tbody>
                         {itemsForSelect.length > 0
                             ? itemsForSelect.map((item: any, index: number) => (
-                                <tr key={index}>
-                                    <td>{item.sale_invoice_code}</td>
-                                    <td>{item.product_assembly.formula_name}</td>
-                                    <td>{item.product.title}</td>
-                                    <td>{item.quantity}</td>
-                                    <td>
-                                        <Input
-                                            type="number"
-                                            name="return_quantity"
-                                            value={item.return_quantity}
-                                            onChange={(e) => handleReturnQuantityChange(item.id, parseFloat(e.target.value))}
-                                            max={item.quantity}
-                                            isMasked={false}
-                                        />
-                                    </td>
-                                    <td>
-                                        <Button
-                                            type={ButtonType.button}
-                                            text="Add"
-                                            variant={ButtonVariant.primary}
-                                            size={ButtonSize.small}
-                                            onClick={() => handleAddItem(item)}
-                                        />
-                                    </td>
-                                </tr>
-                            )) : (
+                                <></>
+                            ))
+                            : (
                                 <tr>
                                     <td colSpan={6} className="text-center">No invoice selected</td>
                                 </tr>
@@ -453,4 +344,4 @@ const CreditNoteForm = () => {
     );
 };
 
-export default CreditNoteForm;
+export default DebitNoteForm;
