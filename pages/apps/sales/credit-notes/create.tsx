@@ -28,7 +28,7 @@ const Create = () => {
     }, [success, creditNote]);
 
     return (
-        <div>
+        <div className="flex flex-col gap-3">
             <DetailPageHeader
                 appBasePath={AppBasePath.Credit_Notes}
                 title="Create Credit Note"
@@ -40,11 +40,7 @@ const Create = () => {
                     backLink: '/apps/sales/credit-notes'
                 }}
             />
-            <PageWrapper
-                breadCrumbItems={[]}
-                embedLoader={true}
-                loading={false}
-            >
+            <PageWrapper>
                 <CreditNoteForm />
             </PageWrapper>
         </div>

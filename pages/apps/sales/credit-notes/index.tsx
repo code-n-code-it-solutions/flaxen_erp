@@ -17,19 +17,18 @@ const Index = () => {
     const router = useRouter();
     const dispatch = useAppDispatch();
 
-    const { token } = useAppSelector((state) => state.user);
+    const { token, menus } = useAppSelector((state) => state.user);
     const { creditNotes, loading } = useAppSelector((state) => state.creditNote);
-    const { permittedMenus } = useAppSelector((state) => state.menu);
     const { activeMenu } = useAppSelector((state) => state.menu);
 
     const [selectedRows, setSelectedRows] = useState<any[]>([]);
     const gridRef = useRef<AgGridReact<any>>(null);
     const [colDefs, setColDefs] = useState<any>([
         {
-            headerName: 'Invoice Code',
+            headerName: 'Credit Note Code',
             headerCheckboxSelection: true,
             checkboxSelection: true,
-            field: 'sale_invoice_code',
+            field: 'credit_note_code',
             minWidth: 150,
             cellRenderer: DisabledClickRenderer
         },
@@ -40,38 +39,18 @@ const Index = () => {
             minWidth: 150
         },
         {
-            headerName: 'Contact Person',
-            field: 'contact_person.name',
+            headerName: 'Returned By',
+            field: 'returned_by.name',
             minWidth: 150
         },
         {
-            headerName: 'Salesman',
-            field: 'salesman.name',
+            headerName: 'Return Date',
+            field: 'credit_note_date',
             minWidth: 150
         },
         {
-            headerName: 'Invoice Ref',
-            field: 'payment_reference',
-            minWidth: 150
-        },
-        {
-            headerName: 'Invoice Date',
+            headerName: 'Return Value',
             field: 'invoice_date',
-            minWidth: 150
-        },
-        {
-            headerName: 'Due Date/Terms',
-            valueGetter: (params: any) => params.data.due_date ? params.data.due_date : params.data.payment_terms + ' Days',
-            minWidth: 150
-        },
-        {
-            headerName: 'Invoice Amount',
-            valueGetter: (params: any) => {
-                return params.data.delivery_note_sale_invoices
-                    .flatMap((invoice: any) => invoice.delivery_note.delivery_note_items)
-                    .map((item: any) => parseFloat(item.total_cost))
-                    .reduce((a: number, b: number) => a + b, 0).toFixed(2);
-            },
             minWidth: 150
         },
         {
@@ -103,7 +82,7 @@ const Index = () => {
                         text: 'New',
                         link: '/apps/sales/credit-notes/create'
                     },
-                    title: 'Credit Note',
+                    title: 'Credit Notes',
                     showSetting: true
                 }}
                 rightComponent={true}
@@ -126,7 +105,7 @@ const Index = () => {
                     onSelectionChangedRows={(rows) => setSelectedRows(rows)}
                     rowMultiSelectWithClick={false}
                     onRowClicked={(params) => {
-                        checkPermission(permittedMenus, activeMenu.route, ActionList.VIEW_DETAIL, AppBasePath.Credit_Notes) &&
+                        checkPermission(menus.map((plugin: any) => plugin.menus).flat(), activeMenu.route, ActionList.VIEW_DETAIL, AppBasePath.Credit_Notes) &&
                         router.push(`/apps/sales/credit-notes/view/${params.data.id}`);
                     }}
                 />

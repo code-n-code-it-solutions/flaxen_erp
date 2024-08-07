@@ -19,6 +19,7 @@ import Modal from '@/components/Modal';
 import { clearBankState, getBanks, storeBank } from '@/store/slices/bankSlice';
 import { PlusCircleIcon } from 'lucide-react';
 import BankFormModal from '@/components/modals/BankFormModal';
+import Swal from 'sweetalert2';
 
 const TreeSelect = dynamic(() => import('antd/es/tree-select'), { ssr: false });
 
@@ -42,6 +43,7 @@ const PaymentForm = () => {
     const [chequeList, setChequeList] = useState<any[]>([]);
     const [chequeDetails, setChequeDetails] = useState<any>({});
     const [bankModal, setBankModal] = useState<boolean>(false);
+    const [totalPaidAmount, setTotalPaidAmount] = useState<number>(0);
 
     const handleChange = (name: string, value: any, required: boolean) => {
         if (required) {
@@ -66,7 +68,6 @@ const PaymentForm = () => {
             const totalAmount = bill.good_receive_note_vendor_bill
                 .flatMap((vendorBill: any) => vendorBill.good_receive_note.raw_products)
                 .reduce((acc: number, item: any) => acc + item.total_price, 0);
-            console.log(bill);
             return {
                 id: bill.id,
                 bill_number: bill.bill_number,
@@ -76,7 +77,9 @@ const PaymentForm = () => {
                 payment_terms: bill.payment_terms,
                 total_amount: totalAmount,
                 due_amount: bill.vendor_payments?.length > 0 ? (totalAmount - bill.vendor_payments.reduce((acc: number, item: any) => acc + parseFloat(item.paid_amount), 0)) : totalAmount,
-                paid_amount: 0
+                paid_amount: 0,
+                cheque_amount: 0,
+                cash_amount: 0
             };
         }));
     };
@@ -85,14 +88,16 @@ const PaymentForm = () => {
         e.preventDefault();
         let finalData = {
             ...formData,
+            total_paid: bills.reduce((acc: number, item: any) => acc + parseFloat(item.paid_amount), 0),
             payment_details: bills.map((billDetail: any) => ({
                 vendor_bill_id: billDetail.id,
                 due_amount: billDetail.due_amount,
-                paid_amount: billDetail.paid_amount
+                paid_amount: billDetail.paid_amount,
+                cheque_amount: billDetail.cheque_amount,
+                cash_amount: billDetail.cash_amount
             })),
             cheques: chequeList
         };
-        // console.log(finalData);
         dispatch(storeVendorPayment(finalData));
     };
 
@@ -123,7 +128,6 @@ const PaymentForm = () => {
 
     useEffect(() => {
         if (pendingBills) {
-            // console.log(vendorBills.map((bill: any) => bill));
             handleSetBillsList(pendingBills.map((bill: any) => bill));
         }
     }, [pendingBills]);
@@ -168,10 +172,91 @@ const PaymentForm = () => {
         if (latestRecord) {
             setFormData((prevFormData: any) => ({
                 ...prevFormData,
-                paying_account_id: latestRecord.paying_account?.code,
+                paying_account_id: latestRecord.paying_account?.code
             }));
         }
     }, [latestRecord]);
+
+    const allocateChequeAmount = (chequeAmount: number) => {
+        let remainingAmount = chequeAmount;
+        const newBills = bills.map((bill) => {
+            if (remainingAmount <= 0) {
+                return bill;
+            }
+            const amountToAllocate = Math.min(bill.due_amount - bill.paid_amount, remainingAmount);
+            remainingAmount -= amountToAllocate;
+            return {
+                ...bill,
+                paid_amount: bill.paid_amount + amountToAllocate,
+                cheque_amount: bill.cheque_amount + amountToAllocate,
+            };
+        });
+        setBills(newBills);
+        return remainingAmount;
+    };
+
+    const handleAddCheque = () => {
+        const totalChequeAmount = chequeDetails.cheque_amount;
+        const totalPaidAmount = bills.reduce((sum, bill) => sum + bill.paid_amount, 0);
+        const totalDueAmount = bills.reduce((sum, bill) => sum + bill.due_amount, 0);
+
+        if (totalPaidAmount + totalChequeAmount > totalDueAmount) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'The total cheque amount exceeds the total due amount. Please check the cheques and try again.'
+            });
+            return;
+        }
+
+        const remainingChequeAmount = allocateChequeAmount(totalChequeAmount);
+        if (remainingChequeAmount > 0) {
+            setTotalPaidAmount((prev) => prev + remainingChequeAmount);
+        }
+        setChequeList((prevCheques) => [...prevCheques, chequeDetails]);
+        setChequeModal(false);
+        setChequeDetails({});
+    };
+
+    const handleRemoveCheque = (index: number) => {
+        const chequeToRemove = chequeList[index];
+        const newChequeList = chequeList.filter((_, i) => i !== index);
+        setChequeList(newChequeList);
+
+        let remainingAmount = chequeToRemove.cheque_amount;
+        const newBills = bills.map((bill) => {
+            if (remainingAmount <= 0) {
+                return bill;
+            }
+            const amountToDeallocate = Math.min(bill.cheque_amount, remainingAmount);
+            remainingAmount -= amountToDeallocate;
+            return {
+                ...bill,
+                paid_amount: bill.paid_amount - amountToDeallocate,
+                cheque_amount: bill.cheque_amount - amountToDeallocate,
+            };
+        });
+        setBills(newBills);
+    };
+
+    const handlePaidAmountChange = (index: number, value: number) => {
+        const newBills = [...bills];
+        const bill = newBills[index];
+        const chequeAmount = bill.cheque_amount;
+
+        if (value < chequeAmount) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: `The paid amount cannot be less than the cheque amount (${chequeAmount}).`
+            });
+            return;
+        }
+
+        bill.paid_amount = value;
+        bill.cash_amount = value - chequeAmount;
+        setBills(newBills);
+    };
 
     return (
         <form onSubmit={(e) => handleSubmit(e)}>
@@ -196,27 +281,6 @@ const PaymentForm = () => {
                         defaultChecked={formData.is_internal_transfer === 1}
                         onChange={(e) => handleChange(e.target.name, e.target.checked ? 1 : 0, e.target.required)}
                     />
-
-                    {/*<div className="flex gap-3">*/}
-                    {/*    <label>Payment Type</label>*/}
-                    {/*    <Option*/}
-                    {/*        label="Send"*/}
-                    {/*        type="radio"*/}
-                    {/*        name="payment_type"*/}
-                    {/*        value="Send"*/}
-                    {/*        defaultChecked={formData.payment_type === 'Send'}*/}
-                    {/*        onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}*/}
-                    {/*    />*/}
-                    {/*    <Option*/}
-                    {/*        label="Receive"*/}
-                    {/*        type="radio"*/}
-                    {/*        name="payment_type"*/}
-                    {/*        value="Receive"*/}
-                    {/*        defaultChecked={formData.payment_type === 'Receive'}*/}
-                    {/*        onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}*/}
-                    {/*    />*/}
-                    {/*</div>*/}
-
                     <Dropdown
                         label="Vendor"
                         name="vendor_id"
@@ -233,7 +297,6 @@ const PaymentForm = () => {
                             }
                         }}
                     />
-
                     <Dropdown
                         label="Payment Method"
                         name="payment_method_id"
@@ -242,7 +305,6 @@ const PaymentForm = () => {
                         onChange={(e) => {
                             if (e && typeof e !== 'undefined') {
                                 if (e.value === 2) {
-
                                     dispatch(getBanks());
                                 } else {
                                     setChequeList([]);
@@ -253,7 +315,6 @@ const PaymentForm = () => {
                             }
                         }}
                     />
-
                     {formData.payment_method_id === 2 && (
                         <>
                             <Dropdown
@@ -302,7 +363,6 @@ const PaymentForm = () => {
                         placeholder="Enter Reference Number"
                         isMasked={false}
                     />
-
                     <Input
                         divClasses="w-full"
                         label="Payment Date"
@@ -315,66 +375,6 @@ const PaymentForm = () => {
                     />
                 </div>
             </div>
-
-            {formData.payment_sub_method === 'cheque' && (
-                <div className="table-responsive my-5">
-                    <div className="flex flex-col md:flex-row md:justify-between md:items-center">
-                        <h3 className="font-bold text-lg mb-5">Cheques</h3>
-                        <Button
-                            type={ButtonType.button}
-                            text="Add Cheque"
-                            variant={ButtonVariant.primary}
-                            size={ButtonSize.small}
-                            onClick={() => {
-                                setChequeModal(true);
-                                setChequeDetails({});
-                                // setBills((prevBills: any) => [
-                                //     ...prevBills,
-                                //     {
-                                //         bill_number: '',
-                                //         bank: '',
-                                //         amount: 0,
-                                //         cheque_date: '',
-                                //         is_pdc: 0,
-                                //         pdc_date: ''
-                                //     }
-                                // ]);
-                            }}
-                        />
-                    </div>
-                    <table>
-                        <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Cheque #</th>
-                            <th>Bank</th>
-                            <th>Amount</th>
-                            <th>Cheque Date</th>
-                            <th>Is PDC</th>
-                            <th>PDC Date</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {chequeList.length > 0
-                            ? (chequeList.map((cheque: any, index: number) => (
-                                <tr key={index}>
-                                    <td>{index + 1}</td>
-                                    <td>{cheque.cheque_number}</td>
-                                    <td>{bankOptions?.find((bank: any) => bank.value === cheque.bank_id)?.name}</td>
-                                    <td>{cheque.cheque_amount}</td>
-                                    <td>{cheque.cheque_date}</td>
-                                    <td>{cheque.is_pdc === 1 ? 'Yes' : 'No'}</td>
-                                    <td>{cheque.pdc_date}</td>
-                                </tr>
-                            ))) : (
-                                <tr>
-                                    <td colSpan={7} className="text-center">No Cheques Added</td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            )}
 
             <Tab.Group>
                 <Tab.List className="mt-3 flex flex-wrap border-b border-white-light dark:border-[#191e3a]">
@@ -400,6 +400,19 @@ const PaymentForm = () => {
                             </button>
                         )}
                     </Tab>
+                    {formData.payment_sub_method === 'cheque' && (
+                        <Tab as={Fragment}>
+                            {({ selected }) => (
+                                <button
+                                    className={`${
+                                        selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
+                                    } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
+                                >
+                                    Cheques
+                                </button>
+                            )}
+                        </Tab>
+                    )}
                 </Tab.List>
                 <Tab.Panels className="panel rounded-none">
                     <Tab.Panel>
@@ -431,42 +444,32 @@ const PaymentForm = () => {
                                                     divClasses="w-full"
                                                     type="number"
                                                     step="any"
-                                                    name={`invoices[${index}][paid_amount]`}
+                                                    name={`bills[${index}][paid_amount]`}
                                                     value={billDetail.paid_amount}
                                                     onChange={(e) => {
                                                         const paidAmount = parseFloat(e.target.value);
                                                         if (paidAmount > billDetail.due_amount) {
                                                             setErrors({
                                                                 ...errors,
-                                                                [`invoices[${index}][paid_amount]`]: 'Paid amount cannot exceed due amount'
+                                                                [`bills[${index}][paid_amount]`]: 'Paid amount cannot exceed due amount'
                                                             });
                                                         } else {
                                                             setErrors((prevErrors: any) => {
                                                                 const {
-                                                                    [`invoices[${index}][paid_amount]`]: removedError,
+                                                                    [`bills[${index}][paid_amount]`]: removedError,
                                                                     ...restErrors
                                                                 } = prevErrors;
                                                                 return restErrors;
                                                             });
                                                         }
-                                                        setBills((invoices: any) => {
-                                                            return invoices.map((inv: any, i: number) => {
-                                                                if (i === index) {
-                                                                    return {
-                                                                        ...inv,
-                                                                        paid_amount: paidAmount > billDetail.due_amount ? billDetail.due_amount : paidAmount
-                                                                    };
-                                                                }
-                                                                return inv;
-                                                            });
-                                                        });
+                                                        handlePaidAmountChange(index, paidAmount);
                                                     }}
                                                     placeholder="Enter Paid Amount"
                                                     isMasked={false}
                                                 />
-                                                {errors[`invoices[${index}][paid_amount]`] && (
+                                                {errors[`bills[${index}][paid_amount]`] && (
                                                     <div
-                                                        className="text-red-500 text-xs">{errors[`invoices[${index}][paid_amount]`]}</div>
+                                                        className="text-red-500 text-xs">{errors[`bills[${index}][paid_amount]`]}</div>
                                                 )}
                                             </td>
                                         </tr>
@@ -517,8 +520,6 @@ const PaymentForm = () => {
                                                 treeDefaultExpandAll
                                                 onChange={(e) => handleChange('paying_account_id', e, true)}
                                                 treeData={accountOptions}
-                                                // onPopupScroll={onPopupScroll}
-                                                treeNodeFilterProp="title"
                                             />
                                         </div>
                                     </div>
@@ -526,6 +527,66 @@ const PaymentForm = () => {
                             </div>
                         </div>
                     </Tab.Panel>
+                    {formData.payment_sub_method === 'cheque' && (
+                        <Tab.Panel>
+                            <div className="table-responsive my-5">
+                                <div className="flex flex-col md:flex-row md:justify-between md:items-center">
+                                    <h3 className="font-bold text-lg mb-5">Cheques</h3>
+                                    <Button
+                                        type={ButtonType.button}
+                                        text="Add Cheque"
+                                        variant={ButtonVariant.primary}
+                                        size={ButtonSize.small}
+                                        onClick={() => {
+                                            setChequeModal(true);
+                                            setChequeDetails({});
+                                        }}
+                                    />
+                                </div>
+                                <table>
+                                    <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Cheque #</th>
+                                        <th>Bank</th>
+                                        <th>Amount</th>
+                                        <th>Cheque Date</th>
+                                        <th>Is PDC</th>
+                                        <th>PDC Date</th>
+                                        <th>Action</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {chequeList.length > 0
+                                        ? (chequeList.map((cheque: any, index: number) => (
+                                            <tr key={index}>
+                                                <td>{index + 1}</td>
+                                                <td>{cheque.cheque_number}</td>
+                                                <td>{bankOptions?.find((bank: any) => bank.value === cheque.bank_id)?.label}</td>
+                                                <td>{cheque.cheque_amount}</td>
+                                                <td>{cheque.cheque_date}</td>
+                                                <td>{cheque.is_pdc === 1 ? 'Yes' : 'No'}</td>
+                                                <td>{cheque.pdc_date}</td>
+                                                <td>
+                                                    <Button
+                                                        type={ButtonType.button}
+                                                        text="Remove"
+                                                        variant={ButtonVariant.danger}
+                                                        size={ButtonSize.small}
+                                                        onClick={() => handleRemoveCheque(index)}
+                                                    />
+                                                </td>
+                                            </tr>
+                                        ))) : (
+                                            <tr>
+                                                <td colSpan={8} className="text-center">No Cheques Added</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </Tab.Panel>
+                    )}
                 </Tab.Panels>
             </Tab.Group>
             <div className="flex justify-center items-center mt-3">
@@ -555,13 +616,7 @@ const PaymentForm = () => {
                             type={ButtonType.button}
                             text="Add Cheque"
                             variant={ButtonVariant.primary}
-                            onClick={() => {
-                                setChequeList((prevCheques: any) => [
-                                    ...prevCheques,
-                                    chequeDetails
-                                ]);
-                                setChequeModal(false);
-                            }}
+                            onClick={handleAddCheque}
                         />
                     </div>
                 }
@@ -629,7 +684,7 @@ const PaymentForm = () => {
                     value={chequeDetails.cheque_amount}
                     onChange={(e) => setChequeDetails((prev: any) => ({
                         ...prev,
-                        cheque_amount: e.target.value
+                        cheque_amount: parseFloat(e.target.value)
                     }))}
                     placeholder="Enter Cheque Amount"
                     isMasked={false}

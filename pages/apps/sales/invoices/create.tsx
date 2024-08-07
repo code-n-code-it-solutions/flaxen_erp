@@ -2,13 +2,13 @@ import React, { useEffect } from 'react';
 import AppLayout from '@/components/Layouts/AppLayout';
 import DetailPageHeader from '@/components/apps/DetailPageHeader';
 import { AppBasePath } from '@/utils/enums';
-import InvoiceForm from '@/pages/apps/invoicing/customers/invoices/InvoiceForm';
 import PageWrapper from '@/components/PageWrapper';
 import useSetActiveMenu from '@/hooks/useSetActiveMenu';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import { useRouter } from 'next/router';
 import { clearSaleInvoiceState } from '@/store/slices/saleInvoiceSlice';
+import InvoiceForm from '@/pages/apps/sales/invoices/InvoiceForm';
 
 const Create = () => {
     useSetActiveMenu(AppBasePath.Invoice)
@@ -24,12 +24,12 @@ const Create = () => {
 
     useEffect(() => {
         if(success && saleInvoice) {
-            router.push('/apps/invoicing/customers/invoices');
+            router.push('/apps/sales/invoices');
         }
     }, [success, saleInvoice]);
 
     return (
-        <div>
+        <div className="flex flex-col gap-3">
             <DetailPageHeader
                 appBasePath={AppBasePath.Invoice}
                 title="Create Invoice"
@@ -38,7 +38,7 @@ const Create = () => {
                 }}
                 backButton={{
                     show: true,
-                    backLink: '/apps/invoicing/customers/invoices'
+                    backLink: '/apps/sales/invoices'
                 }}
             />
             <PageWrapper

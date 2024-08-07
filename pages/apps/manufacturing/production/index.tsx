@@ -89,7 +89,7 @@ const Index = () => {
                         show: true,
                         type: 'link',
                         text: 'New',
-                        link: '/apps/manufacturing/operations/production/create'
+                        link: '/apps/manufacturing/production/create'
                     },
                     title: 'Productions',
                     showSetting: true
@@ -99,7 +99,7 @@ const Index = () => {
                 buttonActions={{
                     delete: () => console.log('deleted'),
                     export: () => console.log('exported'),
-                    print: () => router.push('/apps/manufacturing/operations/production/print/' + selectedRows.map(row => row.id).join('/')),
+                    print: () => router.push('/apps/manufacturing/production/print/' + selectedRows.map(row => row.id).join('/')),
                     archive: () => console.log('archived'),
                     unarchive: () => console.log('unarchived'),
                     duplicate: () => console.log('duplicated'),
@@ -116,7 +116,7 @@ const Index = () => {
                     rowMultiSelectWithClick={false}
                     onRowClicked={(params) => {
                         checkPermission(menus.map((plugin: any) => plugin.menus).flat(), activeMenu.route, ActionList.VIEW_DETAIL, AppBasePath.Production) &&
-                        router.push(`/apps/manufacturing/operations/production/view/${params.data.id}`);
+                        router.push(`/apps/manufacturing/production/view/${params.data.id}`);
                     }}
                 />
             </div>

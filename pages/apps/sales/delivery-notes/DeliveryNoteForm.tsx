@@ -11,7 +11,7 @@ import { getCustomers } from '@/store/slices/customerSlice';
 import { pendingQuotations } from '@/store/slices/quotationSlice';
 import { generateCode } from '@/store/slices/utilSlice';
 import { clearFillingState, getFinishedGoodStock } from '@/store/slices/fillingSlice';
-import { getIcon } from '@/utils/helper';
+import { calculateDateFromDays, getIcon } from '@/utils/helper';
 import IconButton from '@/components/IconButton';
 import FinishedGoodModal from '@/components/modals/FinishedGoodModal';
 import { getProductAssemblies } from '@/store/slices/productAssemblySlice';
@@ -19,6 +19,7 @@ import { getEmployees } from '@/store/slices/employeeSlice';
 import Modal from '@/components/Modal';
 import { Tab } from '@headlessui/react';
 import { getAccountsTypes } from '@/store/slices/accountSlice';
+import { storeDeliveryNote } from '@/store/slices/deliveryNoteSlice';
 
 const DeliveryNoteForm = () => {
     const dispatch = useAppDispatch();
@@ -82,13 +83,30 @@ const DeliveryNoteForm = () => {
                     setFormData({ ...formData, [name]: value.value });
                     if (name === 'customer_id') {
                         const customerOption = customerOptions.find((customer: any) => customer.value === value.value);
-                        setCustomerDetail(customerOption.customer);
-                        // console.log(customerOption);
+                        // setCustomerDetail(customerOption.customer);
+                        console.log(customerOption);
+                        setFormData({
+                            ...formData,
+                            customer_id: value.value,
+                            delivery_due_date: calculateDateFromDays(customerOption.customer?.due_in_days),
+                            delivery_due_in_days: customerOption.customer?.due_in_days
+                        });
                         setContactPersonOptions(customerOption.customer?.contact_persons.map((contactPerson: any) => ({
                             label: contactPerson.name,
                             value: contactPerson.id,
                             contactPerson
                         })));
+                    }
+
+                    if (name === 'contact_person_id') {
+                        let filteredQuotation = quotations
+                            .filter((quotation: any) => quotation.customer_id === formData.customer_id && quotation.contact_person_id === value.value)
+                            .map((item: any) => ({
+                                value: item.id,
+                                label: item.quotation_code,
+                                quotation: item
+                            }));
+                        setQuotationOptions([{ label: 'Skip Quotation', value: 0 }, ...filteredQuotation]);
                     }
 
                     if (name === 'quotation_ids') {
@@ -116,11 +134,11 @@ const DeliveryNoteForm = () => {
                                 }
                                 // console.log(quotationItemList);
                                 setItemsForSelect(quotationItemList?.map((item: any) => {
-                                    console.log("item", item);
+                                    console.log('item', item);
                                     return {
                                         ...item,
                                         delivered_quantity: item.quantity
-                                    }
+                                    };
                                 }));
                             }
                         }
@@ -153,12 +171,28 @@ const DeliveryNoteForm = () => {
                         }));
                         setItemsForSelect([]);
                         setOriginalItemsState([]);
-                        setContactPersonOptions([]);
                         setQuotationItems([]);
                     }
 
                     if (name === 'customer_id') {
+                        setItemsForSelect([]);
+                        setOriginalItemsState([]);
                         setContactPersonOptions([]);
+                        setQuotationItems([]);
+                        setQuotationOptions([]);
+                        setFormData((prev: any) => ({
+                            ...prev,
+                            quotation_ids: '',
+                            skip_quotation: false,
+                            contact_person_id: 0
+                        }));
+                    }
+
+                    if (name === 'contact_person_id') {
+                        setItemsForSelect([]);
+                        setOriginalItemsState([]);
+                        setQuotationItems([]);
+                        setQuotationOptions([]);
                     }
 
                     if (name === 'product_assembly_id') {
@@ -228,8 +262,8 @@ const DeliveryNoteForm = () => {
                 })),
                 terms_conditions: formData.terms_conditions
             };
-            console.log(deliveryNoteData);
-            // dispatch(storeDeliveryNote(deliveryNoteData));
+            // console.log(deliveryNoteData);
+            dispatch(storeDeliveryNote(deliveryNoteData));
         }
     };
 
@@ -261,7 +295,7 @@ const DeliveryNoteForm = () => {
         dispatch(generateCode(FORM_CODE_TYPE.DELIVERY_NOTE));
         dispatch(getProductAssemblies());
         setModalOpen(false);
-        dispatch(getAccountsTypes({ids: 1}));
+        dispatch(getAccountsTypes({ ids: 1 }));
     }, []);
 
     useEffect(() => {
@@ -298,16 +332,16 @@ const DeliveryNoteForm = () => {
         }
     }, [employees]);
 
-    useEffect(() => {
-        if (quotations) {
-            const quotationOptions = quotations.map((quotation: any) => ({
-                value: quotation.id,
-                label: quotation.quotation_code,
-                quotation
-            }));
-            setQuotationOptions([{ label: 'Skip Quotation', value: 0 }, ...quotationOptions]);
-        }
-    }, [quotations]);
+    // useEffect(() => {
+    //     if (quotations) {
+    //         const quotationOptions = quotations.map((quotation: any) => ({
+    //             value: quotation.id,
+    //             label: quotation.quotation_code,
+    //             quotation
+    //         }));
+    //         setQuotationOptions([{ label: 'Skip Quotation', value: 0 }, ...quotationOptions]);
+    //     }
+    // }, [quotations]);
 
     useEffect(() => {
         if (code) {
@@ -376,6 +410,28 @@ const DeliveryNoteForm = () => {
                         errorMessage={validations.delivery_note_for}
                     />
 
+                    <Dropdown
+                        divClasses="w-full"
+                        label="Cutomer"
+                        name="customer_id"
+                        options={customerOptions}
+                        value={formData.customer_id}
+                        onChange={(e: any) => handleChange('customer_id', e, true)}
+                        required={true}
+                        errorMessage={validations.customer_id}
+                    />
+
+                    <Dropdown
+                        divClasses="w-full"
+                        label="Contact Person"
+                        name="contact_person_id"
+                        options={contactPersonOptions}
+                        value={formData.contact_person_id}
+                        onChange={(e: any) => handleChange('contact_person_id', e, true)}
+                        required={true}
+                        errorMessage={validations.contact_person_id}
+                    />
+
                     {formData.delivery_note_for === 1 && (
                         <div className="w-full flex flex-col md:flex-row gap-1 items-end">
                             <Dropdown
@@ -401,86 +457,16 @@ const DeliveryNoteForm = () => {
                         </div>
                     )}
                     {formData.quotation_ids === '0' && (
-                        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-3 col-span-2">
-                            <Dropdown
-                                divClasses="w-full"
-                                label="Customer"
-                                name="customer_id"
-                                options={customerOptions}
-                                value={formData.customer_id}
-                                onChange={(e: any) => handleChange('customer_id', e, true)}
-                            />
-                            <Dropdown
-                                divClasses="w-full"
-                                label="Contact Person"
-                                name="contact_person_id"
-                                options={contactPersonOptions}
-                                value={formData.contact_person_id}
-                                onChange={(e: any) => handleChange('contact_person_id', e, true)}
-                            />
-                            <Input
-                                divClasses="w-full"
-                                label="Receipt Delivery Due Days"
-                                type="number"
-                                step="any"
-                                name="receipt_delivery_due_days"
-                                value={formData.receipt_delivery_due_days?.toString()}
-                                onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
-                                isMasked={false}
-                                placeholder="Receipt Delivery Due Days"
-                                required={true}
-                                errorMessage={validations.receipt_delivery_due_days}
-                            />
-
-                            <Input
-                                divClasses="w-full"
-                                label="Delivery Due days"
-                                type="number"
-                                step="any"
-                                name="delivery_due_in_days"
-                                value={formData.delivery_due_in_days}
-                                onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
-                                isMasked={false}
-                                placeholder="Receipt Delivery Days"
-                                required={true}
-                                errorMessage={validations.delivery_due_in_days}
-                            />
-
-                            <Input
-                                divClasses="w-full"
-                                label="Delivery Due Date"
-                                type="text"
-                                name="delivery_due_date"
-                                value={formData.delivery_due_date}
-                                onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
-                                isMasked={false}
-                                placeholder="Receipt Delivery Due Date"
-                                disabled={true}
-                                required={true}
-                                errorMessage={validations.delivery_due_date}
-                            />
-
-                            <Dropdown
-                                divClasses="w-full"
-                                label="Salesman"
-                                name="salesman_id"
-                                options={salesmanOptions}
-                                value={formData.salesman_id}
-                                onChange={(e: any) => handleChange('salesman_id', e, true)}
-                                required={true}
-                                errorMessage={validations.salesman_id}
-                            />
-
-                            {/*<Option*/}
-                            {/*    divClasses="w-full"*/}
-                            {/*    label="Consider Out of Stock as Well"*/}
-                            {/*    type="checkbox"*/}
-                            {/*    name="unprepared_stock"*/}
-                            {/*    value={formData.unprepared_stock}*/}
-                            {/*    defaultChecked={formData.unprepared_stock === 1}*/}
-                            {/*    onChange={(e: any) => handleChange(e.target.name, e.target.checked ? 1 : 0, e.target.required)}*/}
-                            {/*/>*/}
-                        </div>
+                        <Dropdown
+                            divClasses="w-full"
+                            label="Salesman"
+                            name="salesman_id"
+                            options={salesmanOptions}
+                            value={formData.salesman_id}
+                            onChange={(e: any) => handleChange('salesman_id', e, true)}
+                            required={true}
+                            errorMessage={validations.salesman_id}
+                        />
                     )}
 
 
@@ -512,7 +498,7 @@ const DeliveryNoteForm = () => {
                         )}
                     </Tab>
                 </Tab.List>
-                <Tab.Panels className="panel rounded-none">
+                <Tab.Panels className="rounded-none">
                     <Tab.Panel>
                         <div className="my-5 active table-responsive">
                             <div

@@ -578,7 +578,7 @@ const FillingForm = ({ id }: IFormProps) => {
                         )}
                     </Tab>
                 </Tab.List>
-                <Tab.Panels className="panel rounded-none">
+                <Tab.Panels className="rounded-none">
                     <Tab.Panel>
                         <div className="active">
                             <div className="flex justify-between items-center gap-3 mb-3">

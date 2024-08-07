@@ -2,6 +2,7 @@ import { Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import Footer from '@/components/Report/Footer';
 import React from 'react';
 import Header from '@/components/Report/Header';
+import { capitalize } from 'lodash';
 
 const PrintContent = ({ content }: any) => {
     return (
@@ -50,9 +51,12 @@ const PrintContent = ({ content }: any) => {
                         color: '#22AAA7'
                     }}
                 >
-                    <Text style={{ fontWeight: 'bold', fontSize: 8 }}>Plot # 593 Industrial Area, Umm Al Thuoob Umm Al
-                        Quwain, UAE</Text>
-                    <Text style={{ fontWeight: 'bold', fontSize: 8 }}>+971 6 766 9442 - info@flaxenpaints.com</Text>
+                    <Text style={{ fontWeight: 'bold', fontSize: 8 }}>
+                        Plot # 593 Industrial Area, Umm Al Thuoob Umm Al Quwain, UAE
+                    </Text>
+                    <Text style={{ fontWeight: 'bold', fontSize: 8 }}>
+                        +971 6 766 9442 - info@flaxenpaints.com
+                    </Text>
                 </View>
             </View>
             {/*<Header /> */}
@@ -86,7 +90,7 @@ const PrintContent = ({ content }: any) => {
             <View style={styles.amountSection}>
                 <Text style={styles.normalText}>THE SUM OF</Text>
                 <View style={styles.amountBox}>
-                    <Text style={styles.amountText}>{content.amountInWords} ONLY</Text>
+                    <Text style={styles.amountText}>{capitalize(content.amountInWords)} only</Text>
                 </View>
                 <Text style={styles.normalText}>{content.netTotal}</Text>
             </View>

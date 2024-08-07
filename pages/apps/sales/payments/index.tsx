@@ -16,13 +16,11 @@ import { clearCustomerPaymentState, getCustomerPayments } from '@/store/slices/c
 const Index = () => {
     useSetActiveMenu(AppBasePath.Invoice_Payment);
     const router = useRouter();
-
     const dispatch = useAppDispatch();
-    const { token } = useAppSelector((state) => state.user);
-
+    const { token, menus } = useAppSelector((state) => state.user);
     const { customerPayments, loading } = useAppSelector((state) => state.customerPayment);
-    const { permittedMenus } = useAppSelector((state) => state.menu);
     const { activeMenu } = useAppSelector((state) => state.menu);
+
     const [selectedRows, setSelectedRows] = useState<any[]>([]);
     const gridRef = useRef<AgGridReact<any>>(null);
     const [colDefs, setColDefs] = useState<any>([
@@ -106,7 +104,7 @@ const Index = () => {
                         show: true,
                         type: 'link',
                         text: 'New',
-                        link: '/apps/invoicing/customers/payments/create'
+                        link: '/apps/sales/payments/create'
                     },
                     title: 'Customer Payments',
                     showSetting: true
@@ -115,11 +113,11 @@ const Index = () => {
                 showSearch={true}
                 buttonActions={{
                     export: () => console.log('exported'),
-                    print: () => router.push('/apps/invoicing/customers/payments/print/' + selectedRows.map(row => row.id).join('/')),
+                    print: () => router.push('/apps/sales/payments/print/' + selectedRows.map(row => row.id).join('/')),
                     archive: () => console.log('archived'),
                     unarchive: () => console.log('unarchived'),
                     duplicate: () => console.log('duplicated'),
-                    printLabel: () => router.push('/apps/invoicing/customers/payments/print-label/' + selectedRows.map(row => row.id).join('/'))
+                    printLabel: () => router.push('/apps/sales/payments/print-label/' + selectedRows.map(row => row.id).join('/'))
                 }}
             />
             <div>
@@ -134,8 +132,8 @@ const Index = () => {
                         // const displayedColumns = params.api.getAllDisplayedColumns();
                         // console.log(displayedColumns, params.column, displayedColumns[0], displayedColumns[0] === params.column);
                         // return displayedColumns[0] === params.column;
-                        checkPermission(permittedMenus, activeMenu.route, ActionList.VIEW_DETAIL, AppBasePath.Invoice_Payment) &&
-                        router.push(`/apps/invoicing/customers/payments/view/${params.data.id}`);
+                        checkPermission(menus.map((plugin: any) => plugin.menus).flat(), activeMenu.route, ActionList.VIEW_DETAIL, AppBasePath.Invoice_Payment) &&
+                        router.push(`/apps/sales/payments/view/${params.data.id}`);
                     }}
                 />
             </div>

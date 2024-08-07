@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import AppLayout from '@/components/Layouts/AppLayout';
 import PageHeader from '@/components/apps/PageHeader';
 import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import { AgGridReact } from 'ag-grid-react';
@@ -11,88 +10,88 @@ import DisabledClickRenderer from '@/components/apps/DisabledClickRenderer';
 import { checkPermission } from '@/utils/helper';
 import { ActionList, AppBasePath } from '@/utils/enums';
 import useSetActiveMenu from '@/hooks/useSetActiveMenu';
-import { clearVendorPaymentState, getVendorPayments } from '@/store/slices/vendorPayments';
+import { clearDebitNoteState, getDebitNotes } from '@/store/slices/debitNoteSlice';
 
 const Index = () => {
-    useSetActiveMenu(AppBasePath.Invoice_Payment);
+    useSetActiveMenu(AppBasePath.Debit_Notes);
     const router = useRouter();
-
     const dispatch = useAppDispatch();
-    const { token } = useAppSelector((state) => state.user);
 
-    const { vendorPayments, loading } = useAppSelector((state) => state.vendorPayment);
-    const { permittedMenus } = useAppSelector((state) => state.menu);
+    const { token, menus } = useAppSelector((state) => state.user);
+    const { debitNotes, loading } = useAppSelector((state) => state.debitNote);
     const { activeMenu } = useAppSelector((state) => state.menu);
+
     const [selectedRows, setSelectedRows] = useState<any[]>([]);
     const gridRef = useRef<AgGridReact<any>>(null);
     const [colDefs, setColDefs] = useState<any>([
         {
-            headerName: 'Payment Code',
+            headerName: 'Invoice Code',
             headerCheckboxSelection: true,
             checkboxSelection: true,
-            field: 'payment_code',
+            field: 'sale_invoice_code',
             minWidth: 150,
             cellRenderer: DisabledClickRenderer
         },
         {
-            headerName: 'Ref #',
-            field: 'reference_no',
+            headerName: 'Customer',
+            field: 'customer.name',
+            valueGetter: (params: any) => params.data.customer.name + ' (' + params.data.customer.customer_code + ')',
             minWidth: 150
         },
         {
-            headerName: 'Payment Method',
-            field: 'payment_method.name',
+            headerName: 'Contact Person',
+            field: 'contact_person.name',
             minWidth: 150
         },
         {
-            headerName: 'Date',
-            field: 'payment_date',
+            headerName: 'Salesman',
+            field: 'salesman.name',
             minWidth: 150
         },
         {
-            headerName: 'Payment Type',
-            field: 'payment_type',
+            headerName: 'Invoice Ref',
+            field: 'payment_reference',
             minWidth: 150
         },
         {
-            headerName: 'Vendor',
-            valueGetter: (params: any) => params.data.vendor.name + ' (' + params.data.vendor.vendor_number + ')',
+            headerName: 'Invoice Date',
+            field: 'invoice_date',
             minWidth: 150
         },
         {
-            headerName: 'Due',
+            headerName: 'Due Date/Terms',
+            valueGetter: (params: any) => params.data.due_date ? params.data.due_date : params.data.payment_terms + ' Days',
+            minWidth: 150
+        },
+        {
+            headerName: 'Invoice Amount',
             valueGetter: (params: any) => {
-                const dueAmount = params.data.vendor_bill_payment_details
-                    .flatMap((bill: any) => bill.due_amount)
-                    .reduce((a: number, b: any) => a + parseFloat(b), 0);
-                return dueAmount.toFixed(2);
+                return params.data.delivery_note_sale_invoices
+                    .flatMap((invoice: any) => invoice.delivery_note.delivery_note_items)
+                    .map((item: any) => parseFloat(item.total_cost))
+                    .reduce((a: number, b: number) => a + b, 0).toFixed(2);
             },
             minWidth: 150
         },
         {
-            headerName: 'Received',
-            valueFormatter: (params: any) => {
-                const paidAmount = params.data.vendor_bill_payment_details
-                    .flatMap((bill: any) => bill.paid_amount)
-                    .reduce((a: number, b: any) => a + parseFloat(b), 0);
-                return paidAmount.toFixed(2);
-            },
+            headerName: 'Status',
+            field: 'status',
             minWidth: 150
         }
     ]);
 
     useEffect(() => {
-        dispatch(clearVendorPaymentState());
-        dispatch(setPageTitle('Vendor Payments'));
+        dispatch(setPageTitle('Debit Notes'));
         setAuthToken(token);
         setContentType('application/json');
-        dispatch(getVendorPayments());
+        dispatch(clearDebitNoteState());
+        dispatch(getDebitNotes());
     }, []);
 
     return (
         <div className="flex flex-col gap-5">
             <PageHeader
-                appBasePath={AppBasePath.Vendor_Payment}
+                appBasePath={AppBasePath.Debit_Notes}
                 key={selectedRows.length}
                 selectedRows={selectedRows.length}
                 gridRef={gridRef}
@@ -101,36 +100,33 @@ const Index = () => {
                         show: true,
                         type: 'link',
                         text: 'New',
-                        link: '/apps/invoicing/vendors/payments/create'
+                        link: '/apps/purchase/debit-notes/create'
                     },
-                    title: 'Vendor Payments',
+                    title: 'Debit Note',
                     showSetting: true
                 }}
                 rightComponent={true}
                 showSearch={true}
                 buttonActions={{
                     export: () => console.log('exported'),
-                    print: () => router.push('/apps/invoicing/vendors/payments/print/' + selectedRows.map(row => row.id).join('/')),
+                    print: () => router.push('/apps/purchase/debit-notes/print/' + selectedRows.map(row => row.id).join('/')),
                     archive: () => console.log('archived'),
                     unarchive: () => console.log('unarchived'),
                     duplicate: () => console.log('duplicated'),
-                    printLabel: () => router.push('/apps/invoicing/vendors/payments/print-label/' + selectedRows.map(row => row.id).join('/'))
+                    printLabel: () => router.push('/apps/purchase/ebit-notes/print-label/' + selectedRows.map(row => row.id).join('/'))
                 }}
             />
             <div>
                 <AgGridComponent
                     gridRef={gridRef}
-                    data={vendorPayments}
+                    data={debitNotes}
                     colDefs={colDefs}
                     rowSelection={'multiple'}
                     onSelectionChangedRows={(rows) => setSelectedRows(rows)}
                     rowMultiSelectWithClick={false}
                     onRowClicked={(params) => {
-                        // const displayedColumns = params.api.getAllDisplayedColumns();
-                        // console.log(displayedColumns, params.column, displayedColumns[0], displayedColumns[0] === params.column);
-                        // return displayedColumns[0] === params.column;
-                        checkPermission(permittedMenus, activeMenu.route, ActionList.VIEW_DETAIL, AppBasePath.Vendor_Payment) &&
-                        router.push(`/apps/invoicing/vendors/payments/view/${params.data.id}`);
+                        checkPermission(menus.map((plugin: any) => plugin.menus).flat(), activeMenu.route, ActionList.VIEW_DETAIL, AppBasePath.Debit_Notes) &&
+                        router.push(`/apps/purchase/debit-notes/view/${params.data.id}`);
                     }}
                 />
             </div>
@@ -138,5 +134,5 @@ const Index = () => {
     );
 };
 
-Index.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
+// Index.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
 export default Index;

@@ -31,7 +31,7 @@ const UnlockBox = () => {
     }, []);
 
     useEffect(() => {
-        console.log(isLocked);
+        // console.log(isLocked);
         if (isLoggedIn && !isLocked) {
             router.push(beforeLockedUrl);
         }

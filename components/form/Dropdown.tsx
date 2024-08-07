@@ -2,6 +2,7 @@ import Select from 'react-select';
 import React, { FC } from 'react';
 import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css';
+import { useAppSelector } from '@/store';
 
 interface IProps {
     divClasses?: string | '';
@@ -42,15 +43,22 @@ export const Dropdown: FC<IProps> = ({
                                          hint,
                                          customStyles
                                      }) => {
+    const themeConfig = useAppSelector((state) => state.themeConfig);
     const customStyle = {
         menuPortal: (base: any) => ({ ...base, zIndex: 9999 }), // Adjust zIndex as needed
+
+        control: (provided:any, state:any) => ({
+            ...provided,
+            backgroundColor: `${themeConfig.theme === 'light' ? 'white' : '#2d3748'}`,
+            borderColor: `${themeConfig.theme === 'light' ? '#d2d6dc' : '#4b5563'}`,
+            '&:hover': {
+                borderColor: `${themeConfig.theme === 'light' ? '#d2d6dc' : '#4b5563'}`,
+                backgroundColor: `${themeConfig.theme === 'light' ? 'white' : '#2d3748'}`,
+            },
+        }),
         // option: (provided:any, state:any) => ({
         //     ...provided,
-        //     paddingLeft: `${(state.data.depth || 0) * 20}px`
-        // }),
-        // group: (provided:any) => ({
-        //     ...provided,
-        //     paddingLeft: '10px'
+        //     backgroundColor: `${themeConfig.theme === 'light' ? 'white' : '#2d3748'}`,
         // }),
     };
     // console.log(customStyle);
@@ -93,6 +101,14 @@ export const Dropdown: FC<IProps> = ({
                 ) : (
                     <Select
                         // defaultValue={options[0]}
+                        classNames={{
+                            // menu hover effect background is also to be change
+
+                            // control: (state) => themeConfig.theme === 'light' ? state.isFocused ? 'dark:bg-slate-100' : 'dark:bg-slate-100' : state.isFocused ? 'dark:bg-slate-800 text-white' : 'dark:bg-slate-800  text-white',
+                            // menu: (state) => themeConfig.theme === 'light' ? state + ' dark:bg-slate-100 hover:bg-slate-100' : state + ' dark:bg-slate-800 hover:bg-slate-800 text-white',
+                            // option: (state) => themeConfig.theme === 'light' ? state + ' dark:bg-slate-100' : state + ' dark:bg-slate-800',
+                            // placeholder: (state) => themeConfig.theme === 'light' ? state + ' text-dark' : state + ' text-white',
+                        }}
                         value={getSelectedValue()}
                         styles={{ ...styles, customStyle }}
                         formatOptionLabel={formatOptionLabel}

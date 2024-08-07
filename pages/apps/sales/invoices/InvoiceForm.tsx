@@ -11,13 +11,17 @@ import { capitalize } from 'lodash';
 import { storeSaleInvoice } from '@/store/slices/saleInvoiceSlice';
 import { calculateDateFromDays } from '@/utils/helper';
 import { Tab } from '@headlessui/react';
+import { getAccountsTypes } from '@/store/slices/accountSlice';
 import Option from '@/components/form/Option';
 import dynamic from 'next/dynamic';
-import { getAccountsTypes } from '@/store/slices/accountSlice';
 import useTransformToSelectOptions from '@/hooks/useTransformToSelectOptions';
+import Swal from 'sweetalert2';
+
+const TreeSelect = dynamic(() => import('antd/es/tree-select'), { ssr: false });
 
 const InvoiceForm = () => {
     const dispatch = useAppDispatch();
+    const accountOptions = useTransformToSelectOptions(useAppSelector(state => state.account).accountTypes);
     const { token } = useAppSelector((state) => state.user);
     const { code, latestRecord } = useAppSelector((state) => state.util);
     const { deliveryNotes } = useAppSelector((state) => state.deliveryNote);
@@ -30,8 +34,10 @@ const InvoiceForm = () => {
     const [salesman, setSalesman] = useState<any>({});
     const [deliveryNoteItems, setDeliveryNoteItems] = useState<any[]>([]);
     const [receivableAmount, setReceivableAmount] = useState<number>(0);
+    const [grandTotalSum, setGrandTotalSum] = useState<number>(0);
+    const [totalBeforeDiscount, setTotalBeforeDiscount] = useState<number>(0);
 
-    const handleChange = (name: string, value: string, required: boolean) => {
+    const handleChange = (name: string, value: any, required: boolean) => {
         if (required && value === '') {
             setErrors({
                 ...errors,
@@ -52,12 +58,22 @@ const InvoiceForm = () => {
 
         if (name === 'discount_amount') {
             setFormData({ ...formData, [name]: parseFloat(value) });
+            recalculateReceivableAmount(deliveryNoteItems, parseFloat(value));
         } else {
             setFormData({ ...formData, [name]: value });
         }
 
         if (name === 'invoice_type' || name === 'discount_amount') {
             recalculateReceivableAmount(deliveryNoteItems, parseFloat(formData.discount_amount || 0));
+        }
+
+        setFormData({ ...formData, [name]: value });
+
+        if (name === 'paid_amount') {
+            const parsedValue = parseFloat(value);
+            if (!isNaN(parsedValue) && parsedValue <= grandTotalSum) {
+                setFormData({ ...formData, [name]: parsedValue });
+            }
         }
     };
 
@@ -73,7 +89,7 @@ const InvoiceForm = () => {
         dispatch(generateCode('sale_invoice'));
         dispatch(pendingDeliveryNotes());
         setFormData({ ...formData, discount_amount: 0 });
-        dispatch(getAccountsTypes({ ids: 1 }));
+        dispatch(getAccountsTypes({}));
     }, []);
 
     useEffect(() => {
@@ -95,13 +111,27 @@ const InvoiceForm = () => {
     useEffect(() => {
         if (deliveryNoteItems.length > 0) {
             recalculateReceivableAmount(deliveryNoteItems, parseFloat(formData.discount_amount || 0));
+            const totalGrandSum = deliveryNoteItems.reduce((acc, item) => acc + parseFloat(item.total_cost), 0);
+            setGrandTotalSum(totalGrandSum);
+            setTotalBeforeDiscount(totalGrandSum);
+            setFormData({ ...formData, paid_amount: totalGrandSum - parseFloat(formData.discount_amount || 0) });
         }
     }, [deliveryNoteItems, formData.discount_amount]);
 
     const recalculateReceivableAmount = (items: any[], discount: number) => {
         const totalCost = items.reduce((acc: number, item: any) => acc + parseFloat(item.total_cost), 0);
         setReceivableAmount(totalCost - discount);
+        setFormData({ ...formData, paid_amount: totalCost - discount });
     };
+
+    useEffect(() => {
+        if (latestRecord) {
+            setFormData((prevFormData: any) => ({
+                ...prevFormData,
+                receiving_account_id: latestRecord.receiving_account?.code
+            }));
+        }
+    }, [latestRecord]);
 
     return (
         <form onSubmit={(e) => handleSubmit(e)}>
@@ -128,7 +158,7 @@ const InvoiceForm = () => {
                         <span>{customer.name}</span>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <span className="font-semibold text-gray-600">Salesman Name: </span>
+                        <span className="font-semibold text-gray-600">Sales Person: </span>
                         <span>{salesman.name}</span>
                     </div>
                     <Dropdown
@@ -167,28 +197,28 @@ const InvoiceForm = () => {
                                 setSalesman({});
                                 setDeliveryNoteItems([]);
                                 setReceivableAmount(0);
+                                setGrandTotalSum(0);
+                                setTotalBeforeDiscount(0);
                             }
                         }}
                         isMulti={true}
                     />
-                    <div className="flex gap-3  items-center">
+                    <div className="flex gap-3 items-center">
                         <h3 className="text-md">Receivable Amount: </h3>
                         <h3 className="text-lg font-bold">{receivableAmount.toFixed(2)}</h3>
                     </div>
                 </div>
                 <div className="w-full flex flex-col gap-3">
                     <h4 className="text-xl font-semibold text-gray-600 py-3">Invoice Params</h4>
-                    <Dropdown
-                        divClasses="w-full"
-                        label="Invoice Type"
-                        name="invoice_type"
-                        options={[
-                            { value: 'credit', label: 'Credit Invoice' },
-                            { value: 'cash', label: 'Cash Invoice' }
-                        ]}
-                        value={formData.invoice_type}
-                        onChange={(e) => handleChange('invoice_type', e.value, true)}
+                    <Option
+                        label="Is credit invoice"
+                        type="checkbox"
+                        name="is_credit_invoice"
+                        value="1"
+                        defaultChecked={formData.is_credit_invoice === 1}
+                        onChange={(e) => handleChange('is_credit_invoice', e.target.checked ? 1 : 0, false)}
                     />
+
                     <Input
                         divClasses="w-full"
                         label="PO # (optional)"
@@ -200,37 +230,22 @@ const InvoiceForm = () => {
                         isMasked={false}
                     />
 
-                    {formData.invoice_type === 'cash' && (
-                        <Input
-                            divClasses="w-full"
-                            label="Discount"
-                            type="number"
-                            step="any"
-                            name="discount_amount"
-                            value={formData.discount_amount}
-                            onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
-                            placeholder="Enter Discount Amount"
-                            isMasked={false}
-                        />
-                    )}
+                    <Input
+                        divClasses="w-full"
+                        label="Internal Document # (optional)"
+                        type="text"
+                        name="internal_document_no"
+                        value={formData.internal_document_no}
+                        onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
+                        placeholder="Enter Internal Document"
+                        isMasked={false}
+                    />
 
-                    {formData.invoice_type === 'credit' && (
-                        <>
-                            <Input
-                                divClasses="w-full"
-                                label="Internal Document # (optional)"
-                                type="text"
-                                name="internal_document_no"
-                                value={formData.internal_document_no}
-                                onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
-                                placeholder="Enter Internal Document"
-                                isMasked={false}
-                            />
-                            <div className="flex flex-col gap-3 justify-start items-start">
-                                <span><strong>Payment Terms (Days):</strong> {formData.payment_terms}</span>
-                                <span><strong>Due Date:</strong> {formData.due_date}</span>
-                            </div>
-                        </>
+                    {formData.is_credit_invoice === 1 && (
+                        <div className="flex flex-col gap-3 justify-start items-start">
+                            <span><strong>Payment Terms (Days):</strong> {formData.payment_terms}</span>
+                            <span><strong>Due Date:</strong> {formData.due_date}</span>
+                        </div>
                     )}
                 </div>
             </div>
@@ -241,7 +256,7 @@ const InvoiceForm = () => {
                         {({ selected }) => (
                             <button
                                 className={`${
-                                    selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
+                                    selected ? '!border-white-light !border-b-white text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
                                 } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
                             >
                                 Details
@@ -249,7 +264,7 @@ const InvoiceForm = () => {
                         )}
                     </Tab>
                 </Tab.List>
-                <Tab.Panels className="panel rounded-none">
+                <Tab.Panels className="rounded-none">
                     <Tab.Panel>
                         <div className="table-responsive mt-3 active">
                             <table>

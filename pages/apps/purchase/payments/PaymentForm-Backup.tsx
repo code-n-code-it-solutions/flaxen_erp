@@ -22,7 +22,7 @@ import BankFormModal from '@/components/modals/BankFormModal';
 
 const TreeSelect = dynamic(() => import('antd/es/tree-select'), { ssr: false });
 
-const PaymentForm = () => {
+const PaymentFormBackup = () => {
     const dispatch = useAppDispatch();
     const accountOptions = useTransformToSelectOptions(useAppSelector(state => state.account).accountTypes);
     const { token } = useAppSelector((state) => state.user);
@@ -66,7 +66,7 @@ const PaymentForm = () => {
             const totalAmount = bill.good_receive_note_vendor_bill
                 .flatMap((vendorBill: any) => vendorBill.good_receive_note.raw_products)
                 .reduce((acc: number, item: any) => acc + item.total_price, 0);
-            console.log(bill);
+            // console.log(bill);
             return {
                 id: bill.id,
                 bill_number: bill.bill_number,
@@ -168,7 +168,7 @@ const PaymentForm = () => {
         if (latestRecord) {
             setFormData((prevFormData: any) => ({
                 ...prevFormData,
-                paying_account_id: latestRecord.paying_account?.code,
+                paying_account_id: latestRecord.paying_account?.code
             }));
         }
     }, [latestRecord]);
@@ -316,66 +316,6 @@ const PaymentForm = () => {
                 </div>
             </div>
 
-            {formData.payment_sub_method === 'cheque' && (
-                <div className="table-responsive my-5">
-                    <div className="flex flex-col md:flex-row md:justify-between md:items-center">
-                        <h3 className="font-bold text-lg mb-5">Cheques</h3>
-                        <Button
-                            type={ButtonType.button}
-                            text="Add Cheque"
-                            variant={ButtonVariant.primary}
-                            size={ButtonSize.small}
-                            onClick={() => {
-                                setChequeModal(true);
-                                setChequeDetails({});
-                                // setBills((prevBills: any) => [
-                                //     ...prevBills,
-                                //     {
-                                //         bill_number: '',
-                                //         bank: '',
-                                //         amount: 0,
-                                //         cheque_date: '',
-                                //         is_pdc: 0,
-                                //         pdc_date: ''
-                                //     }
-                                // ]);
-                            }}
-                        />
-                    </div>
-                    <table>
-                        <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Cheque #</th>
-                            <th>Bank</th>
-                            <th>Amount</th>
-                            <th>Cheque Date</th>
-                            <th>Is PDC</th>
-                            <th>PDC Date</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {chequeList.length > 0
-                            ? (chequeList.map((cheque: any, index: number) => (
-                                <tr key={index}>
-                                    <td>{index + 1}</td>
-                                    <td>{cheque.cheque_number}</td>
-                                    <td>{bankOptions?.find((bank: any) => bank.value === cheque.bank_id)?.name}</td>
-                                    <td>{cheque.cheque_amount}</td>
-                                    <td>{cheque.cheque_date}</td>
-                                    <td>{cheque.is_pdc === 1 ? 'Yes' : 'No'}</td>
-                                    <td>{cheque.pdc_date}</td>
-                                </tr>
-                            ))) : (
-                                <tr>
-                                    <td colSpan={7} className="text-center">No Cheques Added</td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            )}
-
             <Tab.Group>
                 <Tab.List className="mt-3 flex flex-wrap border-b border-white-light dark:border-[#191e3a]">
                     <Tab as={Fragment}>
@@ -400,6 +340,19 @@ const PaymentForm = () => {
                             </button>
                         )}
                     </Tab>
+                    {formData.payment_sub_method === 'cheque' && (
+                        <Tab as={Fragment}>
+                            {({ selected }) => (
+                                <button
+                                    className={`${
+                                        selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
+                                    } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
+                                >
+                                    Cheques
+                                </button>
+                            )}
+                        </Tab>
+                    )}
                 </Tab.List>
                 <Tab.Panels className="panel rounded-none">
                     <Tab.Panel>
@@ -526,6 +479,56 @@ const PaymentForm = () => {
                             </div>
                         </div>
                     </Tab.Panel>
+                    {formData.payment_sub_method === 'cheque' && (
+                        <Tab.Panel>
+                            <div className="table-responsive my-5">
+                                <div className="flex flex-col md:flex-row md:justify-between md:items-center">
+                                    <h3 className="font-bold text-lg mb-5">Cheques</h3>
+                                    <Button
+                                        type={ButtonType.button}
+                                        text="Add Cheque"
+                                        variant={ButtonVariant.primary}
+                                        size={ButtonSize.small}
+                                        onClick={() => {
+                                            setChequeModal(true);
+                                            setChequeDetails({});
+                                        }}
+                                    />
+                                </div>
+                                <table>
+                                    <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Cheque #</th>
+                                        <th>Bank</th>
+                                        <th>Amount</th>
+                                        <th>Cheque Date</th>
+                                        <th>Is PDC</th>
+                                        <th>PDC Date</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {chequeList.length > 0
+                                        ? (chequeList.map((cheque: any, index: number) => (
+                                            <tr key={index}>
+                                                <td>{index + 1}</td>
+                                                <td>{cheque.cheque_number}</td>
+                                                <td>{bankOptions?.find((bank: any) => bank.value === cheque.bank_id)?.name}</td>
+                                                <td>{cheque.cheque_amount}</td>
+                                                <td>{cheque.cheque_date}</td>
+                                                <td>{cheque.is_pdc === 1 ? 'Yes' : 'No'}</td>
+                                                <td>{cheque.pdc_date}</td>
+                                            </tr>
+                                        ))) : (
+                                            <tr>
+                                                <td colSpan={7} className="text-center">No Cheques Added</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </Tab.Panel>
+                    )}
                 </Tab.Panels>
             </Tab.Group>
             <div className="flex justify-center items-center mt-3">
@@ -699,4 +702,4 @@ const PaymentForm = () => {
     );
 };
 
-export default PaymentForm;
+export default PaymentFormBackup;

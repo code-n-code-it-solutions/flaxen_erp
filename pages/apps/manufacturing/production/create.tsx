@@ -23,7 +23,7 @@ const Create = () => {
     useEffect(() => {
         if (production && success) {
             dispatch(clearProductionState());
-            router.push('/apps/manufacturing/operations/production');
+            router.push('/apps/manufacturing/production');
         }
     }, [production, success]);
 
@@ -38,7 +38,7 @@ const Create = () => {
                 }}
                 backButton={{
                     show: true,
-                    backLink: '/apps/manufacturing/operations/production'
+                    backLink: '/apps/manufacturing/production'
                 }}
             />
             <PageWrapper

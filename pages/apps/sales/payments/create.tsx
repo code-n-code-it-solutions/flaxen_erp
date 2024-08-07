@@ -7,8 +7,8 @@ import useSetActiveMenu from '@/hooks/useSetActiveMenu';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import { useRouter } from 'next/router';
-import PaymentForm from '@/pages/apps/invoicing/customers/payments/PaymentForm';
 import { clearCustomerPaymentState } from '@/store/slices/customerPayment';
+import PaymentForm from '@/pages/apps/sales/payments/PaymentForm';
 
 const Create = () => {
     useSetActiveMenu(AppBasePath.Invoice_Payment)
@@ -24,12 +24,12 @@ const Create = () => {
 
     useEffect(() => {
         if(success && customerPayment) {
-            router.push('/apps/invoicing/customers/payments');
+            router.push('/apps/sales/payments');
         }
     }, [success, customerPayment]);
 
     return (
-        <div>
+        <div className="flex flex-col gap-3">
             <DetailPageHeader
                 appBasePath={AppBasePath.Invoice_Payment}
                 title="New Customer Payment"
@@ -38,7 +38,7 @@ const Create = () => {
                 }}
                 backButton={{
                     show: true,
-                    backLink: '/apps/invoicing/customers/payments'
+                    backLink: '/apps/sales/payments'
                 }}
             />
             <PageWrapper

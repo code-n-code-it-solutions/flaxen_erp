@@ -27,7 +27,7 @@ const Create = () => {
     }, [deliveryNote, success]);
 
     return (
-        <div>
+        <div className="flex flex-col gap-3">
             <DetailPageHeader
                 appBasePath={AppBasePath.Delivery_Note}
                 title="Create Delivery Note"
@@ -36,7 +36,7 @@ const Create = () => {
                 }}
                 backButton={{
                     show: true,
-                    backLink: '/apps/sales/orders/delivery-notes'
+                    backLink: '/apps/sales/delivery-notes'
                 }}
             />
             <PageWrapper
