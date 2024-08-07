@@ -7,7 +7,7 @@ import useSetActiveMenu from '@/hooks/useSetActiveMenu';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import { useRouter } from 'next/router';
-import PaymentForm from '@/pages/apps/invoicing/vendors/payments/PaymentForm';
+import PaymentForm from '@/pages/apps/purchase/payments/PaymentForm';
 
 const Create = () => {
     useSetActiveMenu(AppBasePath.Vendor_Payment);
