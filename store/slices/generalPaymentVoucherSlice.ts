@@ -3,10 +3,10 @@ import { API } from '@/configs/api.config';
 import { configureSlice } from '@/utils/helper';
 
 interface IState {
-    creditNote: any;
-    creditNotes: any[];
-    creditNoteDetails: any;
-    creditNotesForPrint: any[];
+    generalPaymentVoucher: any;
+    generalPaymentVouchers: any[];
+    generalPaymentVoucherDetails: any;
+    generalPaymentVouchersForPrint: any[];
     loading: boolean;
     error: any;
     success: boolean;
@@ -14,21 +14,21 @@ interface IState {
 
 // Initial state
 const initialState: IState = {
-    creditNote: null,
-    creditNotes: [],
-    creditNoteDetails: null,
-    creditNotesForPrint: [],
+    generalPaymentVoucher: null,
+    generalPaymentVouchers: [],
+    generalPaymentVoucherDetails: null,
+    generalPaymentVouchersForPrint: [],
     loading: false,
     error: null,
     success: false
 };
 
 // Async thunks
-export const getCreditNotes = createAsyncThunk(
-    'credit-note/all',
+export const getGeneralPaymentVouchers = createAsyncThunk(
+    'general-payment-voucher/all',
     async (_, thunkAPI) => {
         try {
-            const response = await API.get('/credit-note');
+            const response = await API.get('/general-payment-voucher');
             return response.data;
         } catch (error: any) {
             const message =
@@ -38,11 +38,11 @@ export const getCreditNotes = createAsyncThunk(
     }
 );
 
-export const storeCreditNote = createAsyncThunk(
-    'credit-note/store',
+export const storeGeneralPaymentVoucher = createAsyncThunk(
+    'general-payment-voucher/store',
     async (data: any, thunkAPI) => {
         try {
-            const response = await API.post('/credit-note/store', data);
+            const response = await API.post('/general-payment-voucher/store', data);
             return response.data;
         } catch (error: any) {
             const message =
@@ -52,11 +52,11 @@ export const storeCreditNote = createAsyncThunk(
     }
 );
 
-export const getCreditNoteDetail = createAsyncThunk(
-    'credit-note/show',
+export const getGeneralPaymentVoucherDetail = createAsyncThunk(
+    'general-payment-voucher/show',
     async (id: number, thunkAPI) => {
         try {
-            const response = await API.get('/credit-note/show/' + id);
+            const response = await API.get('/general-payment-voucher/show/' + id);
             return response.data;
         } catch (error: any) {
             const message =
@@ -66,11 +66,11 @@ export const getCreditNoteDetail = createAsyncThunk(
     }
 );
 
-export const getCreditNotesForPrint = createAsyncThunk(
-    'credit-note/print',
+export const getGeneralPaymentVoucherForPrint = createAsyncThunk(
+    'general-payment-voucher/print',
     async (data:any, thunkAPI) => {
         try {
-            const response = await API.post('/credit-note/print', data);
+            const response = await API.post('/general-payment-voucher/print', data);
             return response.data;
         } catch (error: any) {
             const message =
@@ -81,72 +81,72 @@ export const getCreditNotesForPrint = createAsyncThunk(
 );
 
 // Slice
-export const creditNoteSlice = createSlice({
-    name: 'credit-note',
+export const generalPaymentVoucherSlice = createSlice({
+    name: 'general-payment-voucher',
     initialState,
     reducers: {
-        clearCreditNoteState: (state) => {
-            state.creditNote = null;
-            state.creditNoteDetails = null;
-            state.creditNotesForPrint = [];
+        clearGeneralPaymentVoucherState: (state) => {
+            state.generalPaymentVoucher = null;
+            state.generalPaymentVoucherDetails = null;
+            state.generalPaymentVouchersForPrint = [];
             state.error = null;
             state.success = false;
         }
     },
     extraReducers: (builder) => {
         builder
-            .addCase(getCreditNotes.pending, (state) => {
+            .addCase(getGeneralPaymentVouchers.pending, (state) => {
                 state.loading = true;
             })
-            .addCase(getCreditNotes.fulfilled, (state, action) => {
+            .addCase(getGeneralPaymentVouchers.fulfilled, (state, action) => {
                 state.loading = false;
-                state.creditNotes = action.payload.data;
+                state.generalPaymentVouchers = action.payload.data;
                 state.success = action.payload.success;
             })
-            .addCase(getCreditNotes.rejected, (state, action) => {
+            .addCase(getGeneralPaymentVouchers.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })
-            .addCase(storeCreditNote.pending, (state) => {
+            .addCase(storeGeneralPaymentVoucher.pending, (state) => {
                 state.loading = true;
             })
-            .addCase(storeCreditNote.fulfilled, (state, action) => {
+            .addCase(storeGeneralPaymentVoucher.fulfilled, (state, action) => {
                 state.loading = false;
-                state.creditNote = action.payload.data;
+                state.generalPaymentVoucher = action.payload.data;
                 state.success = action.payload.success;
             })
-            .addCase(storeCreditNote.rejected, (state, action) => {
+            .addCase(storeGeneralPaymentVoucher.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })
-            .addCase(getCreditNoteDetail.pending, (state) => {
+            .addCase(getGeneralPaymentVoucherDetail.pending, (state) => {
                 state.loading = true;
             })
-            .addCase(getCreditNoteDetail.fulfilled, (state, action) => {
+            .addCase(getGeneralPaymentVoucherDetail.fulfilled, (state, action) => {
                 state.loading = false;
-                state.creditNoteDetails = action.payload.data;
+                state.generalPaymentVoucherDetails = action.payload.data;
                 state.success = action.payload.success;
             })
-            .addCase(getCreditNoteDetail.rejected, (state, action) => {
+            .addCase(getGeneralPaymentVoucherDetail.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })
-            .addCase(getCreditNotesForPrint.pending, (state) => {
+            .addCase(getGeneralPaymentVoucherForPrint.pending, (state) => {
                 state.loading = true;
             })
-            .addCase(getCreditNotesForPrint.fulfilled, (state, action) => {
+            .addCase(getGeneralPaymentVoucherForPrint.fulfilled, (state, action) => {
                 state.loading = false;
-                state.creditNotesForPrint = action.payload.data;
+                state.generalPaymentVouchersForPrint = action.payload.data;
                 state.success = action.payload.success;
             })
-            .addCase(getCreditNotesForPrint.rejected, (state, action) => {
+            .addCase(getGeneralPaymentVoucherForPrint.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             });
     }
 });
-export const { clearCreditNoteState } = creditNoteSlice.actions;
+export const { clearGeneralPaymentVoucherState } = generalPaymentVoucherSlice.actions;
 
-export const creditNoteSliceConfig = configureSlice(creditNoteSlice, false);
+export const generalPaymentVoucherSliceConfig = configureSlice(generalPaymentVoucherSlice, false);
 
 

@@ -100,7 +100,7 @@ const Index = () => {
                         show: true,
                         type: 'link',
                         text: 'New',
-                        link: '/apps/purchase/debit-notes/create'
+                        link: '/apps/purchase/debit-note/create'
                     },
                     title: 'Debit Note',
                     showSetting: true
@@ -109,11 +109,11 @@ const Index = () => {
                 showSearch={true}
                 buttonActions={{
                     export: () => console.log('exported'),
-                    print: () => router.push('/apps/purchase/debit-notes/print/' + selectedRows.map(row => row.id).join('/')),
+                    print: () => router.push('/apps/purchase/debit-note/print/' + selectedRows.map(row => row.id).join('/')),
                     archive: () => console.log('archived'),
                     unarchive: () => console.log('unarchived'),
                     duplicate: () => console.log('duplicated'),
-                    printLabel: () => router.push('/apps/purchase/ebit-notes/print-label/' + selectedRows.map(row => row.id).join('/'))
+                    printLabel: () => router.push('/apps/purchase/debit-note/print-label/' + selectedRows.map(row => row.id).join('/'))
                 }}
             />
             <div>
@@ -126,7 +126,7 @@ const Index = () => {
                     rowMultiSelectWithClick={false}
                     onRowClicked={(params) => {
                         checkPermission(menus.map((plugin: any) => plugin.menus).flat(), activeMenu.route, ActionList.VIEW_DETAIL, AppBasePath.Debit_Notes) &&
-                        router.push(`/apps/purchase/debit-notes/view/${params.data.id}`);
+                        router.push(`/apps/purchase/debit-note/view/${params.data.id}`);
                     }}
                 />
             </div>

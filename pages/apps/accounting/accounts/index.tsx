@@ -28,11 +28,10 @@ const transformAccountToTreeNode = (account: any) => {
 };
 
 const CustomTreeNode = ({ title, total }: any) => {
-    console.log('title', title);
     return (
-        <div className="grid grid-cols-2 gap-5">
+        <div className="flex justify-between items-center space-x-5">
             <div className="text-md">{title}</div>
-            <div className="text-md font-bold">Total: {total}</div>
+            <div className="text-md font-bold text-success">{total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
         </div>
     );
 };

@@ -6,43 +6,42 @@ import useSetActiveMenu from '@/hooks/useSetActiveMenu';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import { useRouter } from 'next/router';
-import CreditNoteForm from '@/pages/apps/sales/credit-notes/CreditNoteForm';
-import { clearDebitNoteState } from '@/store/slices/debitNoteSlice';
-import DebitNoteForm from '@/pages/apps/purchase/debit-notes/DebitNoteForm';
+import { clearCreditNoteState } from '@/store/slices/creditNoteSlice';
+import ReceiptVoucherForm from '@/pages/apps/accounting/general-voucher/receipt-voucher/ReceiptVoucherForm';
 
 const Create = () => {
-    useSetActiveMenu(AppBasePath.Debit_Notes);
+    useSetActiveMenu(AppBasePath.General_Receipt_Voucher);
     const dispatch = useAppDispatch();
     const router = useRouter();
 
-    const { debitNote, success } = useAppSelector(state => state.debitNote);
+    const { creditNote, success } = useAppSelector(state => state.creditNote);
 
     useEffect(() => {
-        dispatch(clearDebitNoteState());
-        dispatch(setPageTitle('New Debit Note'));
+        dispatch(clearCreditNoteState());
+        dispatch(setPageTitle('New GRV'));
     }, []);
 
     useEffect(() => {
-        if (success && debitNote) {
-            router.push('/apps/purchase/debit-notes');
+        if (success && creditNote) {
+            router.push('/apps/accounting/general-voucher/receipt-voucher');
         }
-    }, [success, debitNote]);
+    }, [success, creditNote]);
 
     return (
         <div className="flex flex-col gap-3">
             <DetailPageHeader
-                appBasePath={AppBasePath.Debit_Notes}
-                title="Create Debit Note"
+                appBasePath={AppBasePath.General_Receipt_Voucher}
+                title="Create General Receipt Voucher"
                 middleComponent={{
                     show: false
                 }}
                 backButton={{
                     show: true,
-                    backLink: '/apps/purchase/debit-notes'
+                    backLink: '/apps/accounting/general-voucher/receipt-voucher'
                 }}
             />
             <PageWrapper>
-                <DebitNoteForm />
+                <ReceiptVoucherForm />
             </PageWrapper>
         </div>
     );

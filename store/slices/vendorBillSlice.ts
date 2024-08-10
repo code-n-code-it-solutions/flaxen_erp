@@ -126,6 +126,20 @@ export const getPendingVendorBills = createAsyncThunk(
     }
 );
 
+export const getVendorBillsForDebitNoteByVendor = createAsyncThunk(
+    'vendor-bill/for-debit-note/by-vendor',
+    async (vendorId:number, thunkAPI) => {
+        try {
+            const response = await API.get('/vendor-bill/for-debit-note/by-vendor/'+vendorId);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 // Slice
 export const vendorBillSlice = createSlice({
     name: 'vendor-bill',
@@ -139,6 +153,11 @@ export const vendorBillSlice = createSlice({
             state.vendorBillDetail = null;
             state.pendingBills = null;
         },
+        clearVendorBillListState : (state) => {
+            state.vendorBills = null;
+            state.error = null;
+            state.success = false
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -225,8 +244,20 @@ export const vendorBillSlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message;
             })
+            .addCase(getVendorBillsForDebitNoteByVendor.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getVendorBillsForDebitNoteByVendor.fulfilled, (state, action) => {
+                state.loading = false;
+                state.vendorBills = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getVendorBillsForDebitNoteByVendor.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
     },
 });
-export const {clearVendorBillState} = vendorBillSlice.actions;
+export const {clearVendorBillState, clearVendorBillListState} = vendorBillSlice.actions;
 
 export const vendorBillSliceConfig = configureSlice(vendorBillSlice, false);

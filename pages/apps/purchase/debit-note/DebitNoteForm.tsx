@@ -7,11 +7,7 @@ import { Dropdown } from '@/components/form/Dropdown';
 import Button from '@/components/Button';
 import { ButtonSize, ButtonType, ButtonVariant } from '@/utils/enums';
 import { capitalize } from 'lodash';
-import {
-    clearSaleInvoiceListState,
-    clearSaleInvoiceState,
-    getSaleInvoicesForCreditNoteByCustomer
-} from '@/store/slices/saleInvoiceSlice';
+import { clearSaleInvoiceState, getSaleInvoicesByCustomer } from '@/store/slices/saleInvoiceSlice';
 import { calculateDateFromDays } from '@/utils/helper';
 import { Tab } from '@headlessui/react';
 import { clearEmployeeState, getEmployees } from '@/store/slices/employeeSlice';
@@ -20,22 +16,21 @@ import { clearCustomerState, getCustomers } from '@/store/slices/customerSlice';
 import { storeCreditNote } from '@/store/slices/creditNoteSlice';
 import Textarea from '@/components/form/Textarea';
 
-const CreditNoteForm = () => {
+const DebitNoteForm = () => {
     const dispatch = useAppDispatch();
     const { token } = useAppSelector((state) => state.user);
     const { code } = useAppSelector((state) => state.util);
-    const { loading } = useAppSelector((state) => state.creditNote);
-    const { saleInvoices, loading: invoiceLoading } = useAppSelector((state) => state.saleInvoice);
+    const { vendorBills } = useAppSelector((state) => state.vendorBill);
     const { employees } = useAppSelector((state) => state.employee);
     const { customers } = useAppSelector((state) => state.customer);
 
     const [formData, setFormData] = useState<any>({});
     const [errors, setErrors] = useState<any>({});
-    const [customerOptions, setCustomerOptions] = useState<any[]>([]);
-    const [invoiceOptions, setInvoiceOptions] = useState<any[]>([]);
+    const [vendorOptions, setVendorOptions] = useState<any[]>([]);
+    const [billOptions, setBillOptions] = useState<any[]>([]);
     const [returnByOptions, setReturnByOptions] = useState<any[]>([]);
     const [itemsForSelect, setItemsForSelect] = useState<any[]>([]);
-    const [creditNoteItems, setCreditNoteItems] = useState<any[]>([]);
+    const [debitNoteItems, setDebitNoteItems] = useState<any[]>([]);
     const [totalAmountToReturn, setTotalAmountToReturn] = useState<number>(0);
     const [selectModalOpen, setSelectModalOpen] = useState<boolean>(false);
 
@@ -52,9 +47,9 @@ const CreditNoteForm = () => {
             });
         }
 
-        // if (name === 'customer_id' && value !== '') {
-        //     dispatch(getSaleInvoicesForCreditNoteByCustomer(value));
-        // }
+        if (name === 'vendor_id' && value !== '') {
+            dispatch(getSaleInvoicesByCustomer(value));
+        }
 
         setFormData({ ...formData, [name]: value });
     };
@@ -64,9 +59,8 @@ const CreditNoteForm = () => {
         setAuthToken(token);
         let finalData = {
             ...formData,
-            credit_note_items: creditNoteItems.map((item: any) => {
+            credit_note_items: debitNoteItems.map((item: any) => {
                 return {
-                    product_assembly_id: item.product_assembly_id,
                     filling_id: item.filling_id,
                     quotation_id: item.quotation_id,
                     delivery_note_id: item.delivery_note_id,
@@ -85,7 +79,7 @@ const CreditNoteForm = () => {
                     total_cost: calculateTotal(item)
                 };
             })
-        };
+        }
         // console.log(finalData);
         dispatch(storeCreditNote(finalData));
     };
@@ -97,7 +91,6 @@ const CreditNoteForm = () => {
         dispatch(clearCustomerState());
         dispatch(clearSaleInvoiceState());
         dispatch(clearEmployeeState());
-        dispatch(clearSaleInvoiceListState());
 
         dispatch(getEmployees());
         dispatch(getCustomers());
@@ -105,7 +98,7 @@ const CreditNoteForm = () => {
             credit_note_date: calculateDateFromDays(0)
         });
         setItemsForSelect([]);
-        setCreditNoteItems([]);
+        setDebitNoteItems([]);
     }, []);
 
     useEffect(() => {
@@ -125,7 +118,7 @@ const CreditNoteForm = () => {
 
     useEffect(() => {
         if (customers) {
-            setCustomerOptions(customers.map((customer: any) => ({
+            setVendorOptions(customers.map((customer: any) => ({
                 label: customer.name + ' (' + customer.customer_code + ')',
                 value: customer.id,
                 customer
@@ -134,20 +127,20 @@ const CreditNoteForm = () => {
     }, [customers]);
 
     useEffect(() => {
-        if (saleInvoices) {
-            setInvoiceOptions(saleInvoices.map((item: any) => ({
+        if (vendorBills) {
+            setBillOptions(vendorBills.map((item: any) => ({
                 value: item.id,
                 label: item.sale_invoice_code,
                 saleInvoice: item
             })));
         }
-    }, [saleInvoices]);
+    }, [vendorBills]);
 
     useEffect(() => {
-        if (creditNoteItems.length > 0) {
-            recalculateReceivableAmount(creditNoteItems, parseFloat(formData.discount_amount || 0));
+        if (debitNoteItems.length > 0) {
+            recalculateReceivableAmount(debitNoteItems, parseFloat(formData.discount_amount || 0));
         }
-    }, [creditNoteItems]);
+    }, [debitNoteItems]);
 
     const recalculateReceivableAmount = (items: any[], discount: number) => {
         const totalCost = items.reduce((acc: number, item: any) => acc + parseFloat(item.total_cost), 0);
@@ -155,14 +148,14 @@ const CreditNoteForm = () => {
     };
 
     const handleAddItem = (item: any) => {
-        setCreditNoteItems([...creditNoteItems, { ...item }]);
+        setDebitNoteItems([...debitNoteItems, { ...item }]);
         setItemsForSelect(itemsForSelect.filter((selectItem: any) => selectItem.id !== item.id));
         // setSelectModalOpen(false);
     };
 
     const handleRemoveItem = (item: any) => {
         setItemsForSelect([...itemsForSelect, item]);
-        setCreditNoteItems(creditNoteItems.filter((creditNoteItem: any) => creditNoteItem.id !== item.id));
+        setDebitNoteItems(debitNoteItems.filter((creditNoteItem: any) => creditNoteItem.id !== item.id));
     };
 
     const handleReturnQuantityChange = (itemId: any, value: number) => {
@@ -184,7 +177,7 @@ const CreditNoteForm = () => {
                 : parseFloat(item.discount_amount_rate)
             : 0;
         return returnQuantity * retailPrice + taxAmount - discountAmount;
-    };
+    }
 
     return (
         <form onSubmit={(e) => handleSubmit(e)}>
@@ -204,13 +197,12 @@ const CreditNoteForm = () => {
                     divClasses="w-full"
                     label="Customer"
                     name="customer_id"
-                    options={customerOptions}
+                    options={vendorOptions}
                     value={formData.customer_id}
                     onChange={(e) => {
                         if (e && typeof e !== 'undefined') {
                             handleChange('customer_id', e.value, true);
-                            dispatch(clearSaleInvoiceListState());
-                            dispatch(getSaleInvoicesForCreditNoteByCustomer(e.value));
+                            dispatch(getSaleInvoicesByCustomer(e.value));
                         } else {
                             handleChange('customer_id', '', true);
                         }
@@ -221,10 +213,8 @@ const CreditNoteForm = () => {
                         divClasses="w-full"
                         label="Invoices"
                         name="sale_invoice_ids"
-                        options={invoiceOptions}
+                        options={billOptions}
                         value={formData.sale_invoice_ids}
-                        isLoading={invoiceLoading}
-                        isDisabled={invoiceLoading}
                         onChange={(e) => {
                             if (e && e.length > 0 && typeof e !== 'undefined') {
                                 handleChange('sale_invoice_ids', e.map((item: any) => item.value).join(','), true);
@@ -343,8 +333,8 @@ const CreditNoteForm = () => {
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {creditNoteItems.length > 0 ? (
-                                    creditNoteItems.map((item: any, index: number) => (
+                                {debitNoteItems.length > 0 ? (
+                                    debitNoteItems.map((item: any, index: number) => (
                                         <tr key={index}>
                                             <td>{item.product_assembly.formula_name}</td>
                                             <td>{item.product.title}</td>
@@ -409,8 +399,7 @@ const CreditNoteForm = () => {
             <div className="flex justify-center items-center mt-5">
                 <Button
                     type={ButtonType.submit}
-                    text={loading ? 'Loading...' : 'Save'}
-                    disabled={loading}
+                    text="Save"
                     variant={ButtonVariant.primary}
                 />
             </div>
@@ -440,14 +429,14 @@ const CreditNoteForm = () => {
                                     <td>{item.sale_invoice_code}</td>
                                     <td>{item.product_assembly.formula_name}</td>
                                     <td>{item.product.title}</td>
-                                    <td>{item.remaining_quantity}</td>
+                                    <td>{item.quantity}</td>
                                     <td>
                                         <Input
                                             type="number"
                                             name="return_quantity"
                                             value={item.return_quantity}
                                             onChange={(e) => handleReturnQuantityChange(item.id, parseFloat(e.target.value))}
-                                            max={item.remaining_quantity}
+                                            max={item.quantity}
                                             isMasked={false}
                                         />
                                     </td>
@@ -474,4 +463,4 @@ const CreditNoteForm = () => {
     );
 };
 
-export default CreditNoteForm;
+export default DebitNoteForm;
