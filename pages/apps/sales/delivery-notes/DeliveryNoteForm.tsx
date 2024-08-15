@@ -16,6 +16,7 @@ import { Tab } from '@headlessui/react';
 import { clearQuotationState, getPendingQuotations } from '@/store/slices/quotationSlice';
 import AgGridComponent from '@/components/apps/AgGridComponent';
 import { AgGridReact } from 'ag-grid-react';
+import Swal from 'sweetalert2';
 
 const DeliveryNoteForm = () => {
     const dispatch = useAppDispatch();
@@ -41,8 +42,8 @@ const DeliveryNoteForm = () => {
     const [validations, setValidations] = useState<any>({});
     const [formError, setFormError] = useState<any>('');
 
-    const handleRemoveRow = (rowIndex: number) => {
-        const updatedItems = deliveryNoteItems.filter((quotation, index) => quotation.id !== rowIndex);
+    const handleRemoveRow = (row: any) => {
+        const updatedItems = deliveryNoteItems.filter((item) => row.quoataion_id===item.quoataion_id && row.raw_product_id===item.raw_product_id);
         setDeliveryNoteItems(updatedItems);
     };
 
@@ -60,21 +61,34 @@ const DeliveryNoteForm = () => {
             {
                 headerName: 'D.Qty',
                 field: 'delivered_quantity',
-                editable: (params: any) => !params.node.rowPinned, // Disable editing in pinned row
+                editable: (params: any) => {
+                    return params.data.stock_quantity >= params.data.quantity || !params.node.rowPinned;
+                },
+                valueSetter: (params: any) => {
+                    const value = Number(params.newValue);
+                    if (value > params.data.quantity) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: `Delivered quantity cannot be more than ${params.data.quantity}`
+                        });
+                        return false;
+                    }
+                    if (value > params.data.stock_quantity) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: `Delivered quantity cannot be more than available in stock ${params.data.stock_quantity}`
+                        });
+                        return false;
+                    }
+                    params.data.delivered_quantity = value;
+                    return true;
+                },
                 cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
                 minWidth: 150,
                 filter: false,
-                floatingFilter: false,
-                onCellValueChanged: (params: any) => {
-                    // Create a new object instead of modifying the original one directly
-
-                    console.log(params);
-                    // const updatedData = { ...params.data, delivered_quantity: params.newValue };
-                    // const updatedItems = deliveryNoteItems.map((item: any) =>
-                    //     item.id === params.data.id ? updatedData : item
-                    // );
-                    // setDeliveryNoteItems(updatedItems);
-                }
+                floatingFilter: false
             },
             {
                 headerName: 'S.Price',
@@ -88,7 +102,7 @@ const DeliveryNoteForm = () => {
                 headerName: 'S.Total',
                 field: 'sub_total',
                 valueGetter: (params: any) => {
-                    return params.data.delivered_quantity * params.data.sale_price;
+                    return (params.data.delivered_quantity || 0) * params.data.sale_price;
                 },
                 cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
                 minWidth: 150,
@@ -122,14 +136,17 @@ const DeliveryNoteForm = () => {
             {
                 headerName: '',
                 field: 'remove',
-                cellRenderer: (params: any) => (
-                    !params.node?.rowPinned &&
-                    <IconButton
-                        color={ButtonVariant.danger}
-                        icon={IconType.delete}
-                        onClick={() => handleRemoveRow(params.data.id)}
-                    />
-                ),
+                cellRenderer: (params: any) => {
+                    return (
+                        // <></>
+                        !params.node?.rowPinned &&
+                        <IconButton
+                            color={ButtonVariant.danger}
+                            icon={IconType.delete}
+                            onClick={() => handleRemoveRow(params.data)}
+                        />
+                    );
+                },
                 editable: false,
                 filter: false,
                 floatingFilter: false,
@@ -139,6 +156,14 @@ const DeliveryNoteForm = () => {
 
         if (formData.delivery_note_for === 1) {
             const finishGoodsColDefs = [
+                {
+                    headerName: 'Q.Code',
+                    field: 'quotation_code',
+                    cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+                    minWidth: 150,
+                    filter: false,
+                    floatingFilter: false
+                },
                 {
                     headerName: 'Product',
                     field: 'product_assembly_id',
@@ -194,12 +219,20 @@ const DeliveryNoteForm = () => {
                     minWidth: 150,
                     filter: false,
                     floatingFilter: false
-                },
+                }
             ];
 
             setColDefs([...finishGoodsColDefs, ...defaultColDef]);
         } else if (formData.delivery_note_for === 2) {
             const rawProductColDefs = [
+                {
+                    headerName: 'Q.Code',
+                    field: 'quotation_code',
+                    cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+                    minWidth: 150,
+                    filter: false,
+                    floatingFilter: false
+                },
                 {
                     headerName: 'Product',
                     field: 'raw_product_id',
@@ -212,6 +245,7 @@ const DeliveryNoteForm = () => {
                 {
                     headerName: 'Stock',
                     field: 'stock_quantity',
+                    valueGetter: (params: any) => params.data.product.stock_quantity,
                     cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
                     minWidth: 150,
                     filter: false,
@@ -263,42 +297,15 @@ const DeliveryNoteForm = () => {
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        // e.currentTarget.querySelectorAll('input, select, textarea').forEach((field: any) => {
-        //     if (field.required) {
-        //         if ((!formData[field.name] || formData[field.name] === 0) && !validations[field.name] && field.value === '') {
-        //             setValidations({ ...validations, [field.name]: 'Required Field' });
-        //         }
-        //     }
-        // });
-        // if (Object.keys(validations).length > 0) {
-        //     setFormError('Please fill all required fields');
-        //     return;
-        // } else {
-        //     let deliveryNoteData: any = {
-        //         skip_quotation: formData.skip_quotation,
-        //         delivery_note_for: formData.delivery_note_for,
-        //         receipt_delivery_due_days: formData.receipt_delivery_due_days,
-        //         delivery_due_in_days: formData.delivery_due_in_days,
-        //         delivery_due_date: formData.delivery_due_date,
-        //         salesman_id: formData.salesman_id,
-        //         customer_id: formData.customer_id,
-        //         contact_person_id: formData.contact_person_id,
-        //         delivery_note_items: deliveryNoteItems.map((item: any) => ({
-        //             quotation_id: item.quotation_id,
-        //             product_assembly_id: item.product_assembly_id,
-        //             batch_number: item.batch_number,
-        //             raw_product_id: item.raw_product_id,
-        //             capacity: item.capacity,
-        //             quantity: item.quantity,
-        //             delivered_quantity: item.delivered_quantity,
-        //             tax_amount: item.tax_amount,
-        //             grand_total: item.grand_total
-        //         })),
-        //         terms_conditions: formData.terms_conditions
-        //     };
-        //     console.log(deliveryNoteData);
-        //     // dispatch(storeDeliveryNote(deliveryNoteData));
-        // }
+
+        const invalidRows = deliveryNoteItems.filter(item => item.quantity > item.stock_quantity);
+        if (invalidRows.length > 0) {
+            setFormError('Some items have a quantity greater than the stock quantity. Please correct them before submitting.');
+            return;
+        }
+
+        // Proceed with form submission if there are no invalid rows
+        console.log(formData);
     };
 
     useEffect(() => {
@@ -368,6 +375,10 @@ const DeliveryNoteForm = () => {
             setQuotationOptions(quotationOptions);
         }
     }, [pendingQuotations]);
+
+    useEffect(() => {
+        // console.log(deliveryNoteItems);
+    }, [deliveryNoteItems]);
 
     return (
         <form onSubmit={(e) => handleSubmit(e)}>
@@ -456,7 +467,17 @@ const DeliveryNoteForm = () => {
                         onChange={(e: any) => {
                             if (e && typeof e !== 'undefined') {
                                 let selectedQuotations = e.map((quotation: any) => quotation?.quotation);
-                                setDeliveryNoteItems(selectedQuotations.map((item: any) => item.quotation_items).flat());
+                                setDeliveryNoteItems(selectedQuotations.map((item: any, index: number) => {
+                                    return item.quotation_items.map((qItem: any) => {
+                                        return {
+                                            ...qItem,
+                                            id: `${item.id}-${index}`, // Assigning a unique ID
+                                            quotation_code: selectedQuotations.find((q: any) => q.id === item.id)?.quotation_code,
+                                            delivered_quantity: 0 // Initially set to zero
+                                        };
+
+                                    }).flat();
+                                }).flat());
                                 let ids = e.map((quotation: any) => quotation.value);
                                 if (ids.includes(0)) {
                                     ids = [0];
@@ -537,6 +558,9 @@ const DeliveryNoteForm = () => {
                             colDefs={colDefs}
                             pagination={false}
                             height={400}
+                            rowClassRules={{
+                                'bg-red-100': (params: any) => params.data.quantity > params.data.stock_quantity
+                            }}
                         />
                     </Tab.Panel>
                 </Tab.Panels>

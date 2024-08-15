@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import PageHeader from '@/components/apps/PageHeader';
 import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import { useRouter } from 'next/router';
@@ -14,6 +14,11 @@ import Button from '@/components/Button';
 import { Input } from '@/components/form/Input';
 import { capitalize } from 'lodash';
 import AgGridComponent from '@/components/apps/AgGridComponent';
+import {
+    SizeColumnsToContentStrategy,
+    SizeColumnsToFitGridStrategy,
+    SizeColumnsToFitProvidedWidthStrategy
+} from '@ag-grid-community/core';
 
 const Index = () => {
     useSetActiveMenu(AppBasePath.General_Journal);
@@ -61,14 +66,16 @@ const Index = () => {
         {
             headerName: 'Date',
             valueGetter: (params: any) => params.data?.isTotal ? '' : new Date(params.data?.created_at).toLocaleDateString(),
-            minWidth: 150,
+            // minWidth: 150,
+            sortable: false,
             filter: false,
             floatingFilter: false
         },
         {
             headerName: 'Document No',
             field: 'document_no',
-            minWidth: 150,
+            // minWidth: 150,
+            sortable: false,
             filter: false,
             floatingFilter: false,
             cellStyle: (params: any) => {
@@ -80,28 +87,38 @@ const Index = () => {
         {
             headerName: 'Source',
             valueGetter: (params: any) => params.data?.isTotal ? '' : capitalize(params.data?.transaction_through.replace('_', ' ')),
-            minWidth: 150,
+            // minWidth: 150,
+            sortable: false,
             filter: false,
             floatingFilter: false
         },
         {
             headerName: 'Narration',
             field: 'description',
-            minWidth: 150,
+            // minWidth: 150,
+            cellStyle: { whiteSpace: 'normal', lineHeight: '1.5' },
+            autoHeight: true,
+            sortable: false,
             filter: false,
             floatingFilter: false
         },
         {
             headerName: 'Account Name',
             field: 'account_name',
-            minWidth: 150,
+            resizable: true,
+            sortable: false,
             filter: false,
-            floatingFilter: false
+            floatingFilter: false,
+            cellStyle: (params: any) => {
+                if (params.data?.isTotal) {
+                    return { fontWeight: 'bold' };
+                }
+            }
         },
         {
             headerName: 'Debit',
             field: 'debit',
-            minWidth: 150,
+            sortable: false,
             filter: false,
             floatingFilter: false,
             cellStyle: (params: any) => {
@@ -113,7 +130,7 @@ const Index = () => {
         {
             headerName: 'Credit',
             field: 'credit',
-            minWidth: 150,
+            sortable: false,
             filter: false,
             floatingFilter: false,
             cellStyle: (params: any) => {
@@ -123,6 +140,16 @@ const Index = () => {
             }
         }
     ]);
+
+    const autoSizeStrategy = useMemo<
+        | SizeColumnsToFitGridStrategy
+        | SizeColumnsToFitProvidedWidthStrategy
+        | SizeColumnsToContentStrategy
+    >(() => {
+        return {
+            type: "fitCellContents",
+        };
+    }, []);
 
     const handleChange = (name: string, value: any) => {
         setFormData({
@@ -244,6 +271,7 @@ const Index = () => {
                         data={reportData}
                         colDefs={colDefs}
                         // pinnedBottomRowData={pinnedBottomRowData}
+                        autoSizeStrategy={autoSizeStrategy}
                     />
                 </div>
             ) : (

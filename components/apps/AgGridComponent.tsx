@@ -40,6 +40,8 @@ interface IProps {
     grandTotalRow?: any;
     pinnedBottomRowData?: any;
     height?: number;
+    rowClassRules?: any;
+    autoSizeStrategy?: any;
 }
 
 const AgGridComponent = ({
@@ -60,6 +62,8 @@ const AgGridComponent = ({
                              grandTotalRow,
                              pinnedBottomRowData,
                              height,
+                             rowClassRules,
+                             autoSizeStrategy
                          }: IProps) => {
 
     const themeConfig = useAppSelector((state) => state.themeConfig);
@@ -155,6 +159,8 @@ const AgGridComponent = ({
                 sideBar={'filters'}
                 grandTotalRow={grandTotalRow}
                 pinnedBottomRowData={pinnedBottomRowData}
+                rowClassRules={rowClassRules}
+                autoSizeStrategy={autoSizeStrategy}
             />
         </div>
     );

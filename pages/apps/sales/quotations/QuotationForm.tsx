@@ -44,10 +44,14 @@ const QuotationForm = () => {
     const [formError, setFormError] = useState<any>('');
     const [colDefs, setColDefs] = useState<any>([]);
 
-    const handleRemoveRow = (rowIndex: number) => {
-        const updatedItems = quotationItems.filter((quotation, index) => quotation.id !== rowIndex);
+    const handleRemoveRow = (row: any) => {
+        const updatedItems = quotationItems.filter((item) => item.id !== row.id);
         setQuotationItems(updatedItems);
     };
+
+    useEffect(() => {
+        console.log(quotationItems);
+    }, [quotationItems])
 
     const calculateTotals = () => {
         const totalQuantity = quotationItems.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
@@ -69,7 +73,7 @@ const QuotationForm = () => {
     };
 
     useEffect(() => {
-        setQuotationItems([])
+        setQuotationItems([]);
         let defaultColDef = [
             {
                 headerName: 'Qty',
@@ -128,7 +132,7 @@ const QuotationForm = () => {
                     <IconButton
                         color={ButtonVariant.danger}
                         icon={IconType.delete}
-                        onClick={() => handleRemoveRow(params.data.id)}
+                        onClick={() => handleRemoveRow(params.data)}
                     />
                 ),
                 // minWidth: 50,
@@ -265,7 +269,7 @@ const QuotationForm = () => {
                 }
                 break;
             default:
-                setFormData((prev: any) => ({ ...prev, [name]: value }))
+                setFormData((prev: any) => ({ ...prev, [name]: value }));
                 break;
         }
     };
@@ -296,9 +300,9 @@ const QuotationForm = () => {
         dispatch(getRawProducts([]));
     }, []);
 
-    useEffect(() => {
-        calculateTotals();
-    }, [quotationItems]);
+    // useEffect(() => {
+    //     calculateTotals();
+    // }, [quotationItems]);
 
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -518,34 +522,37 @@ const QuotationForm = () => {
                 <div
                     className="flex mb-3 justify-start items-start md:justify-between md:items-center gap-3 flex-col md:flex-row">
                     <h3 className="text-lg font-semibold">Quotation Items</h3>
-                    <Button
-                        type={ButtonType.button}
-                        text={
-                            <span className="flex items-center">
-                                {getIcon(IconType.add)}
-                                Add
-                            </span>
-                        }
-                        variant={ButtonVariant.primary}
-                        onClick={() => {
-                            setQuotationItems((prev: any) => {
-                                return [...prev, {
-                                    id: prev.length ? prev[prev.length - 1].id + 1 : 1,
-                                    product_assembly_id: 0,
-                                    raw_product_id: 0,
-                                    capacity: 0,
-                                    quantity: 0,
-                                    sale_price: 0,
-                                    sub_total: 0,
-                                    tax_category_id: 0,
-                                    tax_rate: 5,
-                                    tax_amount: 0,
-                                    grand_total: 0
-                                }];
-                            });
-                        }}
-                        size={ButtonSize.small}
-                    />
+
+                    {formData.quotation_for && (
+                        <Button
+                            type={ButtonType.button}
+                            text={
+                                <span className="flex items-center">
+                                    {getIcon(IconType.add)}
+                                    Add
+                                </span>
+                            }
+                            variant={ButtonVariant.primary}
+                            onClick={() => {
+                                setQuotationItems((prev: any) => {
+                                    return [...prev, {
+                                        id: prev.length ? prev[prev.length - 1].id + 1 : 1,
+                                        product_assembly_id: 0,
+                                        raw_product_id: 0,
+                                        capacity: 0,
+                                        quantity: 0,
+                                        sale_price: 0,
+                                        sub_total: 0,
+                                        tax_category_id: 0,
+                                        tax_rate: 5,
+                                        tax_amount: 0,
+                                        grand_total: 0
+                                    }];
+                                });
+                            }}
+                            size={ButtonSize.small}
+                        />
+                    )}
                 </div>
                 <AgGridComponent
                     gridRef={gridRef}
