@@ -5,9 +5,9 @@ import { configureSlice } from '@/utils/helper';
 interface IRawProductState {
     rawProduct: any;
     rawProductDetail: any;
-    allRawProducts: any;
+    allRawProducts: any[];
     rawProductsForPrint: any;
-    fillingProducts: any;
+    fillingProducts: any[];
     loading: boolean;
     error: any;
     success: boolean;
@@ -17,9 +17,9 @@ interface IRawProductState {
 const initialState: IRawProductState = {
     rawProduct: null,
     rawProductDetail: null,
-    allRawProducts: null,
+    allRawProducts: [],
     rawProductsForPrint: null,
-    fillingProducts: null,
+    fillingProducts: [],
     loading: false,
     error: null,
     success: false

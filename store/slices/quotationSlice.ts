@@ -5,7 +5,8 @@ import { configureSlice } from '@/utils/helper';
 interface IState {
     quotation: any;
     quotationDetail: any;
-    quotations: any;
+    quotations: any[];
+    pendingQuotations: any[];
     quotationItems: any;
     quotationsForPrint: any;
     loading: boolean;
@@ -17,7 +18,8 @@ interface IState {
 const initialState: IState = {
     quotation: null,
     quotationDetail: null,
-    quotations: null,
+    quotations: [],
+    pendingQuotations: [],
     quotationItems: null,
     quotationsForPrint: null,
     loading: false,
@@ -139,11 +141,11 @@ export const pendingFillings = createAsyncThunk(
     }
 );
 
-export const pendingQuotations = createAsyncThunk(
+export const getPendingQuotations = createAsyncThunk(
     'quotation/pending-quotation',
-    async (_, thunkAPI) => {
+    async (data:any, thunkAPI) => {
         try {
-            const response = await API.post('/quotation/pending');
+            const response = await API.post('/quotation/pending', data);
             return response.data;
         } catch (error: any) {
             const message =
@@ -188,6 +190,7 @@ export const quotationSlice = createSlice({
     reducers: {
         clearQuotationState: (state) => {
             state.quotation = null;
+            state.pendingQuotations = [];
             state.error = null;
             state.success = false;
             state.quotationDetail = null;
@@ -279,15 +282,15 @@ export const quotationSlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message;
             })
-            .addCase(pendingQuotations.pending, (state) => {
+            .addCase(getPendingQuotations.pending, (state) => {
                 state.loading = true;
             })
-            .addCase(pendingQuotations.fulfilled, (state, action) => {
+            .addCase(getPendingQuotations.fulfilled, (state, action) => {
                 state.loading = false;
-                state.quotations = action.payload.data;
+                state.pendingQuotations = action.payload.data;
                 state.success = action.payload.success;
             })
-            .addCase(pendingQuotations.rejected, (state, action) => {
+            .addCase(getPendingQuotations.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })

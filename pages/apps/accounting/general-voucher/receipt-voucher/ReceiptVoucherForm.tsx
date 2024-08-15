@@ -279,7 +279,7 @@ const ReceiptVoucherForm = () => {
                                     paymentItems.map((item, index: number) => (
                                         <tr key={index}>
                                             <td>
-                                                <div className="flex items-center gap-1">
+                                                <div className="flex items-center gap-1 w-full">
                                                     <Button
                                                         type={ButtonType.button}
                                                         text={<Trash2Icon size={18} />}
@@ -288,6 +288,7 @@ const ReceiptVoucherForm = () => {
                                                         onClick={() => handleRemoveItem(item)}
                                                     />
                                                     <Input
+                                                        divClasses="w-full"
                                                         type="text"
                                                         name="payment_for"
                                                         value={item.received_for}

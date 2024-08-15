@@ -19,6 +19,10 @@ import PurchaseAccounting from '@/pages/apps/accounting/configuration/accounting
 import InventoryAccounting from '@/pages/apps/accounting/configuration/accounting-settings/InventoryAccounting';
 import ManufacturingAccounting from '@/pages/apps/accounting/configuration/accounting-settings/ManufacturingAccounting';
 import Swal from 'sweetalert2';
+import GeneralAccounting from '@/pages/apps/accounting/configuration/accounting-settings/GeneralAccounting';
+import AnimateHeight from 'react-animate-height';
+import IconCaretDown from '@/components/Icon/IconCaretDown';
+import IconBox from '@/components/Icon/IconBox';
 
 const Index = () => {
     const dispatch = useAppDispatch();
@@ -32,7 +36,12 @@ const Index = () => {
     const { token, user } = useAppSelector(state => state.user);
     const [formData, setFormData] = useState<any[]>([]);
     const [existingConfiguration, setExistingConfiguration] = useState<any[]>([]);
-
+    const [activeAccountingConcept, setActiveAccountingConcept] = useState<string>('1');
+    const toggleAccountingConcept = (value: string) => {
+        setActiveAccountingConcept((oldValue) => {
+            return oldValue === value ? '' : value;
+        });
+    };
     const updateAccountingConfiguration = () => {
         let allFieldSelect = true;
 
@@ -105,6 +114,71 @@ const Index = () => {
                 />
             </div>
 
+            <div className="space-y-2 font-semibold">
+                <div className="border border-[#d3d3d3] rounded dark:border-[#1b2e4b]">
+                    <button
+                        type="button"
+                        className={`p-4 w-full flex items-center text-white-dark dark:bg-[#1b2e4b] ${activeAccountingConcept === '1' ? '!text-primary' : ''}`}
+                        onClick={() => toggleAccountingConcept('1')}
+                    >
+                        <IconBox className="ltr:mr-2 rtl:ml-2 text-primary shrink-0" />
+                        Accounting concept used in application
+                        <div className={`ltr:ml-auto rtl:mr-auto ${activeAccountingConcept === '1' ? 'rotate-180' : ''}`}>
+                            <IconCaretDown />
+                        </div>
+                    </button>
+                    <div>
+                        <AnimateHeight duration={300} height={activeAccountingConcept === '1' ? 'auto' : 0}>
+                            <div
+                                className="space-y-2 p-4 text-white-dark text-[13px] border-t border-[#d3d3d3] dark:border-[#1b2e4b]">
+                                <div className="flex flex-row flex-wrap md:items-center gap-3">
+                                    <div className="flex flex-col gap-2 px-2 py-1 border rounded">
+                                        <p className="font-bold">Asset</p>
+                                        <p>Increase - Debit</p>
+                                        <p>Decrease - Credit</p>
+                                    </div>
+                                    <div className="flex flex-col gap-2 px-2 py-1 border rounded">
+                                        <p className="font-bold">Liabilities</p>
+                                        <p>Increase - Credit</p>
+                                        <p>Decrease - Debit</p>
+                                    </div>
+                                    <div className="flex flex-col gap-2 px-2 py-1 border rounded">
+                                        <p className="font-bold">Equity</p>
+                                        <p>Increase - Credit</p>
+                                        <p>Decrease - Debit</p>
+                                    </div>
+                                    <div className="flex flex-col gap-2 px-2 py-1 border rounded">
+                                        <p className="font-bold">Operating Income</p>
+                                        <p>Increase - Credit</p>
+                                        <p>Decrease - Debit</p>
+                                    </div>
+                                    <div className="flex flex-col gap-2 px-2 py-1 border rounded">
+                                        <p className="font-bold">Cost of Goods Sold</p>
+                                        <p>Increase - Debit</p>
+                                        <p>Decrease - Credit</p>
+                                    </div>
+                                    <div className="flex flex-col gap-2 px-2 py-1 border rounded">
+                                        <p className="font-bold">Operating Expanses</p>
+                                        <p>Increase - Debit</p>
+                                        <p>Decrease - Credit</p>
+                                    </div>
+                                    <div className="flex flex-col gap-2 px-2 py-1 border rounded">
+                                        <p className="font-bold">Non Operating Income</p>
+                                        <p>Increase - Credit</p>
+                                        <p>Decrease - Debit</p>
+                                    </div>
+                                    <div className="flex flex-col gap-2 px-2 py-1 border rounded">
+                                        <p className="font-bold">Non Operating Expanses</p>
+                                        <p>Increase - Debit</p>
+                                        <p>Decrease - Credit</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </AnimateHeight>
+                    </div>
+                </div>
+            </div>
+
             <Tab.Group>
                 <Tab.List className="mt-3 flex flex-wrap border-b border-white-light dark:border-[#191e3a]">
                     <Tab as={Fragment}>
@@ -158,6 +232,17 @@ const Index = () => {
                                     selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
                                 } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
                             >
+                                General
+                            </button>
+                        )}
+                    </Tab>
+                    <Tab as={Fragment}>
+                        {({ selected }) => (
+                            <button
+                                className={`${
+                                    selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
+                                } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
+                            >
                                 Assets
                             </button>
                         )}
@@ -188,7 +273,8 @@ const Index = () => {
                 <Tab.Panels className="panel rounded-none shadow-none">
                     <Tab.Panel>
                         <div className="active">
-                            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-3">
+                            <div
+                                className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-3">
                                 <p>Manage your sales accounting settings</p>
                             </div>
                             <SaleAccounting
@@ -200,7 +286,8 @@ const Index = () => {
                     </Tab.Panel>
                     <Tab.Panel>
                         <div>
-                            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-3">
+                            <div
+                                className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-3">
                                 <p>Manage your purchases accounting settings</p>
                             </div>
                             <PurchaseAccounting
@@ -212,7 +299,8 @@ const Index = () => {
                     </Tab.Panel>
                     <Tab.Panel>
                         <div>
-                            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-3">
+                            <div
+                                className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-3">
                                 <p>Manage your inventory accounting settings</p>
                             </div>
                             <InventoryAccounting
@@ -224,10 +312,24 @@ const Index = () => {
                     </Tab.Panel>
                     <Tab.Panel>
                         <div>
-                            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-3">
+                            <div
+                                className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-3">
                                 <p>Manage your manufacturing accounting settings</p>
                             </div>
                             <ManufacturingAccounting
+                                accountOptions={accountOptions}
+                                formData={formData}
+                                setFormData={setFormData}
+                            />
+                        </div>
+                    </Tab.Panel>
+                    <Tab.Panel>
+                        <div>
+                            <div
+                                className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-3">
+                                <p>Manage your general accounting settings</p>
+                            </div>
+                            <GeneralAccounting
                                 accountOptions={accountOptions}
                                 formData={formData}
                                 setFormData={setFormData}
@@ -240,5 +342,5 @@ const Index = () => {
     );
 };
 
-// Index.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
+// Index.getLayout = (page: any) =><AppLayout>{page}</AppLayout>;
 export default Index;

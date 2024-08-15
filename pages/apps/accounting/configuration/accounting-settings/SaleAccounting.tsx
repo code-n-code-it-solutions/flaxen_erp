@@ -10,7 +10,7 @@ interface IProps {
 const SaleAccounting = ({ accountOptions, formData, setFormData }: IProps) => {
 
     return (
-        <div className="">
+        <div className="overflow-auto">
             <table>
                 <thead>
                 <tr>

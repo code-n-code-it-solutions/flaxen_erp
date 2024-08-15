@@ -36,7 +36,7 @@ const View = () => {
     };
 
     return (
-        <div>
+        <div className="flex flex-col gap-3">
             <DetailPageHeader
                 appBasePath={AppBasePath.Quotation}
                 title="Quotation Details"
@@ -47,7 +47,7 @@ const View = () => {
                     },
                     print: {
                         show: true,
-                        onClick: () => router.push('/apps/sales/orders/quotations/print/' + ids.join('/'))
+                        onClick: () => router.push('/apps/sales/quotations/print/' + ids.join('/'))
                     },
                     delete: {
                         show: false
@@ -63,7 +63,7 @@ const View = () => {
                 }}
                 backButton={{
                     show: true,
-                    backLink: '/apps/sales/orders/quotations'
+                    backLink: '/apps/sales/quotations'
                 }}
             />
             <PageWrapper
@@ -119,24 +119,28 @@ const View = () => {
                                 <tr>
                                     <th>Sr.No</th>
                                     <th>Product</th>
-                                    <th>Batch #</th>
-                                    <th>Filling</th>
-                                    <th>Available</th>
-                                    <th>Retail Price</th>
+                                    {quotationDetail?.quotation_for === 1 && (
+                                        <>
+                                            <th>Filling</th>
+                                            <th>Capacity</th>
+                                        </>
+                                    )}
+                                    <th>Sale Price</th>
                                     <th>Qty</th>
-                                    <th>Tax</th>
-                                    <th>Discount</th>
-                                    <th>Total Cost</th>
+                                    <th>S.Total</th>
+                                    <th>VAT@5%</th>
+                                    <th>Total</th>
                                 </tr>
                                 </thead>
                                 <tbody>
 
                                 {quotationDetail?.quotation_items.map((item: any, index: any) => (
-
                                     <tr key={index}>
                                         <td>{index + 1}</td>
-                                        <td>{item.product_assembly.formula_name}</td>
-                                        <td>{item.batch_number}</td>
+                                        {quotationDetail?.quotation_for === 1 && (
+                                            <td>{item.product_assembly.formula_name}</td>
+                                        )}
+
                                         <td>
                                             <div className="flex justify-start flex-col items-start">
                                                 <span style={{ fontSize: 8 }}>{item.product?.item_code}</span>
@@ -145,23 +149,95 @@ const View = () => {
                                                     style={{ fontSize: 8 }}>{item.product?.valuation_method}</span>
                                             </div>
                                         </td>
-                                        <td>{item.available_quantity}</td>
-                                        <td>{item.retail_price.toFixed(2)}</td>
+
+                                        {quotationDetail?.quotation_for === 1 && (
+                                            <td>{item.capacity}</td>
+                                        )}
+
+                                        <td>{item.sale_price.toFixed(2)}</td>
                                         <td>{item.quantity.toFixed(2)}</td>
-                                        <td>{item.tax_amount.toFixed(2) + ' (' + item.tax_rate + '%)'}</td>
-                                        <td>{Number(item.discount_amount_rate).toFixed(2)}{item.discount_type === 'percentage' ? '%' : '/-'}</td>
-                                        <td>{calculateTotal(item).toFixed(2)}</td>
+                                        <td>
+                                            {(item.quantity * item.sale_price).toLocaleString(undefined, {
+                                                minimumFractionDigits: 4,
+                                                maximumFractionDigits: 4
+                                            })}
+                                        </td>
+                                        <td>
+                                            {item.tax_amount.toLocaleString(undefined, {
+                                                minimumFractionDigits: 4,
+                                                maximumFractionDigits: 4
+                                            })}
+                                        </td>
+                                        <td>
+                                            {item.grand_total.toLocaleString(undefined, {
+                                                minimumFractionDigits: 4,
+                                                maximumFractionDigits: 4
+                                            })}
+                                        </td>
 
                                     </tr>
                                 ))}
                                 </tbody>
                                 <tfoot>
                                 <tr>
-                                    <td colSpan={9} className="text-center py-2">Total</td>
+                                    <td colSpan={quotationDetail?.quotation_for === 1 ? 8 : 6}
+                                        className="text-right py-2">
+                                        Sub Total
+                                    </td>
                                     <td className="ps-4 py-2">
                                         {quotationDetail?.quotation_items
-                                            ?.reduce((total: number, item: any) => total + calculateTotal(item), 0)
-                                            .toFixed(2)}
+                                            ?.reduce((total: number, item: any) => total + (item.quantity * item.sale_price), 0)
+                                            .toLocaleString(undefined, {
+                                                minimumFractionDigits: 4,
+                                                maximumFractionDigits: 4
+                                            })}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colSpan={quotationDetail?.quotation_for === 1 ? 8 : 6}
+                                        className="text-right py-2">
+                                        VAT@5%
+                                    </td>
+                                    <td className="ps-4 py-2">
+                                        {quotationDetail?.quotation_items
+                                            ?.reduce((total: number, item: any) => total + item.tax_amount, 0)
+                                            .toLocaleString(undefined, {
+                                                minimumFractionDigits: 4,
+                                                maximumFractionDigits: 4
+                                            })}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colSpan={quotationDetail?.quotation_for === 1 ? 8 : 6}
+                                        className="text-right py-2">
+                                        Discount Amount
+                                    </td>
+                                    <td className="ps-4 py-2">
+                                        {quotationDetail?.discount_amount
+                                            ? quotationDetail?.discount_amount
+                                                .toLocaleString(undefined, {
+                                                    minimumFractionDigits: 4,
+                                                    maximumFractionDigits: 4
+                                                }) : 0}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colSpan={quotationDetail?.quotation_for === 1 ? 8 : 6}
+                                        className="text-right py-2">
+                                        Grand Total
+                                    </td>
+                                    <td className="ps-4 py-2">
+                                        {quotationDetail?.discount_amount
+                                            ? (quotationDetail?.quotation_items?.reduce((total: number, item: any) => total + item.grand_total, 0) - quotationDetail?.discount_amount)
+                                                .toLocaleString(undefined, {
+                                                    minimumFractionDigits: 4,
+                                                    maximumFractionDigits: 4
+                                                })
+                                            : quotationDetail?.quotation_items?.reduce((total: number, item: any) => total + item.grand_total, 0)
+                                                .toLocaleString(undefined, {
+                                                    minimumFractionDigits: 4,
+                                                    maximumFractionDigits: 4
+                                                })}
                                     </td>
                                 </tr>
                                 </tfoot>

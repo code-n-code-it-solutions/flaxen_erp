@@ -13,13 +13,14 @@ import { checkPermission } from '@/utils/helper';
 import { ActionList, AppBasePath } from '@/utils/enums';
 import { getQuotations } from '@/store/slices/quotationSlice';
 import useSetActiveMenu from '@/hooks/useSetActiveMenu';
+import { capitalize } from 'lodash';
 
 const Index = () => {
     useSetActiveMenu(AppBasePath.Quotation);
     const router = useRouter();
     const dispatch = useAppDispatch();
     const { token, menus } = useAppSelector((state) => state.user);
-    const {quotations, loading} = useAppSelector(state => state.quotation);
+    const { quotations, loading } = useAppSelector(state => state.quotation);
     const { activeMenu } = useAppSelector((state) => state.menu);
     const [selectedRows, setSelectedRows] = useState<any[]>([]);
     const gridRef = useRef<AgGridReact<any>>(null);
@@ -33,8 +34,8 @@ const Index = () => {
             cellRenderer: DisabledClickRenderer
         },
         {
-            headerName: 'Generation Type',
-            field: 'generation_type',
+            headerName: 'Quotation For',
+            valueGetter: (params: any) => params.data.quotation_for === 1 ? 'Finished Goods' : 'Materials',
             minWidth: 150
         },
         {
@@ -52,6 +53,18 @@ const Index = () => {
             field: 'delivery_due_date',
             minWidth: 150
         },
+        {
+            headerName: 'Quotation Amount',
+            field: 'quotation_amount',
+            valueGetter: (params: any) => params
+                .data
+                .quotation_amount
+                .toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }),
+            minWidth: 150
+        }
     ]);
 
     const handleDelete = () => {
@@ -106,7 +119,7 @@ const Index = () => {
         dispatch(setPageTitle('Quotations'));
         setAuthToken(token);
         setContentType('application/json');
-        dispatch(getQuotations())
+        dispatch(getQuotations());
     }, []);
 
     // useEffect(() => {

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { clearRawProductState, getProductsForPrint } from '@/store/slices/rawProductSlice';
 import { setAuthToken } from '@/configs/api.config';
 import PrintContent from './PrintContent';
 import BlankLayout from '@/components/Layouts/BlankLayout';

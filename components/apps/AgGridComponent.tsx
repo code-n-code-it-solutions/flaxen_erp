@@ -7,9 +7,9 @@ import { ColumnsToolPanelModule } from '@ag-grid-enterprise/column-tool-panel';
 import { FiltersToolPanelModule } from '@ag-grid-enterprise/filter-tool-panel';
 import { MenuModule } from '@ag-grid-enterprise/menu';
 import { SetFilterModule } from '@ag-grid-enterprise/set-filter';
-import { MasterDetailModule } from "@ag-grid-enterprise/master-detail";
-import { RangeSelectionModule } from "@ag-grid-enterprise/range-selection";
-import { RowGroupingModule } from "@ag-grid-enterprise/row-grouping";
+import { MasterDetailModule } from '@ag-grid-enterprise/master-detail';
+import { RangeSelectionModule } from '@ag-grid-enterprise/range-selection';
+import { RowGroupingModule } from '@ag-grid-enterprise/row-grouping';
 
 ModuleRegistry.registerModules([
     ClientSideRowModelModule,
@@ -19,7 +19,7 @@ ModuleRegistry.registerModules([
     SetFilterModule,
     MasterDetailModule,
     RangeSelectionModule,
-    RowGroupingModule
+    RowGroupingModule,
 ]);
 
 interface IProps {
@@ -39,6 +39,7 @@ interface IProps {
     gridRef?: any;
     grandTotalRow?: any;
     pinnedBottomRowData?: any;
+    height?: number;
 }
 
 const AgGridComponent = ({
@@ -57,12 +58,13 @@ const AgGridComponent = ({
                              onFirstDataRendered,
                              gridRef,
                              grandTotalRow,
-                             pinnedBottomRowData
+                             pinnedBottomRowData,
+                             height,
                          }: IProps) => {
 
     const themeConfig = useAppSelector((state) => state.themeConfig);
     const [rowData, setRowData] = useState([]);
-    const gridStyle = useMemo(() => ({ height: 600, width: '100%' }), []);
+    const gridStyle = useMemo(() => ({ height: height ? height : 600, width: '100%' }), []);
     const defaultColDef = useMemo<any>(() => {
         return {
             initialWidth: 100,

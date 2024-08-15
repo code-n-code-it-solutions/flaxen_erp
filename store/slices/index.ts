@@ -49,6 +49,7 @@ import { creditNoteSliceConfig } from '@/store/slices/creditNoteSlice';
 import { debitNoteSliceConfig } from '@/store/slices/debitNoteSlice';
 import { generalPaymentSliceConfig } from '@/store/slices/generalPaymentSlice';
 import { generalPaymentVoucherSliceConfig } from '@/store/slices/generalPaymentVoucherSlice';
+import { accountTransactionSliceConfig } from '@/store/slices/accountTransactionSlice';
 
 
 export const slices = {
@@ -102,7 +103,8 @@ export const slices = {
     creditNote: creditNoteSliceConfig,
     debitNote: debitNoteSliceConfig,
     generalPayment: generalPaymentSliceConfig,
-    generalPaymentVoucher: generalPaymentVoucherSliceConfig
+    generalPaymentVoucher: generalPaymentVoucherSliceConfig,
+    accountTransaction: accountTransactionSliceConfig
 };
 
 
@@ -157,5 +159,6 @@ export const reducers = {
     creditNote: creditNoteSliceConfig.reducer,
     debitNote: debitNoteSliceConfig.reducer,
     generalPayment: generalPaymentSliceConfig.reducer,
-    generalPaymentVoucher: generalPaymentVoucherSliceConfig.reducer
+    generalPaymentVoucher: generalPaymentVoucherSliceConfig.reducer,
+    accountTransaction: accountTransactionSliceConfig.reducer
 };
