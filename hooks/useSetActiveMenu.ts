@@ -13,7 +13,7 @@ const useSetActiveMenu = (appBasePath: string) => {
 
     useEffect(() => {
         const pathname = truncatePathname(router.pathname, appBasePath);
-        const activeMenu = findActiveMenu(menus.map((menu: any) => menu.menus).flat(), pathname);
+        const activeMenu = findActiveMenu(menus?.map((menu: any) => menu.menus).flat(), pathname);
         if (activeMenu) {
             dispatch(setActiveMenu(activeMenu));
         }

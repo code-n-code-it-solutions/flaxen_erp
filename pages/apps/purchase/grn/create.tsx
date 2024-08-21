@@ -28,7 +28,7 @@ const Create = () => {
     }, [GRN, success]);
 
     return (
-        <div>
+        <div className="flex flex-col gap-3">
             <DetailPageHeader
                 appBasePath={AppBasePath.Good_Receive_Note}
                 title="Create GRN"

@@ -28,7 +28,7 @@ const Create = () => {
     }, [vendor, success]);
 
     return (
-        <div>
+        <div className="flex flex-col gap-3">
             <DetailPageHeader
                 appBasePath={AppBasePath.Vendor}
                 title="Create Vendor"
@@ -51,5 +51,5 @@ const Create = () => {
     );
 };
 
-Create.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
+// Create.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
 export default Create;

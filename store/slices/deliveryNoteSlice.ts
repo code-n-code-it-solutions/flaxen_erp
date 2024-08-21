@@ -5,9 +5,9 @@ import {configureSlice} from "@/utils/helper";
 interface IState {
     deliveryNote: any;
     deliveryNoteDetail: any
-    deliveryNotes: any;
-    deliveryNoteItems: any;
-    deliveryNotesForPrint: any;
+    deliveryNotes: any[];
+    deliveryNoteItems: any[];
+    deliveryNotesForPrint: any[];
     loading: boolean;
     error: any;
     success: boolean;
@@ -17,9 +17,9 @@ interface IState {
 const initialState: IState = {
     deliveryNote: null,
     deliveryNoteDetail: null,
-    deliveryNotes: null,
-    deliveryNoteItems: null,
-    deliveryNotesForPrint: null,
+    deliveryNotes: [],
+    deliveryNoteItems: [],
+    deliveryNotesForPrint: [],
     loading: false,
     error: null,
     success: false,
@@ -69,9 +69,9 @@ export const storeDeliveryNote = createAsyncThunk(
 
 export const getDeliveryNoteItems = createAsyncThunk(
     'delivery-note/delivery-note-items',
-    async (id: number, thunkAPI) => {
+    async (ids: number[], thunkAPI) => {
         try {
-            const response = await API.get('/delivery-note/items/' + id);
+            const response = await API.post('/delivery-note/items', {ids});
             return response.data;
         } catch (error: any) {
             const message =
@@ -83,9 +83,9 @@ export const getDeliveryNoteItems = createAsyncThunk(
 
 export const pendingDeliveryNotes = createAsyncThunk(
     'delivery-note/pending-delivery-note',
-    async (_, thunkAPI) => {
+    async (data:any, thunkAPI) => {
         try {
-            const response = await API.post('/delivery-note/pending');
+            const response = await API.post('/delivery-note/pending', data);
             return response.data;
         } catch (error: any) {
             const message =
@@ -119,8 +119,8 @@ export const deliveryNoteSlice = createSlice({
             state.error = null;
             state.success = false;
             state.deliveryNoteDetail = null;
-            state.deliveryNoteItems = null;
-            state.deliveryNotesForPrint = null;
+            state.deliveryNoteItems = [];
+            state.deliveryNotesForPrint = [];
         },
     },
     extraReducers: (builder) => {

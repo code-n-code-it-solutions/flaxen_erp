@@ -1,5 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
-import AppLayout from '@/components/Layouts/AppLayout';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import PageHeader from '@/components/apps/PageHeader';
 import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import { useRouter } from 'next/router';
@@ -10,122 +9,149 @@ import { AppBasePath, ButtonType, ButtonVariant } from '@/utils/enums';
 import PageWrapper from '@/components/PageWrapper';
 import { clearAccountState, getGeneralJournal } from '@/store/slices/accountSlice';
 import { AgGridReact } from 'ag-grid-react';
-import { capitalize } from 'lodash';
 import Swal from 'sweetalert2';
 import Button from '@/components/Button';
-import AgGridComponent from '@/components/apps/AgGridComponent';
 import { Input } from '@/components/form/Input';
+import { capitalize } from 'lodash';
+import AgGridComponent from '@/components/apps/AgGridComponent';
+import {
+    SizeColumnsToContentStrategy,
+    SizeColumnsToFitGridStrategy,
+    SizeColumnsToFitProvidedWidthStrategy
+} from '@ag-grid-community/core';
 
 const Index = () => {
     useSetActiveMenu(AppBasePath.General_Journal);
     const router = useRouter();
     const dispatch = useAppDispatch();
+    const gridRef = useRef<AgGridReact<any>>(null);
 
-    const { token, user, loading } = useAppSelector((state) => state.user);
+    const { token } = useAppSelector((state) => state.user);
     const { generalJournal } = useAppSelector((state) => state.account);
+
     const [selectedRows, setSelectedRows] = useState<any[]>([]);
     const [formData, setFormData] = useState<any>({});
     const [reportData, setReportData] = useState<any[]>([]);
-    const [pinnedBottomRowData, setPinnedBottomRowData] = useState<any[]>([]);
-    const gridRef = useRef<AgGridReact<any>>(null);
+
+    const calculateTotals = (data: any) => {
+        const totals = [];
+        const groupedData = data.reduce((acc: any, row: any) => {
+            acc[row.document_no] = acc[row.document_no] || [];
+            acc[row.document_no].push(row);
+            return acc;
+        }, {});
+
+        for (const documentNo in groupedData) {
+            const group = groupedData[documentNo];
+            const totalDebit = group.reduce((sum: any, row: any) => sum + row.debit, 0);
+            const totalCredit = group.reduce((sum: any, row: any) => sum + row.credit, 0);
+
+            totals.push(...group);
+            totals.push({
+                date: '', // Keep empty for total row
+                document_no: documentNo + ' Total',
+                source: '',
+                narration: '',
+                account_name: '',
+                debit: totalDebit,
+                credit: totalCredit,
+                isTotal: true // Flag to indicate this is a total row
+            });
+        }
+
+        return totals;
+    };
+
     const [colDefs, setColDefs] = useState<any>([
         {
             headerName: 'Date',
-            valueGetter: (row: any) => new Date(row.data.created_at).toLocaleDateString(),
-            minWidth: 150,
+            valueGetter: (params: any) => params.data?.isTotal ? '' : new Date(params.data?.created_at).toLocaleDateString(),
+            // minWidth: 150,
+            sortable: false,
             filter: false,
             floatingFilter: false
         },
         {
             headerName: 'Document No',
             field: 'document_no',
-            minWidth: 150,
+            // minWidth: 150,
+            sortable: false,
             filter: false,
-            floatingFilter: false
+            floatingFilter: false,
+            cellStyle: (params: any) => {
+                if (params.data?.isTotal) {
+                    return { fontWeight: 'bold' };
+                }
+            }
         },
         {
             headerName: 'Source',
-            field: 'source',
-            minWidth: 150,
+            valueGetter: (params: any) => params.data?.isTotal ? '' : capitalize(params.data?.transaction_through.replace('_', ' ')),
+            // minWidth: 150,
+            sortable: false,
             filter: false,
             floatingFilter: false
         },
         {
             headerName: 'Narration',
             field: 'description',
-            minWidth: 150,
+            // minWidth: 150,
+            cellStyle: { whiteSpace: 'normal', lineHeight: '1.5' },
+            autoHeight: true,
+            sortable: false,
             filter: false,
             floatingFilter: false
         },
         {
             headerName: 'Account Name',
             field: 'account_name',
-            minWidth: 150,
+            resizable: true,
+            sortable: false,
             filter: false,
-            floatingFilter: false
+            floatingFilter: false,
+            cellStyle: (params: any) => {
+                if (params.data?.isTotal) {
+                    return { fontWeight: 'bold' };
+                }
+            }
         },
         {
             headerName: 'Debit',
             field: 'debit',
-            minWidth: 150,
+            sortable: false,
             filter: false,
             floatingFilter: false,
-            aggFunc: 'sum'
+            cellStyle: (params: any) => {
+                if (params.data?.isTotal) {
+                    return { fontWeight: 'bold' };
+                }
+            }
         },
         {
             headerName: 'Credit',
             field: 'credit',
-            minWidth: 150,
+            sortable: false,
             filter: false,
             floatingFilter: false,
-            aggFunc: 'sum'
-        },
+            cellStyle: (params: any) => {
+                if (params.data?.isTotal) {
+                    return { fontWeight: 'bold' };
+                }
+            }
+        }
     ]);
 
-    const calculateTotals = () => {
-        const total: any = {
-            item_code: 'Total',
-            title: '',
-            product_type: '',
-            sub_unit: '',
-            valuation_method: '',
-            stock: {
-                opening_stock: 0,
-                purchase_stock: 0,
-                used_stock: 0,
-                available_stock: 0
-            },
-            costing: {
-                total_valuated_opening_stock_price: 0,
-                total_valuated_selling_price: 0
-            }
+    const autoSizeStrategy = useMemo<
+        | SizeColumnsToFitGridStrategy
+        | SizeColumnsToFitProvidedWidthStrategy
+        | SizeColumnsToContentStrategy
+    >(() => {
+        return {
+            type: "fitCellContents",
         };
-        console.log(reportData);
+    }, []);
 
-        reportData.forEach((item: any) => {
-            total.stock.opening_stock += item.stock.opening_stock;
-            total.stock.purchase_stock += item.stock.purchase_stock;
-            total.stock.sale_stock += item.stock.sale_stock;
-            total.stock.available_stock += item.stock.available_stock;
-            total.stock.used_stock += item.stock.used_stock;
-
-            total.costing.opening_stock_cost += parseFloat(item.costing.opening_stock_cost);
-            total.costing.total_valuated_opening_stock_price += parseFloat(item.costing.total_valuated_opening_stock_price);
-            total.costing.selling_price += parseFloat(item.costing.selling_price);
-            total.costing.total_valuated_selling_price += parseFloat(item.costing.total_valuated_selling_price);
-
-            total.cost_price += item.stock.available_stock * item.costing.valuated_opening_stock_price;
-            total.sale_price += item.stock.available_stock * item.costing.valuated_selling_price;
-        });
-
-
-        // console.log(reportData.reduce((acc:number, item:any)=>acc+item.costing.valuated_opening_stock_price, 0));
-        setPinnedBottomRowData([total]);
-    };
-
-
-    const handleChange = (name: string, value: any, required: boolean) => {
-        // console.log(name, value);
+    const handleChange = (name: string, value: any) => {
         setFormData({
             ...formData,
             [name]: value
@@ -162,14 +188,16 @@ const Index = () => {
     }, []);
 
     useEffect(() => {
-        if(generalJournal) {
-            setReportData(generalJournal)
+        if (generalJournal) {
+            const calculatedData = calculateTotals(generalJournal);
+            setReportData(calculatedData);
         }
     }, [generalJournal]);
 
     return (
         <div className="flex flex-col gap-3">
             <PageHeader
+                gridRef={gridRef}
                 appBasePath={AppBasePath.General_Journal}
                 key={selectedRows.length}
                 selectedRows={selectedRows.length}
@@ -184,7 +212,7 @@ const Index = () => {
                 showSearch={true}
                 buttonActions={{
                     delete: () => console.log('deleted'),
-                    export: () => console.log('exported'),
+                    export: () => handleExport(),
                     print: () => console.log('print'),
                     archive: () => console.log('archived'),
                     unarchive: () => console.log('unarchived'),
@@ -201,7 +229,7 @@ const Index = () => {
                             type="date"
                             name="from_date"
                             value={formData.from_date}
-                            onChange={(e) => handleChange('from_date', e[0] ? e[0].toLocaleDateString() : '', true)}
+                            onChange={(e) => handleChange('from_date', e[0] ? e[0].toLocaleDateString() : '')}
                             placeholder="Enter Start Date"
                             isMasked={false}
                         />
@@ -211,7 +239,7 @@ const Index = () => {
                             type="date"
                             name="to_date"
                             value={formData.to_date}
-                            onChange={(e) => handleChange('to_date', e[0] ? e[0].toLocaleDateString() : '', true)}
+                            onChange={(e) => handleChange('to_date', e[0] ? e[0].toLocaleDateString() : '')}
                             placeholder="Enter To Date"
                             isMasked={false}
                         />
@@ -219,19 +247,19 @@ const Index = () => {
                             type={ButtonType.button}
                             text="Generate"
                             variant={ButtonVariant.primary}
-                            onClick={() => handleGenerate()}
+                            onClick={handleGenerate}
                         />
                         <Button
                             type={ButtonType.button}
                             text="Reset"
                             variant={ButtonVariant.info}
-                            onClick={() => handleReset()}
+                            onClick={handleReset}
                         />
                         <Button
                             type={ButtonType.button}
                             text="Export"
                             variant={ButtonVariant.success}
-                            onClick={() => handleExport()}
+                            onClick={handleExport}
                         />
                     </div>
                 </div>
@@ -242,7 +270,20 @@ const Index = () => {
                         gridRef={gridRef}
                         data={reportData}
                         colDefs={colDefs}
-                        pinnedBottomRowData={pinnedBottomRowData}
+                        // pinnedBottomRowData={pinnedBottomRowData}
+                        autoSizeStrategy={autoSizeStrategy}
+                        getRowStyle={(params:any) => {
+                            if (params.data?.isTotal) {
+                                return { backgroundColor: '#f2f2f2' }; // Light gray background for total rows
+                            }
+                            return null;
+                        }}
+                        onFirstDataRendered={() => {
+                            if (gridRef.current) {
+                                const allColumnIds = gridRef.current.api.getAllDisplayedColumns().map((column) => column.getColId());
+                                gridRef.current.api.autoSizeColumns(allColumnIds);
+                            }
+                        }}
                     />
                 </div>
             ) : (
@@ -256,5 +297,4 @@ const Index = () => {
     );
 };
 
-// Index.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
 export default Index;

@@ -1,20 +1,28 @@
 import React from 'react';
-import {View, Text, StyleSheet} from '@react-pdf/renderer';
+import { View, Text, StyleSheet } from '@react-pdf/renderer';
 
-const Footer = ({content}:any) => {
+const Footer = ({ content }: any) => {
     return (
         <View style={styles.footer}>
             <View style={styles.footerContainer}>
                 <Text style={styles.footerText}>
-                    <Text>Created By: </Text>
-                    {content?.created_by?.name}
+                    {content && content?.created_by && content?.created_by?.name && (
+                        <>
+                            <Text>Created By: </Text>
+                            {content?.created_by?.name}
+                        </>
+                    )}
                 </Text>
                 <Text style={styles.footerText} render={({ pageNumber, totalPages }) => (
                     `${pageNumber} / ${totalPages}`
                 )} fixed />
                 <Text style={styles.footerText}>
-                    <Text>Created At: </Text>
-                    {new Date(content?.created_at).toLocaleDateString() + '  ' + new Date(content?.created_at).toLocaleTimeString()}
+                    {content && content?.updated_by && content?.updated_by?.name && (
+                        <>
+                            <Text>Created At: </Text>
+                            {new Date(content?.created_at).toLocaleDateString() + '  ' + new Date(content?.created_at).toLocaleTimeString()}
+                        </>
+                    )}
                 </Text>
             </View>
         </View>
@@ -42,4 +50,4 @@ const styles = StyleSheet.create({
         color: 'gray',
         fontSize: 8
     }
-})
+});

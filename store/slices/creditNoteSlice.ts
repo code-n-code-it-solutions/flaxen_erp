@@ -68,9 +68,9 @@ export const getCreditNoteDetail = createAsyncThunk(
 
 export const getCreditNotesForPrint = createAsyncThunk(
     'credit-note/print',
-    async (ids: number[], thunkAPI) => {
+    async (data:any, thunkAPI) => {
         try {
-            const response = await API.post('/credit-note/print', { ids });
+            const response = await API.post('/credit-note/print', data);
             return response.data;
         } catch (error: any) {
             const message =

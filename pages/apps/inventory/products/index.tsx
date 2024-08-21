@@ -25,7 +25,6 @@ const Index = () => {
 
     const dispatch = useAppDispatch();
     const { token, menus } = useAppSelector((state) => state.user);
-
     const { allRawProducts, loading } = useAppSelector((state) => state.rawProduct);
     const { activeMenu } = useAppSelector((state) => state.menu);
     const [selectedRows, setSelectedRows] = useState<any[]>([]);

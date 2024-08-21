@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Input } from '@/components/form/Input';
 import { Dropdown } from '@/components/form/Dropdown';
-import { IRootState, useAppDispatch, useAppSelector } from '@/store';
+import { useAppDispatch, useAppSelector } from '@/store';
 import Button from '@/components/Button';
 import { ButtonSize, ButtonType, ButtonVariant, FORM_CODE_TYPE, IconType } from '@/utils/enums';
 import { getIcon } from '@/utils/helper';
@@ -9,36 +9,32 @@ import Textarea from '@/components/form/Textarea';
 import { setAuthToken, setContentType } from '@/configs/api.config';
 import Option from '@/components/form/Option';
 import Alert from '@/components/Alert';
-import IconButton from '@/components/IconButton';
 import { getProductAssemblies } from '@/store/slices/productAssemblySlice';
 import { clearUtilState, generateCode } from '@/store/slices/utilSlice';
 import { getFillingProducts, getRawProducts } from '@/store/slices/rawProductSlice';
-import { clearFillingState, getFinishedGoodStock } from '@/store/slices/fillingSlice';
 import { storeQuotation } from '@/store/slices/quotationSlice';
 import { getEmployees } from '@/store/slices/employeeSlice';
 import { getCustomers } from '@/store/slices/customerSlice';
-import FinishedGoodModal from '@/components/modals/FinishedGoodModal';
-import { capitalize } from 'lodash';
 import { getTaxCategories } from '@/store/slices/taxCategorySlice';
-import { useSelector } from 'react-redux';
+import AgGridComponent from '@/components/apps/AgGridComponent';
+import { AgGridReact } from 'ag-grid-react';
+import IconButton from '@/components/IconButton';
 
 const QuotationForm = () => {
     const dispatch = useAppDispatch();
+    const gridRef = useRef<AgGridReact<any>>(null);
     const { token } = useAppSelector((state) => state.user);
     const { code } = useAppSelector((state) => state.util);
     const { employees } = useAppSelector((state) => state.employee);
     const { customers } = useAppSelector((state) => state.customer);
-    const { fillingProducts } = useAppSelector((state) => state.rawProduct);
+    const { fillingProducts, allRawProducts } = useAppSelector((state) => state.rawProduct);
     const { allProductAssemblies } = useAppSelector((state) => state.productAssembly);
-    const { taxCategories } = useSelector((state: IRootState) => state.taxCategory);
 
-    const [fillingMaterials, setFillingMaterials] = useState<any[]>([]);
     const [formData, setFormData] = useState<any>({});
     const [quotationItems, setQuotationItems] = useState<any[]>([]);
-    const [modalOpen, setModalOpen] = useState<boolean>(false);
-    const [productAssemblyOptions, setProductAssemblyOptions] = useState<any[]>([]);
     const [customerOptions, setCustomerOptions] = useState<any[]>([]);
     const [contactPersonOptions, setContactPersonOptions] = useState<any[]>([]);
+    const [pinnedBottomRowData, setPinnedBottomRowData] = useState<any[]>([]);
     const [salesmanOptions, setSalesmanOptions] = useState<any[]>([]);
     const [quotationForOptions] = useState<any[]>([
         { label: 'Finished Goods', value: 1 },
@@ -46,16 +42,200 @@ const QuotationForm = () => {
     ]);
     const [validations, setValidations] = useState<any>({});
     const [formError, setFormError] = useState<any>('');
+    const [colDefs, setColDefs] = useState<any>([]);
+
+    const handleRemoveRow = (row: any) => {
+        const updatedItems = quotationItems.filter((item) => item.id !== row.id);
+        setQuotationItems(updatedItems);
+    };
+
+    useEffect(() => {
+        console.log(quotationItems);
+    }, [quotationItems])
+
+    const calculateTotals = () => {
+        const totalQuantity = quotationItems.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+        const totalSalePrice = quotationItems.reduce((sum, item) => sum + Number(item.sale_price || 0), 0);
+        const totalSubTotal = quotationItems.reduce((sum, item) => sum + Number(item.quantity * item.sale_price || 0), 0);
+        const totalVAT = totalSubTotal * 0.05; // Assuming VAT is 5%
+        const totalGrandTotal = totalSubTotal + totalVAT;
+
+        setPinnedBottomRowData([{
+            product_assembly_id: 'Total',
+            raw_product_id: '',
+            capacity: '',
+            quantity: totalQuantity,
+            sale_price: totalSalePrice.toFixed(4),
+            sub_total: totalSubTotal.toFixed(4),
+            tax_amount: totalVAT.toFixed(4),
+            grand_total: totalGrandTotal.toFixed(4)
+        }]);
+    };
+
+    useEffect(() => {
+        setQuotationItems([]);
+        let defaultColDef = [
+            {
+                headerName: 'Qty',
+                field: 'quantity',
+                editable: (params: any) => !params.node.rowPinned, // Disable editing in pinned row
+                cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+                minWidth: 150,
+                filter: false,
+                floatingFilter: false
+            },
+            {
+                headerName: 'S.Price',
+                field: 'sale_price',
+                editable: (params: any) => !params.node.rowPinned, // Disable editing in pinned row
+                cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+                minWidth: 150,
+                filter: false,
+                floatingFilter: false
+            },
+            {
+                headerName: 'S.Total',
+                field: 'sub_total',
+                valueGetter: (params: any) => params.data.quantity * params.data.sale_price,
+                cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+                minWidth: 150,
+                filter: false,
+                floatingFilter: false
+            },
+            {
+                headerName: 'VAT@5%',
+                field: 'tax_amount',
+                valueGetter: (params: any) => params.data.sale_price * params.data.quantity * 0.05,
+                cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+                minWidth: 150,
+                filter: false,
+                floatingFilter: false
+            },
+            {
+                headerName: 'Total',
+                field: 'grand_total',
+                valueGetter: (params: any) => {
+                    const subTotal = params.data.sale_price * params.data.quantity;
+                    const tax = subTotal * 0.05;
+                    return subTotal + tax;
+                },
+                cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+                minWidth: 150,
+                filter: false,
+                floatingFilter: false
+            },
+            {
+                headerName: '',
+                field: 'remove',
+                cellRenderer: (params: any) => (
+                    !params.node?.rowPinned &&
+                    <IconButton
+                        color={ButtonVariant.danger}
+                        icon={IconType.delete}
+                        onClick={() => handleRemoveRow(params.data)}
+                    />
+                ),
+                // minWidth: 50,
+                // maxWidth: 50,
+                editable: false,
+                filter: false,
+                floatingFilter: false,
+                sortable: false
+            }
+        ];
+
+        if (formData.quotation_for === 1) {
+            const finishGoodsColDefs = [
+                {
+                    headerName: 'Product',
+                    field: 'product_assembly_id',
+                    editable: (params: any) => !params.node.rowPinned, // Disable editing in pinned row
+                    cellEditor: 'agSelectCellEditor',
+                    cellEditorParams: {
+                        values: allProductAssemblies ? allProductAssemblies.map((option: any) => option.id) : []
+                    },
+                    valueFormatter: (params: any) => {
+                        if (params.node?.rowPinned) return 'Total';  // No formatting for pinned row, just return 'Total'
+                        const selectedOption = allProductAssemblies?.find((option: any) => option.id === params.value);
+                        return selectedOption ? selectedOption.formula_name : '';
+                    },
+                    cellRenderer: (params: any) => {
+                        if (params.node?.rowPinned) return 'Total';  // Show 'Total' for pinned row
+                        const selectedOption = allProductAssemblies?.find((option: any) => option.id === params.value);
+                        return selectedOption ? selectedOption.formula_name : '';
+                    },
+                    minWidth: 150,
+                    filter: false,
+                    floatingFilter: false
+                },
+                {
+                    headerName: 'Filling',
+                    field: 'raw_product_id',
+                    editable: (params: any) => !params.node.rowPinned, // Disable editing in pinned row
+                    cellEditor: 'agSelectCellEditor',
+                    cellEditorParams: {
+                        values: fillingProducts ? fillingProducts.map((material: any) => material.id) : []
+                    },
+                    valueFormatter: (params: any) => {
+                        if (params.node?.rowPinned) return '';  // No formatting for pinned row
+                        const selectedOption = fillingProducts?.find((material: any) => material.id === params.value);
+                        return selectedOption ? selectedOption.title : '';
+                    },
+                    cellRenderer: (params: any) => {
+                        if (params.node?.rowPinned) return '';  // Show empty text for pinned row
+                        const selectedOption = fillingProducts?.find((material: any) => material.id === params.value);
+                        return selectedOption ? selectedOption.title : '';
+                    },
+                    minWidth: 150,
+                    filter: false,
+                    floatingFilter: false
+                },
+                {
+                    headerName: 'Capacity',
+                    field: 'capacity',
+                    editable: (params: any) => !params.node.rowPinned, // Disable editing in pinned row
+                    cellRenderer: (params: any) => params.node?.rowPinned ? '' : params.value,
+                    minWidth: 150,
+                    filter: false,
+                    floatingFilter: false
+                }
+            ];
+
+            setColDefs([...finishGoodsColDefs, ...defaultColDef]);
+        } else if (formData.quotation_for === 2) {
+            const rawProductColDefs = [
+                {
+                    headerName: 'Product',
+                    field: 'raw_product_id',
+                    editable: (params: any) => !params.node.rowPinned, // Disable editing in pinned row
+                    cellEditor: 'agSelectCellEditor',
+                    cellEditorParams: {
+                        values: allRawProducts ? allRawProducts.map((option: any) => option.id) : []
+                    },
+                    valueFormatter: (params: any) => {
+                        if (params.node?.rowPinned) return 'Total';  // No formatting for pinned row, just return 'Total'
+                        const selectedOption = allRawProducts?.find((option: any) => option.id === params.value);
+                        return selectedOption ? selectedOption.title : '';
+                    },
+                    cellRenderer: (params: any) => {
+                        if (params.node?.rowPinned) return 'Total';  // Show 'Total' for pinned row
+                        const selectedOption = allRawProducts?.find((option: any) => option.id === params.value);
+                        return selectedOption ? selectedOption.title : '';
+                    },
+                    minWidth: 150,
+                    filter: false,
+                    floatingFilter: false
+                }
+            ];
+
+            setColDefs([...rawProductColDefs, ...defaultColDef]);
+        } else {
+            setColDefs([]);
+        }
+    }, [formData.quotation_for]);
 
     const handleChange = (name: string, value: any, required = false) => {
-        // Directly handle validation for required fields and specific conditions
-        // if (required && (value === '' || (['salesman_id', 'contact_person_id', 'customer_id'].includes(name) && value === 0))) {
-        //     handleValidation(name, 'add');
-        //     return;
-        // }
-
         handleValidation(name, 'remove');
-
         switch (name) {
             case 'delivery_due_in_days':
                 // Adjust date based on input value
@@ -107,20 +287,6 @@ const QuotationForm = () => {
         }
     };
 
-    const handleQuotationItemSubmit = (item: any) => {
-        console.log(item);
-        setQuotationItems((prev) => {
-            const existingRow = prev.find(row => row.raw_product_id === item.raw_product_id && row.product_assembly_id === item.product_assembly_id && row.batch_number === item.batch_number);
-            if (existingRow) {
-                return prev.map(row => row.raw_product_id === item.raw_product_id && row.product_assembly_id === item.product_assembly_id && row.batch_number === item.batch_number ? item : row);
-            } else {
-                return [...prev, item];
-            }
-        });
-        setModalOpen(false);
-    };
-
-
     useEffect(() => {
         setAuthToken(token);
         setContentType('application/json');
@@ -131,8 +297,13 @@ const QuotationForm = () => {
         dispatch(getCustomers());
         dispatch(getProductAssemblies());
         dispatch(getTaxCategories());
-        setModalOpen(false);
+        dispatch(getRawProducts([]));
     }, []);
+
+    // useEffect(() => {
+    //     calculateTotals();
+    // }, [quotationItems]);
+
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -150,77 +321,22 @@ const QuotationForm = () => {
             return;
         } else {
 
-            // console.log(quotationItems)
-
             let quotationData: any = {
-                product_assembly_id: formData.product_assembly_id,
+                // product_assembly_id: formData.product_assembly_id,
                 quotation_for: formData.quotation_for,
                 receipt_delivery_due_days: formData.receipt_delivery_due_days,
                 delivery_due_in_days: formData.delivery_due_in_days,
                 delivery_due_date: formData.delivery_due_date,
                 salesman_id: formData.salesman_id,
-                skip_delivery_note: formData.skip_delivery_note,
                 print_as_performa: formData.print_as_performa,
                 customer_id: formData.customer_id,
                 contact_person_id: formData.contact_person_id,
-                quotation_items: quotationItems.map((item: any) => ({
-                    product_assembly_id: item.product_assembly_id,
-                    batch_number: item.batch_number,
-                    raw_product_id: item.raw_product_id,
-                    filling_id: item.filling_id,
-                    production_id: item.production_id,
-                    available_quantity: item.final_stock,
-                    quantity: item.quantity,
-                    retail_price: item.retail_price,
-                    tax_category_id: item.tax_category_id,
-                    tax_rate: item.tax_rate,
-                    tax_amount: item.tax_amount,
-                    discount_type: item.discount_type,
-                    discount_amount_rate: item.discount_amount_rate,
-                    total_cost: item.total_cost
-                })),
+                quotation_items: quotationItems,
                 terms_conditions: formData.terms_conditions
             };
-            if (formData.skip_delivery_note) {
-                quotationData.delivery_note = {
-                    delivery_due_in_days: formData.delivery_due_in_days,
-                    delivery_due_date: formData.delivery_due_date,
-                    customer_id: formData.customer_id,
-                    contact_person_id: formData.contact_person_id,
-                    salesman_id: formData.salesman_id,
-                    terms_conditions: formData.terms_conditions,
-                    items: quotationItems.map((item: any) => ({
-                        product_assembly_id: item.product_assembly_id,
-                        batch_number: item.batch_number,
-                        filling_id: item.filling_id,
-                        production_id: item.production_id,
-                        raw_product_id: item.raw_product_id,
-                        available_quantity: item.final_stock,
-                        quantity: item.quantity,
-                        capacity: item.capacity,
-                        retail_price: item.retail_price,
-                        tax_category_id: item.tax_category_id,
-                        tax_rate: item.tax_rate,
-                        tax_amount: item.tax_amount,
-                        discount_type: item.discount_type,
-                        discount_amount_rate: item.discount_amount_rate,
-                        total_cost: item.total_cost
-                    }))
-                };
-            }
+            // console.log(quotationData);
             dispatch(storeQuotation(quotationData));
         }
-    };
-
-    const calculateTotal = (item: any) => {
-        let totalCost = parseFloat(item.retail_price) * parseFloat(item.quantity);
-        let taxAmount = item.tax_rate ? (totalCost * parseFloat(item.tax_rate)) / 100 : 0;
-        let discountAmount = item.discount_type
-            ? item.discount_type === 'percentage'
-                ? (totalCost * parseFloat(item.discount_amount_rate)) / 100
-                : parseFloat(item.discount_amount_rate)
-            : 0;
-        return totalCost + taxAmount - discountAmount;
     };
 
     useEffect(() => {
@@ -255,22 +371,6 @@ const QuotationForm = () => {
             setFormData({ ...formData, quotation_code: code[FORM_CODE_TYPE.QUOTATION] });
         }
     }, [code]);
-
-    useEffect(() => {
-        if (fillingProducts) {
-            setFillingMaterials(fillingProducts);
-        }
-    }, [fillingProducts]);
-
-    useEffect(() => {
-        if (allProductAssemblies) {
-            setProductAssemblyOptions(allProductAssemblies.map((assembly: any) => ({
-                label: assembly.formula_name,
-                value: assembly.id,
-                assembly
-            })));
-        }
-    }, [allProductAssemblies]);
 
     return (
         <form onSubmit={(e) => handleSubmit(e)}>
@@ -377,35 +477,28 @@ const QuotationForm = () => {
                             />
                         </div>
 
-                        <Option
+                        <Input
                             divClasses="w-full"
-                            label="Skip Delivery Note"
-                            type="checkbox"
-                            name="skip_delivery_note"
-                            value={formData.skip_delivery_note}
-                            defaultChecked={formData.skip_delivery_note === 1}
-                            onChange={(e: any) => handleChange(e.target.name, e.target.checked ? 1 : 0, e.target.required)}
+                            label="Discount Amount"
+                            type="number"
+                            name="discount_amount"
+                            value={formData.discount_amount}
+                            onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
+                            isMasked={false}
+                            placeholder="Discount Amount"
                         />
 
-                        <Option
-                            divClasses="w-full"
-                            label="Print As Performa Invoice"
-                            type="checkbox"
-                            name="print_as_performa"
-                            value={formData.print_as_performa}
-                            defaultChecked={formData.print_as_performa === 1}
-                            onChange={(e: any) => handleChange(e.target.name, e.target.checked ? 1 : 0, e.target.required)}
-                        />
-
-                        <Option
-                            divClasses="w-full"
-                            label="Consider Out of Stock as Well"
-                            type="checkbox"
-                            name="unprepared_stock"
-                            value={formData.unprepared_stock}
-                            defaultChecked={formData.unprepared_stock === 1}
-                            onChange={(e: any) => handleChange(e.target.name, e.target.checked ? 1 : 0, e.target.required)}
-                        />
+                        <div className="flex justify-start md:items-end">
+                            <Option
+                                divClasses="w-full"
+                                label="Print As Performa Invoice"
+                                type="checkbox"
+                                name="print_as_performa"
+                                value={formData.print_as_performa}
+                                defaultChecked={formData.print_as_performa === 1}
+                                onChange={(e: any) => handleChange(e.target.name, e.target.checked ? 1 : 0, e.target.required)}
+                            />
+                        </div>
                     </div>
 
                 </div>
@@ -429,109 +522,47 @@ const QuotationForm = () => {
                 <div
                     className="flex mb-3 justify-start items-start md:justify-between md:items-center gap-3 flex-col md:flex-row">
                     <h3 className="text-lg font-semibold">Quotation Items</h3>
-                    <Button
-                        type={ButtonType.button}
-                        text={
-                            <span className="flex items-center">
-                                {getIcon(IconType.add)}
-                                Add Finish Good
-                            </span>
-                        }
-                        variant={ButtonVariant.primary}
-                        onClick={() => setModalOpen(true)}
-                        size={ButtonSize.small}
-                    />
+
+                    {formData.quotation_for && (
+                        <Button
+                            type={ButtonType.button}
+                            text={
+                                <span className="flex items-center">
+                                    {getIcon(IconType.add)}
+                                    Add
+                                </span>
+                            }
+                            variant={ButtonVariant.primary}
+                            onClick={() => {
+                                setQuotationItems((prev: any) => {
+                                    return [...prev, {
+                                        id: prev.length ? prev[prev.length - 1].id + 1 : 1,
+                                        product_assembly_id: 0,
+                                        raw_product_id: 0,
+                                        capacity: 0,
+                                        quantity: 0,
+                                        sale_price: 0,
+                                        sub_total: 0,
+                                        tax_category_id: 0,
+                                        tax_rate: 5,
+                                        tax_amount: 0,
+                                        grand_total: 0
+                                    }];
+                                });
+                            }}
+                            size={ButtonSize.small}
+                        />
+                    )}
                 </div>
-                <table>
-                    <thead>
-                    <tr>
-                        <th>Product</th>
-                        <th>Batch #</th>
-                        <th>Filling Material</th>
-                        <th>Capacity</th>
-                        <th>Available</th>
-                        <th>Quantity</th>
-                        <th>Retail Price</th>
-                        <th>Before Tax</th>
-                        <th>Tax</th>
-                        <th>Discount</th>
-                        <th>Total</th>
-                        <th>Action</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {quotationItems.length > 0
-                        ? quotationItems.map((item: any, index: number) => {
-                            let product = fillingMaterials.find((material: any) => material.id === item.raw_product_id);
-                            let taxCategory = taxCategories?.find((tax: any) => tax.id === item.tax_category_id);
-                            return (
-                                <tr key={index}>
-                                    <td>
-                                        {productAssemblyOptions.find((assembly: any) => assembly.value === item.product_assembly_id)?.label}
-                                    </td>
-                                    <td>{item.batch_number}</td>
-                                    <td>{product.title}</td>
-                                    <td>{item.capacity.toFixed(2)}</td>
-                                    <td>{item.final_stock.toFixed(2)}</td>
-                                    <td>{item.quantity.toFixed(2)}</td>
-                                    <td>{item.retail_price.toFixed(2)}</td>
-                                    <td>
-                                        {(item.retail_price * item.quantity).toFixed(2)}
-                                    </td>
-                                    <td>
-                                        {taxCategory
-                                            ? (
-                                                <div className="flex flex-col">
-                                                    <span><strong>Tax: </strong>{taxCategory.name} ({item.tax_rate}%)</span>
-                                                    <span><strong>Amount: </strong>{item.tax_amount.toFixed(2)}</span>
-                                                </div>
-                                            ) : (
-                                                <span>N/A</span>
-                                            )}
-                                    </td>
-                                    <td>
-                                        {item.discount_type
-                                            ? (
-                                                <div className="flex flex-col">
-                                                    <span><strong>Type: </strong>{capitalize(item.discount_type)}</span>
-                                                    <span><strong>Rate: </strong>
-                                                        {item.discount_amount_rate.toFixed(2)}{item.discount_type === 'percentage' ? '%' : ''}
-                                                    </span>
-                                                </div>
-                                            ) : (
-                                                <span>N/A</span>
-                                            )}
-                                    </td>
-                                    <td>{calculateTotal(item).toFixed(2)}</td>
-                                    <td>
-                                        <IconButton
-                                            icon={IconType.delete}
-                                            color={ButtonVariant.danger}
-                                            onClick={() => {
-                                                let updatedItems = quotationItems.filter((qItem: any) => qItem.raw_product_id !== item.raw_product_id);
-                                                setQuotationItems(updatedItems);
-                                            }}
-                                        />
-                                    </td>
-                                </tr>
-                            );
-                        })
-                        : (
-                            <tr>
-                                <td colSpan={12} className="text-center">No Quotation Items Added</td>
-                            </tr>
-                        )}
-                    </tbody>
-                    <tfoot>
-                    <tr>
-                        <td colSpan={10} className="text-center">Total</td>
-                        {/*<td className="pl-4">{quotationItems.reduce((acc, item) => acc + item.quantity, 0).toFixed(2)}</td>*/}
-                        {/*<td className="pl-4">{quotationItems.reduce((acc, item) => acc + item.retail_price, 0).toFixed(2)}</td>*/}
-                        <td className="pl-4">{quotationItems.reduce((acc, item) => acc + item.total_cost, 0).toFixed(2)}</td>
-                        <td></td>
-                    </tr>
-                    </tfoot>
-                </table>
+                <AgGridComponent
+                    gridRef={gridRef}
+                    data={quotationItems}
+                    colDefs={colDefs}
+                    pagination={false}
+                    // pinnedBottomRowData={pinnedBottomRowData}
+                    height={400}
+                />
+
             </div>
 
             <Textarea
@@ -566,13 +597,6 @@ const QuotationForm = () => {
                 />
             </div>
 
-            <FinishedGoodModal
-                considerOutOfStock={formData.unprepared_stock}
-                modalFor="quotation"
-                modalOpen={modalOpen}
-                setModalOpen={setModalOpen}
-                handleSubmit={(item) => handleQuotationItemSubmit(item)}
-            />
         </form>
     );
 };

@@ -5,7 +5,7 @@ import {setPageTitle} from "@/store/slices/themeConfigSlice";
 import PageWrapper from "@/components/PageWrapper";
 import {clearEmployeeState} from "@/store/slices/employeeSlice";
 import {ButtonType, ButtonVariant, IconType} from "@/utils/enums";
-import EmployeeForm from '@/pages/apps/employees/employee-list/EmployeeForm';
+import EmployeeForm from '@/pages/apps/hrm/employees/EmployeeForm';
 import AppLayout from '@/components/Layouts/AppLayout';
 
 const Create = () => {

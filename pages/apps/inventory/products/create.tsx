@@ -18,6 +18,7 @@ const Create = () => {
 
     useEffect(() => {
         dispatch(setPageTitle('New'));
+        dispatch(clearRawProductState());
     }, []);
 
     useEffect(() => {

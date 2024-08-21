@@ -126,4 +126,6 @@ export enum AppBasePath {
     Employee = '/apps/employees/employees-list',
     Credit_Notes = '/apps/sales/credit-notes',
     Debit_Notes = '/apps/purchase/debit-notes',
+    General_Payment_Voucher = '/apps/accounting/general-voucher/payment-voucher',
+    General_Receipt_Voucher = '/apps/accounting/general-voucher/receipt-voucher',
 }

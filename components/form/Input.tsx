@@ -72,11 +72,11 @@ export const Input: FC<IProps> = ({
                 />
                 : type === 'date'
                     ? <Flatpickr
-                        value={value ? new Date(value) : new Date()}
+                        value={value ? new Date(value) : ''}
                         placeholder={placeholder}
                         options={{
                             dateFormat: 'Y-m-d',
-                            allowInput: true
+                            allowInput: true,
                         }}
                         className="form-input"
                         onChange={onChange}
@@ -87,7 +87,7 @@ export const Input: FC<IProps> = ({
                                 noCalendar: true,
                                 enableTime: true,
                                 dateFormat: 'h:i K',
-                                allowInput: true
+                                allowInput: true,
                             }}
                             placeholder={placeholder}
                             defaultValue={value}

@@ -4,7 +4,7 @@
     "private": true,
     "scripts": {
         "dev": "next dev",
-        "server-dev": "next dev -p 3005",
+        "server-dev": "next dev -p 3006",
         "build": "next build",
         "start": "next start",
         "server-start": "next start -p 3005",
@@ -20,6 +20,7 @@
         "@ag-grid-enterprise/master-detail": "^31.3.2",
         "@ag-grid-enterprise/menu": "^31.3.2",
         "@ag-grid-enterprise/range-selection": "^31.3.2",
+        "@ag-grid-enterprise/rich-select": "^32.1.0",
         "@ag-grid-enterprise/set-filter": "^31.3.2",
         "@emotion/react": "^11.11.4",
         "@fortawesome/fontawesome-svg-core": "^6.5.1",

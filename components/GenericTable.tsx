@@ -61,7 +61,7 @@ const GenericTable = ({
         const searchLower = search.toLowerCase();
         const searchableColumns = columns.filter((col) => col.searchable !== false).map((col) => col.accessor);
 
-        setInitialRecords(rowData.filter((item) =>
+        setInitialRecords(rowData?.filter((item) =>
             searchableColumns.some((col) => {
                 const value = item[col];
                 return value && value.toString().toLowerCase().includes(searchLower);

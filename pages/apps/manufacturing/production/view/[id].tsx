@@ -28,7 +28,7 @@ const View = () => {
     }, [router.query.id, dispatch]);
 
     return (
-        <div>
+        <div className="flex flex-col gap-3">
             <DetailPageHeader
                 appBasePath={AppBasePath.Production}
                 title="Production Details"
@@ -39,7 +39,7 @@ const View = () => {
                     },
                     print: {
                         show: true,
-                        onClick: () => router.push('/apps/manufacturing/operations/production/print/' + ids.join('/'))
+                        onClick: () => router.push('/apps/manufacturing/production/print/' + ids.join('/'))
                     },
                     delete: {
                         show: false,
@@ -55,7 +55,7 @@ const View = () => {
                 }}
                 backButton={{
                     show: true,
-                    backLink: '/apps/manufacturing/operations/production'
+                    backLink: '/apps/manufacturing/production'
                 }}
             />
             <PageWrapper

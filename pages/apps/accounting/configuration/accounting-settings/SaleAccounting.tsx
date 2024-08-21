@@ -10,7 +10,7 @@ interface IProps {
 const SaleAccounting = ({ accountOptions, formData, setFormData }: IProps) => {
 
     return (
-        <div className="">
+        <div className="overflow-auto">
             <table>
                 <thead>
                 <tr>
@@ -80,6 +80,17 @@ const SaleAccounting = ({ accountOptions, formData, setFormData }: IProps) => {
                     setFormData={setFormData}
 
                 />
+
+                <AccountingRow
+                    accountOptions={accountOptions}
+                    accountingCategory="sales"
+                    title="Cost of Goods Delivered"
+                    name="cost_of_good_sold_delivered_account_id"
+                    formData={formData}
+                    setFormData={setFormData}
+
+                />
+
                 </tbody>
             </table>
         </div>

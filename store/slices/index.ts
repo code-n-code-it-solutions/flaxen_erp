@@ -48,6 +48,8 @@ import { rawProductCategorySliceConfig } from '@/store/slices/rawProductCategory
 import { creditNoteSliceConfig } from '@/store/slices/creditNoteSlice';
 import { debitNoteSliceConfig } from '@/store/slices/debitNoteSlice';
 import { generalPaymentSliceConfig } from '@/store/slices/generalPaymentSlice';
+import { generalPaymentVoucherSliceConfig } from '@/store/slices/generalPaymentVoucherSlice';
+import { accountTransactionSliceConfig } from '@/store/slices/accountTransactionSlice';
 
 
 export const slices = {
@@ -100,7 +102,9 @@ export const slices = {
     rawProductCategory: rawProductCategorySliceConfig,
     creditNote: creditNoteSliceConfig,
     debitNote: debitNoteSliceConfig,
-    generalPayment: generalPaymentSliceConfig
+    generalPayment: generalPaymentSliceConfig,
+    generalPaymentVoucher: generalPaymentVoucherSliceConfig,
+    accountTransaction: accountTransactionSliceConfig
 };
 
 
@@ -154,5 +158,7 @@ export const reducers = {
     rawProductCategory: rawProductCategorySliceConfig.reducer,
     creditNote: creditNoteSliceConfig.reducer,
     debitNote: debitNoteSliceConfig.reducer,
-    generalPayment: generalPaymentSliceConfig.reducer
+    generalPayment: generalPaymentSliceConfig.reducer,
+    generalPaymentVoucher: generalPaymentVoucherSliceConfig.reducer,
+    accountTransaction: accountTransactionSliceConfig.reducer
 };

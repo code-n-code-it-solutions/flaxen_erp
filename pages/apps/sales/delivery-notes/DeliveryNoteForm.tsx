@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useRef, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { setAuthToken, setContentType } from '@/configs/api.config';
 import Alert from '@/components/Alert';
@@ -8,51 +8,257 @@ import Button from '@/components/Button';
 import { ButtonSize, ButtonType, ButtonVariant, FORM_CODE_TYPE, IconType } from '@/utils/enums';
 import Textarea from '@/components/form/Textarea';
 import { getCustomers } from '@/store/slices/customerSlice';
-import { pendingQuotations } from '@/store/slices/quotationSlice';
 import { generateCode } from '@/store/slices/utilSlice';
-import { clearFillingState, getFinishedGoodStock } from '@/store/slices/fillingSlice';
 import { calculateDateFromDays, getIcon } from '@/utils/helper';
 import IconButton from '@/components/IconButton';
-import FinishedGoodModal from '@/components/modals/FinishedGoodModal';
-import { getProductAssemblies } from '@/store/slices/productAssemblySlice';
 import { getEmployees } from '@/store/slices/employeeSlice';
-import Modal from '@/components/Modal';
 import { Tab } from '@headlessui/react';
-import { getAccountsTypes } from '@/store/slices/accountSlice';
+import { clearQuotationState, getPendingQuotations } from '@/store/slices/quotationSlice';
+import AgGridComponent from '@/components/apps/AgGridComponent';
+import { AgGridReact } from 'ag-grid-react';
+import Swal from 'sweetalert2';
 import { storeDeliveryNote } from '@/store/slices/deliveryNoteSlice';
 
 const DeliveryNoteForm = () => {
     const dispatch = useAppDispatch();
+    const gridRef = useRef<AgGridReact<any>>(null);
     const { token } = useAppSelector((state) => state.user);
-    const { quotations } = useAppSelector((state) => state.quotation);
+    const { pendingQuotations } = useAppSelector((state) => state.quotation);
     const { customers } = useAppSelector((state) => state.customer);
-    const { code, latestRecord } = useAppSelector((state) => state.util);
-    const { fillingProducts } = useAppSelector((state) => state.rawProduct);
-    const { allProductAssemblies } = useAppSelector((state) => state.productAssembly);
+    const { code } = useAppSelector((state) => state.util);
     const { employees } = useAppSelector((state) => state.employee);
 
+    const [colDefs, setColDefs] = useState<any>([]);
     const [formData, setFormData] = useState<any>({});
-
-    const [itemModalOpen, setItemModalOpen] = useState<boolean>(false);
-    const [quotationStock, setQuotationStock] = useState<any[]>([]);
-    const [itemsForSelect, setItemsForSelect] = useState<any[]>([]);
-    const [originalItemsState, setOriginalItemsState] = useState<any[]>([]);
-
-    const [fillingMaterials, setFillingMaterials] = useState<any[]>([]);
     const [customerOptions, setCustomerOptions] = useState<any[]>([]);
     const [contactPersonOptions, setContactPersonOptions] = useState<any[]>([]);
     const [salesmanOptions, setSalesmanOptions] = useState<any[]>([]);
-    const [quotationItems, setQuotationItems] = useState<any[]>([]);
+    const [batchNumberOptions, setBatchNumberOptions] = useState<any[]>([]);
+    const [deliveryNoteItems, setDeliveryNoteItems] = useState<any[]>([]);
     const [quotationOptions, setQuotationOptions] = useState<any[]>([]);
-    const [productAssemblyOptions, setProductAssemblyOptions] = useState<any[]>([]);
     const [quotationForOptions] = useState<any[]>([
         { label: 'Finished Goods', value: 1 },
         { label: 'Materials', value: 2 }
     ]);
-    const [customerDetail, setCustomerDetail] = useState<any>({});
-    const [modalOpen, setModalOpen] = useState<boolean>(false);
     const [validations, setValidations] = useState<any>({});
     const [formError, setFormError] = useState<any>('');
+
+    const handleRemoveRow = (row: any) => {
+        const updatedItems = deliveryNoteItems.filter((item) => row.quoataion_id===item.quoataion_id && row.raw_product_id===item.raw_product_id);
+        setDeliveryNoteItems(updatedItems);
+    };
+
+    useEffect(() => {
+        setDeliveryNoteItems([]);
+        let defaultColDef = [
+            {
+                headerName: 'Q.Qty',
+                field: 'quantity',
+                cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+                minWidth: 150,
+                filter: false,
+                floatingFilter: false
+            },
+            {
+                headerName: 'D.Qty',
+                field: 'delivered_quantity',
+                editable: (params: any) => {
+                    return params.data.stock_quantity >= params.data.quantity || !params.node.rowPinned;
+                },
+                valueSetter: (params: any) => {
+                    const value = Number(params.newValue);
+                    if (value > params.data.quantity) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: `Delivered quantity cannot be more than ${params.data.quantity}`
+                        });
+                        return false;
+                    }
+                    if (value > params.data.stock_quantity) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: `Delivered quantity cannot be more than available in stock ${params.data.stock_quantity}`
+                        });
+                        return false;
+                    }
+                    params.data.delivered_quantity = value;
+                    return true;
+                },
+                cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+                minWidth: 150,
+                filter: false,
+                floatingFilter: false
+            },
+            {
+                headerName: 'S.Price',
+                field: 'sale_price',
+                cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+                minWidth: 150,
+                filter: false,
+                floatingFilter: false
+            },
+            {
+                headerName: 'S.Total',
+                field: 'sub_total',
+                valueGetter: (params: any) => {
+                    return (params.data.delivered_quantity || 0) * params.data.sale_price;
+                },
+                cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+                minWidth: 150,
+                filter: false,
+                floatingFilter: false
+            },
+            {
+                headerName: 'VAT@5%',
+                field: 'tax_amount',
+                valueGetter: (params: any) => {
+                    return params.data.sale_price * (params.data.delivered_quantity || 0) * 0.05;
+                },
+                cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+                minWidth: 150,
+                filter: false,
+                floatingFilter: false
+            },
+            {
+                headerName: 'Total',
+                field: 'grand_total',
+                valueGetter: (params: any) => {
+                    const subTotal = params.data.sale_price * (params.data.delivered_quantity || 0);
+                    const tax = subTotal * 0.05;
+                    return subTotal + tax;
+                },
+                cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+                minWidth: 150,
+                filter: false,
+                floatingFilter: false
+            },
+            {
+                headerName: '',
+                field: 'remove',
+                cellRenderer: (params: any) => {
+                    return (
+                        // <></>
+                        !params.node?.rowPinned &&
+                        <IconButton
+                            color={ButtonVariant.danger}
+                            icon={IconType.delete}
+                            onClick={() => handleRemoveRow(params.data)}
+                        />
+                    );
+                },
+                editable: false,
+                filter: false,
+                floatingFilter: false,
+                sortable: false
+            }
+        ];
+
+        if (formData.delivery_note_for === 1) {
+            const finishGoodsColDefs = [
+                {
+                    headerName: 'Q.Code',
+                    field: 'quotation_code',
+                    cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+                    minWidth: 150,
+                    filter: false,
+                    floatingFilter: false
+                },
+                {
+                    headerName: 'Product',
+                    field: 'product_assembly_id',
+                    valueGetter: (params: any) => params.data.product_assembly?.formula_name,
+                    cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+                    minWidth: 150,
+                    filter: false,
+                    floatingFilter: false
+                },
+                {
+                    headerName: 'Filling',
+                    field: 'raw_product_id',
+                    valueGetter: (params: any) => params.data.product?.title,
+                    cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+                    minWidth: 150,
+                    filter: false,
+                    floatingFilter: false
+                },
+                {
+                    headerName: 'Capacity',
+                    field: 'capacity',
+                    cellRenderer: (params: any) => params.node?.rowPinned ? '' : params.value,
+                    minWidth: 150,
+                    filter: false,
+                    floatingFilter: false
+                },
+                {
+                    headerName: 'Batch #',
+                    field: 'batch_number',
+                    editable: (params: any) => !params.node.rowPinned, // Disable editing in pinned row
+                    cellEditor: 'agSelectCellEditor',
+                    cellEditorParams: {
+                        values: batchNumberOptions ? batchNumberOptions.map((batch: any) => batch.value) : []
+                    },
+                    valueFormatter: (params: any) => {
+                        if (params.node?.rowPinned) return '';  // No formatting for pinned row
+                        const selectedOption = batchNumberOptions?.find((batch: any) => batch.value === params.value);
+                        return selectedOption ? selectedOption.label : '';
+                    },
+                    cellRenderer: (params: any) => {
+                        if (params.node?.rowPinned) return '';  // Show empty text for pinned row
+                        const selectedOption = batchNumberOptions?.find((batch: any) => batch.value === params.value);
+                        return selectedOption ? selectedOption.label : '';
+                    },
+                    minWidth: 150,
+                    filter: false,
+                    floatingFilter: false
+                },
+                {
+                    headerName: 'A.Qty',
+                    field: 'available_quantity',
+                    cellRenderer: (params: any) => params.node?.rowPinned ? '' : params.value,
+                    minWidth: 150,
+                    filter: false,
+                    floatingFilter: false
+                }
+            ];
+
+            setColDefs([...finishGoodsColDefs, ...defaultColDef]);
+        } else if (formData.delivery_note_for === 2) {
+            const rawProductColDefs = [
+                {
+                    headerName: 'Q.Code',
+                    field: 'quotation_code',
+                    cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+                    minWidth: 150,
+                    filter: false,
+                    floatingFilter: false
+                },
+                {
+                    headerName: 'Product',
+                    field: 'raw_product_id',
+                    valueGetter: (params: any) => params.data.product?.title,
+                    cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+                    minWidth: 150,
+                    filter: false,
+                    floatingFilter: false
+                },
+                {
+                    headerName: 'Stock',
+                    field: 'stock_quantity',
+                    valueGetter: (params: any) => params.data.product.stock_quantity,
+                    cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+                    minWidth: 150,
+                    filter: false,
+                    floatingFilter: false
+                }
+            ];
+
+            setColDefs([...rawProductColDefs, ...defaultColDef]);
+        } else {
+            setColDefs([]);
+        }
+    }, [formData.delivery_note_for]);
 
     const handleChange = (name: string, value: any, required: boolean = false) => {
         if (required && value === '') {
@@ -72,138 +278,9 @@ const DeliveryNoteForm = () => {
             return;
         }
 
-        if (name === 'quotation_ids' || name === 'salesman_id' || name === 'contact_person_id' || name === 'customer_id' || name === 'delivery_note_for' || name === 'product_assembly_id') {
-            if (required && (name === 'salesman_id' || name === 'contact_person_id' || name === 'customer_id' || name === 'delivery_note_for' || name === 'product_assembly_id') && value === 0) {
-                handleValidation(name, 'add');
-                return;
-            } else {
-                // Remove that key and value from validation object
-                handleValidation(name, 'remove');
-                if (value && typeof value !== 'undefined') {
-                    setFormData({ ...formData, [name]: value.value });
-                    if (name === 'customer_id') {
-                        const customerOption = customerOptions.find((customer: any) => customer.value === value.value);
-                        // setCustomerDetail(customerOption.customer);
-                        console.log(customerOption);
-                        setFormData({
-                            ...formData,
-                            customer_id: value.value,
-                            delivery_due_date: calculateDateFromDays(customerOption.customer?.due_in_days),
-                            delivery_due_in_days: customerOption.customer?.due_in_days
-                        });
-                        setContactPersonOptions(customerOption.customer?.contact_persons.map((contactPerson: any) => ({
-                            label: contactPerson.name,
-                            value: contactPerson.id,
-                            contactPerson
-                        })));
-                    }
-
-                    if (name === 'contact_person_id') {
-                        let filteredQuotation = quotations
-                            .filter((quotation: any) => quotation.customer_id === formData.customer_id && quotation.contact_person_id === value.value)
-                            .map((item: any) => ({
-                                value: item.id,
-                                label: item.quotation_code,
-                                quotation: item
-                            }));
-                        setQuotationOptions([{ label: 'Skip Quotation', value: 0 }, ...filteredQuotation]);
-                    }
-
-                    if (name === 'quotation_ids') {
-                        // console.log(value);
-                        let selectedQuotations = value.map((quotation: any) => quotation?.quotation);
-                        let ids = value.map((quotation: any) => quotation.value);
-                        let idsString = '';
-                        let skip_quotation = false;
-                        // console.log(value);
-                        if (ids.some((id: any) => id === 0)) {
-                            idsString = '0';
-                            skip_quotation = true;
-                            setItemsForSelect([]);
-                            setOriginalItemsState([]);
-                            setQuotationItems([]);
-                        } else {
-                            idsString = ids.join(',');
-                            if (selectedQuotations) {
-                                let quotationItemList = selectedQuotations.flatMap((quotation: any) => quotation.quotation_items);
-                                let customerIds = value.filter((item: any) => item.value !== 0).map((item: any) => item.quotation.customer_id);
-                                let customerIdsSet = new Set(customerIds);
-                                if (customerIdsSet.size > 1) {
-                                    alert('You cannot select multiple customer');
-                                    return;
-                                }
-                                // console.log(quotationItemList);
-                                setItemsForSelect(quotationItemList?.map((item: any) => {
-                                    console.log('item', item);
-                                    return {
-                                        ...item,
-                                        delivered_quantity: item.quantity
-                                    };
-                                }));
-                            }
-                        }
-                        setFormData((prev: any) => ({
-                            ...prev,
-                            quotation_ids: idsString,
-                            skip_quotation
-                        }));
-                    }
-
-                    if (name === 'delivery_note_for') {
-                        if (value.value === 1) {
-                            dispatch(pendingQuotations());
-                        }
-                    }
-
-                    if (name === 'product_assembly_id') {
-                        setFormData((prev: any) => ({ ...prev, product_assembly_id: value.value }));
-                        dispatch(clearFillingState());
-                        dispatch(getFinishedGoodStock(value.value));
-                    }
-                } else {
-                    setFormData({ ...formData, [name]: '' });
-
-                    if (name === 'quotation_ids') {
-                        setFormData((prev: any) => ({
-                            ...prev,
-                            quotation_ids: '',
-                            skip_quotation: false
-                        }));
-                        setItemsForSelect([]);
-                        setOriginalItemsState([]);
-                        setQuotationItems([]);
-                    }
-
-                    if (name === 'customer_id') {
-                        setItemsForSelect([]);
-                        setOriginalItemsState([]);
-                        setContactPersonOptions([]);
-                        setQuotationItems([]);
-                        setQuotationOptions([]);
-                        setFormData((prev: any) => ({
-                            ...prev,
-                            quotation_ids: '',
-                            skip_quotation: false,
-                            contact_person_id: 0
-                        }));
-                    }
-
-                    if (name === 'contact_person_id') {
-                        setItemsForSelect([]);
-                        setOriginalItemsState([]);
-                        setQuotationItems([]);
-                        setQuotationOptions([]);
-                    }
-
-                    if (name === 'product_assembly_id') {
-                        dispatch(clearFillingState());
-                    }
-                }
-            }
-            return;
-        }
         handleValidation(name, 'remove');
         setFormData({ ...formData, [name]: value });
+
     };
 
     const handleValidation = (name: string, type: string) => {
@@ -221,70 +298,26 @@ const DeliveryNoteForm = () => {
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        e.currentTarget.querySelectorAll('input, select, textarea').forEach((field: any) => {
-            if (field.required) {
-                if ((!formData[field.name] || formData[field.name] === 0) && !validations[field.name] && field.value === '') {
-                    setValidations({ ...validations, [field.name]: 'Required Field' });
-                }
-            }
-        });
-        if (Object.keys(validations).length > 0) {
-            setFormError('Please fill all required fields');
+
+        const invalidRows = deliveryNoteItems.filter(item => item.quantity > item.stock_quantity);
+        if (invalidRows.length > 0) {
+            setFormError('Some items have a quantity greater than the stock quantity. Please correct them before submitting.');
             return;
-        } else {
-            let deliveryNoteData: any = {
-                skip_quotation: formData.skip_quotation,
-                delivery_note_for: formData.delivery_note_for,
-                receipt_delivery_due_days: formData.receipt_delivery_due_days,
-                delivery_due_in_days: formData.delivery_due_in_days,
-                delivery_due_date: formData.delivery_due_date,
-                salesman_id: formData.salesman_id,
-                customer_id: formData.customer_id,
-                contact_person_id: formData.contact_person_id,
-                delivery_note_items: quotationItems.map((item: any) => ({
-                    quotation_id: item.quotation_id,
-                    product_assembly_id: item.product_assembly_id,
-                    filling_id: item.filling_id,
-                    production_id: item.production_id,
-                    batch_number: item.batch_number,
-                    raw_product_id: item.raw_product_id,
-                    available_quantity: item.available_quantity,
-                    quantity: item.quantity,
-                    delivered_quantity: item.delivered_quantity,
-                    capacity: item.capacity,
-                    retail_price: item.retail_price,
-                    tax_category_id: item.tax_category_id,
-                    tax_rate: item.tax_rate,
-                    tax_amount: item.tax_amount,
-                    discount_type: item.discount_type,
-                    discount_amount_rate: item.discount_amount_rate,
-                    total_cost: item.total_cost
-                })),
-                terms_conditions: formData.terms_conditions
-            };
-            // console.log(deliveryNoteData);
-            dispatch(storeDeliveryNote(deliveryNoteData));
         }
-    };
 
-    const deliverByOptions = (contactPersons: any) => {
-        setContactPersonOptions(contactPersons.map((contactPerson: any) => ({
-            value: contactPerson.id,
-            label: contactPerson.name,
-            contactPerson
-        })));
-    };
-
-    const handleQuotationItemSubmit = (item: any) => {
-        setQuotationItems((prev) => {
-            const existingRow = prev.find(row => row.raw_product_id === item.raw_product_id && row.batch_number === item.batch_number);
-            if (existingRow) {
-                return prev.map(row => row.raw_product_id === item.raw_product_id && row.batch_number === item.batch_number ? item : row);
-            } else {
-                return [...prev, item];
-            }
-        });
-        setModalOpen(false);
+        // Proceed with form submission if there are no invalid rows
+        if(deliveryNoteItems.length === 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Please select a quotation to proceed'
+            });
+        } else {
+           dispatch(storeDeliveryNote({
+               ...formData,
+               delivery_note_items: deliveryNoteItems
+           }));
+        }
     };
 
     useEffect(() => {
@@ -293,9 +326,7 @@ const DeliveryNoteForm = () => {
         dispatch(getCustomers());
         dispatch(getEmployees());
         dispatch(generateCode(FORM_CODE_TYPE.DELIVERY_NOTE));
-        dispatch(getProductAssemblies());
-        setModalOpen(false);
-        dispatch(getAccountsTypes({ ids: 1 }));
+        dispatch(clearQuotationState());
     }, []);
 
     useEffect(() => {
@@ -318,12 +349,6 @@ const DeliveryNoteForm = () => {
     }, [customers]);
 
     useEffect(() => {
-        if (Object.keys(customerDetail).length > 0) {
-            deliverByOptions(customerDetail.contact_persons);
-        }
-    }, [customerDetail]);
-
-    useEffect(() => {
         if (employees) {
             setSalesmanOptions(employees.map((employee: any) => ({
                 label: employee.name + ' - ' + employee.employee?.employee_code,
@@ -331,17 +356,6 @@ const DeliveryNoteForm = () => {
             })));
         }
     }, [employees]);
-
-    // useEffect(() => {
-    //     if (quotations) {
-    //         const quotationOptions = quotations.map((quotation: any) => ({
-    //             value: quotation.id,
-    //             label: quotation.quotation_code,
-    //             quotation
-    //         }));
-    //         setQuotationOptions([{ label: 'Skip Quotation', value: 0 }, ...quotationOptions]);
-    //     }
-    // }, [quotations]);
 
     useEffect(() => {
         if (code) {
@@ -353,31 +367,30 @@ const DeliveryNoteForm = () => {
     }, [code]);
 
     useEffect(() => {
-        if (allProductAssemblies) {
-            setProductAssemblyOptions(allProductAssemblies.map((productAssembly: any) => (
-                {
-                    label: productAssembly.formula_name,
-                    value: productAssembly.id
-                }
-            )));
+        if (formData.delivery_note_for && formData.customer_id && formData.contact_person_id) {
+            dispatch(clearQuotationState());
+            dispatch(getPendingQuotations({
+                customer_id: formData.customer_id,
+                contact_person_id: formData.contact_person_id,
+                quotation_for: formData.delivery_note_for
+            }));
         }
-    }, [allProductAssemblies]);
+    }, [formData.delivery_note_for, formData.customer_id, formData.contact_person_id]);
 
     useEffect(() => {
-        if (fillingProducts) {
-            setFillingMaterials(fillingProducts);
+        if (pendingQuotations) {
+            const quotationOptions = pendingQuotations.map((quotation: any) => ({
+                label: quotation.quotation_code,
+                value: quotation.id,
+                quotation
+            }));
+            setQuotationOptions(quotationOptions);
         }
-    }, [fillingProducts]);
+    }, [pendingQuotations]);
 
     useEffect(() => {
-        const newItemsForSelect = originalItemsState.filter(op =>
-            !quotationStock.some(rp => rp.raw_product_id === op.raw_product_id && rp.purchase_requisition_id === op.purchase_requisition_id)
-        );
-
-        if (newItemsForSelect.length > 0) {
-            setItemsForSelect((prev: any) => [...prev, ...newItemsForSelect]);
-        }
-    }, [quotationStock, originalItemsState]);
+        // console.log(deliveryNoteItems);
+    }, [deliveryNoteItems]);
 
     return (
         <form onSubmit={(e) => handleSubmit(e)}>
@@ -405,57 +418,105 @@ const DeliveryNoteForm = () => {
                         name="delivery_note_for"
                         options={quotationForOptions}
                         value={formData.delivery_note_for}
-                        onChange={(e: any) => handleChange('delivery_note_for', e, true)}
+                        onChange={(e: any) => handleChange('delivery_note_for', e?.value, true)}
                         required={true}
                         errorMessage={validations.delivery_note_for}
                     />
 
-                    <Dropdown
-                        divClasses="w-full"
-                        label="Cutomer"
-                        name="customer_id"
-                        options={customerOptions}
-                        value={formData.customer_id}
-                        onChange={(e: any) => handleChange('customer_id', e, true)}
-                        required={true}
-                        errorMessage={validations.customer_id}
-                    />
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 w-full">
+                        <Dropdown
+                            divClasses="w-full"
+                            label="Cutomer"
+                            name="customer_id"
+                            options={customerOptions}
+                            value={formData.customer_id}
+                            onChange={(e: any) => {
+                                if (e && typeof e !== 'undefined') {
+                                    const customerOption = customerOptions.find((customer: any) => customer.value === e?.value);
+                                    setFormData({
+                                        ...formData,
+                                        delivery_due_date: calculateDateFromDays(customerOption.customer?.due_in_days),
+                                        delivery_due_in_days: customerOption.customer?.due_in_days,
+                                        customer_id: e?.value
+                                    });
+                                    setContactPersonOptions(customerOption.customer?.contact_persons.map((contactPerson: any) => ({
+                                        label: contactPerson.name,
+                                        value: contactPerson.id,
+                                        contactPerson
+                                    })));
+                                } else {
+                                    setFormData({
+                                        ...formData,
+                                        delivery_due_date: '',
+                                        delivery_due_in_days: '',
+                                        customer_id: ''
+                                    });
+                                    setContactPersonOptions([]);
+                                }
+                            }}
+                            required={true}
+                            errorMessage={validations.customer_id}
+                        />
+
+                        <Dropdown
+                            divClasses="w-full"
+                            label="Contact Person"
+                            name="contact_person_id"
+                            options={contactPersonOptions}
+                            value={formData.contact_person_id}
+                            onChange={(e: any) => handleChange('contact_person_id', e?.value, true)}
+                            required={true}
+                            errorMessage={validations.contact_person_id}
+                        />
+                    </div>
 
                     <Dropdown
                         divClasses="w-full"
-                        label="Contact Person"
-                        name="contact_person_id"
-                        options={contactPersonOptions}
-                        value={formData.contact_person_id}
-                        onChange={(e: any) => handleChange('contact_person_id', e, true)}
+                        label="Quotation"
+                        name="quotation_ids"
+                        options={quotationOptions}
+                        value={formData.quotation_ids}
+                        onChange={(e: any) => {
+                            if (e && typeof e !== 'undefined') {
+                                let selectedQuotations = e.map((quotation: any) => quotation?.quotation);
+                                setDeliveryNoteItems(selectedQuotations.map((item: any, index: number) => {
+                                    return item.quotation_items.map((qItem: any) => {
+                                        return {
+                                            ...qItem,
+                                            id: `${item.id}-${index}`, // Assigning a unique ID
+                                            quotation_code: selectedQuotations.find((q: any) => q.id === item.id)?.quotation_code,
+                                            delivered_quantity: 0 // Initially set to zero
+                                        };
+
+                                    }).flat();
+                                }).flat());
+                                let ids = e.map((quotation: any) => quotation.value);
+                                if (ids.includes(0)) {
+                                    ids = [0];
+                                    setFormData((prev: any) => ({
+                                        ...prev,
+                                        quotation_ids: ids.join(',')
+                                    }));
+                                } else {
+                                    ids = ids.filter((id: any) => id !== 0);
+                                    setFormData((prev: any) => ({
+                                        ...prev,
+                                        quotation_ids: ids.join(',')
+                                    }));
+                                }
+                            } else {
+                                setDeliveryNoteItems([]);
+                                setFormData((prev: any) => ({
+                                    ...prev,
+                                    quotation_ids: ''
+                                }));
+                            }
+                        }}
+                        isMulti={true}
                         required={true}
-                        errorMessage={validations.contact_person_id}
+                        errorMessage={validations.quotation_id}
                     />
 
-                    {formData.delivery_note_for === 1 && (
-                        <div className="w-full flex flex-col md:flex-row gap-1 items-end">
-                            <Dropdown
-                                divClasses="w-full"
-                                label="Quotation"
-                                name="quotation_ids"
-                                options={quotationOptions}
-                                value={formData.quotation_ids}
-                                onChange={(e: any) => handleChange('quotation_ids', e, true)}
-                                isMulti={true}
-                                required={true}
-                                errorMessage={validations.quotation_id}
-                            />
-                            <Button
-                                type={ButtonType.button}
-                                text="Select"
-                                variant={ButtonVariant.primary}
-                                disabled={itemsForSelect.length === 0}
-                                onClick={() => {
-                                    setItemModalOpen(true);
-                                }}
-                            />
-                        </div>
-                    )}
                     {formData.quotation_ids === '0' && (
                         <Dropdown
                             divClasses="w-full"
@@ -468,7 +529,6 @@ const DeliveryNoteForm = () => {
                             errorMessage={validations.salesman_id}
                         />
                     )}
-
 
                 </div>
                 <div className="w-full border rounded p-5 hidden md:block">
@@ -500,84 +560,20 @@ const DeliveryNoteForm = () => {
                 </Tab.List>
                 <Tab.Panels className="rounded-none">
                     <Tab.Panel>
-                        <div className="my-5 active table-responsive">
-                            <div
-                                className="flex mb-3 justify-start items-start md:justify-between md:items-center gap-3 flex-col md:flex-row">
-                                <h3 className="text-lg font-semibold">Quotation Items</h3>
-                                {formData.quotation_ids === '0' && (
-                                    <Button
-                                        type={ButtonType.button}
-                                        text={
-                                            <span className="flex items-center">
-                                                {getIcon(IconType.add)}
-                                                Add Finish Good
-                                            </span>
-                                        }
-                                        variant={ButtonVariant.primary}
-                                        onClick={() => setModalOpen(true)}
-                                        size={ButtonSize.small}
-                                    />
-                                )}
-                            </div>
-                            <table>
-                                <thead>
-                                <tr>
-                                    {!formData.skip_quotation && <th>Quotation</th>}
-                                    <th>Product</th>
-                                    <th>Batch #</th>
-                                    <th>Capacity</th>
-                                    <th>Delivered Quantity</th>
-                                    <th>Action</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {quotationItems.length > 0
-                                    ? quotationItems.map((item: any, index: number) => {
-                                        // let product = fillingMaterials.find((material: any) => material.id === item.raw_product_id);
-                                        let quotation = quotations.find((quotation: any) => quotation.id === item.quotation_id);
-                                        return (
-                                            <tr key={index}>
-                                                {!formData.skip_quotation && (
-                                                    <td>
-                                                        {quotation.quotation_code}
-                                                    </td>
-                                                )}
-                                                <td>
-                                                    {formData.quotation_ids === '0'
-                                                        ? productAssemblyOptions.find((assembly: any) => assembly.value === item.product_assembly_id)?.label
-                                                        : item.product.item_code}
-                                                </td>
-                                                <td>
-                                                    {item.batch_number} <br />
-                                                    {item.filling?.filling_code}
-                                                </td>
-                                                <td>{item.capacity}</td>
-                                                <td>{item.delivered_quantity}</td>
-                                                <td>
-                                                    <IconButton
-                                                        icon={IconType.delete}
-                                                        color={ButtonVariant.danger}
-                                                        onClick={() => {
-                                                            let updatedItems = quotationItems.filter((qItem: any) => qItem.raw_product_id !== item.raw_product_id);
-                                                            setQuotationItems(updatedItems);
-                                                            setItemsForSelect((prev) => {
-                                                                return [...prev, item];
-                                                            });
-                                                        }}
-                                                    />
-                                                </td>
-                                            </tr>
-                                        );
-                                    }) : (
-                                        <tr>
-                                            <td colSpan={formData.skip_quotation ? 8 : 9} className="text-center">
-                                                No Delivery Note Items Added
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
+                        <div
+                            className="flex mb-3 justify-start items-start md:justify-between md:items-center gap-3 flex-col md:flex-row">
+                            <h3 className="text-lg font-semibold">Quotation Items</h3>
                         </div>
+                        <AgGridComponent
+                            gridRef={gridRef}
+                            data={deliveryNoteItems}
+                            colDefs={colDefs}
+                            pagination={false}
+                            height={400}
+                            rowClassRules={{
+                                'bg-red-100': (params: any) => params.data.quantity > params.data.stock_quantity
+                            }}
+                        />
                     </Tab.Panel>
                 </Tab.Panels>
             </Tab.Group>
@@ -606,90 +602,6 @@ const DeliveryNoteForm = () => {
                     onClick={() => window?.location?.reload()}
                 />
             </div>
-            <FinishedGoodModal
-                considerOutOfStock={false}
-                modalFor="delivery_note"
-                skip={formData.skip_quotation}
-                modalOpen={modalOpen}
-                setModalOpen={setModalOpen}
-                handleSubmit={(item) => handleQuotationItemSubmit(item)}
-            />
-
-            <Modal
-                show={itemModalOpen}
-                setShow={setItemModalOpen}
-                title="Select Items"
-                size={'5xl'}
-            >
-                <table>
-                    <thead>
-                    <tr>
-                        <th>Batch</th>
-                        <th>Product</th>
-                        <th>Capacity</th>
-                        <th>Quantity</th>
-                        <th>Delivered Quantity</th>
-                        <th>Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {itemsForSelect?.map((item: any, index: number) => (
-                        <tr key={index}>
-                            <td>
-                                {item.batch_number} <br />
-                                {item.filling?.filling_code}
-                            </td>
-                            <td>{item.product?.item_code}</td>
-                            <td>{item.capacity}</td>
-                            <td>{item.quantity}</td>
-                            <td>
-                                <Input
-                                    type="number"
-                                    step="any"
-                                    name="delivered_quantity"
-                                    value={item.delivered_quantity || ''}
-                                    onChange={(e) => {
-                                        const newDeliveredQuantity = Math.min(parseInt(e.target.value), item.quantity);
-                                        setItemsForSelect(prevItems =>
-                                            prevItems.map((qItem, idx) =>
-                                                idx === index
-                                                    ? {
-                                                        ...qItem,
-                                                        delivered_quantity: isNaN(newDeliveredQuantity) ? '' : newDeliveredQuantity
-                                                    }
-                                                    : qItem
-                                            )
-                                        );
-                                    }}
-                                    isMasked={false}
-                                />
-                            </td>
-                            <td>
-                                <Button
-                                    type={ButtonType.button}
-                                    text="Add"
-                                    variant={ButtonVariant.primary}
-                                    onClick={() => {
-                                        setQuotationItems((prev) => {
-                                            const existingRow = prev.find(row => row.raw_product_id === item.raw_product_id && row.batch_number === item.batch_number);
-                                            if (existingRow) {
-                                                return prev.map(row => row.raw_product_id === item.raw_product_id && row.batch_number === item.batch_number ? item : row);
-                                            } else {
-                                                return [...prev, item];
-                                            }
-                                        });
-                                        setItemsForSelect((prev) => prev.filter((qItem, idx) => idx !== index));
-                                        setItemModalOpen(false);
-                                    }}
-                                />
-                            </td>
-                        </tr>
-                    ))}
-                    </tbody>
-                </table>
-            </Modal>
-
-
         </form>
     );
 };

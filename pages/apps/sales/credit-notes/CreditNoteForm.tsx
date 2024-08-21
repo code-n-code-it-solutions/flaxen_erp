@@ -7,19 +7,25 @@ import { Dropdown } from '@/components/form/Dropdown';
 import Button from '@/components/Button';
 import { ButtonSize, ButtonType, ButtonVariant } from '@/utils/enums';
 import { capitalize } from 'lodash';
-import { clearSaleInvoiceState, getSaleInvoicesByCustomer } from '@/store/slices/saleInvoiceSlice';
+import {
+    clearSaleInvoiceListState,
+    clearSaleInvoiceState,
+    getSaleInvoicesForCreditNoteByCustomer
+} from '@/store/slices/saleInvoiceSlice';
 import { calculateDateFromDays } from '@/utils/helper';
 import { Tab } from '@headlessui/react';
 import { clearEmployeeState, getEmployees } from '@/store/slices/employeeSlice';
 import Modal from '@/components/Modal';
 import { clearCustomerState, getCustomers } from '@/store/slices/customerSlice';
 import { storeCreditNote } from '@/store/slices/creditNoteSlice';
+import Textarea from '@/components/form/Textarea';
 
 const CreditNoteForm = () => {
     const dispatch = useAppDispatch();
     const { token } = useAppSelector((state) => state.user);
     const { code } = useAppSelector((state) => state.util);
-    const { saleInvoices } = useAppSelector((state) => state.saleInvoice);
+    const { loading } = useAppSelector((state) => state.creditNote);
+    const { saleInvoices, loading: invoiceLoading } = useAppSelector((state) => state.saleInvoice);
     const { employees } = useAppSelector((state) => state.employee);
     const { customers } = useAppSelector((state) => state.customer);
 
@@ -46,9 +52,9 @@ const CreditNoteForm = () => {
             });
         }
 
-        if (name === 'customer_id' && value !== '') {
-            dispatch(getSaleInvoicesByCustomer(value));
-        }
+        // if (name === 'customer_id' && value !== '') {
+        //     dispatch(getSaleInvoicesForCreditNoteByCustomer(value));
+        // }
 
         setFormData({ ...formData, [name]: value });
     };
@@ -60,6 +66,7 @@ const CreditNoteForm = () => {
             ...formData,
             credit_note_items: creditNoteItems.map((item: any) => {
                 return {
+                    product_assembly_id: item.product_assembly_id,
                     filling_id: item.filling_id,
                     quotation_id: item.quotation_id,
                     delivery_note_id: item.delivery_note_id,
@@ -78,7 +85,7 @@ const CreditNoteForm = () => {
                     total_cost: calculateTotal(item)
                 };
             })
-        }
+        };
         // console.log(finalData);
         dispatch(storeCreditNote(finalData));
     };
@@ -90,6 +97,7 @@ const CreditNoteForm = () => {
         dispatch(clearCustomerState());
         dispatch(clearSaleInvoiceState());
         dispatch(clearEmployeeState());
+        dispatch(clearSaleInvoiceListState());
 
         dispatch(getEmployees());
         dispatch(getCustomers());
@@ -176,7 +184,7 @@ const CreditNoteForm = () => {
                 : parseFloat(item.discount_amount_rate)
             : 0;
         return returnQuantity * retailPrice + taxAmount - discountAmount;
-    }
+    };
 
     return (
         <form onSubmit={(e) => handleSubmit(e)}>
@@ -201,7 +209,8 @@ const CreditNoteForm = () => {
                     onChange={(e) => {
                         if (e && typeof e !== 'undefined') {
                             handleChange('customer_id', e.value, true);
-                            dispatch(getSaleInvoicesByCustomer(e.value));
+                            dispatch(clearSaleInvoiceListState());
+                            dispatch(getSaleInvoicesForCreditNoteByCustomer(e.value));
                         } else {
                             handleChange('customer_id', '', true);
                         }
@@ -214,6 +223,8 @@ const CreditNoteForm = () => {
                         name="sale_invoice_ids"
                         options={invoiceOptions}
                         value={formData.sale_invoice_ids}
+                        isLoading={invoiceLoading}
+                        isDisabled={invoiceLoading}
                         onChange={(e) => {
                             if (e && e.length > 0 && typeof e !== 'undefined') {
                                 handleChange('sale_invoice_ids', e.map((item: any) => item.value).join(','), true);
@@ -286,6 +297,15 @@ const CreditNoteForm = () => {
                     onChange={(e) => handleChange('credit_note_date', e[0] ? e[0].toLocaleDateString() : '', true)}
                     placeholder="Enter Credit Note Date"
                     isMasked={false}
+                />
+
+                <Textarea
+                    divClasses="w-full col-span-2"
+                    label="Narration"
+                    name="description"
+                    value={formData.description}
+                    onChange={(e) => handleChange('description', e.target.value, true)}
+                    isReactQuill={false}
                 />
             </div>
 
@@ -389,7 +409,8 @@ const CreditNoteForm = () => {
             <div className="flex justify-center items-center mt-5">
                 <Button
                     type={ButtonType.submit}
-                    text="Save"
+                    text={loading ? 'Loading...' : 'Save'}
+                    disabled={loading}
                     variant={ButtonVariant.primary}
                 />
             </div>
@@ -419,14 +440,14 @@ const CreditNoteForm = () => {
                                     <td>{item.sale_invoice_code}</td>
                                     <td>{item.product_assembly.formula_name}</td>
                                     <td>{item.product.title}</td>
-                                    <td>{item.quantity}</td>
+                                    <td>{item.remaining_quantity}</td>
                                     <td>
                                         <Input
                                             type="number"
                                             name="return_quantity"
                                             value={item.return_quantity}
                                             onChange={(e) => handleReturnQuantityChange(item.id, parseFloat(e.target.value))}
-                                            max={item.quantity}
+                                            max={item.remaining_quantity}
                                             isMasked={false}
                                         />
                                     </td>

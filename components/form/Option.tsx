@@ -2,7 +2,7 @@ import React, {FC} from 'react';
 
 interface IProps {
     divClasses?: string;
-    label: string;
+    label?: string;
     type: string;
     name: string;
     value: any;
@@ -31,7 +31,7 @@ const Option: FC<IProps> = ({
                     onChange={onChange}
                     checked={defaultChecked}
                 />
-                <span className="text-white-dark">{label}</span>
+                {label && (<span className="text-white-dark">{label}</span>)}
             </label>
         </div>
     );
