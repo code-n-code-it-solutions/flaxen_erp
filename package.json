@@ -4,7 +4,7 @@
     "private": true,
     "scripts": {
         "dev": "next dev",
-        "server-dev": "next dev -p 3005",
+        "server-dev": "next dev -p 3006",
         "build": "next build",
         "start": "next start",
         "server-start": "next start -p 3005",
