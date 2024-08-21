@@ -77,7 +77,7 @@ const View = () => {
     };
 
     return (
-        <div>
+        <div className="flex flex-col gap-3">
             <DetailPageHeader
                 appBasePath={AppBasePath.Filling}
                 title="PR Details"

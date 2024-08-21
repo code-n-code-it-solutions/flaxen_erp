@@ -42,6 +42,7 @@ interface IProps {
     height?: number;
     rowClassRules?: any;
     autoSizeStrategy?: any;
+    getRowStyle?: any;
 }
 
 const AgGridComponent = ({
@@ -63,7 +64,8 @@ const AgGridComponent = ({
                              pinnedBottomRowData,
                              height,
                              rowClassRules,
-                             autoSizeStrategy
+                             autoSizeStrategy,
+                             getRowStyle
                          }: IProps) => {
 
     const themeConfig = useAppSelector((state) => state.themeConfig);
@@ -161,6 +163,7 @@ const AgGridComponent = ({
                 pinnedBottomRowData={pinnedBottomRowData}
                 rowClassRules={rowClassRules}
                 autoSizeStrategy={autoSizeStrategy}
+                getRowStyle={getRowStyle}
             />
         </div>
     );

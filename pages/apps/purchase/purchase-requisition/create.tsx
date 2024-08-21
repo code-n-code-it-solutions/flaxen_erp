@@ -28,7 +28,7 @@ const Create = () => {
     }, [purchaseRequest, success]);
 
     return (
-        <div>
+        <div className="flex flex-col gap-3">
             <DetailPageHeader
                 appBasePath={AppBasePath.Purchase_Requisition}
                 title="Create PR"

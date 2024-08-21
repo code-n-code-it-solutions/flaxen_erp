@@ -28,7 +28,7 @@ const View = () => {
     }, [router.query.id, dispatch]);
 
     return (
-        <div>
+        <div className="flex flex-col gap-3">
             <DetailPageHeader
                 appBasePath={AppBasePath.Production}
                 title="Production Details"

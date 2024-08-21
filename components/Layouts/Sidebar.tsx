@@ -108,8 +108,8 @@ const Sidebar = () => {
                                     <li className="menu nav-item" key={pluginIndex}>
                                         <button
                                             type="button"
-                                            className={`nav-link group w-full ${currentMenu === plugin.plugin_name.toLowerCase() ? 'active' : ''}`}
-                                            onClick={() => handleToggleMenu(plugin.plugin_name.toLowerCase())}
+                                            className={`nav-link group w-full ${currentMenu === plugin.id + '-' + plugin.plugin_name.toLowerCase() ? 'active' : ''}`}
+                                            onClick={() => handleToggleMenu(plugin.id + '-' + plugin.plugin_name.toLowerCase())}
                                         >
                                             <div className="flex items-center">
                                                 <div dangerouslySetInnerHTML={{ __html: plugin.icon }}></div>
@@ -117,7 +117,7 @@ const Sidebar = () => {
                                                     className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t(plugin.plugin_name)}</span>
                                             </div>
                                             <div
-                                                className={currentMenu === plugin.plugin_name.toLowerCase() ? 'rotate-90' : 'rtl:rotate-180'}>
+                                                className={currentMenu === plugin.id + '-' + plugin.plugin_name.toLowerCase() ? 'rotate-90' : 'rtl:rotate-180'}>
                                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                                                      xmlns="http://www.w3.org/2000/svg">
                                                     <path d="M9 5L15 12L9 19" stroke="currentColor" strokeWidth="1.5"
@@ -126,19 +126,19 @@ const Sidebar = () => {
                                             </div>
                                         </button>
                                         <AnimateHeight duration={300}
-                                                       height={currentMenu === plugin.plugin_name.toLowerCase() ? 'auto' : 0}>
+                                                       height={currentMenu === plugin.id + '-' + plugin.plugin_name.toLowerCase() ? 'auto' : 0}>
                                             <ul className="sub-menu text-gray-500">
                                                 {plugin.menus.map((menu: any, index: number) => (
                                                     menu.children?.length > 0 ? (
                                                         <li className="menu nav-item" key={index}>
                                                             <button
                                                                 type="button"
-                                                                className={`w-full ${subCurrentMenu === menu.translation_key ? 'open' : ''} hover:bg-gray-100 ltr:before:mr-2 rtl:before:ml-2 dark:text-[#888ea8] dark:hover:bg-gray-900`}
-                                                                onClick={() => handleToggleSubMenu(menu.translation_key)}
+                                                                className={`w-full ${subCurrentMenu === menu.id + '-' + menu.translation_key ? 'open' : ''} hover:bg-gray-100 ltr:before:mr-2 rtl:before:ml-2 dark:text-[#888ea8] dark:hover:bg-gray-900`}
+                                                                onClick={() => handleToggleSubMenu(menu.id + '-' + menu.translation_key)}
                                                             >
                                                                 {t(menu.translation_key)}
                                                                 <div
-                                                                    className={subCurrentMenu === menu.translation_key ? 'rotate-90' : 'rtl:rotate-180'}>
+                                                                    className={subCurrentMenu === menu.id + '-' + menu.translation_key ? 'rotate-90' : 'rtl:rotate-180'}>
                                                                     <svg width="16" height="16" viewBox="0 0 24 24"
                                                                          fill="none" xmlns="http://www.w3.org/2000/svg">
                                                                         <path d="M9 5L15 12L9 19" stroke="currentColor"
@@ -148,19 +148,19 @@ const Sidebar = () => {
                                                                 </div>
                                                             </button>
                                                             <AnimateHeight duration={300}
-                                                                           height={subCurrentMenu === menu.translation_key ? 'auto' : 0}>
+                                                                           height={subCurrentMenu === menu.id + '-' + menu.translation_key ? 'auto' : 0}>
                                                                 <ul className="sub-menu text-gray-500">
                                                                     {menu.children.map((subMenu: any, i: number) => (
                                                                         subMenu.children?.length > 0 ? (
                                                                             <li className="menu nav-item" key={i}>
                                                                                 <button
                                                                                     type="button"
-                                                                                    className={`w-full ${subSubCurrentMenu === subMenu.translation_key ? 'open' : ''} hover:bg-gray-100 ltr:before:mr-2 rtl:before:ml-2 dark:text-[#888ea8] dark:hover:bg-gray-900`}
-                                                                                    onClick={() => handleToggleSubSubMenu(subMenu.translation_key)}
+                                                                                    className={`w-full ${subSubCurrentMenu === subMenu.id + '-' + subMenu.translation_key ? 'open' : ''} hover:bg-gray-100 ltr:before:mr-2 rtl:before:ml-2 dark:text-[#888ea8] dark:hover:bg-gray-900`}
+                                                                                    onClick={() => handleToggleSubSubMenu(subMenu.id + '-' + subMenu.translation_key)}
                                                                                 >
                                                                                     {t(subMenu.translation_key)}
                                                                                     <div
-                                                                                        className={subSubCurrentMenu === subMenu.translation_key ? 'rotate-90' : 'rtl:rotate-180'}>
+                                                                                        className={subSubCurrentMenu === subMenu.id + '-' + subMenu.translation_key ? 'rotate-90' : 'rtl:rotate-180'}>
                                                                                         <svg width="16" height="16"
                                                                                              viewBox="0 0 24 24"
                                                                                              fill="none"
@@ -175,7 +175,7 @@ const Sidebar = () => {
                                                                                 </button>
                                                                                 <AnimateHeight
                                                                                     duration={300}
-                                                                                    height={subSubCurrentMenu === subMenu.translation_key ? 'auto' : 0}
+                                                                                    height={subSubCurrentMenu === subMenu.id + '-' + subMenu.translation_key ? 'auto' : 0}
                                                                                 >
                                                                                     <ul className="sub-menu text-gray-500">
                                                                                         {subMenu.children.map((subSubMenu: any, j: number) => (

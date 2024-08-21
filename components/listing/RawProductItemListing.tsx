@@ -352,7 +352,7 @@ const RawProductItemListing: FC<IProps> = ({
             <div
                 className="flex justify-between items-center flex-col md:flex-row space-y-3 md:space-y-0 mb-3">
                 <h3 className="text-lg font-semibold">{title}</h3>
-                {type !== RAW_PRODUCT_LIST_TYPE.GOOD_RECEIVE_NOTE && type !== RAW_PRODUCT_LIST_TYPE.PRODUCTION && type !== RAW_PRODUCT_LIST_TYPE.FILLING && type !== RAW_PRODUCT_LIST_TYPE.VENDOR_BILL &&
+                {type !== RAW_PRODUCT_LIST_TYPE.LOCAL_PURCHASE_ORDER && type !== RAW_PRODUCT_LIST_TYPE.GOOD_RECEIVE_NOTE && type !== RAW_PRODUCT_LIST_TYPE.PRODUCTION && type !== RAW_PRODUCT_LIST_TYPE.FILLING && type !== RAW_PRODUCT_LIST_TYPE.VENDOR_BILL &&
                     <Button
                         type={ButtonType.button}
                         text='Add New Item'

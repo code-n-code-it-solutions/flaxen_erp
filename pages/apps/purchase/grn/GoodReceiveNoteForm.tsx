@@ -1,11 +1,11 @@
 'use client';
-import React, { Fragment, useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useRef, useState } from 'react';
 import { setAuthToken, setContentType } from '@/configs/api.config';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { getLPOByStatuses } from '@/store/slices/localPurchaseOrderSlice';
 import { clearGoodReceiveNoteState, storeGRN } from '@/store/slices/goodReceiveNoteSlice';
 import { clearUtilState, generateCode } from '@/store/slices/utilSlice';
-import { ButtonSize, ButtonType, ButtonVariant, FORM_CODE_TYPE, RAW_PRODUCT_LIST_TYPE } from '@/utils/enums';
+import { ButtonSize, ButtonType, ButtonVariant, FORM_CODE_TYPE, IconType, RAW_PRODUCT_LIST_TYPE } from '@/utils/enums';
 import { Dropdown } from '@/components/form/Dropdown';
 import { Input } from '@/components/form/Input';
 import RawProductItemListing from '@/components/listing/RawProductItemListing';
@@ -13,6 +13,10 @@ import Button from '@/components/Button';
 import Modal from '@/components/Modal';
 import { Tab } from '@headlessui/react';
 import { getAccountsTypes } from '@/store/slices/accountSlice';
+import IconButton from '@/components/IconButton';
+import { getIcon } from '@/utils/helper';
+import AgGridComponent from '@/components/apps/AgGridComponent';
+import { AgGridReact } from 'ag-grid-react';
 
 interface IFormProps {
     id?: any;
@@ -20,16 +24,20 @@ interface IFormProps {
 
 const GoodReceiveNoteForm = ({ id }: IFormProps) => {
     const dispatch = useAppDispatch();
+    const gridRef = useRef<AgGridReact<any>>(null);
+
     const { token, user } = useAppSelector(state => state.user);
     const { success, loading } = useAppSelector(state => state.goodReceiveNote);
     const { allLPOs } = useAppSelector(state => state.localPurchaseOrder);
     const { code, latestRecord } = useAppSelector(state => state.util);
+
     const [itemModalOpen, setItemModalOpen] = useState<boolean>(false);
     const [rawProductModalOpen, setRawProductModalOpen] = useState<boolean>(false);
     const [rawProductForSelect, setRawProductForSelect] = useState<any[]>([]);
     const [originalProductState, setOriginalProductState] = useState<any[]>([]);
-    const [rawProducts, setRawProducts] = useState<any[]>([]);
-    const [serviceItems, setServiceItems] = useState<any[]>([]);
+    const [GRNItems, setGRNItems] = useState<any[]>([]);
+    const [colDefs, setColDefs] = useState<any[]>([]);
+
     const [selectedLPOs, setSelectedLPOs] = useState<any[]>([]);
     const [formData, setFormData] = useState<any>({
         purchase_requisition_ids: '',
@@ -62,26 +70,26 @@ const GoodReceiveNoteForm = ({ id }: IFormProps) => {
         let finalData = {
             ...formData,
             user_id: user.id,
-            purchase_requisition_ids: Array.from(new Set(rawProducts.map(item => item.purchase_requisition_id))).join(','),
-            items: rawProducts.map((product: any) => {
-                return {
-                    local_purchase_order_id: product.local_purchase_order_id,
-                    purchase_requisition_id: product.purchase_requisition_id,
-                    raw_product_id: product.raw_product_id,
-                    quantity: product.quantity,
-                    received_quantity: product.received_quantity,
-                    unit_id: product.unit_id,
-                    unit_price: product.unit_price,
-                    total: product.total,
-                    description: product.description || '',
-                    tax_category_id: product.tax_category_id,
-                    tax_rate: product.tax_rate,
-                    tax_amount: product.tax_amount,
-                    discount_type: product.discount_type,
-                    discount_amount_rate: product.discount_amount_rate,
-                    row_total: product.row_total
-                };
-            })
+            purchase_requisition_ids: Array.from(new Set(GRNItems.map(item => item.purchase_requisition_id))).join(',')
+            // items: rawProducts.map((product: any) => {
+            //     return {
+            //         local_purchase_order_id: product.local_purchase_order_id,
+            //         purchase_requisition_id: product.purchase_requisition_id,
+            //         raw_product_id: product.raw_product_id,
+            //         quantity: product.quantity,
+            //         received_quantity: product.received_quantity,
+            //         unit_id: product.unit_id,
+            //         unit_price: product.unit_price,
+            //         total: product.total,
+            //         description: product.description || '',
+            //         tax_category_id: product.tax_category_id,
+            //         tax_rate: product.tax_rate,
+            //         tax_amount: product.tax_amount,
+            //         discount_type: product.discount_type,
+            //         discount_amount_rate: product.discount_amount_rate,
+            //         row_total: product.row_total
+            //     };
+            // })
         };
         if (id) {
             // dispatch(updateRawProduct(id, formData));
@@ -89,6 +97,10 @@ const GoodReceiveNoteForm = ({ id }: IFormProps) => {
             // console.log(finalData)
             dispatch(storeGRN(finalData));
         }
+    };
+
+    const handleRemoveRow = (row: any) => {
+
     };
 
     const handleLPOChange = (e: any) => {
@@ -127,7 +139,7 @@ const GoodReceiveNoteForm = ({ id }: IFormProps) => {
             setRawProductForSelect([]);
             setSelectedLPOs([]);
             setLPODetails({});
-            setRawProducts([]);
+            setGRNItems([]);
         }
     };
 
@@ -138,8 +150,112 @@ const GoodReceiveNoteForm = ({ id }: IFormProps) => {
         dispatch(getLPOByStatuses());
         dispatch(clearUtilState());
         dispatch(generateCode(FORM_CODE_TYPE.GOOD_RECEIVE_NOTE));
-        dispatch(getAccountsTypes({ids: 2}));
     }, []);
+
+    useEffect(() => {
+        setGRNItems([]);
+        let columnDefinitions: any[] = [];
+        if (formData.type === 'Material') {
+            columnDefinitions = [
+                {
+                    headerName: 'Product',
+                    field: 'raw_product_id',
+                    cellRenderer: (params: any) => params.node?.rowPinned ? '' : params.value,
+                    minWidth: 150,
+                    filter: false,
+                    floatingFilter: false
+                },
+                {
+                    headerName: 'Qty',
+                    field: 'quantity',
+                    cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+                    minWidth: 150,
+                    filter: false,
+                    floatingFilter: false
+                },
+                {
+                    headerName: 'Received Qty',
+                    field: 'quantity',
+                    editable: (params: any) => !params.node.rowPinned, // Disable editing in pinned row
+                    cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+                    minWidth: 150,
+                    filter: false,
+                    floatingFilter: false
+                },
+                {
+                    headerName: 'Sub Total',
+                    field: 'sub_total',
+                    cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+                    minWidth: 150,
+                    filter: false,
+                    floatingFilter: false
+                },
+                {
+                    headerName: 'Tax@5%',
+                    field: 'tax_amount',
+                    cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+                    minWidth: 150,
+                    filter: false,
+                    floatingFilter: false
+                },
+                {
+                    headerName: 'Total',
+                    field: 'grand_total',
+                    cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+                    minWidth: 150,
+                    filter: false,
+                    floatingFilter: false
+                }
+            ];
+        } else if (formData.type === 'Service') {
+            columnDefinitions = [
+                {
+                    headerName: 'Asset',
+                    field: 'asset_id',
+                    minWidth: 150,
+                    filter: false,
+                    floatingFilter: false
+                },
+                {
+                    headerName: 'Service',
+                    field: 'service_name',
+                    editable: (params: any) => !params.node.rowPinned, // Disable editing in pinned row
+                    cellRenderer: (params: any) => params.node?.rowPinned ? '' : params.value,
+                    minWidth: 150,
+                    filter: false,
+                    floatingFilter: false
+                },
+                {
+                    headerName: 'Description',
+                    field: 'description',
+                    editable: (params: any) => !params.node.rowPinned, // Disable editing in pinned row
+                    cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+                    minWidth: 150,
+                    filter: false,
+                    floatingFilter: false
+                }
+            ];
+        }
+        setColDefs([
+            ...columnDefinitions,
+            {
+                headerName: '',
+                field: 'remove',
+                cellRenderer: (params: any) => (
+                    !params.node?.rowPinned &&
+                    <IconButton
+                        color={ButtonVariant.danger}
+                        icon={IconType.delete}
+                        onClick={() => handleRemoveRow(params.data)}
+                    />
+                ),
+                editable: false,
+                filter: false,
+                floatingFilter: false,
+                sortable: false
+            }
+        ]);
+    }, [formData.type]);
 
     useEffect(() => {
         if (code) {
@@ -156,15 +272,15 @@ const GoodReceiveNoteForm = ({ id }: IFormProps) => {
         }
     }, [rawProductModalOpen]);
 
-    useEffect(() => {
-        if (allLPOs) {
-            setLocalPurchaseOrderOptions(allLPOs.map((lpo: any) => ({
-                value: lpo.id,
-                label: lpo.lpo_number,
-                lpo: lpo
-            })));
-        }
-    }, [allLPOs]);
+    // useEffect(() => {
+    //     if (allLPOs) {
+    //         setLocalPurchaseOrderOptions(allLPOs.map((lpo: any) => ({
+    //             value: lpo.id,
+    //             label: lpo.lpo_number,
+    //             lpo: lpo
+    //         })));
+    //     }
+    // }, [allLPOs]);
 
     return (
         <form className="space-y-5" onSubmit={(e) => handleSubmit(e)}>
@@ -185,6 +301,34 @@ const GoodReceiveNoteForm = ({ id }: IFormProps) => {
                         isMasked={false}
                         disabled={true}
                     />
+
+                    <Dropdown
+                        divClasses="w-full"
+                        label="Type"
+                        name="type"
+                        options={[
+                            { value: 'Material', label: 'Material' },
+                            { value: 'Service', label: 'Service' },
+                            { value: 'Miscellaneous', label: 'Miscellaneous' }
+                        ]}
+                        value={formData.type}
+                        onChange={(e: any) => {
+                            setFormData((prev: any) => ({ ...prev, type: e?.value }));
+                            if (allLPOs) {
+                                setLocalPurchaseOrderOptions(
+                                    allLPOs.filter((lpo: any) => lpo.type === e?.value).map((lpo: any) => ({
+                                        value: lpo.id,
+                                        label: lpo.lpo_number,
+                                        lpo: lpo
+                                    }))
+                                );
+                            }
+                            if (typeof e?.value === 'undefined') {
+                                setLocalPurchaseOrderOptions([]);
+                            }
+                        }}
+                    />
+
                     <div className="flex justify-between items-end w-full gap-3">
                         <Dropdown
                             divClasses="w-full"
@@ -211,19 +355,10 @@ const GoodReceiveNoteForm = ({ id }: IFormProps) => {
                         name="status"
                         options={statusOptions}
                         value={formData.status}
-                        onChange={(e: any) => {
-                            if (e && typeof e !== 'undefined') {
-                                setFormData((prev: any) => ({
-                                    ...prev,
-                                    status: e.value
-                                }));
-                            } else {
-                                setFormData((prev: any) => ({
-                                    ...prev,
-                                    status: ''
-                                }));
-                            }
-                        }}
+                        onChange={(e: any) => setFormData((prev: any) => ({
+                            ...prev,
+                            status: e?.value
+                        }))}
                     />
 
                 </div>
@@ -250,28 +385,26 @@ const GoodReceiveNoteForm = ({ id }: IFormProps) => {
                             </button>
                         )}
                     </Tab>
-                    {!id && (
-                        <Tab as={Fragment}>
-                            {({ selected }) => (
-                                <button
-                                    className={`${
-                                        selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
-                                    } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
-                                >
-                                    Accounting
-                                </button>
-                            )}
-                        </Tab>
-                    )}
                 </Tab.List>
-                <Tab.Panels className="panel rounded-none">
+                <Tab.Panels className="rounded-none">
                     <Tab.Panel>
-                        <div className="active">
-                            <RawProductItemListing
-                                rawProducts={rawProducts}
-                                originalProducts={originalProductState}
-                                setRawProducts={setRawProducts}
-                                type={RAW_PRODUCT_LIST_TYPE.GOOD_RECEIVE_NOTE}
+                        <div className="mt-5 table-responsive active">
+                            <div
+                                className="flex mb-3 justify-start items-start md:justify-between md:items-center gap-3 flex-col md:flex-row">
+                                <div>
+                                    <h3 className="text-lg font-semibold">Good Receive Items</h3>
+                                    <span className="mt-1 text-info text-sm italic">
+                                        Double click cell to enter data
+                                    </span>
+                                </div>
+                            </div>
+                            <AgGridComponent
+                                gridRef={gridRef}
+                                data={GRNItems}
+                                colDefs={colDefs}
+                                pagination={false}
+                                // pinnedBottomRowData={pinnedBottomRowData}
+                                height={400}
                             />
                         </div>
                     </Tab.Panel>
@@ -329,8 +462,8 @@ const GoodReceiveNoteForm = ({ id }: IFormProps) => {
                                     variant={ButtonVariant.primary}
                                     onClick={() => {
 
-                                        setRawProducts([
-                                            ...rawProducts,
+                                        setGRNItems([
+                                            ...GRNItems,
                                             {
                                                 status: 'Completed',
                                                 purchase_requisition_id: product.purchase_requisition_id, // set the parent purchase requisition id

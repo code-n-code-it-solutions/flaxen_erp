@@ -17,6 +17,7 @@ import { clearQuotationState, getPendingQuotations } from '@/store/slices/quotat
 import AgGridComponent from '@/components/apps/AgGridComponent';
 import { AgGridReact } from 'ag-grid-react';
 import Swal from 'sweetalert2';
+import { storeDeliveryNote } from '@/store/slices/deliveryNoteSlice';
 
 const DeliveryNoteForm = () => {
     const dispatch = useAppDispatch();
@@ -305,7 +306,18 @@ const DeliveryNoteForm = () => {
         }
 
         // Proceed with form submission if there are no invalid rows
-        console.log(formData);
+        if(deliveryNoteItems.length === 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Please select a quotation to proceed'
+            });
+        } else {
+           dispatch(storeDeliveryNote({
+               ...formData,
+               delivery_note_items: deliveryNoteItems
+           }));
+        }
     };
 
     useEffect(() => {

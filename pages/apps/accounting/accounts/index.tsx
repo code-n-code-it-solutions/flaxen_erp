@@ -12,6 +12,7 @@ import Modal from '@/components/Modal';
 import GenericTable from '@/components/GenericTable';
 import { capitalize, now, upperFirst } from 'lodash';
 import { clearAccountTransactionState, getTransactionByAccount } from '@/store/slices/accountTransactionSlice';
+import Link from 'next/link';
 
 const Index = () => {
     useSetActiveMenu(AppBasePath.Report_Accounts);
@@ -133,7 +134,11 @@ const Index = () => {
                             <span>{account.code}</span>
                         </div>
                     </td>
-                    <td>{account.name}</td>
+                    <td>
+                        <div style={{ paddingLeft: `${level * 30}px` }}>
+                            {account.name}
+                        </div>
+                    </td>
                     <td className="text-right">
                         {account.totals
                             ? account.totals.debit.toLocaleString(undefined, {
@@ -159,15 +164,15 @@ const Index = () => {
                             : ''}
                     </td>
                     <td>
-                        {level > 0 && (
+                        {!hasChildren && (
                             <button
                                 className="text-primary btn-sm"
                                 onClick={() => {
-                                    console.log(account);
-                                    setAccountDetailModal(true);
+                                    // console.log(account);
                                     dispatch(clearAccountTransactionState());
                                     dispatch(getTransactionByAccount(account.id));
                                     setAccountDetail(account);
+                                    setAccountDetailModal(true);
                                 }}
                             >
                                 <EyeIcon size={18} />
@@ -235,6 +240,12 @@ const Index = () => {
                         >
                             Refresh
                         </span>
+                        <Link
+                            href={AppBasePath.Report_Accounts + '/print'}
+                            className="text-primary underline cursor-pointer"
+                        >
+                            Print
+                        </Link>
                     </div>
                 </div>
                 <div className="table-responsive">

@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import { clearEmployeeState, editEmployee } from '@/store/slices/employeeSlice';
 import PageWrapper from '@/components/PageWrapper';
 import { AppBasePath, ButtonType, ButtonVariant, IconType } from '@/utils/enums';
-import EmployeeForm from '@/pages/apps/employees/employee-list/EmployeeForm';
+import EmployeeForm from '@/pages/apps/hrm/employees/EmployeeForm';
 import AppLayout from '@/components/Layouts/AppLayout';
 import DetailPageHeader from '@/components/apps/DetailPageHeader';
 

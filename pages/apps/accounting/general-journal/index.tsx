@@ -272,6 +272,18 @@ const Index = () => {
                         colDefs={colDefs}
                         // pinnedBottomRowData={pinnedBottomRowData}
                         autoSizeStrategy={autoSizeStrategy}
+                        getRowStyle={(params:any) => {
+                            if (params.data?.isTotal) {
+                                return { backgroundColor: '#f2f2f2' }; // Light gray background for total rows
+                            }
+                            return null;
+                        }}
+                        onFirstDataRendered={() => {
+                            if (gridRef.current) {
+                                const allColumnIds = gridRef.current.api.getAllDisplayedColumns().map((column) => column.getColId());
+                                gridRef.current.api.autoSizeColumns(allColumnIds);
+                            }
+                        }}
                     />
                 </div>
             ) : (

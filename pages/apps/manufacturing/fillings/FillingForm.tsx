@@ -170,12 +170,12 @@ const FillingForm = ({ id }: IFormProps) => {
             }
         }).then((result: any) => {
             if (result.value) {
-                console.log(finalData);
-                // if (id) {
-                //     dispatch(updateFilling({ id, finalData: finalData }));
-                // } else {
-                //     dispatch(storeFilling(finalData));
-                // }
+                // console.log(finalData);
+                if (id) {
+                    dispatch(updateFilling({ id, finalData: finalData }));
+                } else {
+                    dispatch(storeFilling(finalData));
+                }
             }
         });
 
