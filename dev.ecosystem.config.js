@@ -3,7 +3,7 @@ module.exports = {
         {
             name: 'code-n-code-dev',
             script: 'npm',
-            args: 'run server-dev',
+            args: 'run server-dev-start',
             watch: true,
             env: {
                 NODE_ENV: 'development',
