@@ -3,10 +3,10 @@ import { API } from '@/configs/api.config';
 import { configureSlice } from '@/utils/helper';
 
 interface IState {
-    generalPaymentVoucher: any;
-    generalPaymentVouchers: any[];
-    generalPaymentVoucherDetails: any;
-    generalPaymentVouchersForPrint: any[];
+    generalReceiptVoucher: any;
+    generalReceiptVouchers: any[];
+    generalReceiptVoucherDetails: any;
+    generalReceiptVouchersForPrint: any[];
     subjects: any[];
     loading: boolean;
     error: any;
@@ -15,10 +15,10 @@ interface IState {
 
 // Initial state
 const initialState: IState = {
-    generalPaymentVoucher: null,
-    generalPaymentVouchers: [],
-    generalPaymentVoucherDetails: null,
-    generalPaymentVouchersForPrint: [],
+    generalReceiptVoucher: null,
+    generalReceiptVouchers: [],
+    generalReceiptVoucherDetails: null,
+    generalReceiptVouchersForPrint: [],
     subjects: [],
     loading: false,
     error: null,
@@ -26,11 +26,11 @@ const initialState: IState = {
 };
 
 // Async thunks
-export const getGeneralPaymentVouchers = createAsyncThunk(
-    'general-payment-voucher/all',
+export const getGeneralReceiptVouchers = createAsyncThunk(
+    'general-receipt-voucher/all',
     async (_, thunkAPI) => {
         try {
-            const response = await API.get('/general-payment-voucher');
+            const response = await API.get('/general-receipt-voucher');
             return response.data;
         } catch (error: any) {
             const message =
@@ -40,11 +40,11 @@ export const getGeneralPaymentVouchers = createAsyncThunk(
     }
 );
 
-export const storeGeneralPaymentVoucher = createAsyncThunk(
-    'general-payment-voucher/store',
+export const storeGeneralReceiptVoucher = createAsyncThunk(
+    'general-receipt-voucher/store',
     async (data: any, thunkAPI) => {
         try {
-            const response = await API.post('/general-payment-voucher/store', data);
+            const response = await API.post('/general-receipt-voucher/store', data);
             return response.data;
         } catch (error: any) {
             const message =
@@ -54,11 +54,11 @@ export const storeGeneralPaymentVoucher = createAsyncThunk(
     }
 );
 
-export const getGeneralPaymentVoucherDetail = createAsyncThunk(
-    'general-payment-voucher/show',
+export const getGeneralReceiptVoucherDetail = createAsyncThunk(
+    'general-receipt-voucher/show',
     async (id: number, thunkAPI) => {
         try {
-            const response = await API.get('/general-payment-voucher/show/' + id);
+            const response = await API.get('/general-receipt-voucher/show/' + id);
             return response.data;
         } catch (error: any) {
             const message =
@@ -68,11 +68,11 @@ export const getGeneralPaymentVoucherDetail = createAsyncThunk(
     }
 );
 
-export const getGeneralPaymentVoucherForPrint = createAsyncThunk(
-    'general-payment-voucher/print',
+export const getGeneralReceiptVoucherForPrint = createAsyncThunk(
+    'general-receipt-voucher/print',
     async (data: any, thunkAPI) => {
         try {
-            const response = await API.post('/general-payment-voucher/print', data);
+            const response = await API.post('/general-receipt-voucher/print', data);
             return response.data;
         } catch (error: any) {
             const message =
@@ -83,72 +83,72 @@ export const getGeneralPaymentVoucherForPrint = createAsyncThunk(
 );
 
 // Slice
-export const generalPaymentVoucherSlice = createSlice({
-    name: 'general-payment-voucher',
+export const generalReceiptVoucherSlice = createSlice({
+    name: 'general-receipt-voucher',
     initialState,
     reducers: {
-        clearGeneralPaymentVoucherState: (state) => {
-            state.generalPaymentVoucher = null;
-            state.generalPaymentVoucherDetails = null;
-            state.generalPaymentVouchersForPrint = [];
+        clearGeneralReceiptVoucherState: (state) => {
+            state.generalReceiptVoucher = null;
+            state.generalReceiptVoucherDetails = null;
+            state.generalReceiptVouchersForPrint = [];
             state.error = null;
             state.success = false;
         }
     },
     extraReducers: (builder) => {
         builder
-            .addCase(getGeneralPaymentVouchers.pending, (state) => {
+            .addCase(getGeneralReceiptVouchers.pending, (state) => {
                 state.loading = true;
             })
-            .addCase(getGeneralPaymentVouchers.fulfilled, (state, action) => {
+            .addCase(getGeneralReceiptVouchers.fulfilled, (state, action) => {
                 state.loading = false;
-                state.generalPaymentVouchers = action.payload.data;
+                state.generalReceiptVouchers = action.payload.data;
                 state.success = action.payload.success;
             })
-            .addCase(getGeneralPaymentVouchers.rejected, (state, action) => {
+            .addCase(getGeneralReceiptVouchers.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })
-            .addCase(storeGeneralPaymentVoucher.pending, (state) => {
+            .addCase(storeGeneralReceiptVoucher.pending, (state) => {
                 state.loading = true;
             })
-            .addCase(storeGeneralPaymentVoucher.fulfilled, (state, action) => {
+            .addCase(storeGeneralReceiptVoucher.fulfilled, (state, action) => {
                 state.loading = false;
-                state.generalPaymentVoucher = action.payload.data;
+                state.generalReceiptVoucher = action.payload.data;
                 state.success = action.payload.success;
             })
-            .addCase(storeGeneralPaymentVoucher.rejected, (state, action) => {
+            .addCase(storeGeneralReceiptVoucher.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })
-            .addCase(getGeneralPaymentVoucherDetail.pending, (state) => {
+            .addCase(getGeneralReceiptVoucherDetail.pending, (state) => {
                 state.loading = true;
             })
-            .addCase(getGeneralPaymentVoucherDetail.fulfilled, (state, action) => {
+            .addCase(getGeneralReceiptVoucherDetail.fulfilled, (state, action) => {
                 state.loading = false;
-                state.generalPaymentVoucherDetails = action.payload.data;
+                state.generalReceiptVoucherDetails = action.payload.data;
                 state.success = action.payload.success;
             })
-            .addCase(getGeneralPaymentVoucherDetail.rejected, (state, action) => {
+            .addCase(getGeneralReceiptVoucherDetail.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })
-            .addCase(getGeneralPaymentVoucherForPrint.pending, (state) => {
+            .addCase(getGeneralReceiptVoucherForPrint.pending, (state) => {
                 state.loading = true;
             })
-            .addCase(getGeneralPaymentVoucherForPrint.fulfilled, (state, action) => {
+            .addCase(getGeneralReceiptVoucherForPrint.fulfilled, (state, action) => {
                 state.loading = false;
-                state.generalPaymentVouchersForPrint = action.payload.data;
+                state.generalReceiptVouchersForPrint = action.payload.data;
                 state.success = action.payload.success;
             })
-            .addCase(getGeneralPaymentVoucherForPrint.rejected, (state, action) => {
+            .addCase(getGeneralReceiptVoucherForPrint.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             });
     }
 });
-export const { clearGeneralPaymentVoucherState } = generalPaymentVoucherSlice.actions;
+export const { clearGeneralReceiptVoucherState } = generalReceiptVoucherSlice.actions;
 
-export const generalPaymentVoucherSliceConfig = configureSlice(generalPaymentVoucherSlice, false);
+export const generalReceiptVoucherSliceConfig = configureSlice(generalReceiptVoucherSlice, false);
 
 

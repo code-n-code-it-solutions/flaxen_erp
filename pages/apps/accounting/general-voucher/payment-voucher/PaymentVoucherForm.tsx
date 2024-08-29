@@ -1,7 +1,7 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import { Input } from '@/components/form/Input';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { generateCode } from '@/store/slices/utilSlice';
+import { clearSubjectListState, generateCode, getSubjects } from '@/store/slices/utilSlice';
 import { setAuthToken, setContentType } from '@/configs/api.config';
 import { Dropdown } from '@/components/form/Dropdown';
 import Button from '@/components/Button';
@@ -13,29 +13,34 @@ import { PlusCircleIcon, Trash2Icon } from 'lucide-react';
 import Option from '@/components/form/Option';
 import useTransformToSelectOptions from '@/hooks/useTransformToSelectOptions';
 import dynamic from 'next/dynamic';
-import { getAccountsTypes } from '@/store/slices/accountSlice';
+import { getAccountsByCategory, getAccountsTypes } from '@/store/slices/accountSlice';
 import { getPaymentMethods } from '@/store/slices/paymentMethodSlice';
 import { storeBankAccount } from '@/store/slices/bankAccountSlice';
 import BankDetailModal from '@/components/modals/BankDetailModal';
 import Modal from '@/components/Modal';
 import BankFormModal from '@/components/modals/BankFormModal';
-import { storeBank } from '@/store/slices/bankSlice';
+import { clearBankState, getBanks, storeBank } from '@/store/slices/bankSlice';
 import Swal from 'sweetalert2';
+import { storeGeneralPaymentVoucher } from '@/store/slices/generalPaymentVoucherSlice';
+import accounts from '@/pages/apps/accounting/accounts';
 
 const TreeSelect = dynamic(() => import('antd/es/tree-select'), { ssr: false });
 
 const PaymentVoucherForm = () => {
     const dispatch = useAppDispatch();
     const accountOptions = useTransformToSelectOptions(useAppSelector(state => state.account).accountTypes);
+    const { accounts } = useAppSelector(state => state.account);
     const { token } = useAppSelector((state) => state.user);
-    const { code } = useAppSelector((state) => state.util);
+    const { code, subjects, loading: utilLoading } = useAppSelector((state) => state.util);
     const { loading } = useAppSelector((state) => state.generalPaymentVoucher);
     const { paymentMethods } = useAppSelector((state) => state.paymentMethod);
-    const { banks } = useAppSelector((state) => state.bank);
+    const { banks, bank } = useAppSelector((state) => state.bank);
     const { bankAccounts } = useAppSelector((state) => state.bankAccount);
 
+    const [selectedSubjectType, setSelectedSubjectType] = useState<string>('');
     const [chequeModal, setChequeModal] = useState<boolean>(false);
     const [chequeDetails, setChequeDetails] = useState<any>({});
+    const [expanseAccountOptions, setExpanseAccountOptions] = useState<any[]>([]);
     const [bankAccountOptions, setBankAccountOptions] = useState<any[]>([]);
     const [bankAccountModal, setBankAccountModal] = useState<boolean>(false);
     const [formData, setFormData] = useState<any>({});
@@ -99,6 +104,9 @@ const PaymentVoucherForm = () => {
             return;
         }
 
+        if (chequeDetails.cheque_date > new Date().toLocaleDateString()) {
+            chequeDetails.is_pdc = 1;
+        }
         setChequeList((prevCheques) => [...prevCheques, chequeDetails]);
         setChequeModal(false);
         setChequeDetails({});
@@ -112,7 +120,32 @@ const PaymentVoucherForm = () => {
     const handleSubmit = (e: any) => {
         e.preventDefault();
         setAuthToken(token);
-        console.log(formData);
+
+        if (paymentItems.length === 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'No Payment Items',
+                text: 'Please add payment items before submitting the form.'
+            });
+            return;
+        }
+
+        if (formData.payment_sub_method === 'cheque' && chequeList.length === 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'No Cheques',
+                text: 'Please add cheques before submitting the form.'
+            });
+            return;
+        }
+
+        let finalData = {
+            ...formData,
+            payment_items: paymentItems,
+            cheques: chequeList
+        };
+
+        dispatch(storeGeneralPaymentVoucher(finalData));
     };
 
     useEffect(() => {
@@ -121,7 +154,10 @@ const PaymentVoucherForm = () => {
         dispatch(generateCode('general_payment_voucher'));
         setFormData({ payment_date: calculateDateFromDays(0) });
         dispatch(getAccountsTypes({}));
+        dispatch(getAccountsByCategory({ account_type_ids: [6, 8] }));
         dispatch(getPaymentMethods());
+        dispatch(getBanks());
+        dispatch(clearSubjectListState());
     }, [dispatch, token]);
 
     useEffect(() => {
@@ -175,8 +211,62 @@ const PaymentVoucherForm = () => {
         console.log(formData);
     }, [formData]);
 
+    useEffect(() => {
+        if (bank) {
+            dispatch(clearBankState());
+            setBankModal(false);
+        }
+    }, [bank]);
+
+    useEffect(() => {
+        if (formData.subject_type && formData.subject_type !== 'walk_in') {
+            dispatch(clearSubjectListState());
+            dispatch(getSubjects(formData.subject_type));
+        } else {
+            dispatch(clearSubjectListState());
+        }
+    }, [formData.subject_type]);
+
+    useEffect(() => {
+        if (subjects.length > 0) {
+            setSubjectOptions(subjects.map((subject: any) => ({
+                value: subject.id,
+                label: subject.name + ' (' + subject.email + ') - ' + selectedSubjectType
+            })));
+        } else {
+            setSubjectOptions([]);
+        }
+    }, [subjects]);
+
+    useEffect(() => {
+        if (accounts.length > 0) {
+            setExpanseAccountOptions([
+                {
+                    value: 6,
+                    label: '600 - Operating Expanses',
+                    children: accounts.filter((account: any) => account.account_type_id === 6).map((account: any) => ({
+                        value: account.id,
+                        label: account.code + ' - ' + account.name,
+                        account
+                    }))
+                },
+                {
+                    value: 8,
+                    label: '800 - Non-Operating Expanses',
+                    children: accounts.filter((account: any) => account.account_type_id === 8).map((account: any) => ({
+                        value: account.id,
+                        label: account.code + ' - ' + account.name,
+                        account
+                    }))
+                }
+            ]);
+        } else {
+
+        }
+    }, [accounts]);
+
     return (
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={(e) => handleSubmit(e)}>
             <Input
                 divClasses="w-full md:w-1/2"
                 className="text-xl font-light py-3"
@@ -254,7 +344,14 @@ const PaymentVoucherForm = () => {
                     name="subject_type"
                     options={subjectTypeOptions}
                     value={formData.subject_type}
-                    onChange={(e) => handleChange('subject_type', e?.value || '', true)}
+                    onChange={(e) => {
+                        setSelectedSubjectType(e?.label || '');
+                        handleChange('subject_type', e?.value || '', true);
+                        setFormData((prev: any) => ({
+                            ...prev,
+                            subject_category: e?.label
+                        }));
+                    }}
                     errorMessage={errors.subject_type}
                 />
                 {formData.subject_type === 'walk_in'
@@ -294,8 +391,7 @@ const PaymentVoucherForm = () => {
                                 errorMessage={errors.phone}
                             />
                         </>
-                    )
-                    : (
+                    ) : (
                         <Dropdown
                             divClasses="w-full"
                             label="Payment To"
@@ -304,6 +400,8 @@ const PaymentVoucherForm = () => {
                             value={formData.subject_id}
                             onChange={(e) => handleChange('subject_id', e?.value || '', true)}
                             errorMessage={errors.subject_id}
+                            isLoading={utilLoading}
+                            isDisabled={utilLoading}
                         />
                     )}
                 <Input
@@ -318,7 +416,7 @@ const PaymentVoucherForm = () => {
                     errorMessage={errors.payment_date}
                 />
                 <div>
-                    <label>Paying Account</label>
+                    <label>Paying From Account</label>
                     <TreeSelect
                         showSearch
                         style={{ width: '100%' }}
@@ -351,7 +449,7 @@ const PaymentVoucherForm = () => {
                                     selected ? '!border-white-light !border-b-white text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black' : ''
                                 } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
                             >
-                                Details
+                                Expenses
                             </button>
                         )}
                     </Tab>
@@ -384,13 +482,14 @@ const PaymentVoucherForm = () => {
                                             ...prev,
                                             {
                                                 id: prev.length ? prev[prev.length - 1].id + 1 : 1,
+                                                expanse_account_id: '',
                                                 payment_for: '',
                                                 quantity: 0,
                                                 amount: 0,
                                                 sub_total: 0,
                                                 discount: 0,
                                                 has_tax: 0,
-                                                tax_category_id: '',
+                                                tax_category_id: 0,
                                                 tax_rate: 0,
                                                 tax_amount: 0,
                                                 grand_total: 0
@@ -402,6 +501,7 @@ const PaymentVoucherForm = () => {
                             <table>
                                 <thead>
                                 <tr>
+                                    <th>Expense Account</th>
                                     <th>Payment For</th>
                                     <th>Qty</th>
                                     <th>Amount</th>
@@ -424,14 +524,33 @@ const PaymentVoucherForm = () => {
                                                         size={ButtonSize.small}
                                                         onClick={() => handleRemoveItem(item)}
                                                     />
-                                                    <Input
-                                                        type="text"
-                                                        name="payment_for"
-                                                        value={item.payment_for}
-                                                        onChange={(e) => updatePaymentItem(item.id, { payment_for: e.target.value })}
-                                                        isMasked={false}
-                                                    />
+                                                    <select
+                                                        className="form-select"
+                                                        name="expanse_account_id"
+                                                        id="expanse_account_id"
+                                                        onChange={(e) => updatePaymentItem(item.id, { expanse_account_id: e.target.value })}
+                                                    >
+                                                        <option value="">Select Account</option>
+                                                        {expanseAccountOptions.map((account: any) => (
+                                                            <optgroup key={account.value} label={account.label}>
+                                                                {account.children.map((child: any) => (
+                                                                    <option key={child.value} value={child.value}>
+                                                                        {child.label}
+                                                                    </option>
+                                                                ))}
+                                                            </optgroup>
+                                                        ))}
+                                                    </select>
                                                 </div>
+                                            </td>
+                                            <td>
+                                                <Input
+                                                    type="text"
+                                                    name="payment_for"
+                                                    value={item.payment_for}
+                                                    onChange={(e) => updatePaymentItem(item.id, { payment_for: e.target.value })}
+                                                    isMasked={false}
+                                                />
                                             </td>
                                             <td>
                                                 <Input
@@ -548,7 +667,7 @@ const PaymentVoucherForm = () => {
                                     <th>Amount</th>
                                     <th>Cheque Date</th>
                                     <th>Is PDC</th>
-                                    <th>PDC Date</th>
+                                    {/*<th>PDC Date</th>*/}
                                     <th>Action</th>
                                 </tr>
                                 </thead>
@@ -562,7 +681,7 @@ const PaymentVoucherForm = () => {
                                             <td>{cheque.cheque_amount}</td>
                                             <td>{cheque.cheque_date}</td>
                                             <td>{cheque.is_pdc === 1 ? 'Yes' : 'No'}</td>
-                                            <td>{cheque.pdc_date}</td>
+                                            {/*<td>{cheque.pdc_date}</td>*/}
                                             <td>
                                                 <Button
                                                     type={ButtonType.button}
@@ -705,36 +824,36 @@ const PaymentVoucherForm = () => {
                     placeholder="Enter Cheque Date"
                     isMasked={false}
                 />
-                <Option
-                    divClasses="mb-5"
-                    label="Is PDC"
-                    type="checkbox"
-                    name="is_pdc"
-                    value="1"
-                    defaultChecked={chequeDetails.is_pdc === 1}
-                    onChange={(e) => {
-                        setChequeDetails((prev: any) => ({
-                            ...prev,
-                            is_pdc: e.target.checked ? 1 : 0
-                        }));
-                    }}
-                />
-                {chequeDetails.is_pdc === 1 && (
-                    <Input
-                        divClasses="w-full"
-                        label="PDC Date"
-                        type="date"
-                        name="pdc_date"
-                        value={chequeDetails.pdc_date}
-                        onChange={(e) => setChequeDetails((prev: any) => ({
-                            ...prev,
-                            pdc_date: e[0] ? e[0].toLocaleDateString() : ''
-                        }))
-                        }
-                        placeholder="Enter PDC Date"
-                        isMasked={false}
-                    />
-                )}
+                {/*<Option*/}
+                {/*    divClasses="mb-5"*/}
+                {/*    label="Is PDC"*/}
+                {/*    type="checkbox"*/}
+                {/*    name="is_pdc"*/}
+                {/*    value="1"*/}
+                {/*    defaultChecked={chequeDetails.is_pdc === 1}*/}
+                {/*    onChange={(e) => {*/}
+                {/*        setChequeDetails((prev: any) => ({*/}
+                {/*            ...prev,*/}
+                {/*            is_pdc: e.target.checked ? 1 : 0*/}
+                {/*        }));*/}
+                {/*    }}*/}
+                {/*/>*/}
+                {/*{chequeDetails.is_pdc === 1 && (*/}
+                {/*    <Input*/}
+                {/*        divClasses="w-full"*/}
+                {/*        label="PDC Date"*/}
+                {/*        type="date"*/}
+                {/*        name="pdc_date"*/}
+                {/*        value={chequeDetails.pdc_date}*/}
+                {/*        onChange={(e) => setChequeDetails((prev: any) => ({*/}
+                {/*            ...prev,*/}
+                {/*            pdc_date: e[0] ? e[0].toLocaleDateString() : ''*/}
+                {/*        }))*/}
+                {/*        }*/}
+                {/*        placeholder="Enter PDC Date"*/}
+                {/*        isMasked={false}*/}
+                {/*    />*/}
+                {/*)}*/}
             </Modal>
 
             <BankFormModal

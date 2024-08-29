@@ -7,7 +7,7 @@ interface IState {
     account: any;
     accountList: any,
     accountDetail: any
-    accounts: any;
+    accounts: any[];
     generalJournal: any[];
     accountingConfigurations: any[];
     configurationUpdated: boolean;
@@ -22,7 +22,7 @@ const initialState: IState = {
     account: null,
     accountList: null,
     accountDetail: null,
-    accounts: null,
+    accounts: [],
     generalJournal: [],
     accountingConfigurations: [],
     configurationUpdated: false,
@@ -79,6 +79,20 @@ export const getAccountsTypes = createAsyncThunk(
     async (params: any, thunkAPI) => {
         try {
             const response = await API.post('/account/types', params);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const getAccountsByCategory = createAsyncThunk(
+    'accounts/by-category',
+    async (params: any, thunkAPI) => {
+        try {
+            const response = await API.post('/account/by-category', params);
             return response.data;
         } catch (error: any) {
             const message =
@@ -162,6 +176,9 @@ export const accountSlice = createSlice({
         clearAccountingConfigurations: (state) => {
             state.accountingConfigurations = [];
             state.configurationUpdated = false;
+        },
+        clearAccountListState: (state) => {
+            state.accounts = [];
         }
     },
     extraReducers: (builder) => {
@@ -260,10 +277,26 @@ export const accountSlice = createSlice({
             .addCase(storeAccountConfigurations.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
+            })
+            .addCase(getAccountsByCategory.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getAccountsByCategory.fulfilled, (state, action) => {
+                state.loading = false;
+                state.accounts = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getAccountsByCategory.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
             });
     }
 });
-export const { clearAccountState, clearAccountingConfigurations } = accountSlice.actions;
+export const {
+    clearAccountState,
+    clearAccountingConfigurations,
+    clearAccountListState
+} = accountSlice.actions;
 
 export const accountSliceConfig = configureSlice(accountSlice, false);
 

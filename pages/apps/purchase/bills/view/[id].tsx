@@ -38,12 +38,12 @@ const View = () => {
     useEffect(() => {
         if (vendorBillDetail) {
             // console.log(vendorBillDetail?.good_receive_note_vendor_bill.find((grn: any) => grn.good_receive_note));
-            setGoodReceiveNoteItems(vendorBillDetail.good_receive_note_vendor_bill.map((item: any) => item.good_receive_note.raw_products).flat());
+            setGoodReceiveNoteItems(vendorBillDetail.good_receive_note_vendor_bill?.map((item: any) => item.good_receive_note.raw_products).flat());
         }
     }, [vendorBillDetail]);
 
     return (
-        <div>
+        <div className="flex flex-col gap-3">
             <DetailPageHeader
                 appBasePath={AppBasePath.Vendor_Bill}
                 title="Bill Details"
@@ -139,7 +139,7 @@ const View = () => {
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {goodReceiveNoteItems.length > 0
+                                {goodReceiveNoteItems?.length > 0
                                     ? (goodReceiveNoteItems.map((item: any, index: number) => {
                                             let grn = vendorBillDetail?.good_receive_note_vendor_bill.find((grn: any) => grn.good_receive_note_id === item.good_receive_note_id);
                                             return (
@@ -190,9 +190,9 @@ const View = () => {
                                 <tfoot>
                                 <tr>
                                     <td colSpan={4} className="text-center font-bold">Total</td>
-                                    <td className="text-center font-bold">{goodReceiveNoteItems.reduce((acc, item) => acc + (item.unit_price * item.received_quantity), 0).toFixed(2)}</td>
+                                    <td className="text-center font-bold">{goodReceiveNoteItems?.reduce((acc, item) => acc + (item.unit_price * item.received_quantity), 0).toFixed(2)}</td>
                                     <td colSpan={2}></td>
-                                    <td className="text-center font-bold">{goodReceiveNoteItems.reduce((acc, item) => acc + item.total_price, 0).toFixed(2)}</td>
+                                    <td className="text-center font-bold">{goodReceiveNoteItems?.reduce((acc, item) => acc + item.total_price, 0).toFixed(2)}</td>
                                 </tr>
                                 </tfoot>
                             </table>

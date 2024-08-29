@@ -11,6 +11,7 @@ import { checkPermission } from '@/utils/helper';
 import { ActionList, AppBasePath } from '@/utils/enums';
 import useSetActiveMenu from '@/hooks/useSetActiveMenu';
 import { clearGeneralPaymentVoucherState, getGeneralPaymentVouchers } from '@/store/slices/generalPaymentVoucherSlice';
+import { capitalize } from 'lodash';
 
 const Index = () => {
     useSetActiveMenu(AppBasePath.General_Payment_Voucher);
@@ -44,7 +45,7 @@ const Index = () => {
         },
         {
             headerName: 'Method',
-            field: 'payment_method',
+            field: 'payment_method.name',
             minWidth: 150
         },
         {
@@ -54,20 +55,27 @@ const Index = () => {
         },
         {
             headerName: 'Payee',
-            field: 'reference_no',
+            valueGetter: (row: any) => capitalize(row.data.subject_category.replace('_', ' ')),
+            field: 'subject_category',
             minWidth: 150
         },
         {
             headerName: 'Paid To',
-            field: 'reference_no',
+            valueGetter: (row: any) => row.data.subject_category === 'walk_in' ? row.data.name : row.data.subject.name,
             minWidth: 150
         },
-
         {
             headerName: 'Amount',
-            field: 'reference_no',
+            valueGetter: (row: any) => row.data.amount.toLocaleString(
+                undefined,
+                {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }
+            ),
+            field: 'amount',
             minWidth: 150
-        },
+        }
     ]);
 
     useEffect(() => {

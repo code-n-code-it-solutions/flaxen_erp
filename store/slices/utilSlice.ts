@@ -6,6 +6,7 @@ interface IUTILState {
     code: any;
     latestRecord: any;
     rawProductCode: any;
+    subjects: any[];
     loading: boolean;
     error: any;
     success: boolean;
@@ -16,6 +17,7 @@ const initialState: IUTILState = {
     code: {},
     latestRecord: null,
     rawProductCode: null,
+    subjects: [],
     loading: false,
     error: null,
     success: false
@@ -64,6 +66,20 @@ export const getLatestRecord = createAsyncThunk(
     }
 );
 
+export const getSubjects = createAsyncThunk(
+    'subjects',
+    async (subjectType:string, thunkAPI) => {
+        try {
+            const response = await API.post('/subjects', {subjectType});
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 // Slice
 export const utilSlice = createSlice({
     name: 'utils',
@@ -77,6 +93,9 @@ export const utilSlice = createSlice({
         },
         clearLatestRecord: (state) => {
             state.latestRecord = null;
+        },
+        clearSubjectListState: (state) => {
+            state.subjects = [];
         }
     },
     extraReducers: (builder) => {
@@ -116,9 +135,25 @@ export const utilSlice = createSlice({
             .addCase(generateRawProductCode.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
+            })
+            .addCase(getSubjects.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getSubjects.fulfilled, (state, action) => {
+                state.loading = false;
+                state.subjects = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getSubjects.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
             });
     }
 });
-export const { clearUtilState, clearLatestRecord } = utilSlice.actions;
+export const {
+    clearUtilState,
+    clearLatestRecord,
+    clearSubjectListState
+} = utilSlice.actions;
 
 export const utilSliceConfig = configureSlice(utilSlice, false);
