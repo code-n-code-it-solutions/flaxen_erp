@@ -64,7 +64,7 @@ const Index = () => {
     ]);
 
     useEffect(() => {
-        dispatch(setPageTitle('Products'));
+        dispatch(setPageTitle('Customers'));
         setAuthToken(token);
         setContentType('application/json');
         dispatch(getCustomers());

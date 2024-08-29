@@ -86,8 +86,8 @@ const CreditNoteForm = () => {
                 };
             })
         };
-        // console.log(finalData);
-        dispatch(storeCreditNote(finalData));
+        console.log(finalData);
+        // dispatch(storeCreditNote(finalData));
     };
 
     useEffect(() => {
@@ -133,15 +133,15 @@ const CreditNoteForm = () => {
         }
     }, [customers]);
 
-    useEffect(() => {
-        if (saleInvoices) {
-            setInvoiceOptions(saleInvoices.map((item: any) => ({
-                value: item.id,
-                label: item.sale_invoice_code,
-                saleInvoice: item
-            })));
-        }
-    }, [saleInvoices]);
+    // useEffect(() => {
+    //     if (saleInvoices) {
+    //         setInvoiceOptions(saleInvoices.map((item: any) => ({
+    //             value: item.id,
+    //             label: item.sale_invoice_code,
+    //             saleInvoice: item
+    //         })));
+    //     }
+    // }, [saleInvoices]);
 
     useEffect(() => {
         if (creditNoteItems.length > 0) {
@@ -186,6 +186,26 @@ const CreditNoteForm = () => {
         return returnQuantity * retailPrice + taxAmount - discountAmount;
     };
 
+    useEffect(() => {
+        if (formData.credit_note_for) {
+            if (saleInvoices) {
+                setInvoiceOptions(
+                    saleInvoices
+                        .filter((item: any) => item.invoice_for === formData.credit_note_for)
+                        .map((item: any) => ({
+                            value: item.id,
+                            label: item.sale_invoice_code,
+                            saleInvoice: item
+                        }))
+                );
+            } else {
+                setInvoiceOptions([]);
+            }
+        } else {
+            setInvoiceOptions([]);
+        }
+    }, [formData.credit_note_for, saleInvoices]);
+
     return (
         <form onSubmit={(e) => handleSubmit(e)}>
             <Input
@@ -200,6 +220,25 @@ const CreditNoteForm = () => {
                 disabled={true}
             />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 my-3">
+                <Dropdown
+                    divClasses="w-full"
+                    label="Credit Note For"
+                    name="credit_note_for"
+                    options={[
+                        { label: 'Finish Goods', value: 1 },
+                        { label: 'Raw Material', value: 2 }
+                    ]}
+                    value={formData.credit_note_for}
+                    onChange={(e) => {
+                        if (e && typeof e !== 'undefined') {
+                            handleChange('credit_note_for', e.value, true);
+                            // dispatch(clearSaleInvoiceListState());
+                            // dispatch(getSaleInvoicesForCreditNoteByCustomer(e.value));
+                        } else {
+                            handleChange('credit_note_for', '', true);
+                        }
+                    }}
+                />
                 <Dropdown
                     divClasses="w-full"
                     label="Customer"

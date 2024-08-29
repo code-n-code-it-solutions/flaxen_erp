@@ -7,22 +7,27 @@ import { Dropdown } from '@/components/form/Dropdown';
 import Button from '@/components/Button';
 import { ButtonSize, ButtonType, ButtonVariant } from '@/utils/enums';
 import { capitalize } from 'lodash';
-import { clearSaleInvoiceState, getSaleInvoicesByCustomer } from '@/store/slices/saleInvoiceSlice';
 import { calculateDateFromDays } from '@/utils/helper';
 import { Tab } from '@headlessui/react';
 import { clearEmployeeState, getEmployees } from '@/store/slices/employeeSlice';
 import Modal from '@/components/Modal';
-import { clearCustomerState, getCustomers } from '@/store/slices/customerSlice';
-import { storeCreditNote } from '@/store/slices/creditNoteSlice';
+import { storeDebitNote } from '@/store/slices/debitNoteSlice';
 import Textarea from '@/components/form/Textarea';
+import {
+    clearVendorBillListState,
+    clearVendorBillState,
+    getVendorBillsForDebitNoteByVendor
+} from '@/store/slices/vendorBillSlice';
+import { clearVendorState, getVendors } from '@/store/slices/vendorSlice';
+import Swal from 'sweetalert2';
 
 const DebitNoteForm = () => {
     const dispatch = useAppDispatch();
     const { token } = useAppSelector((state) => state.user);
     const { code } = useAppSelector((state) => state.util);
-    const { vendorBills } = useAppSelector((state) => state.vendorBill);
+    const { vendorBills, loading } = useAppSelector((state) => state.vendorBill);
     const { employees } = useAppSelector((state) => state.employee);
-    const { customers } = useAppSelector((state) => state.customer);
+    const { allVendors } = useAppSelector((state) => state.vendor);
 
     const [formData, setFormData] = useState<any>({});
     const [errors, setErrors] = useState<any>({});
@@ -48,7 +53,7 @@ const DebitNoteForm = () => {
         }
 
         if (name === 'vendor_id' && value !== '') {
-            dispatch(getSaleInvoicesByCustomer(value));
+            dispatch(getVendorBillsForDebitNoteByVendor(value));
         }
 
         setFormData({ ...formData, [name]: value });
@@ -59,43 +64,43 @@ const DebitNoteForm = () => {
         setAuthToken(token);
         let finalData = {
             ...formData,
-            credit_note_items: debitNoteItems.map((item: any) => {
+            debit_note_items: debitNoteItems.map((item: any) => {
                 return {
-                    filling_id: item.filling_id,
-                    quotation_id: item.quotation_id,
-                    delivery_note_id: item.delivery_note_id,
-                    sale_invoice_id: item.sale_invoice_id,
+                    purchase_requisition_id: item.purchase_requisition_id,
+                    local_purchase_order_id: item.local_purchase_order_id,
+                    good_receive_note_id: item.good_receive_note_id,
+                    vendor_bill_id: item.vendor_bill_id,
                     raw_product_id: item.raw_product_id,
+                    unit_id: item.unit_id,
                     quantity: item.quantity,
                     returned_quantity: item.return_quantity,
-                    batch_number: item.batch_number,
-                    capacity: item.capacity,
-                    retail_price: item.retail_price,
+                    unit_price: item.unit_price,
                     tax_category_id: item.tax_category_id,
                     tax_rate: item.tax_rate,
-                    tax_amount: (item.return_quantity * item.retail_price * item.tax_rate) / 100,
+                    tax_amount: (item.return_quantity * item.unit_price * item.tax_rate) / 100,
                     discount_type: item.discount_type,
                     discount_amount_rate: item.discount_amount_rate,
                     total_cost: calculateTotal(item)
                 };
             })
-        }
-        // console.log(finalData);
-        dispatch(storeCreditNote(finalData));
+        };
+        console.log(finalData);
+        // dispatch(storeDebitNote(finalData));
     };
 
     useEffect(() => {
         setAuthToken(token);
         setContentType('application/json');
-        dispatch(generateCode('credit_note'));
-        dispatch(clearCustomerState());
-        dispatch(clearSaleInvoiceState());
+        dispatch(generateCode('debit_note'));
+        dispatch(clearVendorState());
+        dispatch(clearVendorBillState());
+        dispatch(clearVendorBillListState());
         dispatch(clearEmployeeState());
 
         dispatch(getEmployees());
-        dispatch(getCustomers());
+        dispatch(getVendors());
         setFormData({
-            credit_note_date: calculateDateFromDays(0)
+            debit_note_date: calculateDateFromDays(0)
         });
         setItemsForSelect([]);
         setDebitNoteItems([]);
@@ -103,7 +108,7 @@ const DebitNoteForm = () => {
 
     useEffect(() => {
         if (code) {
-            setFormData({ ...formData, credit_note_code: code['credit_note'] });
+            setFormData({ ...formData, debit_note_code: code['debit_note'] });
         }
     }, [code]);
 
@@ -117,21 +122,21 @@ const DebitNoteForm = () => {
     }, [employees]);
 
     useEffect(() => {
-        if (customers) {
-            setVendorOptions(customers.map((customer: any) => ({
-                label: customer.name + ' (' + customer.customer_code + ')',
-                value: customer.id,
-                customer
+        if (allVendors) {
+            setVendorOptions(allVendors.map((vendor: any) => ({
+                label: vendor.name + ' (' + vendor.vendor_number + ')',
+                value: vendor.id,
+                vendor
             })));
         }
-    }, [customers]);
+    }, [allVendors]);
 
     useEffect(() => {
         if (vendorBills) {
             setBillOptions(vendorBills.map((item: any) => ({
                 value: item.id,
-                label: item.sale_invoice_code,
-                saleInvoice: item
+                label: item.bill_number,
+                vendorBill: item
             })));
         }
     }, [vendorBills]);
@@ -155,21 +160,40 @@ const DebitNoteForm = () => {
 
     const handleRemoveItem = (item: any) => {
         setItemsForSelect([...itemsForSelect, item]);
-        setDebitNoteItems(debitNoteItems.filter((creditNoteItem: any) => creditNoteItem.id !== item.id));
+        setDebitNoteItems(debitNoteItems.filter((debitNoteItem: any) => debitNoteItem.id !== item.id));
     };
 
     const handleReturnQuantityChange = (itemId: any, value: number) => {
-        setItemsForSelect(itemsForSelect.map((item: any) => {
-            if (item.id === itemId) {
-                return { ...item, return_quantity: value };
-            }
-            return item;
-        }));
+        const selectedItem = itemsForSelect.find((item: any) => item.id === itemId);
+
+        if (selectedItem && value > selectedItem.quantity) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid Quantity',
+                text: 'Returned quantity cannot be more than the available quantity!',
+                confirmButtonText: 'Okay'
+            });
+
+            // Set the return quantity to 0 or reset it to the previous valid value
+            setItemsForSelect(itemsForSelect.map((item: any) => {
+                if (item.id === itemId) {
+                    return { ...item, return_quantity: 0 };
+                }
+                return item;
+            }));
+        } else {
+            setItemsForSelect(itemsForSelect.map((item: any) => {
+                if (item.id === itemId) {
+                    return { ...item, return_quantity: value };
+                }
+                return item;
+            }));
+        }
     };
 
     const calculateTotal = (item: any) => {
         const returnQuantity = parseFloat(item.return_quantity);
-        const retailPrice = parseFloat(item.retail_price);
+        const retailPrice = parseFloat(item.unit_price);
         const taxAmount = (returnQuantity * retailPrice * parseFloat(item.tax_rate)) / 100;
         const discountAmount = item.discount_type
             ? item.discount_type === 'percentage'
@@ -177,17 +201,17 @@ const DebitNoteForm = () => {
                 : parseFloat(item.discount_amount_rate)
             : 0;
         return returnQuantity * retailPrice + taxAmount - discountAmount;
-    }
+    };
 
     return (
         <form onSubmit={(e) => handleSubmit(e)}>
             <Input
                 divClasses="w-full md:w-1/2"
                 className="text-xl font-light py-3"
-                label="Credit Note Code"
+                label="Debit Note Code"
                 type="text"
-                name="credit_note_code"
-                value={formData.credit_note_code}
+                name="debit_note_code"
+                value={formData.debit_note_code}
                 onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
                 isMasked={false}
                 disabled={true}
@@ -195,46 +219,38 @@ const DebitNoteForm = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 my-3">
                 <Dropdown
                     divClasses="w-full"
-                    label="Customer"
-                    name="customer_id"
+                    label="Vendor"
+                    name="vendor_id"
                     options={vendorOptions}
-                    value={formData.customer_id}
+                    value={formData.vendor_id}
                     onChange={(e) => {
                         if (e && typeof e !== 'undefined') {
-                            handleChange('customer_id', e.value, true);
-                            dispatch(getSaleInvoicesByCustomer(e.value));
+                            handleChange('vendor_id', e.value, true);
+                            // dispatch(getVendorBillsForDebitNoteByVendor(e.value));
                         } else {
-                            handleChange('customer_id', '', true);
+                            handleChange('vendor_id', '', true);
                         }
                     }}
                 />
+
                 <div className="flex justify-between items-end gap-1">
                     <Dropdown
                         divClasses="w-full"
-                        label="Invoices"
-                        name="sale_invoice_ids"
+                        label="Vendor Bill"
+                        name="vendor_bill_ids"
                         options={billOptions}
-                        value={formData.sale_invoice_ids}
+                        value={formData.vendor_bill_ids}
                         onChange={(e) => {
                             if (e && e.length > 0 && typeof e !== 'undefined') {
-                                handleChange('sale_invoice_ids', e.map((item: any) => item.value).join(','), true);
-                                let itemList = e.map((invoice: any) => {
-                                    return invoice.saleInvoice.delivery_note_sale_invoices.map((saleInvoice: any) => {
-                                        return saleInvoice.delivery_note.delivery_note_items.map((item: any) => {
-                                            return {
-                                                ...item,
-                                                sale_invoice_id: saleInvoice.sale_invoice_id,
-                                                sale_invoice_code: invoice.label,
-                                                return_quantity: 0
-                                            };
-                                        }).flat();
-                                    }).flat();
-                                }).flat();
-                                setItemsForSelect(itemList);
+                                handleChange('vendor_bill_ids', e.map((item: any) => item.value).join(','), true);
+                                setItemsForSelect(e.map((item: any) => item.vendorBill.items).flat());
                             } else {
-                                handleChange('sale_invoice_ids', '', true);
+                                handleChange('vendor_bill_ids', '', true);
+                                setItemsForSelect([]);
                             }
                         }}
+                        isDisabled={loading}
+                        isLoading={loading}
                         isMulti={true}
                     />
                     <Button
@@ -266,7 +282,7 @@ const DebitNoteForm = () => {
                     name="return_type"
                     options={[
                         { label: 'Cash', value: 'cash' },
-                        { label: 'Credit', value: 'credit' }
+                        { label: 'Debit', value: 'debit' }
                     ]}
                     value={formData.return_type}
                     onChange={(e) => {
@@ -282,10 +298,10 @@ const DebitNoteForm = () => {
                     divClasses="w-full"
                     label="Return Date"
                     type="date"
-                    name="credit_note_date"
-                    value={formData.credit_note_date}
-                    onChange={(e) => handleChange('credit_note_date', e[0] ? e[0].toLocaleDateString() : '', true)}
-                    placeholder="Enter Credit Note Date"
+                    name="debit_note_date"
+                    value={formData.debit_note_date}
+                    onChange={(e) => handleChange('debit_note_date', e[0] ? e[0].toLocaleDateString() : '', true)}
+                    placeholder="Enter Debit Note Date"
                     isMasked={false}
                 />
 
@@ -319,9 +335,9 @@ const DebitNoteForm = () => {
                             <table>
                                 <thead>
                                 <tr>
+                                    <th>Vendor Bill</th>
                                     <th>Product</th>
-                                    <th>Filling</th>
-                                    <th>Capacity</th>
+                                    <th>Unit</th>
                                     <th>Quantity</th>
                                     <th>Return Quantity</th>
                                     <th>Unit Price</th>
@@ -334,57 +350,60 @@ const DebitNoteForm = () => {
                                 </thead>
                                 <tbody>
                                 {debitNoteItems.length > 0 ? (
-                                    debitNoteItems.map((item: any, index: number) => (
-                                        <tr key={index}>
-                                            <td>{item.product_assembly.formula_name}</td>
-                                            <td>{item.product.title}</td>
-                                            <td>{item.capacity}</td>
-                                            <td>{item.quantity}</td>
-                                            <td>{item.return_quantity}</td>
-                                            <td>{item.retail_price}</td>
-                                            <td>
-                                                {(parseFloat(item.return_quantity) * parseFloat(item.retail_price)).toFixed(2)}
-                                            </td>
-                                            <td>
-                                                {item.tax_category ? (
-                                                    <div className="flex flex-col">
-                                                        <span><strong>Tax: </strong>{item.tax_category.name} ({item.tax_rate}%)</span>
-                                                        <span><strong>Amount: </strong>{((item.return_quantity * item.retail_price * item.tax_rate) / 100).toFixed(2)}
-                                                        </span>
-                                                    </div>
-                                                ) : (
-                                                    <span>N/A</span>
-                                                )}
-                                            </td>
-                                            <td>
-                                                {item.discount_type ? (
-                                                    <div className="flex flex-col">
-                                                        <span><strong>Type: </strong>{capitalize(item.discount_type)}
-                                                        </span>
-                                                        <span><strong>Rate: </strong>
-                                                            {item.discount_amount_rate.toFixed(2)}{item.discount_type === 'percentage' ? '%' : ''}
-                                                        </span>
-                                                    </div>
-                                                ) : (
-                                                    <span>N/A</span>
-                                                )}
-                                            </td>
-                                            <td className="text-center">
-                                                {
-                                                    calculateTotal(item).toFixed(2)
-                                                }
-                                            </td>
-                                            <td className="text-center">
-                                                <Button
-                                                    type={ButtonType.button}
-                                                    text="Remove"
-                                                    variant={ButtonVariant.danger}
-                                                    size={ButtonSize.small}
-                                                    onClick={() => handleRemoveItem(item)}
-                                                />
-                                            </td>
-                                        </tr>
-                                    ))
+                                    debitNoteItems.map((item: any, index: number) => {
+                                        const vendorBill = billOptions.find((bill: any) => bill.value === item.vendor_bill_id);
+                                        return (
+                                            <tr key={index}>
+                                                <td>{vendorBill.vendorBill?.bill_number}</td>
+                                                <td>{item.raw_product.title}</td>
+                                                <td>{item.unit?.name}</td>
+                                                <td>{item.quantity}</td>
+                                                <td>{item.return_quantity}</td>
+                                                <td>{item.unit_price}</td>
+                                                <td>
+                                                    {(parseFloat(item.return_quantity) * parseFloat(item.unit_price)).toFixed(2)}
+                                                </td>
+                                                <td>
+                                                    {item.tax_category ? (
+                                                        <div className="flex flex-col">
+                                                            <span><strong>Tax: </strong>{item.tax_category.name} ({item.tax_rate}%)</span>
+                                                            <span><strong>Amount: </strong>{((item.return_quantity * item.unit_price * item.tax_rate) / 100).toFixed(2)}
+                                                            </span>
+                                                        </div>
+                                                    ) : (
+                                                        <span>N/A</span>
+                                                    )}
+                                                </td>
+                                                <td>
+                                                    {item.discount_type ? (
+                                                        <div className="flex flex-col">
+                                                            <span><strong>Type: </strong>{capitalize(item.discount_type)}
+                                                            </span>
+                                                            <span><strong>Rate: </strong>
+                                                                {item.discount_amount_rate.toFixed(2)}{item.discount_type === 'percentage' ? '%' : ''}
+                                                            </span>
+                                                        </div>
+                                                    ) : (
+                                                        <span>N/A</span>
+                                                    )}
+                                                </td>
+                                                <td className="text-center">
+                                                    {
+                                                        calculateTotal(item).toFixed(2)
+                                                    }
+                                                </td>
+                                                <td className="text-center">
+                                                    <Button
+                                                        type={ButtonType.button}
+                                                        text="Remove"
+                                                        variant={ButtonVariant.danger}
+                                                        size={ButtonSize.small}
+                                                        onClick={() => handleRemoveItem(item)}
+                                                    />
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
                                 ) : (
                                     <tr>
                                         <td colSpan={11} className="text-center">No items found</td>
@@ -414,9 +433,9 @@ const DebitNoteForm = () => {
                     <table>
                         <thead>
                         <tr>
-                            <th>Sale Invoice Code</th>
+                            <th>Vendor Bill</th>
                             <th>Product</th>
-                            <th>Filling Item</th>
+                            <th>Unit</th>
                             <th>Quantity</th>
                             <th>Returned Quantity</th>
                             <th>Action</th>
@@ -424,33 +443,36 @@ const DebitNoteForm = () => {
                         </thead>
                         <tbody>
                         {itemsForSelect.length > 0
-                            ? itemsForSelect.map((item: any, index: number) => (
-                                <tr key={index}>
-                                    <td>{item.sale_invoice_code}</td>
-                                    <td>{item.product_assembly.formula_name}</td>
-                                    <td>{item.product.title}</td>
-                                    <td>{item.quantity}</td>
-                                    <td>
-                                        <Input
-                                            type="number"
-                                            name="return_quantity"
-                                            value={item.return_quantity}
-                                            onChange={(e) => handleReturnQuantityChange(item.id, parseFloat(e.target.value))}
-                                            max={item.quantity}
-                                            isMasked={false}
-                                        />
-                                    </td>
-                                    <td>
-                                        <Button
-                                            type={ButtonType.button}
-                                            text="Add"
-                                            variant={ButtonVariant.primary}
-                                            size={ButtonSize.small}
-                                            onClick={() => handleAddItem(item)}
-                                        />
-                                    </td>
-                                </tr>
-                            )) : (
+                            ? itemsForSelect.map((item: any, index: number) => {
+                                const vendorBill = billOptions.find((bill: any) => bill.value === item.vendor_bill_id);
+                                return (
+                                    <tr key={index}>
+                                        <td>{vendorBill?.vendorBill?.bill_number}</td>
+                                        <td>{item.raw_product?.title}</td>
+                                        <td>{item.unit?.name}</td>
+                                        <td>{item.quantity}</td>
+                                        <td>
+                                            <Input
+                                                type="number"
+                                                name="return_quantity"
+                                                value={item.return_quantity}
+                                                onChange={(e) => handleReturnQuantityChange(item.id, parseFloat(e.target.value))}
+                                                max={item.quantity}
+                                                isMasked={false}
+                                            />
+                                        </td>
+                                        <td>
+                                            <Button
+                                                type={ButtonType.button}
+                                                text="Add"
+                                                variant={ButtonVariant.primary}
+                                                size={ButtonSize.small}
+                                                onClick={() => handleAddItem(item)}
+                                            />
+                                        </td>
+                                    </tr>
+                                );
+                            }) : (
                                 <tr>
                                     <td colSpan={6} className="text-center">No invoice selected</td>
                                 </tr>

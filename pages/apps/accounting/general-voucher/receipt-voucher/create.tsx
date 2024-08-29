@@ -14,7 +14,7 @@ const Create = () => {
     const dispatch = useAppDispatch();
     const router = useRouter();
 
-    const { creditNote, success } = useAppSelector(state => state.creditNote);
+    const { generalReceiptVoucher, success } = useAppSelector(state => state.generalReceiptVoucher);
 
     useEffect(() => {
         dispatch(clearCreditNoteState());
@@ -22,10 +22,10 @@ const Create = () => {
     }, []);
 
     useEffect(() => {
-        if (success && creditNote) {
+        if (success && generalReceiptVoucher) {
             router.push('/apps/accounting/general-voucher/receipt-voucher');
         }
-    }, [success, creditNote]);
+    }, [success, generalReceiptVoucher]);
 
     return (
         <div className="flex flex-col gap-3">

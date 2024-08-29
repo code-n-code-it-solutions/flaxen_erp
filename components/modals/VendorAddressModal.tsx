@@ -61,7 +61,11 @@ const VendorAddressModal = ({ modalOpen, setModalOpen, handleSubmit, modalFormDa
         switch (name) {
             case 'address_type_id':
                 if (value && typeof value !== 'undefined') {
-                    setFormData((prev: any) => ({ ...prev, address_type: value.value, address_type_name: value.label }));
+                    setFormData((prev: any) => ({
+                        ...prev,
+                        address_type: value.value,
+                        address_type_name: value.label
+                    }));
                 } else {
                     setFormData((prev: any) => ({ ...prev, address_type: 0, address_type_name: '' }));
                 }
@@ -79,7 +83,7 @@ const VendorAddressModal = ({ modalOpen, setModalOpen, handleSubmit, modalFormDa
             case 'state_id':
                 if (value && typeof value !== 'undefined') {
                     setFormData((prev: any) => ({ ...prev, state_id: value.value, state_name: value.label }));
-                    dispatch(getCities(value.value));
+                    dispatch(getCities({ countryId: formData.country_id, stateId: value.value }));
                 } else {
                     setFormData((prev: any) => ({ ...prev, state_id: 0, state_name: '' }));
                     setCityOptions([]);

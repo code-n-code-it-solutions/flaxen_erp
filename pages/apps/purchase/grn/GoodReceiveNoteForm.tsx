@@ -69,27 +69,8 @@ const GoodReceiveNoteForm = ({ id }: IFormProps) => {
         // console.log(user)
         let finalData = {
             ...formData,
-            user_id: user.id,
-            purchase_requisition_ids: Array.from(new Set(GRNItems.map(item => item.purchase_requisition_id))).join(',')
-            // items: rawProducts.map((product: any) => {
-            //     return {
-            //         local_purchase_order_id: product.local_purchase_order_id,
-            //         purchase_requisition_id: product.purchase_requisition_id,
-            //         raw_product_id: product.raw_product_id,
-            //         quantity: product.quantity,
-            //         received_quantity: product.received_quantity,
-            //         unit_id: product.unit_id,
-            //         unit_price: product.unit_price,
-            //         total: product.total,
-            //         description: product.description || '',
-            //         tax_category_id: product.tax_category_id,
-            //         tax_rate: product.tax_rate,
-            //         tax_amount: product.tax_amount,
-            //         discount_type: product.discount_type,
-            //         discount_amount_rate: product.discount_amount_rate,
-            //         row_total: product.row_total
-            //     };
-            // })
+            purchase_requisition_ids: Array.from(new Set(GRNItems.map(item => item.purchase_requisition_id))).join(','),
+            items: GRNItems
         };
         if (id) {
             // dispatch(updateRawProduct(id, formData));
@@ -156,10 +137,12 @@ const GoodReceiveNoteForm = ({ id }: IFormProps) => {
         setGRNItems([]);
         let columnDefinitions: any[] = [];
         if (formData.type === 'Material') {
+            // console.log(GRNItems);
             columnDefinitions = [
                 {
                     headerName: 'Product',
-                    field: 'raw_product_id',
+                    field: 'raw_product.title',
+                    valueGetter: (params: any) => params.data.raw_product?.title + ' (' + params.data.raw_product?.item_code + ')',
                     cellRenderer: (params: any) => params.node?.rowPinned ? '' : params.value,
                     minWidth: 150,
                     filter: false,
@@ -468,6 +451,7 @@ const GoodReceiveNoteForm = ({ id }: IFormProps) => {
                                                 status: 'Completed',
                                                 purchase_requisition_id: product.purchase_requisition_id, // set the parent purchase requisition id
                                                 local_purchase_order_id: product.local_purchase_order_id, // set the parent purchase requisition id
+                                                raw_product: product.raw_product,
                                                 raw_product_id: product.raw_product_id,
                                                 quantity: parseInt(product.quantity),
                                                 received_quantity: parseInt(product.quantity),

@@ -44,7 +44,7 @@ const DeliveryNoteForm = () => {
     const [formError, setFormError] = useState<any>('');
 
     const handleRemoveRow = (row: any) => {
-        const updatedItems = deliveryNoteItems.filter((item) => row.quoataion_id===item.quoataion_id && row.raw_product_id===item.raw_product_id);
+        const updatedItems = deliveryNoteItems.filter((item) => row.quoataion_id === item.quoataion_id && row.raw_product_id === item.raw_product_id);
         setDeliveryNoteItems(updatedItems);
     };
 
@@ -197,17 +197,18 @@ const DeliveryNoteForm = () => {
                     editable: (params: any) => !params.node.rowPinned, // Disable editing in pinned row
                     cellEditor: 'agSelectCellEditor',
                     cellEditorParams: {
-                        values: batchNumberOptions ? batchNumberOptions.map((batch: any) => batch.value) : []
+                        values: []
                     },
                     valueFormatter: (params: any) => {
                         if (params.node?.rowPinned) return '';  // No formatting for pinned row
-                        const selectedOption = batchNumberOptions?.find((batch: any) => batch.value === params.value);
-                        return selectedOption ? selectedOption.label : '';
+                        console.log(params.data.stock);
+                        const selectedOption = params.data.stock?.find((batch: any) => batch.batch_number === params.value);
+                        return selectedOption ? selectedOption.batch_number : '';
                     },
                     cellRenderer: (params: any) => {
                         if (params.node?.rowPinned) return '';  // Show empty text for pinned row
-                        const selectedOption = batchNumberOptions?.find((batch: any) => batch.value === params.value);
-                        return selectedOption ? selectedOption.label : '';
+                        const selectedOption = params.data.stock?.find((batch: any) => batch.batch_number === params.value);
+                        return selectedOption ? selectedOption.batch_number : '';
                     },
                     minWidth: 150,
                     filter: false,
@@ -306,17 +307,17 @@ const DeliveryNoteForm = () => {
         }
 
         // Proceed with form submission if there are no invalid rows
-        if(deliveryNoteItems.length === 0) {
+        if (deliveryNoteItems.length === 0) {
             Swal.fire({
                 icon: 'error',
                 title: 'Oops...',
                 text: 'Please select a quotation to proceed'
             });
         } else {
-           dispatch(storeDeliveryNote({
-               ...formData,
-               delivery_note_items: deliveryNoteItems
-           }));
+            dispatch(storeDeliveryNote({
+                ...formData,
+                delivery_note_items: deliveryNoteItems
+            }));
         }
     };
 

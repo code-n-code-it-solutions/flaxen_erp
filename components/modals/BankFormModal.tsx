@@ -61,9 +61,8 @@ const BankFormModal: FC<IProps> = ({
     };
 
     const handleCountryChange = (e: any) => {
-        const { name, value, required } = e.target;
         if (e && e.value && typeof e !== 'undefined') {
-            setFormData((prev: any) => ({ ...prev, country_id: e ? e.value : 0, country_name: e ? e.label : '' }));
+            setFormData((prev: any) => ({ ...prev, country_id: e.value, country_name: e ? e.label : '' }));
             dispatch(getStates(parseInt(e.value)));
         }
         // if (required) {
@@ -76,7 +75,6 @@ const BankFormModal: FC<IProps> = ({
     };
 
     const handleStateChange = (e: any) => {
-        const { name, value, required } = e.target;
         if (e && e.value && typeof e !== 'undefined') {
             setFormData((prev: any) => ({ ...prev, state_id: e ? e.value : 0, state_name: e ? e.label : '' }));
             dispatch(getCities({ countryId: formData.country_id, stateId: parseInt(e.value) }));
@@ -242,7 +240,7 @@ const BankFormModal: FC<IProps> = ({
                         divClasses="w-full"
                         label="City"
                         name="city_id"
-                        options={stateOptions}
+                        options={cityOptions}
                         value={formData.city_id}
                         onChange={(e: any) => {
                             if (e) {
