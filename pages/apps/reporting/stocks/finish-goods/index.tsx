@@ -48,64 +48,6 @@ const Index = () => {
     const [reportData, setReportData] = useState<any[]>([]);
     const [pinnedBottomRowData, setPinnedBottomRowData] = useState<any[]>([]);
     const gridRef = useRef<AgGridReact<any>>(null);
-    // const [colDefs, setColDefs] = useState<any>([
-    //     {
-    //         headerName: 'Product Code',
-    //         field: 'filling_code',
-    //         minWidth: 150,
-    //         filter: false,
-    //         floatingFilter: false
-    //     },
-    //     {
-    //         headerName: 'Product',
-    //         field: 'product_assembly',
-    //         minWidth: 150,
-    //         filter: false,
-    //         floatingFilter: false
-    //     },
-    //     {
-    //         headerName: 'Manufactured Quantity',
-    //         field: 'manufactured_quantity',
-    //         minWidth: 150,
-    //         filter: false,
-    //         floatingFilter: false
-    //     },
-    //     {
-    //         headerName: 'Sold Quantity',
-    //         field: 'sold_quantity',
-    //         minWidth: 150,
-    //         filter: false,
-    //         floatingFilter: false
-    //     },
-    //     {
-    //         headerName: 'Remaining Quantity',
-    //         field: 'remaining_quantity',
-    //         minWidth: 150,
-    //         filter: false,
-    //         floatingFilter: false
-    //     },
-    //     {
-    //         headerName: 'Cost of Finished Goods',
-    //         field: 'cost_of_finish_goods',
-    //         minWidth: 150,
-    //         filter: false,
-    //         floatingFilter: false
-    //     },
-    //     {
-    //         headerName: 'Sale Price',
-    //         field: 'sale_price',
-    //         minWidth: 150,
-    //         filter: false,
-    //         floatingFilter: false
-    //     },
-    //     {
-    //         headerName: 'Profit',
-    //         field: 'profit',
-    //         minWidth: 150,
-    //         filter: false,
-    //         floatingFilter: false
-    //     }
-    // ]);
 
     const getColDefs = () => {
         let cols: any[] = [];
@@ -114,7 +56,7 @@ const Index = () => {
             cols = [
                 {
                     headerName: 'Product',
-                    field: 'product_assembly',
+                    field: 'product_assembly.formula_name',
                     minWidth: 150,
                     filter: false,
                     floatingFilter: false
@@ -124,14 +66,14 @@ const Index = () => {
             cols = [
                 {
                     headerName: 'Product',
-                    field: 'product_assembly',
+                    field: 'product_assembly.formula_name',
                     minWidth: 150,
                     filter: false,
                     floatingFilter: false
                 },
                 {
                     headerName: 'Filling Product',
-                    valueGetter: (params: any) => params.data.product_title + ' (' + params.data.product_code + ')',
+                    valueGetter: (params: any) => params.data.product?.title + ' (' + params.data.product?.item_code + ')',
                     minWidth: 150,
                     filter: false,
                     floatingFilter: false
@@ -142,26 +84,26 @@ const Index = () => {
         cols = [
             ...cols,
             {
-                headerName: formData.report_type === 'production' ? 'Produced' : 'Filled',
-                field: 'totalProduced',
+                headerName: 'Batch',
+                field: 'batch_number',
                 minWidth: 150,
                 filter: false,
                 floatingFilter: false
             },
             {
-                headerName: formData.report_type === 'production' ? 'Produced' : 'Sold',
-                field: 'totalSold',
+                headerName: 'Color Code',
+                valueGetter: (params: any) => params.data.product_assembly?.color_code?.name,
                 minWidth: 150,
                 filter: false,
                 floatingFilter: false
             },
             {
-                headerName: formData.report_type === 'production' ? 'Remaining' : 'In Hand',
-                field: 'finalStock',
+                headerName: formData.report_type === 'production' ? 'Quantity (KG)' : 'Quantity',
+                field: 'quantity',
                 minWidth: 150,
                 filter: false,
                 floatingFilter: false
-            }
+            },
         ]
 
         return cols;
@@ -383,50 +325,28 @@ const Index = () => {
                                         </>
                                     ) : (<></>)}
 
-                            <Dropdown
+                            <Input
                                 divClasses="w-full"
-                                label="Date Range"
-                                name="date_range_in"
-                                value={formData.date_range_in}
-                                options={[
-                                    { label: 'Manufacturing', value: 'manufacturing' },
-                                    { label: 'Selling', value: 'selling' }
-                                ]}
-                                isMulti={false}
-                                onChange={(e: any) => {
-                                    if (e && typeof e !== 'undefined') {
-                                        setShowDates(true);
-                                        handleChange('date_range_in', e.value, false);
-                                    } else {
-                                        setShowDates(false);
-                                        handleChange('date_range_in', '', false);
-                                    }
-                                }}
+                                label="From Date"
+                                type="date"
+                                name="from_date"
+                                value={formData.from_date}
+                                onChange={(e) => handleChange('from_date', e[0] ? e[0].toLocaleDateString() : '', true)}
+                                placeholder="Enter Filling Date"
+                                isMasked={false}
                             />
-                            {showDates && (
-                                <>
-                                    <Input
-                                        divClasses="w-full"
-                                        label="From Date"
-                                        type="date"
-                                        name="from_date"
-                                        value={formData.from_date}
-                                        onChange={(e) => handleChange('from_date', e[0] ? e[0].toLocaleDateString() : '', true)}
-                                        placeholder="Enter Filling Date"
-                                        isMasked={false}
-                                    />
-                                    <Input
-                                        divClasses="w-full"
-                                        label="To Date"
-                                        type="date"
-                                        name="to_date"
-                                        value={formData.to_date}
-                                        onChange={(e) => handleChange('to_date', e[0] ? e[0].toLocaleDateString() : '', true)}
-                                        placeholder="Enter Filling Date"
-                                        isMasked={false}
-                                    />
-                                </>
-                            )}
+
+                            <Input
+                                divClasses="w-full"
+                                label="To Date"
+                                type="date"
+                                name="to_date"
+                                value={formData.to_date}
+                                onChange={(e) => handleChange('to_date', e[0] ? e[0].toLocaleDateString() : '', true)}
+                                placeholder="Enter Filling Date"
+                                isMasked={false}
+                            />
+
                             <Dropdown
                                 divClasses="w-full"
                                 label="Stock Option"
