@@ -9,6 +9,7 @@ import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import { useRouter } from 'next/router';
 import { clearCustomerPaymentState } from '@/store/slices/customerPayment';
 import PaymentForm from '@/pages/apps/sales/payments/PaymentForm';
+import { clearSaleInvoiceListState } from '@/store/slices/saleInvoiceSlice';
 
 const Create = () => {
     useSetActiveMenu(AppBasePath.Invoice_Payment)
@@ -20,6 +21,7 @@ const Create = () => {
     useEffect(() => {
         dispatch(setPageTitle('New Payment'));
         dispatch(clearCustomerPaymentState());
+        dispatch(clearSaleInvoiceListState())
     }, []);
 
     useEffect(() => {

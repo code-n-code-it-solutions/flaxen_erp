@@ -79,7 +79,7 @@ const PaymentForm = () => {
         setInvoices(invoices.map((invoice: any) => {
             const totalAmount = invoice.delivery_note_sale_invoices
                 .flatMap((invoice: any) => invoice.delivery_note.delivery_note_items)
-                .reduce((acc: number, item: any) => acc + item.total_cost, 0);
+                .reduce((acc: number, item: any) => acc + item.grand_total, 0);
 
             return {
                 id: invoice.id,
@@ -252,6 +252,7 @@ const PaymentForm = () => {
         const totalReceivedAmount = invoices.reduce((sum, invoice) => sum + invoice.received_amount, 0);
         const totalDueAmount = invoices.reduce((sum, invoice) => sum + invoice.due_amount, 0);
 
+        console.log(totalReceivedAmount, totalChequeAmount, totalDueAmount);
         if (totalReceivedAmount + totalChequeAmount > totalDueAmount) {
             Swal.fire({
                 icon: 'error',
@@ -471,7 +472,7 @@ const PaymentForm = () => {
                         </Tab>
                     )}
                 </Tab.List>
-                <Tab.Panels className="panel rounded-none">
+                <Tab.Panels className="py-3 rounded-none">
                     <Tab.Panel>
                         <div className="active table-responsive">
                             <table>
@@ -480,57 +481,59 @@ const PaymentForm = () => {
                                     <th>Invoice Code</th>
                                     <th>Ref #</th>
                                     <th>Invoice Date</th>
-                                    <th>Due Date/Terms</th>
+                                    {/*<th>Due Date/Terms</th>*/}
                                     <th>Total Amount</th>
                                     <th>Due Amount</th>
                                     <th>Received Amount</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {invoices.map((invoice: any, index: number) => (
-                                    <tr key={index}>
-                                        <td>{invoice.sale_invoice_code}</td>
-                                        <td>{invoice.payment_reference}</td>
-                                        <td>{invoice.invoice_date}</td>
-                                        <td>{invoice.due_date ? invoice.due_date : invoice.payment_terms + ' Days'}</td>
-                                        <td>{invoice.total_amount.toFixed(2)}</td>
-                                        <td>{invoice.due_amount.toFixed(2)}</td>
-                                        <td>
-                                            <Input
-                                                divClasses="w-full"
-                                                type="number"
-                                                step="any"
-                                                name={`invoices[${index}][received_amount]`}
-                                                value={invoice.received_amount}
-                                                onChange={(e) => {
-                                                    const receivedAmount = parseFloat(e.target.value);
-                                                    if (receivedAmount > invoice.due_amount) {
-                                                        setErrors({
-                                                            ...errors,
-                                                            [`invoices[${index}][received_amount]`]: 'Received amount cannot exceed due amount'
-                                                        });
-                                                    } else {
-                                                        setErrors((prevErrors: any) => {
-                                                            const {
-                                                                [`invoices[${index}][received_amount]`]: removedError,
-                                                                ...restErrors
-                                                            } = prevErrors;
-                                                            return restErrors;
-                                                        });
-                                                    }
-                                                    handleReceivedAmountChange(index, receivedAmount);
-                                                }}
-                                                placeholder="Enter Received Amount"
-                                                isMasked={false}
-                                            />
-                                            {errors[`invoices[${index}][received_amount]`] && (
-                                                <div className="text-red-500 text-xs">
-                                                    {errors[`invoices[${index}][received_amount]`]}
-                                                </div>
-                                            )}
-                                        </td>
-                                    </tr>
-                                ))}
+                                {invoices.map((invoice: any, index: number) => {
+                                    return (
+                                        <tr key={index}>
+                                            <td>{invoice.sale_invoice_code}</td>
+                                            <td>{invoice.payment_reference}</td>
+                                            <td>{invoice.invoice_date}</td>
+                                            {/*<td>{invoice.due_date ? invoice.due_date : invoice.payment_terms + ' Days'}</td>*/}
+                                            <td>{invoice.total_amount.toFixed(2)}</td>
+                                            <td>{invoice.due_amount.toFixed(2)}</td>
+                                            <td>
+                                                <Input
+                                                    divClasses="w-full"
+                                                    type="number"
+                                                    step="any"
+                                                    name={`invoices[${index}][received_amount]`}
+                                                    value={invoice.received_amount}
+                                                    onChange={(e) => {
+                                                        const receivedAmount = parseFloat(e.target.value);
+                                                        if (receivedAmount > invoice.due_amount) {
+                                                            setErrors({
+                                                                ...errors,
+                                                                [`invoices[${index}][received_amount]`]: 'Received amount cannot exceed due amount'
+                                                            });
+                                                        } else {
+                                                            setErrors((prevErrors: any) => {
+                                                                const {
+                                                                    [`invoices[${index}][received_amount]`]: removedError,
+                                                                    ...restErrors
+                                                                } = prevErrors;
+                                                                return restErrors;
+                                                            });
+                                                        }
+                                                        handleReceivedAmountChange(index, receivedAmount);
+                                                    }}
+                                                    placeholder="Enter Received Amount"
+                                                    isMasked={false}
+                                                />
+                                                {errors[`invoices[${index}][received_amount]`] && (
+                                                    <div className="text-red-500 text-xs">
+                                                        {errors[`invoices[${index}][received_amount]`]}
+                                                    </div>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                                 </tbody>
                             </table>
                         </div>
@@ -762,36 +765,6 @@ const PaymentForm = () => {
                     placeholder="Enter Cheque Date"
                     isMasked={false}
                 />
-                <Option
-                    divClasses="mb-5"
-                    label="Is PDC"
-                    type="checkbox"
-                    name="is_pdc"
-                    value="1"
-                    defaultChecked={chequeDetails.is_pdc === 1}
-                    onChange={(e) => {
-                        setChequeDetails((prev: any) => ({
-                            ...prev,
-                            is_pdc: e.target.checked ? 1 : 0
-                        }));
-                    }}
-                />
-                {chequeDetails.is_pdc === 1 && (
-                    <Input
-                        divClasses="w-full"
-                        label="PDC Date"
-                        type="date"
-                        name="pdc_date"
-                        value={chequeDetails.pdc_date}
-                        onChange={(e) => setChequeDetails((prev: any) => ({
-                            ...prev,
-                            pdc_date: e[0] ? e[0].toLocaleDateString() : ''
-                        }))
-                        }
-                        placeholder="Enter PDC Date"
-                        isMasked={false}
-                    />
-                )}
             </Modal>
             <BankFormModal
                 modalOpen={bankModal}
