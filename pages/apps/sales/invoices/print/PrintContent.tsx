@@ -15,7 +15,7 @@ const PrintContent = ({ content, items }: any) => {
 
         items.forEach((deliveryNoteItem: any) => {
             deliveryNoteItem.delivery_note_items.forEach((item: any) => {
-                const itemTotal = parseFloat(item.retail_price) * parseFloat(item.delivered_quantity);
+                const itemTotal = parseFloat(item.sale_price) * parseFloat(item.delivered_quantity);
                 const itemTax = item.tax_amount;
                 const itemDiscount = item.discount_amount_rate ? parseFloat(item.discount_amount_rate) : 0;
                 totalAmount += itemTotal;
@@ -84,49 +84,101 @@ const PrintContent = ({ content, items }: any) => {
                 <Text style={styles.sectionTitle}>Item Details</Text>
                 {items.map((deliveryNoteItem: any, index: number) => (
                     <View style={[styles.table, { marginBottom: 5 }]} key={index}>
-                        <Text style={{textAlign: 'center', fontSize: 10, paddingVertical: 5}}>
+                        <Text style={{ textAlign: 'center', fontSize: 10, paddingVertical: 5 }}>
                             {deliveryNoteItem.delivery_note_code}
                         </Text>
-                        <View style={styles.tableHeader}>
-                            <Text style={[styles.tableHeaderCell, { width: '5%' }]}>#</Text>
-                            <Text style={[styles.tableHeaderCell, { width: '15%' }]}>Product</Text>
-                            <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Cost</Text>
-                            <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Quantity</Text>
-                            <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Before Tax</Text>
-                            <Text style={[styles.tableHeaderCell, { width: '15%' }]}>Tax</Text>
-                            <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Discount</Text>
-                            <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Total Cost</Text>
-                        </View>
+                        {content.sale_invoice_for === 1
+                            ? (
+                                <View style={styles.tableHeader}>
+                                    <Text style={[styles.tableHeaderCell, { width: '5%' }]}>#</Text>
+                                    <Text style={[styles.tableHeaderCell, { width: '15%' }]}>Product</Text>
+                                    <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Batch</Text>
+                                    <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Cost</Text>
+                                    <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Quantity</Text>
+                                    <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Before Tax</Text>
+                                    <Text style={[styles.tableHeaderCell, { width: '15%' }]}>Tax</Text>
+                                    <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Discount</Text>
+                                    <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Total Cost</Text>
+                                </View>
+                            ) : (
+                                <View style={styles.tableHeader}>
+                                    <Text style={[styles.tableHeaderCell, { width: '5%' }]}>#</Text>
+                                    <Text style={[styles.tableHeaderCell, { width: '15%' }]}>Product</Text>
+                                    <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Cost</Text>
+                                    <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Quantity</Text>
+                                    <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Before Tax</Text>
+                                    <Text style={[styles.tableHeaderCell, { width: '15%' }]}>Tax</Text>
+                                    <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Discount</Text>
+                                    <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Total Cost</Text>
+                                </View>
+                            )}
+
                         {deliveryNoteItem.delivery_note_items.map((item: any, itemIndex: number) => (
-                            <View key={itemIndex} style={styles.tableRow}>
-                                <Text style={[styles.tableCell, { width: '5%' }]}>
-                                    {itemIndex + 1}
-                                </Text>
-                                <View style={[styles.tableCell, { width: '15%' }]}>
-                                    <Text>{item.product_assembly.formula_name}</Text>
-                                    <Text>{item.product.title + ` - ${item.capacity}KG`}</Text>
-                                </View>
-                                <Text style={[styles.tableCell, { width: '10%' }]}>
-                                    {parseFloat(item.retail_price).toFixed(2)}
-                                </Text>
-                                <Text style={[styles.tableCell, { width: '10%' }]}>
-                                    {item.delivered_quantity}
-                                </Text>
-                                <Text style={[styles.tableCell, { width: '10%' }]}>
-                                    {(parseFloat(item.retail_price) * parseFloat(item.delivered_quantity)).toFixed(2)}
-                                </Text>
-                                <View style={[styles.tableCell, { width: '15%' }]}>
-                                    <Text>Tax: {item.tax_category.name + ' (' + item.tax_rate + '%)'}</Text>
-                                    <Text>Amt: {item.tax_amount.toFixed(2)}</Text>
-                                </View>
-                                <Text style={[styles.tableCell, { width: '10%' }]}>
-                                    {item.discount_amount_rate ? item.discount_amount_rate.toFixed(2) : 'NA'}
-                                    {item.discount_type && item.discount_type === 'percentage' ? '%' : '/-'}
-                                </Text>
-                                <Text style={[styles.tableCell, { width: '10%' }]}>
-                                    {parseFloat(item.total_cost).toFixed(2)}
-                                </Text>
-                            </View>
+                            content.sale_invoice_for === 1
+                                ? (
+                                    <View key={itemIndex} style={styles.tableRow}>
+                                        <Text style={[styles.tableCell, { width: '5%' }]}>
+                                            {itemIndex + 1}
+                                        </Text>
+                                        <View style={[styles.tableCell, { width: '15%' }]}>
+                                            <Text>{item.product_assembly.formula_name}</Text>
+                                            <Text>{item.product.title + ` - ${item.capacity}KG`}</Text>
+                                        </View>
+                                        <Text style={[styles.tableCell, { width: '10%' }]}>
+                                            {item.batch_number}
+                                        </Text>
+                                        <Text style={[styles.tableCell, { width: '10%' }]}>
+                                            {parseFloat(item.sale_price).toFixed(2)}
+                                        </Text>
+                                        <Text style={[styles.tableCell, { width: '10%' }]}>
+                                            {item.delivered_quantity}
+                                        </Text>
+                                        <Text style={[styles.tableCell, { width: '10%' }]}>
+                                            {(parseFloat(item.sale_price) * parseFloat(item.delivered_quantity)).toFixed(2)}
+                                        </Text>
+                                        <View style={[styles.tableCell, { width: '15%' }]}>
+                                            <Text>Tax: {item.tax_category.name + ' (' + item.tax_rate + '%)'}</Text>
+                                            <Text>Amt: {item.tax_amount.toFixed(2)}</Text>
+                                        </View>
+                                        <Text style={[styles.tableCell, { width: '10%' }]}>
+                                            {item.discount_amount_rate ? item.discount_amount_rate.toFixed(2) : 'NA'}
+                                            {item.discount_type && item.discount_type === 'percentage' ? '%' : '/-'}
+                                        </Text>
+                                        <Text style={[styles.tableCell, { width: '10%' }]}>
+                                            {parseFloat(item.grand_total).toFixed(2)}
+                                        </Text>
+                                    </View>
+                                ) : (
+                                    <View key={itemIndex} style={styles.tableRow}>
+                                        <Text style={[styles.tableCell, { width: '5%' }]}>
+                                            {itemIndex + 1}
+                                        </Text>
+                                        <View style={[styles.tableCell, { width: '15%' }]}>
+                                            <Text>{item.product_assembly.formula_name}</Text>
+                                            <Text>{item.product.title + ` - ${item.capacity}KG`}</Text>
+                                        </View>
+                                        <Text style={[styles.tableCell, { width: '10%' }]}>
+                                            {parseFloat(item.sale_price).toFixed(2)}
+                                        </Text>
+                                        <Text style={[styles.tableCell, { width: '10%' }]}>
+                                            {item.delivered_quantity}
+                                        </Text>
+                                        <Text style={[styles.tableCell, { width: '10%' }]}>
+                                            {(parseFloat(item.sale_price) * parseFloat(item.delivered_quantity)).toFixed(2)}
+                                        </Text>
+                                        <View style={[styles.tableCell, { width: '15%' }]}>
+                                            <Text>Tax: {item.tax_category.name + ' (' + item.tax_rate + '%)'}</Text>
+                                            <Text>Amt: {item.tax_amount.toFixed(2)}</Text>
+                                        </View>
+                                        <Text style={[styles.tableCell, { width: '10%' }]}>
+                                            {item.discount_amount_rate ? item.discount_amount_rate.toFixed(2) : 'NA'}
+                                            {item.discount_type && item.discount_type === 'percentage' ? '%' : '/-'}
+                                        </Text>
+                                        <Text style={[styles.tableCell, { width: '10%' }]}>
+                                            {parseFloat(item.grand_total).toFixed(2)}
+                                        </Text>
+                                    </View>
+                                )
                         ))}
                     </View>
                 ))}

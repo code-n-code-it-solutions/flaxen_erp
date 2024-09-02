@@ -258,14 +258,6 @@ const InvoiceForm = () => {
                     filter: false,
                     floatingFilter: false
                 },
-                {
-                    headerName: 'A.Qty',
-                    field: 'available_quantity',
-                    cellRenderer: (params: any) => params.node?.rowPinned ? '' : params.value,
-                    minWidth: 150,
-                    filter: false,
-                    floatingFilter: false
-                }
             ];
 
             setColDefs([...finishGoodsColDefs, ...defaultColDef]);
@@ -296,15 +288,6 @@ const InvoiceForm = () => {
                     filter: false,
                     floatingFilter: false
                 },
-                {
-                    headerName: 'Stock',
-                    field: 'stock_quantity',
-                    valueGetter: (params: any) => params.data.product.stock_quantity,
-                    cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
-                    minWidth: 150,
-                    filter: false,
-                    floatingFilter: false
-                }
             ];
 
             setColDefs([...rawProductColDefs, ...defaultColDef]);

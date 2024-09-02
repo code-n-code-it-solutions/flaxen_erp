@@ -41,7 +41,7 @@ const View = () => {
     }, [router.query.id, dispatch]);
 
     return (
-        <div>
+        <div className="flex flex-col gap-3">
             <DetailPageHeader
                 appBasePath={AppBasePath.Delivery_Note}
                 title="Quotation Details"
@@ -52,7 +52,7 @@ const View = () => {
                     },
                     print: {
                         show: true,
-                        onClick: () => router.push('/apps/sales/orders/delivery-notes/print/' + ids.join('/'))
+                        onClick: () => router.push('/apps/sales/delivery-notes/print/' + ids.join('/'))
                     },
                     delete: {
                         show: false
@@ -68,7 +68,7 @@ const View = () => {
                 }}
                 backButton={{
                     show: true,
-                    backLink: '/apps/sales/orders/delivery-notes'
+                    backLink: '/apps/sales/delivery-notes'
                 }}
             />
             <PageWrapper
@@ -121,38 +121,48 @@ const View = () => {
                         <div className="table-responsive">
                             <table>
                                 <thead>
-                                <tr>
-                                    <th>Sr.No</th>
-                                    <th>Product</th>
-                                    {/*{!deliveryNoteDetail.skip_quotation && (<th>Quotation</th>)}*/}
-                                    <th>Batch #</th>
-                                    <th>Filling Product</th>
-                                    <th>Delivered Quantity</th>
-                                </tr>
+                                {deliveryNoteDetail.delivery_note_for === 1
+                                    ? (
+                                        <tr>
+                                            <th>Sr.No</th>
+                                            <th>Product</th>
+                                            <th>Filling</th>
+                                            <th>Capacity</th>
+                                            <th>Batch #</th>
+                                            <th>Delivered Quantity
+                                                ({deliveryNoteDetail.delivery_note_for === 1 ? 'No' : 'Kg'})
+                                            </th>
+                                        </tr>
+                                    )
+                                    : (
+                                        <tr>
+                                            <th>Sr.No</th>
+                                            <th>Product</th>
+                                            <th>Delivered Quantity</th>
+                                        </tr>
+                                    )}
                                 </thead>
                                 <tbody className="text-center">
 
                                 {deliveryNoteDetail?.delivery_note_items?.map((item: any, index: any) => (
-
-                                    <tr key={index}>
-                                        <td>{index + 1}</td>
-                                        <td>{item.product_assembly.formula_name}</td>
-                                        {/*{!deliveryNoteDetail.skip_quotation && (*/}
-                                        {/*    <td>{item.quotation.quotation_code}</td>*/}
-                                        {/*)}*/}
-                                        <td>
-                                            {item.available_quantity ? (
-                                                <div>
-                                                    <span>{item.batch_number}</span><br />
-                                                    <span>{item.filling.filling_code}</span>
-                                                </div>
-                                            ) : (
-                                                <span className="text-red-500">Not Available</span>
-                                            )}
-                                        </td>
-                                        <td>{item.product?.title}</td>
-                                        <td>{item.delivered_quantity}</td>
-                                    </tr>
+                                    deliveryNoteDetail.delivery_note_for === 1
+                                        ? (
+                                            <tr key={index}>
+                                                <td>{index + 1}</td>
+                                                <td>{item.product_assembly.formula_name}</td>
+                                                <td>{item.product.title + ' (' + item.product.item_code + ')'}</td>
+                                                <td>{item.capacity}</td>
+                                                <td>{item.batch_number}</td>
+                                                <td>{item.delivered_quantity}</td>
+                                            </tr>
+                                        )
+                                        : (
+                                            <tr key={index}>
+                                                <td>{index + 1}</td>
+                                                <td>{item.product.title + ' (' + item.product.item_code + ')'}</td>
+                                                <td>{item.delivered_quantity}</td>
+                                            </tr>
+                                        )
                                 ))}
                                 </tbody>
                             </table>

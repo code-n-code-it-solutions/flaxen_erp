@@ -196,17 +196,47 @@ const DeliveryNoteForm = () => {
                     field: 'batch_number',
                     editable: (params: any) => !params.node.rowPinned, // Disable editing in pinned row
                     cellEditor: 'agSelectCellEditor',
-                    cellEditorParams: {
-                        values: []
+                    cellEditorParams: (params: any) => {
+                        // Safely handle the case where params.data or stock might be null or undefined
+                        const batchNumbers = (params.data && params.data.stock && Array.isArray(params.data.stock))
+                            ? params.data.stock.map((batch: any) => batch.batch_number)
+                            : [];
+                        return {
+                            values: batchNumbers
+                        };
+                    },
+                    valueSetter: (params: any) => {
+                        if (!params.data || !params.data.stock) return false;
+                        const selectedBatch = params.data.stock.find((batch: any) => batch.batch_number === params.newValue);
+
+                        if (selectedBatch) {
+                            if (selectedBatch.quantity < params.data.quantity) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Stock Not Available',
+                                    text: `The selected batch does not have enough stock. Available: ${selectedBatch.quantity}, Required: ${params.data.quantity}`
+                                });
+                                // Reset the batch number and available quantity
+                                params.data.batch_number = null;
+                                params.data.available_quantity = 0;
+                                return false;
+                            } else {
+                                params.data.batch_number = selectedBatch.batch_number;
+                                params.data.available_quantity = selectedBatch.quantity; // Update available_quantity
+                                return true;
+                            }
+                        }
+                        return false;
                     },
                     valueFormatter: (params: any) => {
                         if (params.node?.rowPinned) return '';  // No formatting for pinned row
-                        console.log(params.data.stock);
+                        if (!params.data) return ''; // Handle case where params.data is null
                         const selectedOption = params.data.stock?.find((batch: any) => batch.batch_number === params.value);
                         return selectedOption ? selectedOption.batch_number : '';
                     },
                     cellRenderer: (params: any) => {
                         if (params.node?.rowPinned) return '';  // Show empty text for pinned row
+                        if (!params.data) return ''; // Handle case where params.data is null
                         const selectedOption = params.data.stock?.find((batch: any) => batch.batch_number === params.value);
                         return selectedOption ? selectedOption.batch_number : '';
                     },
