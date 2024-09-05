@@ -51,6 +51,7 @@ const PaymentForm = () => {
     const [chequeDetails, setChequeDetails] = useState<any>({});
     const [cashAmount, setCashAmount] = useState<number>(0);
     const [bankModal, setBankModal] = useState<boolean>(false);
+    const [receivingAmount, setReceivingAmount] = useState<number>(0)
 
     const handleChange = (name: string, value: any, required: boolean) => {
         if (required && value === '') {
@@ -259,6 +260,7 @@ const PaymentForm = () => {
         return remainingAmount;
     };
 
+    // When cheques are added, adjust the receivingAmount
     const handleAddCheque = () => {
         const totalChequeAmount = chequeDetails.cheque_amount;
         const totalReceivedAmount = invoices.reduce((sum, invoice) => sum + invoice.received_amount, 0);
@@ -279,12 +281,8 @@ const PaymentForm = () => {
         }
         setChequeList((prevCheques) => [...prevCheques, chequeDetails]);
 
-        // Set cheque default for next cheque (remaining amount)
-        const remainingAmount = receivableAmount - chequeDetails.cheque_amount;
-        setChequeDetails({
-            ...chequeDetails,
-            cheque_amount: remainingAmount > 0 ? remainingAmount : 0
-        });
+        const totalReceived = invoices.reduce((sum, inv) => sum + inv.received_amount, 0);
+        setReceivingAmount(totalReceived + totalChequeAmount);
 
         setChequeModal(false);
         setChequeDetails({});
@@ -311,6 +309,7 @@ const PaymentForm = () => {
         setInvoices(newInvoices);
     };
 
+    // Update receivingAmount when cheque amount or received amount changes
     const handleReceivedAmountChange = (index: number, value: number) => {
         const newInvoices = [...invoices];
         const invoice = newInvoices[index];
@@ -326,7 +325,10 @@ const PaymentForm = () => {
             invoice.received_amount = value;
             invoice.cash_amount = value - chequeAmount;
             setInvoices(newInvoices);
-            recalculateReceivableAmount(newInvoices, parseFloat(formData.discount_amount || 0));
+
+            // Update the receivingAmount with the total of received amounts
+            const totalReceived = newInvoices.reduce((acc, inv) => acc + inv.received_amount, 0);
+            setReceivingAmount(totalReceived);
         }
     };
 
