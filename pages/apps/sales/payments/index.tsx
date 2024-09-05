@@ -59,27 +59,23 @@ const Index = () => {
         },
         {
             headerName: 'Discount',
-            valueGetter: (params: any) => params.data.discount_amount.toFixed(2),
+            valueGetter: (params: any) => params.data.discount_amount ? params.data.discount_amount.toFixed(2) : 0.00,
             minWidth: 150
         },
         {
             headerName: 'Due',
-            valueGetter: (params: any) => {
-                const dueAmount = params.data.customer_payment_details
-                    .flatMap((invoice: any) => invoice.due_amount)
-                    .reduce((a: number, b: any) => a + parseFloat(b), 0);
-                return dueAmount.toFixed(2);
-            },
+            valueGetter: (params: any) => params.data.customer_payment_details
+                .flatMap((invoice: any) => invoice.due_amount)
+                .reduce((a: number, b: any) => a + parseFloat(b), 0)
+                .toFixed(2),
             minWidth: 150
         },
         {
             headerName: 'Received',
-            valueFormatter: (params: any) => {
-                const receivedAmount = params.data.customer_payment_details
-                    .flatMap((invoice: any) => invoice.received_amount)
-                    .reduce((a: number, b: any) => a + parseFloat(b), 0);
-                return receivedAmount.toFixed(2);
-            },
+            valueFormatter: (params: any) => params.data.customer_payment_details
+                .flatMap((invoice: any) => invoice.received_amount)
+                .reduce((a: number, b: any) => a + parseFloat(b), 0)
+                .toFixed(2),
             minWidth: 150
         }
     ]);

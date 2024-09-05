@@ -5,7 +5,7 @@ import { Input } from '@/components/form/Input';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { setAuthToken, setContentType } from '@/configs/api.config';
 import { clearLatestRecord, generateCode, getLatestRecord } from '@/store/slices/utilSlice';
-import { getPendingSaleInvoices } from '@/store/slices/saleInvoiceSlice';
+import { clearSaleInvoiceListState, getPendingSaleInvoices } from '@/store/slices/saleInvoiceSlice';
 import Option from '@/components/form/Option';
 import { Dropdown } from '@/components/form/Dropdown';
 import { getCustomers } from '@/store/slices/customerSlice';
@@ -39,7 +39,6 @@ const PaymentForm = () => {
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [formData, setFormData] = useState<any>({});
     const [errors, setErrors] = useState<any>({});
-    const [pendingInvoiceOptions, setPendingInvoiceOptions] = useState<any[]>([]);
     const [customerOptions, setCustomerOptions] = useState<any[]>([]);
     const [paymentMethodOptions, setPaymentMethodOptions] = useState<any[]>([]);
     const [bankOptions, setBankOptions] = useState<any[]>([]);
@@ -59,7 +58,6 @@ const PaymentForm = () => {
                 ...errors,
                 [name]: 'This field is required'
             });
-            return;
         } else {
             setErrors((err: any) => {
                 delete err[name];
@@ -68,7 +66,7 @@ const PaymentForm = () => {
         }
 
         if (name === 'discount_amount') {
-            setFormData({ ...formData, [name]: parseFloat(value) });
+            setFormData({ ...formData, discount_amount: parseFloat(value) });
             recalculateReceivableAmount(invoices, parseFloat(value || 0));
         } else {
             setFormData({ ...formData, [name]: value });
@@ -76,10 +74,18 @@ const PaymentForm = () => {
     };
 
     const handleSetInvoiceList = (invoices: any) => {
-        setInvoices(invoices.map((invoice: any) => {
+        let totalDueAmount = 0;
+        const updatedInvoices = invoices.map((invoice: any) => {
             const totalAmount = invoice.delivery_note_sale_invoices
                 .flatMap((invoice: any) => invoice.delivery_note.delivery_note_items)
                 .reduce((acc: number, item: any) => acc + item.grand_total, 0);
+
+            const dueAmount = invoice.customer_payments?.length > 0
+                ? totalAmount - invoice.customer_payments.reduce((acc: number, item: any) => acc + parseFloat(item.received_amount), 0)
+                : totalAmount;
+
+            const discountAmount = invoice.customer_payments.reduce((acc: number, item: any) => acc + parseFloat(item.customer_payment.discount_amount), 0);
+            totalDueAmount += dueAmount - discountAmount;
 
             return {
                 id: invoice.id,
@@ -89,12 +95,14 @@ const PaymentForm = () => {
                 due_date: invoice.due_date,
                 payment_terms: invoice.payment_terms,
                 total_amount: totalAmount,
-                due_amount: invoice.customer_payments?.length > 0 ? (totalAmount - invoice.customer_payments.reduce((acc: number, item: any) => acc + parseFloat(item.received_amount), 0)) : totalAmount,
+                due_amount: dueAmount - discountAmount,
                 received_amount: 0,
                 cheque_amount: 0,
                 cash_amount: 0
             };
-        }));
+        });
+        setInvoices(updatedInvoices);
+        setReceivableAmount(totalDueAmount);  // Ensure this sets the totalDueAmount initially.
     };
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -118,7 +126,8 @@ const PaymentForm = () => {
                 text: 'Please select receiving account'
             });
         } else {
-            dispatch(storeCustomerPayment(finalData));
+            console.log(finalData);
+            // dispatch(storeCustomerPayment(finalData));
         }
     };
 
@@ -140,6 +149,9 @@ const PaymentForm = () => {
         dispatch(clearLatestRecord());
         dispatch(getAccountsTypes({}));
         setChequeDetails({});
+        setInvoices([]);
+        setReceivableAmount(0);
+        dispatch(clearSaleInvoiceListState());
     }, []);
 
     useEffect(() => {
@@ -199,7 +211,7 @@ const PaymentForm = () => {
 
     const recalculateReceivableAmount = (items: any[], discount: number) => {
         const totalReceived = items.reduce((acc: number, item: any) => acc + parseFloat(item.received_amount || 0), 0);
-        setReceivableAmount(totalReceived - discount);
+        setReceivableAmount(totalReceived - discount);  // Adjust the receivable amount based on discount.
     };
 
     useEffect(() => {
@@ -252,7 +264,6 @@ const PaymentForm = () => {
         const totalReceivedAmount = invoices.reduce((sum, invoice) => sum + invoice.received_amount, 0);
         const totalDueAmount = invoices.reduce((sum, invoice) => sum + invoice.due_amount, 0);
 
-        console.log(totalReceivedAmount, totalChequeAmount, totalDueAmount);
         if (totalReceivedAmount + totalChequeAmount > totalDueAmount) {
             Swal.fire({
                 icon: 'error',
@@ -267,6 +278,14 @@ const PaymentForm = () => {
             setCashAmount((prev) => prev + remainingChequeAmount);
         }
         setChequeList((prevCheques) => [...prevCheques, chequeDetails]);
+
+        // Set cheque default for next cheque (remaining amount)
+        const remainingAmount = receivableAmount - chequeDetails.cheque_amount;
+        setChequeDetails({
+            ...chequeDetails,
+            cheque_amount: remainingAmount > 0 ? remainingAmount : 0
+        });
+
         setChequeModal(false);
         setChequeDetails({});
     };
@@ -337,7 +356,10 @@ const PaymentForm = () => {
                                 dispatch(getPendingSaleInvoices(e.value));
                             } else {
                                 handleChange('customer_id', '', false);
-                                setPendingInvoiceOptions([]);
+                                setInvoices([]);
+                                setReceivableAmount(0);
+                                setChequeList([]);
+                                dispatch(clearSaleInvoiceListState());
                             }
                         }}
                     />
@@ -523,6 +545,7 @@ const PaymentForm = () => {
                                                         handleReceivedAmountChange(index, receivedAmount);
                                                     }}
                                                     placeholder="Enter Received Amount"
+                                                    disabled={formData.payment_sub_method === 'cheque'}
                                                     isMasked={false}
                                                 />
                                                 {errors[`invoices[${index}][received_amount]`] && (
@@ -648,12 +671,17 @@ const PaymentForm = () => {
                     <h3 className="text-md">Receivable Amount: </h3>
                     <h3 className="text-lg font-bold">{receivableAmount.toFixed(2)}</h3>
                 </div>
+                <div className="flex gap-3 items-center">
+                    <h3 className="text-md">Receiving Amount: </h3>
+                    <h3 className="text-lg font-bold">{receivingAmount.toFixed(2)}</h3>
+                </div>
                 <Button
                     type={ButtonType.submit}
                     text="Confirm Payment"
                     variant={ButtonVariant.primary}
                 />
             </div>
+
             <BankDetailModal
                 modalOpen={bankAccountModal}
                 setModalOpen={setBankAccountModal}
