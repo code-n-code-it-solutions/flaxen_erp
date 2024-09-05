@@ -19,7 +19,7 @@ const useEcho = () => {
                 return {
                     authorize: (socketId: any, callback: any) => {
                         API
-                            .post('/api/broadcasting/auth', {
+                            .post('/broadcasting/auth', {
                                 socket_id: socketId,
                                 channel_name: channel.name
                             })
