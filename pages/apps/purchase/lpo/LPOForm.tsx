@@ -43,7 +43,6 @@ interface IFormData {
     term_and_conditions: string;
     payment_terms_in_days: number;
     currency_id: number;
-    status: string,
     type: string,
     terms_conditions: string;
     items: any[];
@@ -88,7 +87,6 @@ const LPOForm = ({ id }: IFormProps) => {
         term_and_conditions: '',
         payment_terms_in_days: 0,
         currency_id: 0,
-        status: '',
         type: '',
         terms_conditions: '',
         items: []
@@ -113,16 +111,11 @@ const LPOForm = ({ id }: IFormProps) => {
         type: null
     });
 
-    const [requisitionStatusOptions, setRequisitionStatusOptions] = useState<any[]>([
-        { value: '', label: 'Select Status' },
-        { value: 'Draft', label: 'Draft' },
-        { value: 'Pending', label: 'Proceed' }
-    ]);
     const [lpoTypeOptions, setLpoTypeOptions] = useState<any[]>([
         { value: '', label: 'Select Type' },
         { value: 'Material', label: 'Material' },
         { value: 'Service', label: 'Service' },
-        { value: 'Miscellaneous', label: 'Miscellaneous' }
+        // { value: 'Miscellaneous', label: 'Miscellaneous' }
     ]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -524,26 +517,6 @@ const LPOForm = ({ id }: IFormProps) => {
                                 placeholder="Enter Internal Document Number"
                                 isMasked={false}
                                 disabled={true}
-                            />
-                            <Dropdown
-                                divClasses="w-full"
-                                label="Status"
-                                name="status_id"
-                                options={requisitionStatusOptions}
-                                value={formData.status}
-                                onChange={(e: any) => {
-                                    if (e && typeof e !== 'undefined') {
-                                        setFormData(prev => ({
-                                            ...prev,
-                                            status: e.value
-                                        }));
-                                    } else {
-                                        setFormData(prev => ({
-                                            ...prev,
-                                            status: ''
-                                        }));
-                                    }
-                                }}
                             />
 
                             <Input

@@ -10,18 +10,19 @@ import DetailPageHeader from '@/components/apps/DetailPageHeader';
 import PageWrapper from '@/components/PageWrapper';
 import { capitalize } from 'lodash';
 import { clearCreditNoteState, getCreditNoteDetail } from '@/store/slices/creditNoteSlice';
+import { getGeneralPaymentVoucherDetail } from '@/store/slices/generalPaymentVoucherSlice';
 
 const View = () => {
-    useSetActiveMenu(AppBasePath.Credit_Notes);
+    useSetActiveMenu(AppBasePath.General_Payment_Voucher);
     const dispatch = useAppDispatch();
     const router = useRouter();
     const { token } = useAppSelector(state => state.user);
-    const { creditNoteDetails, loading } = useAppSelector(state => state.creditNote);
+    const { generalPaymentVoucherDetails, loading } = useAppSelector(state => state.generalPaymentVoucher);
     const [ids, setIds] = useState<string[]>([]);
 
     useEffect(() => {
         setAuthToken(token);
-        dispatch(setPageTitle('Credit Note Details'));
+        dispatch(setPageTitle('General Payment Voucher Details'));
         dispatch(clearCreditNoteState());
 
         const creditNoteIds = router.query.id;
@@ -29,7 +30,7 @@ const View = () => {
         if (creditNoteIds) {
             setIds(Array.isArray(creditNoteIds) ? creditNoteIds : [creditNoteIds]);
             const id = Array.isArray(creditNoteIds) ? creditNoteIds[0] : creditNoteIds;
-            dispatch(getCreditNoteDetail(parseInt(id)));
+            dispatch(getGeneralPaymentVoucherDetail(parseInt(id)));
         }
     }, [router.query.id, dispatch]);
 
@@ -37,7 +38,7 @@ const View = () => {
         <div className="flex flex-col gap-3">
             <DetailPageHeader
                 appBasePath={AppBasePath.Credit_Notes}
-                title="Credit Note Details"
+                title="General Payment Voucher Details"
                 middleComponent={{
                     show: true,
                     edit: {
@@ -45,7 +46,7 @@ const View = () => {
                     },
                     print: {
                         show: true,
-                        onClick: () => router.push('/apps/sales/credit-notes/print/' + ids.join('/'))
+                        onClick: () => router.push('/apps/accounting/general-voucher/payment-voucher/print/' + ids.join('/'))
                     },
                     delete: {
                         show: false
@@ -61,110 +62,170 @@ const View = () => {
                 }}
                 backButton={{
                     show: true,
-                    backLink: '/apps/sales/credit-notes'
+                    backLink: '/apps/accounting/general-voucher/payment-voucher'
                 }}
             />
             <PageWrapper
                 loading={loading}
                 embedLoader={true}
             >
-                {creditNoteDetails && (
+                {generalPaymentVoucherDetails && (
                     <div>
                         <div className="flex justify-between items-center flex-col md:flex-row w-full gap-3">
                             <div className="flex flex-col gap-2 justify-start items-start">
                                 <span>
-                                    <strong>Credit Note Code: </strong>
-                                    {creditNoteDetails?.credit_note_code}
+                                    <strong>GPV Code: </strong>
+                                    {generalPaymentVoucherDetails?.payment_voucher_code}
                                 </span>
                                 <span>
-                                    <strong>Credit Note Date: </strong>
-                                    {creditNoteDetails?.credit_note_date}
+                                    <strong>GPV Date: </strong>
+                                    {generalPaymentVoucherDetails?.payment_date}
                                 </span>
                                 <span>
-                                    <strong>Invoice Date: </strong>
-                                    {creditNoteDetails?.credit_note_date}
+                                    <strong>Reference #: </strong>
+                                    {generalPaymentVoucherDetails?.reference_no}
                                 </span>
                                 <span>
-                                    <strong>Return Type: </strong>
-                                    {creditNoteDetails?.return_type}
+                                    <strong>Paying Account: </strong>
+                                    {generalPaymentVoucherDetails?.paying_account?.code + ' - ' + generalPaymentVoucherDetails?.paying_account?.name}
                                 </span>
+                                <span>
+                                    <strong>Payment Method: </strong>
+                                    {generalPaymentVoucherDetails?.payment_method?.name}
+                                </span>
+                                {generalPaymentVoucherDetails.payment_method?.name === 'Bank' && (generalPaymentVoucherDetails.payment_sub_method == 'credit-card' || generalPaymentVoucherDetails.payment_sub_method === 'online-transfer')
+                                    ? (
+                                        <>
+                                            <span>
+                                                <strong>Payment Sub method: </strong>
+                                                {generalPaymentVoucherDetails?.payment_sub_method}
+                                            </span>
+                                            <span>
+                                                <strong>Transaction Number: </strong>
+                                                {generalPaymentVoucherDetails?.transaction_number}
+                                            </span>
+                                        </>
+                                    ) : generalPaymentVoucherDetails.payment_method?.name === 'Bank' && generalPaymentVoucherDetails.payment_sub_method == 'cheque'
+                                        ? (
+                                            <span>
+                                                <strong>Payment Sub method: </strong>
+                                                {generalPaymentVoucherDetails?.payment_sub_method}
+                                            </span>
+                                        ) : <></>}
                             </div>
                             <div className="flex flex-col gap-2 justify-start items-start">
                                 <span>
-                                    <strong>Customer: </strong>
-                                    {creditNoteDetails?.customer?.name}
+                                    <strong>Payment To: </strong>
+                                    {generalPaymentVoucherDetails?.subject_category}
                                 </span>
                                 <span>
-                                    <strong>Return By: </strong>
-                                    {creditNoteDetails?.returned_by?.name}
+                                    <strong>Paid To: </strong>
+                                    {generalPaymentVoucherDetails?.subject?.name}
                                 </span>
                                 <span>
                                     <strong>Created At: </strong>
-                                    {new Date(creditNoteDetails?.created_at).toLocaleDateString()}
+                                    {new Date(generalPaymentVoucherDetails?.created_at).toLocaleDateString()}
                                 </span>
                                 <span>
                                     <strong>Created By: </strong>
-                                    {creditNoteDetails?.created_by?.name}
+                                    {generalPaymentVoucherDetails?.created_by?.name}
                                 </span>
                             </div>
                         </div>
-                        <p className="my-3">{creditNoteDetails?.description}</p>
+                        <div className="my-3">
+                            <h3 className="font-bold text-lg">
+                                Narration:
+                            </h3>
+                            <p>{generalPaymentVoucherDetails?.description}</p>
+                        </div>
+                        {generalPaymentVoucherDetails.payment_method?.name === 'Bank' && generalPaymentVoucherDetails.payment_sub_method == 'cheque' && (
+                            <>
+                                <h5 className="text-lg font-semibold dark:text-white-light pt-5">Cheque Details</h5>
+                                <div className="table-responsive mt-3">
+                                    <table>
+                                        <thead>
+                                        <tr>
+                                            <th>Bank</th>
+                                            <th>Name on Cheque</th>
+                                            <th>Cheque Number</th>
+                                            <th>Cheque Date</th>
+                                            <th>Cheque Amount</th>
+                                            <th>Is PDC</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {generalPaymentVoucherDetails.cheques.length > 0
+                                            ? (generalPaymentVoucherDetails.cheques.map((item: any, index: number) => (
+                                                    <tr key={index}>
+                                                        <td>{item.bank?.name}</td>
+                                                        <td>{item.cheque_name}</td>
+                                                        <td>{item.cheque_number}</td>
+                                                        <td>{item.cheque_date}</td>
+                                                        <td>{item.cheque_amount}</td>
+                                                        <td>{item.is_pdc ? 'Yes' : 'No'}</td>
+                                                    </tr>
+                                                ))
+                                            ) : (
+                                                <tr>
+                                                    <td colSpan={5} className="text-center">No cheque found</td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </>
+                        )}
+
                         <h5 className="text-lg font-semibold dark:text-white-light pt-5">Item Details</h5>
                         <div className="table-responsive mt-3">
                             <table>
                                 <thead>
                                 <tr>
-                                    <th>Product</th>
-                                    <th>Filling</th>
-                                    <th>Capacity</th>
+                                    <th>Expanse Account</th>
+                                    <th>Payment For</th>
                                     <th>Quantity</th>
-                                    <th>Unit Price</th>
+                                    <th>Unit Cost</th>
                                     <th>Before Tax</th>
-                                    <th>Tax</th>
                                     <th>Discount</th>
+                                    <th>Sub Total</th>
+                                    <th>Tax@5%</th>
                                     <th className="text-center">Grand Total</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {creditNoteDetails.credit_note_items.length > 0
-                                    ? (creditNoteDetails.credit_note_items.map((item: any, index: number) => (
+                                {generalPaymentVoucherDetails.payment_items.length > 0
+                                    ? (generalPaymentVoucherDetails.payment_items.map((item: any, index: number) => (
                                             <tr key={index}>
-                                                <td>{item.product_assembly?.formula_name}</td>
-                                                <td>{item.product.title}</td>
-                                                <td>{item.capacity}</td>
-                                                <td>{item.returned_quantity}</td>
-                                                <td>{item.retail_price}</td>
+                                                <td>{item.expanse_account?.code + ' - ' + item.expanse_account?.name}</td>
+                                                <td>{item.payment_for}</td>
+                                                <td>{item.quantity}</td>
+                                                <td>{item.amount}</td>
                                                 <td>
-                                                    {(parseFloat(item.returned_quantity) * parseFloat(item.retail_price)).toFixed(2)}
+                                                    {(item.quantity * item.amount).toLocaleString(undefined, {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2
+                                                    })}
+                                                </td>
+                                                <td>{item.discount ? item.discount : 'N/A'}</td>
+                                                <td>
+                                                    {((item.quantity * item.amount) - item.discount).toLocaleString(undefined, {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2
+                                                    })}
                                                 </td>
                                                 <td>
-                                                    {item.tax_category
+                                                    {item.has_tax
                                                         ? (
-                                                            <div className="flex flex-col">
-                                                                <span><strong>Tax: </strong>{item.tax_category.name} ({item.tax_rate}%)</span>
-                                                                <span><strong>Amount: </strong>{item.tax_amount.toFixed(2)}
-                                                                </span>
-                                                            </div>
-                                                        ) : (
-                                                            <span>N/A</span>
-                                                        )}
-                                                </td>
-                                                <td>
-                                                    {item.discount_type
-                                                        ? (
-                                                            <div className="flex flex-col">
-                                                                <span><strong>Type: </strong>{capitalize(item.discount_type)}
-                                                                </span>
-                                                                <span><strong>Rate: </strong>
-                                                                    {item.discount_amount_rate.toFixed(2)}{item.discount_type === 'percentage' ? '%' : ''}
-                                                                </span>
-                                                            </div>
+                                                            <span>{item.tax_amount}</span>
                                                         ) : (
                                                             <span>N/A</span>
                                                         )}
                                                 </td>
                                                 <td className="text-center">
-                                                    {item.total_cost.toFixed(2)}
+                                                    {item.grand_total.toLocaleString(undefined, {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2
+                                                    })}
                                                 </td>
                                             </tr>
                                         ))
@@ -174,12 +235,53 @@ const View = () => {
                                         </tr>
                                     )}
                                 </tbody>
-                                {/*    <tfoot>*/}
-                                {/*    <tr>*/}
-                                {/*        <td colSpan={8} className="text-center font-bold">Total</td>*/}
-                                {/*        <td className="text-center font-bold">{deliveryNoteItems.reduce((acc, item) => acc + item.total_cost, 0).toFixed(2)}</td>*/}
-                                {/*    </tr>*/}
-                                {/*    </tfoot>*/}
+                                <tfoot>
+                                <tr>
+                                    <td colSpan={2} className="text-center font-bold">Total</td>
+                                    <td className="ps-4 font-bold">
+                                        {generalPaymentVoucherDetails.payment_items
+                                            .reduce((acc: number, item: any) => acc + item.quantity, 0)
+                                            .toLocaleString(undefined, {
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2
+                                            })}
+                                    </td>
+                                    <td className="ps-4 font-bold"></td>
+                                    <td className="ps-4 font-bold">
+                                        {generalPaymentVoucherDetails.payment_items
+                                            .reduce((acc: number, item: any) => acc + (item.quantity * item.amount), 0)
+                                            .toLocaleString(undefined, {
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2
+                                            })}
+                                    </td>
+                                    <td className="ps-4 font-bold">
+                                        {generalPaymentVoucherDetails.payment_items
+                                            .reduce((acc: number, item: any) => acc + item.discount, 0)
+                                            .toLocaleString(undefined, {
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2
+                                            })}
+                                    </td>
+                                    <td className="ps-4 font-bold">
+                                        {generalPaymentVoucherDetails.payment_items
+                                            .reduce((acc: number, item: any) => acc + ((item.quantity * item.amount) - item.discount), 0)
+                                            .toLocaleString(undefined, {
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2
+                                            })}
+                                    </td>
+                                    <td className="ps-4 font-bold"></td>
+                                    <td className="text-center font-bold">
+                                        {generalPaymentVoucherDetails.payment_items
+                                            .reduce((acc: number, item: any) => acc + item.grand_total, 0)
+                                            .toLocaleString(undefined, {
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2
+                                            })}
+                                    </td>
+                                </tr>
+                                </tfoot>
                             </table>
                         </div>
                     </div>

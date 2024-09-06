@@ -51,6 +51,7 @@ const PaymentForm = () => {
     const [chequeDetails, setChequeDetails] = useState<any>({});
     const [cashAmount, setCashAmount] = useState<number>(0);
     const [bankModal, setBankModal] = useState<boolean>(false);
+    const [receivingAmount, setReceivingAmount] = useState<number>(0)
 
     const handleChange = (name: string, value: any, required: boolean) => {
         if (required && value === '') {
@@ -102,7 +103,18 @@ const PaymentForm = () => {
             };
         });
         setInvoices(updatedInvoices);
-        setReceivableAmount(totalDueAmount);  // Ensure this sets the totalDueAmount initially.
+
+        // Set receivableAmount when invoices are added for the first time.
+        if (receivableAmount === 0) {
+            setReceivableAmount(totalDueAmount);
+        }
+    };
+
+    const isPDC = (chequeDate: string, paymentDate: string) => {
+        if (!chequeDate || !paymentDate) return false;
+        const cheque = new Date(chequeDate);
+        const payment = new Date(paymentDate);
+        return cheque > payment;
     };
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -153,6 +165,24 @@ const PaymentForm = () => {
         setReceivableAmount(0);
         dispatch(clearSaleInvoiceListState());
     }, []);
+
+    useEffect(() => {
+        if (chequeDetails.cheque_date && formData.payment_date) {
+            setChequeDetails({
+                ...chequeDetails,
+                is_pdc: isPDC(chequeDetails.cheque_date, formData.payment_date) ? 1 : 0
+            });
+        }
+    }, [chequeDetails.cheque_date, formData.payment_date]);
+
+    useEffect(() => {
+        const updatedCheques = chequeList.map((cheque: any) => ({
+            ...cheque,
+            is_pdc: isPDC(cheque.cheque_date, formData.payment_date) ? 1 : 0
+        }));
+        setChequeList(updatedCheques);
+    }, [formData.payment_date]);
+
 
     useEffect(() => {
         if (code) {
@@ -214,6 +244,11 @@ const PaymentForm = () => {
         setReceivableAmount(totalReceived - discount);  // Adjust the receivable amount based on discount.
     };
 
+    const calculateRemainingReceivableAmount = () => {
+        const totalChequeAmount = chequeList.reduce((acc, cheque) => acc + cheque.cheque_amount, 0);
+        return receivableAmount - totalChequeAmount;
+    };
+
     useEffect(() => {
         if (latestRecord) {
             setFormData((prevFormData: any) => ({
@@ -259,6 +294,7 @@ const PaymentForm = () => {
         return remainingAmount;
     };
 
+    // When cheques are added, adjust the receivingAmount
     const handleAddCheque = () => {
         const totalChequeAmount = chequeDetails.cheque_amount;
         const totalReceivedAmount = invoices.reduce((sum, invoice) => sum + invoice.received_amount, 0);
@@ -279,12 +315,8 @@ const PaymentForm = () => {
         }
         setChequeList((prevCheques) => [...prevCheques, chequeDetails]);
 
-        // Set cheque default for next cheque (remaining amount)
-        const remainingAmount = receivableAmount - chequeDetails.cheque_amount;
-        setChequeDetails({
-            ...chequeDetails,
-            cheque_amount: remainingAmount > 0 ? remainingAmount : 0
-        });
+        const totalReceived = invoices.reduce((sum, inv) => sum + inv.received_amount, 0);
+        setReceivingAmount(totalReceived + totalChequeAmount);
 
         setChequeModal(false);
         setChequeDetails({});
@@ -311,6 +343,7 @@ const PaymentForm = () => {
         setInvoices(newInvoices);
     };
 
+    // Update receivingAmount when cheque amount or received amount changes
     const handleReceivedAmountChange = (index: number, value: number) => {
         const newInvoices = [...invoices];
         const invoice = newInvoices[index];
@@ -326,7 +359,10 @@ const PaymentForm = () => {
             invoice.received_amount = value;
             invoice.cash_amount = value - chequeAmount;
             setInvoices(newInvoices);
-            recalculateReceivableAmount(newInvoices, parseFloat(formData.discount_amount || 0));
+
+            // Update the receivingAmount with the total of received amounts
+            const totalReceived = newInvoices.reduce((acc, inv) => acc + inv.received_amount, 0);
+            setReceivingAmount(totalReceived);
         }
     };
 
@@ -616,10 +652,15 @@ const PaymentForm = () => {
                                     variant={ButtonVariant.primary}
                                     size={ButtonSize.small}
                                     onClick={() => {
+                                        const remainingAmount = calculateRemainingReceivableAmount();
+                                        setChequeDetails({
+                                            ...chequeDetails,
+                                            cheque_amount: remainingAmount > 0 ? remainingAmount : 0
+                                        });
                                         setChequeModal(true);
-                                        setChequeDetails({});
                                     }}
                                 />
+
                             </div>
                             <table>
                                 <thead>
@@ -630,7 +671,6 @@ const PaymentForm = () => {
                                     <th>Amount</th>
                                     <th>Cheque Date</th>
                                     <th>Is PDC</th>
-                                    <th>PDC Date</th>
                                     <th>Action</th>
                                 </tr>
                                 </thead>
@@ -644,7 +684,6 @@ const PaymentForm = () => {
                                             <td>{cheque.cheque_amount}</td>
                                             <td>{cheque.cheque_date}</td>
                                             <td>{cheque.is_pdc === 1 ? 'Yes' : 'No'}</td>
-                                            <td>{cheque.pdc_date}</td>
                                             <td>
                                                 <Button
                                                     type={ButtonType.button}

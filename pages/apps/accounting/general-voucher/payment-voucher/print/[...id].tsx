@@ -1,23 +1,26 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { setAuthToken } from '@/configs/api.config';
 import PrintContent from './PrintContent';
 import BlankLayout from '@/components/Layouts/BlankLayout';
 import { PDFViewer, Document } from '@react-pdf/renderer';
-import { clearCreditNoteState, getCreditNotesForPrint } from '@/store/slices/creditNoteSlice';
+import {
+    clearGeneralPaymentVoucherState,
+    getGeneralPaymentVoucherForPrint
+} from '@/store/slices/generalPaymentVoucherSlice';
 
 const Print = () => {
     const dispatch = useAppDispatch();
-    const { creditNotesForPrint: contents, loading } = useAppSelector((state) => state.creditNote);
+    const { generalPaymentVouchersForPrint: contents, loading } = useAppSelector((state) => state.generalPaymentVoucher);
     const { token } = useAppSelector((state) => state.user);
     const router = useRouter();
 
     useEffect(() => {
         setAuthToken(token);
-        dispatch(clearCreditNoteState());
+        dispatch(clearGeneralPaymentVoucherState());
         if (router.query.id) {
-            dispatch(getCreditNotesForPrint({ ids: router.query.id, type: 'detail' }));
+            dispatch(getGeneralPaymentVoucherForPrint({ ids: router.query.id, type: 'detail' }));
         }
     }, [router.query.id]);
 
@@ -31,7 +34,7 @@ const Print = () => {
                 showToolbar={true}
             >
                 <Document
-                    title="Report Preview"
+                    title="General Payment Voucher"
                     author="Flaxen Paints Industry LLC"
                     subject="Report Preview"
                     keywords="pdf, flaxen, flaxen paints, report, preview, flaxen paints industry llc"

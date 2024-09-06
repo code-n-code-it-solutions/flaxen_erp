@@ -45,7 +45,6 @@ const GoodReceiveNoteForm = ({ id }: IFormProps) => {
         grn_number: '',
         received_by_id: 0,
         verified_by_id: 0,
-        status: '',
         description: '',
         items: [],
         use_previous_accounting: 0
@@ -53,15 +52,6 @@ const GoodReceiveNoteForm = ({ id }: IFormProps) => {
 
     const [localPurchaseOrderOptions, setLocalPurchaseOrderOptions] = useState<any[]>([]);
     const [lpoDetails, setLPODetails] = useState<any>({});
-
-    const [showDetails, setShowDetails] = useState<boolean>(true);
-
-    const [itemDetail, setItemDetail] = useState<any>({});
-    const [statusOptions, setStatusOptions] = useState<any[]>([
-        { value: '', label: 'Select Status' },
-        { value: 'Draft', label: 'Draft' },
-        { value: 'Pending', label: 'Proceed' }
-    ]);
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -140,6 +130,15 @@ const GoodReceiveNoteForm = ({ id }: IFormProps) => {
             // console.log(GRNItems);
             columnDefinitions = [
                 {
+                    headerName: 'LPO',
+                    field: 'local_purchase_order_id',
+                    valueGetter: (params: any) => localPurchaseOrderOptions.find((item: any) => item.value === params.data.local_purchase_order_id)?.label,
+                    cellRenderer: (params: any) => params.node?.rowPinned ? '' : params.value,
+                    minWidth: 150,
+                    filter: false,
+                    floatingFilter: false
+                },
+                {
                     headerName: 'Product',
                     field: 'raw_product.title',
                     valueGetter: (params: any) => params.data.raw_product?.title + ' (' + params.data.raw_product?.item_code + ')',
@@ -164,31 +163,31 @@ const GoodReceiveNoteForm = ({ id }: IFormProps) => {
                     minWidth: 150,
                     filter: false,
                     floatingFilter: false
-                },
-                {
-                    headerName: 'Sub Total',
-                    field: 'sub_total',
-                    cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
-                    minWidth: 150,
-                    filter: false,
-                    floatingFilter: false
-                },
-                {
-                    headerName: 'Tax@5%',
-                    field: 'tax_amount',
-                    cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
-                    minWidth: 150,
-                    filter: false,
-                    floatingFilter: false
-                },
-                {
-                    headerName: 'Total',
-                    field: 'grand_total',
-                    cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
-                    minWidth: 150,
-                    filter: false,
-                    floatingFilter: false
                 }
+                // {
+                //     headerName: 'Sub Total',
+                //     field: 'sub_total',
+                //     cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+                //     minWidth: 150,
+                //     filter: false,
+                //     floatingFilter: false
+                // },
+                // {
+                //     headerName: 'Tax@5%',
+                //     field: 'tax_amount',
+                //     cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+                //     minWidth: 150,
+                //     filter: false,
+                //     floatingFilter: false
+                // },
+                // {
+                //     headerName: 'Total',
+                //     field: 'grand_total',
+                //     cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+                //     minWidth: 150,
+                //     filter: false,
+                //     floatingFilter: false
+                // }
             ];
         } else if (formData.type === 'Service') {
             columnDefinitions = [
@@ -249,11 +248,11 @@ const GoodReceiveNoteForm = ({ id }: IFormProps) => {
         }
     }, [code]);
 
-    useEffect(() => {
-        if (!rawProductModalOpen) {
-            setItemDetail({});
-        }
-    }, [rawProductModalOpen]);
+    // useEffect(() => {
+    //     if (!rawProductModalOpen) {
+    //         setItemDetail({});
+    //     }
+    // }, [rawProductModalOpen]);
 
     // useEffect(() => {
     //     if (allLPOs) {
@@ -331,18 +330,6 @@ const GoodReceiveNoteForm = ({ id }: IFormProps) => {
                             disabled={rawProductForSelect.length === 0}
                         />
                     </div>
-
-                    <Dropdown
-                        divClasses="w-full"
-                        label="Status"
-                        name="status"
-                        options={statusOptions}
-                        value={formData.status}
-                        onChange={(e: any) => setFormData((prev: any) => ({
-                            ...prev,
-                            status: e?.value
-                        }))}
-                    />
 
                 </div>
                 <div className="w-full p-5 border rounded hidden md:block">
