@@ -36,7 +36,7 @@ const Create = () => {
                 }}
                 backButton={{
                     show: true,
-                    backLink: '/apps/invoicing/vendors/payments'
+                    backLink: '/apps/purchase/payments'
                 }}
             />
             <PageWrapper

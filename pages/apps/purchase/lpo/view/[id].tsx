@@ -238,7 +238,7 @@ const View = () => {
                                                     {item.request_quantity}
                                                 </span>
                                                 <span>
-                                                    <strong>Processed: </strong>
+                                                    <strong>Received: </strong>
                                                     {item.processed_quantity}
                                                 </span>
                                             </div>

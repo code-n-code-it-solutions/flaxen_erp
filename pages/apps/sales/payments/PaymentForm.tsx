@@ -103,7 +103,18 @@ const PaymentForm = () => {
             };
         });
         setInvoices(updatedInvoices);
-        setReceivableAmount(totalDueAmount);  // Ensure this sets the totalDueAmount initially.
+
+        // Set receivableAmount when invoices are added for the first time.
+        if (receivableAmount === 0) {
+            setReceivableAmount(totalDueAmount);
+        }
+    };
+
+    const isPDC = (chequeDate: string, paymentDate: string) => {
+        if (!chequeDate || !paymentDate) return false;
+        const cheque = new Date(chequeDate);
+        const payment = new Date(paymentDate);
+        return cheque > payment;
     };
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -154,6 +165,24 @@ const PaymentForm = () => {
         setReceivableAmount(0);
         dispatch(clearSaleInvoiceListState());
     }, []);
+
+    useEffect(() => {
+        if (chequeDetails.cheque_date && formData.payment_date) {
+            setChequeDetails({
+                ...chequeDetails,
+                is_pdc: isPDC(chequeDetails.cheque_date, formData.payment_date) ? 1 : 0
+            });
+        }
+    }, [chequeDetails.cheque_date, formData.payment_date]);
+
+    useEffect(() => {
+        const updatedCheques = chequeList.map((cheque: any) => ({
+            ...cheque,
+            is_pdc: isPDC(cheque.cheque_date, formData.payment_date) ? 1 : 0
+        }));
+        setChequeList(updatedCheques);
+    }, [formData.payment_date]);
+
 
     useEffect(() => {
         if (code) {
@@ -213,6 +242,11 @@ const PaymentForm = () => {
     const recalculateReceivableAmount = (items: any[], discount: number) => {
         const totalReceived = items.reduce((acc: number, item: any) => acc + parseFloat(item.received_amount || 0), 0);
         setReceivableAmount(totalReceived - discount);  // Adjust the receivable amount based on discount.
+    };
+
+    const calculateRemainingReceivableAmount = () => {
+        const totalChequeAmount = chequeList.reduce((acc, cheque) => acc + cheque.cheque_amount, 0);
+        return receivableAmount - totalChequeAmount;
     };
 
     useEffect(() => {
@@ -618,10 +652,15 @@ const PaymentForm = () => {
                                     variant={ButtonVariant.primary}
                                     size={ButtonSize.small}
                                     onClick={() => {
+                                        const remainingAmount = calculateRemainingReceivableAmount();
+                                        setChequeDetails({
+                                            ...chequeDetails,
+                                            cheque_amount: remainingAmount > 0 ? remainingAmount : 0
+                                        });
                                         setChequeModal(true);
-                                        setChequeDetails({});
                                     }}
                                 />
+
                             </div>
                             <table>
                                 <thead>
@@ -632,7 +671,6 @@ const PaymentForm = () => {
                                     <th>Amount</th>
                                     <th>Cheque Date</th>
                                     <th>Is PDC</th>
-                                    <th>PDC Date</th>
                                     <th>Action</th>
                                 </tr>
                                 </thead>
@@ -646,7 +684,6 @@ const PaymentForm = () => {
                                             <td>{cheque.cheque_amount}</td>
                                             <td>{cheque.cheque_date}</td>
                                             <td>{cheque.is_pdc === 1 ? 'Yes' : 'No'}</td>
-                                            <td>{cheque.pdc_date}</td>
                                             <td>
                                                 <Button
                                                     type={ButtonType.button}

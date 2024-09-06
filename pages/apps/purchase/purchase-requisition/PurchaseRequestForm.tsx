@@ -12,8 +12,6 @@ import 'flatpickr/dist/flatpickr.css';
 import { Dropdown } from '@/components/form/Dropdown';
 import { Input } from '@/components/form/Input';
 import Button from '@/components/Button';
-import RawProductItemListing from '@/components/listing/RawProductItemListing';
-import ServiceItemListing from '@/components/listing/ServiceItemListing';
 import Swal from 'sweetalert2';
 import IconButton from '@/components/IconButton';
 import AgGridComponent from '@/components/apps/AgGridComponent';
@@ -31,25 +29,7 @@ interface IFormData {
     department_id: number | null;
     designation_id: number | null;
     requisition_date: string;
-    status: string,
     items: any[];
-}
-
-interface IRawProduct {
-    raw_product_id: number;
-    raw_product_title: string;
-    quantity: number;
-    unit_id: number;
-    unit_title: string;
-    unit_price: number;
-    total: number;
-    description: string;
-}
-
-interface IServiceItems {
-    name: string;
-    asset_id: string;
-    description: string;
 }
 
 interface IFormProps {
@@ -63,7 +43,7 @@ const PurchaseRequestForm = ({ id }: IFormProps) => {
     const { allRawProducts } = useAppSelector(state => state.rawProduct);
     const { purchaseRequestDetail, loading } = useAppSelector(state => state.purchaseRequisition);
     const { code } = useAppSelector(state => state.util);
-    const {assets} = useSelector((state: IRootState) => state.asset);
+    const { assets } = useSelector((state: IRootState) => state.asset);
 
     const [colDefs, setColDefs] = useState<any[]>([]);
     const [requestItems, setRequestItems] = useState<any[]>([]);
@@ -81,15 +61,9 @@ const PurchaseRequestForm = ({ id }: IFormProps) => {
         department_id: 0,
         designation_id: 0,
         requisition_date: '',
-        status: '',
         items: []
     });
 
-    const [requisitionStatusOptions, setRequisitionStatusOptions] = useState<any[]>([
-        { value: '', label: 'Select Status' },
-        { value: 'Draft', label: 'Draft' },
-        { value: 'Pending', label: 'Proceed' }
-    ]);
     const [requisitionTypeOptions, setRequisitionTypeOptions] = useState<any[]>([
         { value: '', label: 'Select Type' },
         { value: 'Material', label: 'Material' },
@@ -321,6 +295,19 @@ const PurchaseRequestForm = ({ id }: IFormProps) => {
         <form className="space-y-5" onSubmit={handleSubmit}>
             <div className="flex justify-between items-start gap-5">
                 <div className="flex justify-start flex-col items-start space-y-3 w-full">
+                    <Input
+                        divClasses="w-full"
+                        label="Purchase Request Name (Optional)"
+                        type="text"
+                        name="pr_title"
+                        placeholder="Enter Purchase Request Name"
+                        value={formData.pr_title}
+                        onChange={(e: any) => handleChange(e.target.name, e.target.value, e.target.required)}
+                        isMasked={false}
+                        styles={{ height: 45 }}
+                        required={true}
+                        errorMessage={errorMessages.pr_title}
+                    />
                     <div className="flex flex-col md:flex-row justify-between items-center gap-3 w-full">
                         <Dropdown
                             divClasses="w-full"
@@ -331,16 +318,6 @@ const PurchaseRequestForm = ({ id }: IFormProps) => {
                             onChange={(e: any) => handleChange('type', e, true)}
                             required={true}
                             errorMessage={errorMessages.type}
-                        />
-                        <Dropdown
-                            divClasses="w-full"
-                            label="Status"
-                            name="status"
-                            options={requisitionStatusOptions}
-                            value={formData.status}
-                            onChange={(e: any) => handleChange('status', e, true)}
-                            required={true}
-                            errorMessage={errorMessages.status}
                         />
                     </div>
                     <div className="flex flex-col md:flex-row justify-between items-center gap-3 w-full">
@@ -370,19 +347,6 @@ const PurchaseRequestForm = ({ id }: IFormProps) => {
                         />
                     </div>
 
-                    <Input
-                        divClasses="w-full"
-                        label="Purchase Request Name (Optional)"
-                        type="text"
-                        name="pr_title"
-                        placeholder="Enter Purchase Request Name"
-                        value={formData.pr_title}
-                        onChange={(e: any) => handleChange(e.target.name, e.target.value, e.target.required)}
-                        isMasked={false}
-                        styles={{ height: 45 }}
-                        required={true}
-                        errorMessage={errorMessages.pr_title}
-                    />
                 </div>
                 <div className="w-full p-5 border rounded hidden md:block">
                     <h1 className="font-bold text-lg mb-3">Instructions</h1>

@@ -180,11 +180,11 @@ const View = () => {
                                             </th>
                                             <th>Description</th>
                                             <th>Unit</th>
-                                            <th>Unit Price</th>
+                                            {/*<th>Unit Price</th>*/}
                                             <th>Requested Qty</th>
                                             <th>Processed Qty</th>
                                             <th>Remaining Qty</th>
-                                            <th>Total</th>
+                                            {/*<th>Total</th>*/}
                                             <th>Status</th>
                                             <th>Action</th>
                                         </tr>
@@ -227,11 +227,11 @@ const View = () => {
                                             </td>
                                             <td>{item.description}</td>
                                             <td>{item.unit?.name}</td>
-                                            <td>{parseFloat(item.unit_price).toFixed(2)}</td>
+                                            {/*<td>{parseFloat(item.unit_price).toFixed(2)}</td>*/}
                                             <td>{parseFloat(item.request_quantity).toFixed(2)}</td>
                                             <td>{parseFloat(item.processed_quantity).toFixed(2)}</td>
                                             <td>{parseFloat(item.remaining_quantity).toFixed(2)}</td>
-                                            <td>{(parseFloat(item.request_quantity) * parseFloat(item.unit_price)).toFixed(2)}</td>
+                                            {/*<td>{(parseFloat(item.request_quantity) * parseFloat(item.unit_price)).toFixed(2)}</td>*/}
                                             <td>
                                                 <span
                                                     className={`badge bg-${item.status === 'Pending' ? 'danger' : item.status === 'Partial' ? 'warning' : 'success'}`}>
@@ -268,15 +268,15 @@ const View = () => {
                                         </tr>
                                     ))}
                                 </tbody>
-                                <tfoot>
+                                <tfoot className="text-start">
                                 {purchaseRequestDetail?.type === 'Material'
                                     ? (
                                         <tr>
-                                            <td colSpan={4} style={{ 'textAlign': 'center' }}>
+                                            <td colSpan={3} style={{ 'textAlign': 'center' }}>
                                                 <strong>Total</strong>
                                             </td>
                                             <td>
-                                                {purchaseRequestDetail?.purchase_requisition_items?.reduce((acc: any, item: any) => acc + parseFloat(item.unit_price), 0).toFixed(2)}
+                                                {/*{purchaseRequestDetail?.purchase_requisition_items?.reduce((acc: any, item: any) => acc + parseFloat(item.unit_price), 0).toFixed(2)}*/}
                                             </td>
                                             <td>
                                                 {purchaseRequestDetail?.purchase_requisition_items?.reduce((acc: any, item: any) => acc + parseInt(item.request_quantity), 0).toFixed(2)}
@@ -288,7 +288,7 @@ const View = () => {
                                                 {purchaseRequestDetail?.purchase_requisition_items?.reduce((acc: any, item: any) => acc + parseInt(item.remaining_quantity), 0).toFixed(2)}
                                             </td>
                                             <td>
-                                                {purchaseRequestDetail?.purchase_requisition_items?.reduce((acc: any, item: any) => acc + parseFloat(item.unit_price) * parseFloat(item.request_quantity), 0).toFixed(2)}
+                                                {/*{purchaseRequestDetail?.purchase_requisition_items?.reduce((acc: any, item: any) => acc + parseFloat(item.unit_price) * parseFloat(item.request_quantity), 0).toFixed(2)}*/}
                                             </td>
                                             <td></td>
                                             <td></td>
