@@ -2,28 +2,69 @@ import React from 'react';
 import { Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import Header from '@/components/Report/Header';
 
+// Function to calculate totals
+const calculateTotals = (items: any) => {
+    let totalBeforeTax = 0;
+    let totalDiscount = 0;
+    let totalTax = 0;
+    let grandTotal = 0;
+
+    items.forEach((item: any) => {
+        const beforeTax = item.unit_price * item.received_quantity;
+        const discount = item.discount_type === 'percentage'
+            ? (beforeTax * (item.discount_amount_rate / 100))
+            : item.discount_amount_rate;
+
+        const subTotal = beforeTax - discount;
+        const tax = subTotal * 0.05; // 5% Tax
+        const total = subTotal + tax;
+
+        totalBeforeTax += beforeTax;
+        totalDiscount += discount;
+        totalTax += tax;
+        grandTotal += total;
+    });
+
+    const subTotal = totalBeforeTax - totalDiscount;
+
+    return {
+        totalBeforeTax: totalBeforeTax.toFixed(2),
+        totalDiscount: totalDiscount.toFixed(2),
+        subTotal: subTotal.toFixed(2),
+        totalTax: totalTax.toFixed(2),
+        grandTotal: grandTotal.toFixed(2)
+    };
+};
+
 const PrintContent = ({ content, items }: any) => {
+    const totals = calculateTotals(items);
+
     return (
         <Page size="A4" style={styles.page} wrap>
             <Header />
             <View style={styles.container}>
                 <View style={styles.titleContainer}>
-                    <Text style={styles.title}>Tax Invoice</Text>
+                    <Text style={styles.title}>Vendor Bill</Text>
                 </View>
                 <View style={styles.infoContainer}>
                     <View style={styles.infoColumn}>
                         <Text style={styles.text}>
-                            <Text style={styles.bold}>Sale Invoice Code: </Text>
-                            {content?.sale_invoice_code}
+                            <Text style={styles.bold}>Bill Code: </Text>
+                            {content?.bill_number}
                         </Text>
                         <Text style={styles.text}>
-                            <Text style={styles.bold}>Invoice Reference: </Text>
-                            {content?.invoice_reference}
+                            <Text style={styles.bold}>Bill Reference: </Text>
+                            {content?.bill_reference}</Text>
+                        <Text style={styles.text}>
+                            <Text style={styles.bold}>Bill Date: </Text>
+                            {content?.bill_date}
                         </Text>
                         <Text style={styles.text}>
-                            <Text style={styles.bold}>Invoice Date: </Text>
-                            {content?.invoice_date}
+                            <Text style={styles.bold}>Vendor: </Text>
+                            {content?.vendor?.name}
                         </Text>
+                    </View>
+                    <View style={styles.infoColumn}>
                         {content?.payment_terms && (
                             <Text style={styles.text}>
                                 <Text style={styles.bold}>Payment Terms: </Text>
@@ -37,84 +78,77 @@ const PrintContent = ({ content, items }: any) => {
                             </Text>
                         )}
                     </View>
-                    <View style={styles.infoColumn}>
-                        <Text style={styles.text}>
-                            <Text style={styles.bold}>Salesman: </Text>
-                            {content?.salesman?.name}
-                        </Text>
-                        <Text style={styles.text}>
-                            <Text style={styles.bold}>Customer: </Text>
-                            {content?.customer?.name}
-                        </Text>
-                        <Text style={styles.text}>
-                            <Text style={styles.bold}>Contact Person: </Text>
-                            {content?.contact_person?.name}
-                        </Text>
-                    </View>
                 </View>
-                <Text style={styles.sectionTitle}>Item Details</Text>
-                {items.map((deliveryNoteItem: any, index: number) => (
-                    <View style={[styles.table, {marginBottom: 5}]} key={index}>
-                        <Text style={{textAlign: 'center', fontSize: 10, paddingVertical: 5}}>{deliveryNoteItem.delivery_note_code}</Text>
-                        <View style={styles.tableHeader}>
-                            <Text style={[styles.tableHeaderCell, { width: '5%' }]}>#</Text>
-                            <Text style={[styles.tableHeaderCell, { width: '15%' }]}>Product</Text>
-                            <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Cost</Text>
-                            <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Quantity</Text>
-                            <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Before Tax</Text>
-                            <Text style={[styles.tableHeaderCell, { width: '15%' }]}>Tax</Text>
-                            <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Discount</Text>
-                            <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Total Cost</Text>
-                        </View>
-                        {deliveryNoteItem.delivery_note_items.map((deliveryNoteItem: any, index: number) => (
-                            <View key={index} style={styles.tableRow}>
-                                <Text style={[styles.tableCell, { width: '5%' }]}>
-                                    {index + 1}
-                                </Text>
-                                <View style={[styles.tableCell, { display: 'flex', flexDirection: 'column', width: '15%' }]}>
-                                    <Text>{deliveryNoteItem.product_assembly.formula_name}</Text>
-                                    <Text>{deliveryNoteItem.product.title + ` - ${deliveryNoteItem.capacity}KG`}</Text>
-                                </View>
-                                <Text style={[styles.tableCell, { width: '10%' }]}>
-                                    {parseFloat(deliveryNoteItem.retail_price).toFixed(2)}
-                                </Text>
-                                <Text style={[styles.tableCell, { width: '10%' }]}>
-                                    {deliveryNoteItem.delivered_quantity}
-                                </Text>
-                                <Text style={[styles.tableCell, { width: '10%' }]}>
-                                    {(parseFloat(deliveryNoteItem.retail_price) * parseFloat(deliveryNoteItem.delivered_quantity)).toFixed(2)}
-                                </Text>
-                                <View style={[styles.tableCell, { display: 'flex', flexDirection: 'column', width: '15%' }]}>
-                                    <Text>Tax: {deliveryNoteItem.tax_category.name+' ('+deliveryNoteItem.tax_rate+'%)'}</Text>
-                                    <Text>Amt: {deliveryNoteItem.tax_amount.toFixed(2)}</Text>
-                                </View>
-                                <Text style={[styles.tableCell, { width: '10%' }]}>
-                                    {deliveryNoteItem.discount_amount_rate.toFixed(2)}{deliveryNoteItem.discount_type === 'percentage' ? '%' : '/-'}
-                                </Text>
-                                <Text style={[styles.tableCell, { width: '10%' }]}>
-                                    {parseFloat(deliveryNoteItem.total_cost).toFixed(2)}
-                                </Text>
-                            </View>
-                        ))}
-                    </View>
-                ))}
-            </View>
-            <View style={styles.footer}>
-                <View style={styles.footerContainer}>
-                    <Text style={styles.footerText}>
-                        <Text style={styles.bold}>Created By: </Text>
-                        {content?.created_by?.name}
-                    </Text>
-                    <Text style={styles.footerText} render={({ pageNumber, totalPages }) => (
-                        `${pageNumber} / ${totalPages}`
-                    )} fixed />
-                    <Text style={styles.footerText}>
-                        <Text style={styles.bold}>Created At: </Text>
-                        {new Date(content?.created_at).toLocaleDateString() + '  ' + new Date(content?.created_at).toLocaleTimeString()}
-                    </Text>
-                </View>
-            </View>
 
+                <Text style={styles.sectionTitle}>Item Details</Text>
+
+                <View style={[styles.table, { marginBottom: 5 }]}>
+                    <View style={styles.tableHeader}>
+                        <Text style={[styles.tableHeaderCell, { width: '15%' }]}>GRN</Text>
+                        <Text style={[styles.tableHeaderCell, { width: '15%' }]}>Product</Text>
+                        <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Quantity</Text>
+                        <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Unit Price</Text>
+                        <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Before Tax</Text>
+                        <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Discount</Text>
+                        <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Sub Total</Text>
+                        <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Tax @5%</Text>
+                        <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Grand Total</Text>
+                    </View>
+                    {items.map((item: any, i: number) => {
+                        let grn = content?.good_receive_note_vendor_bill.find(
+                            (grn: any) => grn.good_receive_note_id === item.good_receive_note_id
+                        );
+                        const beforeTax = (parseFloat(item.unit_price) * parseFloat(item.received_quantity)).toFixed(2);
+                        const discount = item.discount_type === 'percentage'
+                            ? ((parseFloat(item.unit_price) * parseFloat(item.received_quantity)) * (item.discount_amount_rate / 100)).toFixed(2)
+                            : item.discount_amount_rate.toFixed(2);
+                        const subTotal = (parseFloat(beforeTax) - parseFloat(discount)).toFixed(2);
+                        const tax = (parseFloat(subTotal) * 0.05).toFixed(2);
+                        const grandTotal = (parseFloat(subTotal) + parseFloat(tax)).toFixed(2);
+
+                        return (
+                            <View key={i} style={styles.tableRow}>
+                                <Text
+                                    style={[styles.tableCell, { width: '15%' }]}>{grn?.good_receive_note.grn_number}</Text>
+                                <Text style={[styles.tableCell, { width: '15%' }]}>{item.raw_product?.item_code}</Text>
+                                <Text style={[styles.tableCell, { width: '10%' }]}>{item.received_quantity}</Text>
+                                <Text style={[styles.tableCell, { width: '10%' }]}>{item.unit_price}</Text>
+                                <Text style={[styles.tableCell, { width: '10%' }]}>{beforeTax}</Text>
+                                <Text style={[styles.tableCell, { width: '10%' }]}>{discount}</Text>
+                                <Text style={[styles.tableCell, { width: '10%' }]}>{subTotal}</Text>
+                                <Text style={[styles.tableCell, { width: '10%' }]}>{tax}</Text>
+                                <Text style={[styles.tableCell, { width: '10%' }]}>{grandTotal}</Text>
+                            </View>
+                        );
+                    })}
+                </View>
+
+                {/* Totals Section */}
+                <View style={styles.tableFooterContainer}>
+                    <View style={styles.tableFooter}>
+                        <View style={styles.tableFooterRow}>
+                            <Text style={styles.tableFooterLabel}>Total Before Tax:</Text>
+                            <Text style={styles.tableFooterValue}>{totals.totalBeforeTax}</Text>
+                        </View>
+                        <View style={styles.tableFooterRow}>
+                            <Text style={styles.tableFooterLabel}>Total Discount:</Text>
+                            <Text style={styles.tableFooterValue}>{totals.totalDiscount}</Text>
+                        </View>
+                        <View style={styles.tableFooterRow}>
+                            <Text style={styles.tableFooterLabel}>Sub Total:</Text>
+                            <Text style={styles.tableFooterValue}>{totals.subTotal}</Text>
+                        </View>
+                        <View style={styles.tableFooterRow}>
+                            <Text style={styles.tableFooterLabel}>Tax @5%:</Text>
+                            <Text style={styles.tableFooterValue}>{totals.totalTax}</Text>
+                        </View>
+                        <View style={styles.tableFooterRow}>
+                            <Text style={styles.tableFooterLabel}>Grand Total:</Text>
+                            <Text style={styles.tableFooterValue}>{totals.grandTotal}</Text>
+                        </View>
+                    </View>
+                </View>
+            </View>
         </Page>
     );
 };
@@ -123,52 +157,51 @@ const styles = StyleSheet.create({
     page: {
         display: 'flex',
         flexDirection: 'column',
-        padding: 20
+        padding: 20,
     },
     container: {
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
     },
     titleContainer: {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        marginVertical: 10
+        marginVertical: 10,
     },
     title: {
         fontSize: 12,
-        fontWeight: 'bold'
+        fontWeight: 'bold',
     },
     infoContainer: {
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginVertical: 10
+        marginVertical: 10,
     },
     infoColumn: {
         display: 'flex',
         flexDirection: 'column',
-        gap: 4,
-        width: '45%'
+        width: '45%',
     },
     text: {
-        fontSize: 9
+        fontSize: 9,
     },
     bold: {
         fontWeight: 'bold',
-        fontSize: 9
+        fontSize: 9,
     },
     sectionTitle: {
         fontSize: 14,
         fontWeight: 'bold',
-        marginVertical: 10
+        marginVertical: 10,
     },
     table: {
         display: 'flex',
         flexDirection: 'column',
         width: '100%',
         borderWidth: 1,
-        borderColor: '#000'
+        borderColor: '#000',
     },
     tableHeader: {
         display: 'flex',
@@ -177,11 +210,11 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: '#000',
         backgroundColor: '#f0f0f0',
-        padding: 4
+        padding: 4,
     },
     tableHeaderCell: {
         fontSize: 9,
-        textAlign: 'left'
+        textAlign: 'left',
     },
     tableRow: {
         display: 'flex',
@@ -189,33 +222,46 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         borderBottomWidth: 1,
         borderBottomColor: '#000',
-        padding: 4
+        padding: 4,
     },
     tableCell: {
         fontSize: 9,
-        textAlign: 'left'
+        textAlign: 'left',
     },
-    notAvailable: {
-        color: 'red'
+    tableFooterContainer: {
+        marginTop: 10,
+        fontSize: 10,
+        fontWeight: 'bold',
     },
-    footer: {
-        position: 'absolute',
-        bottom: 15,
-        left: 0,
-        right: 0
+    tableFooter: {
+        borderTopWidth: 1,
+        borderTopColor: '#000',
+        paddingTop: 5,
+        paddingHorizontal: 5,
+        marginTop: 5,
+        display: 'flex',
+        flexDirection: 'column',
+        borderWidth: 1,
+        borderColor: '#000',
+        backgroundColor: '#f5f5f5',
+        padding: 10,
     },
-    footerContainer: {
+    tableFooterRow: {
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 10
+        marginBottom: 2,
     },
-    footerText: {
-        // textAlign: 'center',
-        color: 'gray',
-        fontSize: 8
-    }
+    tableFooterLabel: {
+        fontSize: 9,
+        width: '70%',
+        textAlign: 'right',
+    },
+    tableFooterValue: {
+        fontSize: 9,
+        width: '30%',
+        textAlign: 'right',
+    },
 });
 
 export default PrintContent;

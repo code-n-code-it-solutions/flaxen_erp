@@ -42,6 +42,41 @@ const View = () => {
         }
     }, [vendorBillDetail]);
 
+    const calculateTotals = (items: any) => {
+        let totalBeforeTax = 0;
+        let totalDiscount = 0;
+        let totalTax = 0;
+        let grandTotal = 0;
+
+        items.forEach((item: any) => {
+            const beforeTax = item.unit_price * item.received_quantity;
+            const discount = item.discount_type === 'percentage'
+                ? (beforeTax * (item.discount_amount_rate / 100))
+                : item.discount_amount_rate;
+
+            const subTotal = beforeTax - discount;
+            const tax = subTotal * 0.05; // 5% Tax
+            const total = subTotal + tax;
+
+            totalBeforeTax += beforeTax;
+            totalDiscount += discount;
+            totalTax += tax;
+            grandTotal += total;
+        });
+
+        const subTotal = totalBeforeTax - totalDiscount;
+
+        return {
+            totalBeforeTax: totalBeforeTax.toFixed(2),
+            totalDiscount: totalDiscount.toFixed(2),
+            subTotal: subTotal.toFixed(2),
+            totalTax: totalTax.toFixed(2),
+            grandTotal: grandTotal.toFixed(2),
+        };
+    };
+
+    const totals = calculateTotals(goodReceiveNoteItems);
+
     return (
         <div className="flex flex-col gap-3">
             <DetailPageHeader
@@ -89,25 +124,24 @@ const View = () => {
                                     <strong>Bill Reference: </strong>
                                     {vendorBillDetail?.bill_reference}
                                 </span>
-
                                 <span>
                                     <strong>Bill Date: </strong>
                                     {vendorBillDetail?.bill_date}
                                 </span>
                             </div>
                             <div className="flex flex-col gap-2 justify-start items-start">
-                                {vendorBillDetail?.payment_terms ? (
+                                {vendorBillDetail?.payment_terms && (
                                     <span>
                                         <strong>Payment Terms: </strong>
                                         {vendorBillDetail?.payment_terms} Days
                                     </span>
-                                ) : <></>}
-                                {vendorBillDetail?.due_date ? (
+                                )}
+                                {vendorBillDetail?.due_date && (
                                     <span>
                                         <strong>Due Date: </strong>
                                         {vendorBillDetail?.due_date}
                                     </span>
-                                ) : <></>}
+                                )}
                                 <span>
                                     <strong>Vendor: </strong>
                                     {vendorBillDetail?.vendor?.name}
@@ -133,66 +167,70 @@ const View = () => {
                                     <th className="text-center">Quantity</th>
                                     <th className="text-center">Unit Price</th>
                                     <th className="text-center">Before Tax</th>
-                                    <th>Tax</th>
                                     <th>Discount</th>
+                                    <th>Sub Total</th>
+                                    <th>Tax@5%</th>
                                     <th className="text-center">Grand Total</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 {goodReceiveNoteItems?.length > 0
-                                    ? (goodReceiveNoteItems.map((item: any, index: number) => {
-                                            let grn = vendorBillDetail?.good_receive_note_vendor_bill.find((grn: any) => grn.good_receive_note_id === item.good_receive_note_id);
-                                            return (
-                                                <tr key={index}>
-                                                    <td>{grn?.good_receive_note.grn_number}</td>
-                                                    <td>{item.raw_product?.item_code}</td>
-                                                    <td className="text-center">{item.received_quantity}</td>
-                                                    <td className="text-center">{item.unit_price}</td>
-                                                    <td className="text-center">{(item.unit_price * item.received_quantity).toFixed(2)}</td>
-                                                    <td>
-                                                        {item.tax_category
-                                                            ? (
-                                                                <div className="flex flex-col">
-                                                                    <span><strong>Tax: </strong>{item.tax_category.name} ({item.tax_rate}%)</span>
-                                                                    <span><strong>Amount: </strong>{item.tax_amount.toFixed(2)}
-                                                                    </span>
-                                                                </div>
-                                                            ) : (
-                                                                <span>N/A</span>
-                                                            )}
-                                                    </td>
-                                                    <td>
-                                                        {item.discount_type
-                                                            ? (
-                                                                <div className="flex flex-col">
-                                                                    <span><strong>Type: </strong>{capitalize(item.discount_type)}
-                                                                    </span>
-                                                                    <span><strong>Rate: </strong>
-                                                                        {item.discount_amount_rate.toFixed(2)}{item.discount_type === 'percentage' ? '%' : ''}
-                                                                    </span>
-                                                                </div>
-                                                            ) : (
-                                                                <span>N/A</span>
-                                                            )}
-                                                    </td>
-                                                    <td className="text-center">
-                                                        {item.total_price.toFixed(2)}
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })
-                                    ) : (
+                                    ? goodReceiveNoteItems.map((item: any, index: number) => {
+                                        let grn = vendorBillDetail?.good_receive_note_vendor_bill.find(
+                                            (grn: any) => grn.good_receive_note_id === item.good_receive_note_id
+                                        );
+                                        const beforeTax = (item.unit_price * item.received_quantity).toFixed(2);
+                                        const discount = item.discount_type
+                                            ? (item.discount_type === 'percentage'
+                                                ? ((item.unit_price * item.received_quantity) * (item.discount_amount_rate / 100)).toFixed(2)
+                                                : item.discount_amount_rate.toFixed(2))
+                                            : 'N/A';
+                                        const subTotal = (
+                                            item.unit_price * item.received_quantity - (discount !== 'N/A' ? parseFloat(discount) : 0)
+                                        ).toFixed(2);
+                                        const tax = (parseFloat(subTotal) * 0.05).toFixed(2);
+                                        const grandTotal = (parseFloat(subTotal) + parseFloat(tax)).toFixed(2);
+
+                                        return (
+                                            <tr key={index}>
+                                                <td>{grn?.good_receive_note.grn_number}</td>
+                                                <td>{item.raw_product?.item_code}</td>
+                                                <td className="text-center">{item.received_quantity}</td>
+                                                <td className="text-center">{item.unit_price}</td>
+                                                <td className="text-center">{beforeTax}</td>
+                                                <td>{discount}</td>
+                                                <td>{subTotal}</td>
+                                                <td>{tax}</td>
+                                                <td className="text-center">{grandTotal}</td>
+                                            </tr>
+                                        );
+                                    })
+                                    : (
                                         <tr>
-                                            <td colSpan={8} className="text-center">No items found</td>
+                                            <td colSpan={9} className="text-center">No items found</td>
                                         </tr>
                                     )}
                                 </tbody>
                                 <tfoot>
                                 <tr>
-                                    <td colSpan={4} className="text-center font-bold">Total</td>
-                                    <td className="text-center font-bold">{goodReceiveNoteItems?.reduce((acc, item) => acc + (item.unit_price * item.received_quantity), 0).toFixed(2)}</td>
-                                    <td colSpan={2}></td>
-                                    <td className="text-center font-bold">{goodReceiveNoteItems?.reduce((acc, item) => acc + item.total_price, 0).toFixed(2)}</td>
+                                    <td colSpan={8} className="text-end">Total Before Tax: </td>
+                                    <td className="text-start ps-5">{totals.totalBeforeTax}</td>
+                                </tr>
+                                <tr>
+                                    <td colSpan={8} className="text-end">Total Discount: </td>
+                                    <td className="text-start ps-5">{totals.totalDiscount}</td>
+                                </tr>
+                                <tr>
+                                    <td colSpan={8} className="text-end">Sub Total:</td>
+                                    <td className="text-start ps-5">{totals.subTotal}</td>
+                                </tr>
+                                <tr>
+                                    <td colSpan={8} className="text-end">Tax @5%:</td>
+                                    <td className="text-start ps-5">{totals.totalTax}</td>
+                                </tr>
+                                <tr>
+                                    <td colSpan={8} className="text-end">Grand Total:</td>
+                                    <td className="text-start ps-5">{totals.grandTotal}</td>
                                 </tr>
                                 </tfoot>
                             </table>
@@ -204,5 +242,4 @@ const View = () => {
     );
 };
 
-// View.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
 export default View;

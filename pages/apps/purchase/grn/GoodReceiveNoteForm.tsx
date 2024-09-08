@@ -157,7 +157,7 @@ const GoodReceiveNoteForm = ({ id }: IFormProps) => {
                 },
                 {
                     headerName: 'Received Qty',
-                    field: 'quantity',
+                    field: 'received_quantity',
                     editable: (params: any) => !params.node.rowPinned, // Disable editing in pinned row
                     cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
                     minWidth: 150,
