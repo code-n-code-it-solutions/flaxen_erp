@@ -5,19 +5,19 @@ import { setAuthToken } from '@/configs/api.config';
 import PrintContent from './PrintContent';
 import BlankLayout from '@/components/Layouts/BlankLayout';
 import { PDFViewer, Document } from '@react-pdf/renderer';
-import { clearSaleInvoiceState, getSaleInvoicesForPrint } from '@/store/slices/saleInvoiceSlice';
+import { clearVendorBillListState, getVendorBillForPrint } from '@/store/slices/vendorBillSlice';
 
 const Print = () => {
     const dispatch = useAppDispatch();
-    const { saleInvoicesForPrint: contents, loading } = useAppSelector((state) => state.saleInvoice);
+    const { vendorBillsForPrint: contents, loading } = useAppSelector((state) => state.vendorBill);
     const { token } = useAppSelector((state) => state.user);
     const router = useRouter();
 
     useEffect(() => {
         setAuthToken(token);
-        dispatch(clearSaleInvoiceState());
+        dispatch(clearVendorBillListState());
         if (router.query.id) {
-            dispatch(getSaleInvoicesForPrint({ ids: router.query.id, type: 'detail' }));
+            dispatch(getVendorBillForPrint({ ids: router.query.id, type: 'detail' }));
         }
     }, [router.query.id]);
 
@@ -31,7 +31,7 @@ const Print = () => {
                 showToolbar={true}
             >
                 <Document
-                    title="Report Preview"
+                    title="Vendor Bill Preview"
                     author="Flaxen Paints Industry LLC"
                     subject="Report Preview"
                     keywords="pdf, flaxen, flaxen paints, report, preview, flaxen paints industry llc"
@@ -41,7 +41,7 @@ const Print = () => {
                         <PrintContent
                             key={index}
                             content={content}
-                            items={content.delivery_note_sale_invoices.map((item: any) => item.delivery_note).flat()}
+                            items={content.good_receive_note_vendor_bill?.map((item: any) => item.good_receive_note.raw_products).flat()}
                         />
                     );
                 })}

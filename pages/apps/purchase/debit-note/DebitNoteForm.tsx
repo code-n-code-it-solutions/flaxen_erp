@@ -84,8 +84,8 @@ const DebitNoteForm = () => {
                 };
             })
         };
-        console.log(finalData);
-        // dispatch(storeDebitNote(finalData));
+        // console.log(finalData);
+        dispatch(storeDebitNote(finalData));
     };
 
     useEffect(() => {
