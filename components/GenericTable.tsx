@@ -25,7 +25,7 @@ const GenericTable = ({
                           isAdvanced = true,
                           rowStyle
                       }: IGenericTableProps) => {
-
+    // console.log("generic table is repeating")
     const [page, setPage] = useState(1);
     const PAGE_SIZES = [10, 20, 30, 50, 100];
     const [pageSize, setPageSize] = useState(PAGE_SIZES[0]);
@@ -39,20 +39,24 @@ const GenericTable = ({
 
     useEffect(() => {
         setInitialRecords(sortBy(rowData, sortStatus.columnAccessor));
+        // console.log("row data changing")
     }, [rowData]);
 
     useEffect(() => {
         setRecordsData(initialRecords)
+        // console.log("initial record changing")
     }, [initialRecords]);
 
     useEffect(() => {
         setPage(1);
+        // console.log("page size changing")
     }, [pageSize]);
 
     useEffect(() => {
         const from = (page - 1) * pageSize;
         const to = from + pageSize;
         setRecordsData([...initialRecords.slice(from, to)]);
+        // console.log("page, pageSize, initial record")
     }, [page, pageSize, initialRecords]);
 
     useEffect(() => {
@@ -70,12 +74,14 @@ const GenericTable = ({
                 });
             });
         });
+        // console.log("search changing")
     }, [search]);
 
     useEffect(() => {
         const sortedData = sortBy(rowData, sortStatus.columnAccessor);
         const orderedData = sortStatus.direction === 'desc' ? sortedData.reverse() : sortedData;
         setInitialRecords(orderedData);
+        // console.log("rowData, sortStatus.columnAccessor, sortStatus.direction")
     }, [rowData, sortStatus.columnAccessor, sortStatus.direction]);
 
     const exportTable = (type: any) => {
