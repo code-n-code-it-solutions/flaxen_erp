@@ -86,8 +86,8 @@ const CreditNoteForm = () => {
                 };
             })
         };
-        console.log(finalData);
-        // dispatch(storeCreditNote(finalData));
+        // console.log(finalData);
+        dispatch(storeCreditNote(finalData));
     };
 
     useEffect(() => {

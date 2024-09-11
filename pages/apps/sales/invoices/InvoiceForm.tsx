@@ -185,7 +185,11 @@ const InvoiceForm = () => {
                 headerName: 'VAT@5%',
                 field: 'tax_amount',
                 valueGetter: (params: any) => {
-                    return params.data.sale_price * (params.data.delivered_quantity || 0) * 0.05;
+                    return (params.data.sale_price * (params.data.delivered_quantity || 0) * 0.05)
+                        .toLocaleString(undefined, {
+                            minimumFractionDigits: 4,
+                            maximumFractionDigits: 4
+                        });
                 },
                 cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
                 minWidth: 150,

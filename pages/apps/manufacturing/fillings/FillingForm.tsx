@@ -112,7 +112,7 @@ const FillingForm = ({ id }: IFormProps) => {
                         production_ids: value.map((item: any) => item.value).join(',')
                     });
                 } else {
-                    setFormData({ ...formData, [name]: '' });
+                    setFormData({ ...formData, production_ids: '' });
                     setRawProducts([]);
                     setFillingMaterials([]);
                     setBatchCalculations([]);
@@ -133,8 +133,51 @@ const FillingForm = ({ id }: IFormProps) => {
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        setAuthToken(token);
+        dispatch(clearFillingState());
 
-        const finalData:any = {
+        // Check for missing data in formData
+        const requiredFields = ['filling_code', 'filling_date', 'filling_time', 'filling_shift_id', 'product_assembly_id', 'production_ids'];
+        const missingFields = requiredFields.filter(field => !formData[field]);
+
+        // Check for missing data in the arrays
+        const missingArrayData = {
+            rawProducts: rawProducts.length === 0,
+            fillingMaterials: fillingMaterials.length === 0,
+            batchCalculations: batchCalculations.length === 0
+        };
+
+        // If there are missing fields or array data, show SweetAlert and prevent submission
+        if (missingFields.length > 0 || Object.values(missingArrayData).includes(true)) {
+            let errorMessage = 'Please fill in the required fields:\n';
+
+            if (missingFields.length > 0) {
+                errorMessage += `Missing fields: ${missingFields.join(', ')}\n`;
+            }
+
+            if (missingArrayData.rawProducts) {
+                errorMessage += 'Raw Products are missing.\n';
+            }
+            if (missingArrayData.fillingMaterials) {
+                errorMessage += 'Filling Materials are missing.\n';
+            }
+            if (missingArrayData.batchCalculations) {
+                errorMessage += 'Batch Calculations are missing.\n';
+            }
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Missing Data',
+                text: errorMessage,
+                padding: '2em',
+                customClass: {
+                    popup: 'sweet-alerts'
+                }
+            });
+            return;
+        }
+
+        const finalData: any = {
             ...formData,
             filling_items: rawProducts.map((item) => {
                 return {
@@ -155,9 +198,7 @@ const FillingForm = ({ id }: IFormProps) => {
             }),
             batch_calculations: batchCalculations
         };
-        setAuthToken(token);
-        setContentType('application/json');
-        dispatch(clearFillingState());
+
         Swal.fire({
             icon: 'warning',
             title: 'Retail Price Confirmation',
@@ -170,7 +211,7 @@ const FillingForm = ({ id }: IFormProps) => {
             }
         }).then((result: any) => {
             if (result.value) {
-                // console.log(finalData);
+                // Submit the final data
                 if (id) {
                     dispatch(updateFilling({ id, finalData: finalData }));
                 } else {
@@ -178,7 +219,6 @@ const FillingForm = ({ id }: IFormProps) => {
                 }
             }
         });
-
     };
 
     useEffect(() => {
@@ -371,7 +411,7 @@ const FillingForm = ({ id }: IFormProps) => {
                             type="date"
                             name="filling_date"
                             value={formData.filling_date}
-                            onChange={(e) => handleChange('filling_date', e[0].toLocaleDateString(), true)}
+                            onChange={(e) => handleChange('filling_date', e ? e[0].toLocaleDateString() : '', true)}
                             placeholder="Enter Filling Date"
                             isMasked={false}
                             required={true}
@@ -384,7 +424,7 @@ const FillingForm = ({ id }: IFormProps) => {
                             type="time"
                             name="filling_time"
                             value={formData.filling_time}
-                            onChange={(e) => handleChange('filling_time', e[0].toLocaleTimeString(), true)}
+                            onChange={(e) => handleChange('filling_time', e ? e[0].toLocaleTimeString() : '', true)}
                             placeholder="Enter Filling Time"
                             isMasked={false}
                             required={true}

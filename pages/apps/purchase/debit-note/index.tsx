@@ -25,59 +25,29 @@ const Index = () => {
     const gridRef = useRef<AgGridReact<any>>(null);
     const [colDefs, setColDefs] = useState<any>([
         {
-            headerName: 'Invoice Code',
+            headerName: 'DN Code',
             headerCheckboxSelection: true,
             checkboxSelection: true,
-            field: 'sale_invoice_code',
+            field: 'debit_note_code',
             minWidth: 150,
             cellRenderer: DisabledClickRenderer
         },
         {
-            headerName: 'Customer',
-            field: 'customer.name',
-            valueGetter: (params: any) => params.data.customer.name + ' (' + params.data.customer.customer_code + ')',
+            headerName: 'Vendor',
+            field: 'vendor.name',
+            valueGetter: (params: any) => params.data.vendor.name + ' (' + params.data.vendor.vendor_number + ')',
             minWidth: 150
         },
         {
-            headerName: 'Contact Person',
-            field: 'contact_person.name',
+            headerName: 'Returned By',
+            field: 'returned_by.name',
             minWidth: 150
         },
         {
-            headerName: 'Salesman',
-            field: 'salesman.name',
+            headerName: 'Returned Date',
+            field: 'debit_note_date',
             minWidth: 150
         },
-        {
-            headerName: 'Invoice Ref',
-            field: 'payment_reference',
-            minWidth: 150
-        },
-        {
-            headerName: 'Invoice Date',
-            field: 'invoice_date',
-            minWidth: 150
-        },
-        {
-            headerName: 'Due Date/Terms',
-            valueGetter: (params: any) => params.data.due_date ? params.data.due_date : params.data.payment_terms + ' Days',
-            minWidth: 150
-        },
-        {
-            headerName: 'Invoice Amount',
-            valueGetter: (params: any) => {
-                return params.data.delivery_note_sale_invoices
-                    .flatMap((invoice: any) => invoice.delivery_note.delivery_note_items)
-                    .map((item: any) => parseFloat(item.total_cost))
-                    .reduce((a: number, b: number) => a + b, 0).toFixed(2);
-            },
-            minWidth: 150
-        },
-        {
-            headerName: 'Status',
-            field: 'status',
-            minWidth: 150
-        }
     ]);
 
     useEffect(() => {

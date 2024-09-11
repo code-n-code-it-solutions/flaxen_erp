@@ -49,11 +49,6 @@ const Index = () => {
             minWidth: 150
         },
         {
-            headerName: 'Payment Type',
-            field: 'payment_type',
-            minWidth: 150
-        },
-        {
             headerName: 'Vendor',
             valueGetter: (params: any) => params.data.vendor.name + ' (' + params.data.vendor.vendor_number + ')',
             minWidth: 150

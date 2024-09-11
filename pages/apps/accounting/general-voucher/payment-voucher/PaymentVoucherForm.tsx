@@ -504,7 +504,7 @@ const PaymentVoucherForm = () => {
                                     <th>Expense Account</th>
                                     <th>Payment For</th>
                                     <th>Qty</th>
-                                    <th>Amount</th>
+                                    <th>Unit Price</th>
                                     <th>Before Tax</th>
                                     <th>Discount</th>
                                     <th>VAT@5%</th>
@@ -587,7 +587,12 @@ const PaymentVoucherForm = () => {
                                                     isMasked={false}
                                                 />
                                             </td>
-                                            <td>{item.sub_total}</td>
+                                            <td>
+                                                {item.sub_total.toLocaleString(
+                                                    undefined,
+                                                    { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+                                                )}
+                                            </td>
                                             <td>
                                                 <Input
                                                     type="number"
@@ -631,7 +636,12 @@ const PaymentVoucherForm = () => {
                                                     {item.has_tax && <span>{calculateTax(item)}</span>}
                                                 </div>
                                             </td>
-                                            <td>{item.grand_total}</td>
+                                            <td>
+                                                {item.grand_total.toLocaleString(
+                                                    undefined,
+                                                    { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+                                                )}
+                                            </td>
                                         </tr>
                                     ))
                                 ) : (

@@ -1,44 +1,43 @@
 import React, { useEffect, useState } from 'react';
-import AppLayout from '@/components/Layouts/AppLayout';
 import { setAuthToken } from '@/configs/api.config';
 import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import useSetActiveMenu from '@/hooks/useSetActiveMenu';
 import { AppBasePath } from '@/utils/enums';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useRouter } from 'next/router';
-import { clearSaleInvoiceState, showDetails } from '@/store/slices/saleInvoiceSlice';
 import DetailPageHeader from '@/components/apps/DetailPageHeader';
 import PageWrapper from '@/components/PageWrapper';
 import { capitalize } from 'lodash';
+import { clearDebitNoteState, getDebitNoteDetail } from '@/store/slices/debitNoteSlice';
 
 const View = () => {
-    useSetActiveMenu(AppBasePath.Invoice);
+    useSetActiveMenu(AppBasePath.Debit_Notes);
     const dispatch = useAppDispatch();
     const router = useRouter();
     const { token } = useAppSelector(state => state.user);
-    const { saleInvoiceDetail, loading } = useAppSelector(state => state.saleInvoice);
+    const { debitNoteDetails, loading } = useAppSelector(state => state.debitNote);
     const [ids, setIds] = useState<string[]>([]);
     const [deliveryNoteItems, setDeliveryNoteItems] = useState<any[]>([]);
 
     useEffect(() => {
         setAuthToken(token);
-        dispatch(setPageTitle('Sale Invoice Details'));
-        dispatch(clearSaleInvoiceState());
+        dispatch(setPageTitle('Debit Note Details'));
+        dispatch(clearDebitNoteState());
 
-        const saleInvoiceId = router.query.id;
+        const debitNoteId = router.query.id;
 
-        if (saleInvoiceId) {
-            setIds(Array.isArray(saleInvoiceId) ? saleInvoiceId : [saleInvoiceId]);
-            const id = Array.isArray(saleInvoiceId) ? saleInvoiceId[0] : saleInvoiceId;
-            dispatch(showDetails(parseInt(id)));
+        if (debitNoteId) {
+            setIds(Array.isArray(debitNoteId) ? debitNoteId : [debitNoteId]);
+            const id = Array.isArray(debitNoteId) ? debitNoteId[0] : debitNoteId;
+            dispatch(getDebitNoteDetail(parseInt(id)));
         }
     }, [router.query.id, dispatch]);
 
     useEffect(() => {
-        if (saleInvoiceDetail) {
-            setDeliveryNoteItems(saleInvoiceDetail.delivery_note_sale_invoices.map((item: any) => item.delivery_note.delivery_note_items).flat());
+        if (debitNoteDetails) {
+            // setDeliveryNoteItems(debitNoteDetails.delivery_note_sale_invoices.map((item: any) => item.delivery_note.delivery_note_items).flat());
         }
-    }, [saleInvoiceDetail]);
+    }, [debitNoteDetails]);
 
     return (
         <div>
@@ -52,7 +51,7 @@ const View = () => {
                     },
                     print: {
                         show: true,
-                        onClick: () => router.push('/apps/invoicing/customers/invoices/print/' + ids.join('/'))
+                        onClick: () => router.push('/apps/purchase/debit-note/print/' + ids.join('/'))
                     },
                     delete: {
                         show: false
@@ -68,65 +67,48 @@ const View = () => {
                 }}
                 backButton={{
                     show: true,
-                    backLink: '/apps/invoicing/customers/invoices'
+                    backLink: '/apps/purchase/debit-note'
                 }}
             />
             <PageWrapper
                 loading={loading}
                 embedLoader={true}
             >
-                {saleInvoiceDetail && (
+                {debitNoteDetails && (
                     <div>
                         <div className="flex justify-between items-center flex-col md:flex-row w-full gap-3">
                             <div className="flex flex-col gap-2 justify-start items-start">
                                 <span>
-                                    <strong>Sale Invoice Code: </strong>
-                                    {saleInvoiceDetail?.sale_invoice_code}
+                                    <strong>Debit Note Code: </strong>
+                                    {debitNoteDetails?.debit_note_code}
                                 </span>
                                 <span>
-                                    <strong>Invoice Reference: </strong>
-                                    {saleInvoiceDetail?.invoice_reference}
+                                    <strong>Vendor: </strong>
+                                    {debitNoteDetails?.vendor?.name}
                                 </span>
 
                                 <span>
-                                    <strong>Invoice Date: </strong>
-                                    {saleInvoiceDetail?.invoice_date}
+                                    <strong>Returned Date: </strong>
+                                    {debitNoteDetails?.debit_note_date}
                                 </span>
 
-
-                                {saleInvoiceDetail?.payment_terms && (
-                                    <span>
-                                        <strong>Payment Terms: </strong>
-                                        {saleInvoiceDetail?.payment_terms} Days
-                                    </span>
-                                )}
-                                {saleInvoiceDetail?.due_date && (
-                                    <span>
-                                        <strong>Due Date: </strong>
-                                        {saleInvoiceDetail?.due_date}
-                                    </span>
-                                )}
                                 <span>
                                     <strong>Created At: </strong>
-                                    {new Date(saleInvoiceDetail?.created_at).toLocaleDateString()}
+                                    {new Date(debitNoteDetails?.created_at).toLocaleDateString()}
                                 </span>
                             </div>
                             <div className="flex flex-col gap-2 justify-start items-start">
                                 <span>
-                                    <strong>Salesman: </strong>
-                                    {saleInvoiceDetail?.salesman?.name}
+                                    <strong>Returned By: </strong>
+                                    {debitNoteDetails?.returned_by?.name}
                                 </span>
                                 <span>
-                                    <strong>Customer: </strong>
-                                    {saleInvoiceDetail?.customer?.name}
-                                </span>
-                                <span>
-                                    <strong>Contact Person: </strong>
-                                    {saleInvoiceDetail?.contact_person?.name}
+                                    <strong>Return Type: </strong>
+                                    {debitNoteDetails?.return_type}
                                 </span>
                                 <span>
                                     <strong>Created By: </strong>
-                                    {saleInvoiceDetail?.created_by?.name}
+                                    {debitNoteDetails?.created_by?.name}
                                 </span>
                             </div>
                         </div>

@@ -49,9 +49,9 @@ const QuotationForm = () => {
         setQuotationItems(updatedItems);
     };
 
-    useEffect(() => {
-        console.log(quotationItems);
-    }, [quotationItems])
+    // useEffect(() => {
+    //     console.log(quotationItems);
+    // }, [quotationItems])
 
     const calculateTotals = () => {
         const totalQuantity = quotationItems.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
@@ -73,7 +73,7 @@ const QuotationForm = () => {
     };
 
     useEffect(() => {
-        setQuotationItems([]);
+        // setQuotationItems([]);
         let defaultColDef = [
             {
                 headerName: 'Qty',
@@ -89,6 +89,10 @@ const QuotationForm = () => {
                 field: 'sale_price',
                 editable: (params: any) => !params.node.rowPinned, // Disable editing in pinned row
                 cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+                valueGetter: (params: any) => params.data.sale_price.toLocaleString(undefined, {
+                    minimumFractionDigits: 4,
+                    maximumFractionDigits: 4
+                }),
                 minWidth: 150,
                 filter: false,
                 floatingFilter: false
@@ -105,7 +109,11 @@ const QuotationForm = () => {
             {
                 headerName: 'VAT@5%',
                 field: 'tax_amount',
-                valueGetter: (params: any) => params.data.sale_price * params.data.quantity * 0.05,
+                valueGetter: (params: any) => (params.data.sale_price * params.data.quantity * 0.05)
+                    .toLocaleString(undefined, {
+                        minimumFractionDigits: 4,
+                        maximumFractionDigits: 4
+                    }),
                 cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
                 minWidth: 150,
                 filter: false,
@@ -215,12 +223,21 @@ const QuotationForm = () => {
                     valueFormatter: (params: any) => {
                         if (params.node?.rowPinned) return 'Total';  // No formatting for pinned row, just return 'Total'
                         const selectedOption = allRawProducts?.find((option: any) => option.id === params.value);
+                        console.log(selectedOption);
                         return selectedOption ? selectedOption.title : '';
                     },
                     cellRenderer: (params: any) => {
                         if (params.node?.rowPinned) return 'Total';  // Show 'Total' for pinned row
                         const selectedOption = allRawProducts?.find((option: any) => option.id === params.value);
                         return selectedOption ? selectedOption.title : '';
+                    },
+                    onCellValueChanged: (params: any) => {
+                        const selectedOption = allRawProducts.find((product: any) => product.id === params.data.raw_product_id);
+                        if (selectedOption) {
+                            params.data.sale_price = parseFloat(selectedOption.retail_price);  // Update sale price based on selected product's retail price
+                            gridRef.current!.api.refreshCells({ force: true });
+                            calculateTotals(); // Recalculate totals after sale price change
+                        }
                     },
                     minWidth: 150,
                     filter: false,
