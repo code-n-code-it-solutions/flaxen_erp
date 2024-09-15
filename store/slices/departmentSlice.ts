@@ -6,6 +6,7 @@ interface IDepartmentState {
     department: any;
     departmentDetail: any
     departments: any;
+    DepartmentsForPrint: any;
     loading: boolean;
     error: any;
     success: boolean;
@@ -16,6 +17,7 @@ const initialState: IDepartmentState = {
     department: null,
     departmentDetail: null,
     departments: null,
+    DepartmentsForPrint: null,
     loading: false,
     error: null,
     success: false,
@@ -29,6 +31,21 @@ export const getDepartments = createAsyncThunk(
             const response = await API.get('/department');
             return response.data;
         } catch (error:any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const getDepartmentsForPrint = createAsyncThunk(
+    'departments/for-print',
+    async (data: any, thunkAPI) => {
+        try {
+            const response = await API.post('/departments/print', data);
+            // console.log(response.data);
+            return response.data;
+        } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
             return thunkAPI.rejectWithValue(message);
@@ -60,6 +77,7 @@ export const departmentSlice = createSlice({
             state.error = null;
             state.success = false;
             state.departmentDetail = null;
+            state.DepartmentsForPrint = null;
         },
     },
     extraReducers: (builder) => {
@@ -87,6 +105,11 @@ export const departmentSlice = createSlice({
             .addCase(storeDepartment.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
+            })
+            .addCase(getDepartmentsForPrint.fulfilled, (state, action) => {
+                state.loading = false;
+                state.DepartmentsForPrint = action.payload.data;
+                state.success = action.payload.success;
             })
     },
 });
