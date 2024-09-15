@@ -27,7 +27,7 @@ const Create = () => {
     }, [success, vendorPayment]);
 
     return (
-        <div>
+        <div className="flex flex-col gap-3">
             <DetailPageHeader
                 appBasePath={AppBasePath.Vendor_Payment}
                 title="Vendor Payment"
