@@ -85,6 +85,19 @@ const Index = () => {
             }
         },
         {
+            headerName: 'TRX #',
+            field: 'transaction_code',
+            // minWidth: 150,
+            sortable: false,
+            filter: false,
+            floatingFilter: false,
+            cellStyle: (params: any) => {
+                if (params.data?.isTotal) {
+                    return { fontWeight: 'bold' };
+                }
+            }
+        },
+        {
             headerName: 'Source',
             valueGetter: (params: any) => params.data?.isTotal ? '' : capitalize(params.data?.transaction_through.replace('_', ' ')),
             // minWidth: 150,

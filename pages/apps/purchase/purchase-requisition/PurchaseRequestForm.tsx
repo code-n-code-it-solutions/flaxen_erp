@@ -71,11 +71,11 @@ const PurchaseRequestForm = ({ id }: IFormProps) => {
     ]);
 
     const handleRemoveRow = (row: any) => {
-        setRequestItems(requestItems.filter((item) => item.id !== row.id && item.raw_product_id === row.raw_product_id));
+        setRequestItems(requestItems.filter((item) => item.raw_product_id === row.raw_product_id && item.quantity === row.quantity));
     };
 
     useEffect(() => {
-        setRequestItems([]);
+        // setRequestItems([]);
         let columnDefinitions: any[] = [];
         if (formData.type === 'Material') {
             columnDefinitions = [

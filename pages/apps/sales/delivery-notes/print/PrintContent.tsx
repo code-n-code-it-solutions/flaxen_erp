@@ -1,8 +1,15 @@
 import React from 'react';
 import { Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import Header from '@/components/Report/Header';
+import Footer from '@/components/Report/Footer';
 
 const PrintContent = ({ content }: any) => {
+    // Calculate the total delivered quantity
+    const totalDeliveredQuantity = content?.delivery_note_items?.reduce(
+        (total: number, item: any) => total + item.delivered_quantity,
+        0
+    );
+
     return (
         <Page size="A4" style={styles.page} wrap>
             <Header />
@@ -24,8 +31,6 @@ const PrintContent = ({ content }: any) => {
                             <Text style={styles.bold}>Delivery: </Text>
                             {content?.delivery_due_in_days + ' - ' + content?.delivery_due_date}
                         </Text>
-
-
                     </View>
                     <View style={styles.infoColumn}>
                         <Text style={styles.text}>
@@ -47,54 +52,45 @@ const PrintContent = ({ content }: any) => {
                     <View style={styles.tableHeader}>
                         <Text style={[styles.tableHeaderCell, { width: '5%' }]}>#</Text>
                         <Text style={[styles.tableHeaderCell, { width: '20%' }]}>Product</Text>
-                        {/*{!content?.skip_quotation &&*/}
-                        {/*    <Text style={[styles.tableHeaderCell, { width: '15%' }]}>Quotation</Text>*/}
-                        {/*}*/}
-                        <Text style={[styles.tableHeaderCell, { width: '20%' }]}>Batch #</Text>
-                        <Text style={[styles.tableHeaderCell, { width: '20%' }]}>Filling Product</Text>
+                        {content?.delivery_note_for === 1 && (
+                            <>
+                                <Text style={[styles.tableHeaderCell, { width: '20%' }]}>Filling Product</Text>
+                                <Text style={[styles.tableHeaderCell, { width: '20%' }]}>Capacity</Text>
+                                <Text style={[styles.tableHeaderCell, { width: '20%' }]}>Batch #</Text>
+                            </>
+                        )}
                         <Text style={[styles.tableHeaderCell, { width: '20%' }]}>Delivered Quantity</Text>
                     </View>
                     {content?.delivery_note_items?.map((item: any, index: number) => (
                         <View key={index} style={styles.tableRow}>
                             <Text style={[styles.tableCell, { width: '5%' }]}>{index + 1}</Text>
-                            <Text
-                                style={[styles.tableCell, { width: '20%' }]}>{item.product_assembly.formula_name}</Text>
-                            {/*{!content?.skip_quotation && <Text*/}
-                            {/*    style={[styles.tableCell, { width: '15%' }]}>{item.quotation.quotation_code}</Text>}*/}
-                            <Text style={[styles.tableCell, { width: '20%' }]}>
-                                {item.batch_number}
-                                {/*{item.available_quantity ? (*/}
-                                {/*    <View style={{ display: 'flex', flexDirection: 'column' }}>*/}
-                                {/*        <Text>{item.batch_number}</Text>*/}
-                                {/*        <Text> </Text>*/}
-                                {/*        <Text>{item.filling.filling_code}</Text>*/}
-                                {/*    </View>*/}
-                                {/*) : (*/}
-                                {/*    <Text style={styles.notAvailable}>Not Available</Text>*/}
-                                {/*)}*/}
-                            </Text>
-                            <Text style={[styles.tableCell, { width: '20%' }]}>{item.product?.title}</Text>
+                            {content?.delivery_note_for === 1 ? (
+                                <>
+                                    <Text style={[styles.tableCell, { width: '20%' }]}>
+                                        {item.product_assembly.formula_name}
+                                    </Text>
+                                    <Text style={[styles.tableCell, { width: '20%' }]}>{item.product?.title}</Text>
+                                    <Text style={[styles.tableCell, { width: '20%' }]}>{item.capacity}</Text>
+                                    <Text style={[styles.tableCell, { width: '20%' }]}>{item.batch_number}</Text>
+                                </>
+                            ) : (
+                                <Text style={[styles.tableCell, { width: '20%' }]}>{item.product?.title}</Text>
+                            )}
                             <Text style={[styles.tableCell, { width: '20%' }]}>{item.delivered_quantity}</Text>
                         </View>
                     ))}
+                    {/* Total Delivered Quantity Row */}
+                    <View style={styles.tableRow}>
+                        <Text style={[styles.tableCell, { width: '85%', textAlign: 'center', fontWeight: 'bold' }]}>
+                            Total
+                        </Text>
+                        <Text style={[styles.tableCell, { width: '20%', fontWeight: 'bold' }]}>
+                            {totalDeliveredQuantity}
+                        </Text>
+                    </View>
                 </View>
             </View>
-            <View style={styles.footer}>
-                <View style={styles.footerContainer}>
-                    <Text style={styles.footerText}>
-                        <Text style={styles.bold}>Created By: </Text>
-                        {content?.created_by?.name}
-                    </Text>
-                    <Text style={styles.footerText} render={({ pageNumber, totalPages }) => (
-                        `${pageNumber} / ${totalPages}`
-                    )} fixed />
-                    <Text style={styles.footerText}>
-                        <Text style={styles.bold}>Created At: </Text>
-                        {new Date(content?.created_at).toLocaleDateString() + '  ' + new Date(content?.created_at).toLocaleTimeString()}
-                    </Text>
-                </View>
-            </View>
-
+            <Footer content={content} />
         </Page>
     );
 };
@@ -178,24 +174,6 @@ const styles = StyleSheet.create({
     notAvailable: {
         color: 'red'
     },
-    footer: {
-        position: 'absolute',
-        bottom: 15,
-        left: 0,
-        right: 0
-    },
-    footerContainer: {
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 10
-    },
-    footerText: {
-        // textAlign: 'center',
-        color: 'gray',
-        fontSize: 8
-    }
 });
 
 export default PrintContent;

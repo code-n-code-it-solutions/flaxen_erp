@@ -5,19 +5,19 @@ import { setAuthToken } from '@/configs/api.config';
 import PrintContent from './PrintContent';
 import BlankLayout from '@/components/Layouts/BlankLayout';
 import { PDFViewer, Document } from '@react-pdf/renderer';
-import { clearQuotationState, getQuotationsForPrint } from '@/store/slices/quotationSlice';
+import { clearVendorPaymentState, getVendorPaymentsForPrint } from '@/store/slices/vendorPayments';
 
 const Print = () => {
     const dispatch = useAppDispatch();
-    const { quotationsForPrint: contents, loading } = useAppSelector((state) => state.quotation);
+    const { vendorPaymentsForPrint: contents, loading } = useAppSelector((state) => state.vendorPayment);
     const { token } = useAppSelector((state) => state.user);
     const router = useRouter();
 
     useEffect(() => {
         setAuthToken(token);
-        dispatch(clearQuotationState());
-        if(router.query.id) {
-            dispatch(getQuotationsForPrint({ ids: router.query.id, type: 'detail'}));
+        dispatch(clearVendorPaymentState());
+        if (router.query.id) {
+            dispatch(getVendorPaymentsForPrint({ ids: router.query.id, type: 'detail' }));
         }
     }, [router.query.id]);
 
@@ -31,17 +31,22 @@ const Print = () => {
                 showToolbar={true}
             >
                 <Document
-                    title="Report Preview"
+                    title="Vendor Bill Payment Preview"
                     author="Flaxen Paints Industry LLC"
-                    subject="Report Preview"
+                    subject="Vendor Bill Payment Preview"
                     keywords="pdf, flaxen, flaxen paints, report, preview, flaxen paints industry llc"
                 >
-                    {contents && contents.map((content:any, index:number) => (
-                        <PrintContent key={index} content={content}/>
-                    ))}
-
+                {contents && contents.map((content: any, index: number) => {
+                    return (
+                        <PrintContent
+                            key={index}
+                            content={content}
+                        />
+                    );
+                })}
                 </Document>
             </PDFViewer>
+
         )
     );
 };
