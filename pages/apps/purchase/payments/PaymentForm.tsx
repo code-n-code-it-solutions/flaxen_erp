@@ -414,7 +414,7 @@ const PaymentForm = () => {
                         </Tab>
                     )}
                 </Tab.List>
-                <Tab.Panels className="panel rounded-none">
+                <Tab.Panels className="py-3 rounded-none">
                     <Tab.Panel>
                         <div className="active table-responsive">
                             <table>

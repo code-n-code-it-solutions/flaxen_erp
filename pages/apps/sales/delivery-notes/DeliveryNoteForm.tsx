@@ -29,6 +29,9 @@ const DeliveryNoteForm = () => {
     const { employees } = useAppSelector((state) => state.employee);
 
     const [colDefs, setColDefs] = useState<any>([]);
+    const [showPreview, setShowPreview] = useState<boolean>(false);
+    const [previewData, setPreviewData] = useState<any>({});
+    const [previewItems, setPreviewItems] = useState<any[]>([]);
     const [formData, setFormData] = useState<any>({});
     const [customerOptions, setCustomerOptions] = useState<any[]>([]);
     const [contactPersonOptions, setContactPersonOptions] = useState<any[]>([]);
@@ -52,7 +55,7 @@ const DeliveryNoteForm = () => {
         setDeliveryNoteItems([]);
         let defaultColDef = [
             {
-                headerName: 'Q.Qty',
+                headerName: 'Quantity',
                 field: 'quantity',
                 cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
                 minWidth: 150,
@@ -60,7 +63,7 @@ const DeliveryNoteForm = () => {
                 floatingFilter: false
             },
             {
-                headerName: 'D.Qty',
+                headerName: 'Delivered',
                 field: 'delivered_quantity',
                 editable: (params: any) => {
                     return params.data.stock_quantity >= params.data.quantity || !params.node.rowPinned;
@@ -83,6 +86,17 @@ const DeliveryNoteForm = () => {
                         });
                         return false;
                     }
+
+                    setPreviewItems(deliveryNoteItems.map((item) => {
+                        if (item.id === params.data.id) {
+                            return {
+                                ...item,
+                                delivered_quantity: value
+                            };
+                        }
+                        return item;
+                    }));
+
                     params.data.delivered_quantity = value;
                     return true;
                 },
@@ -91,53 +105,53 @@ const DeliveryNoteForm = () => {
                 filter: false,
                 floatingFilter: false
             },
-            {
-                headerName: 'S.Price',
-                field: 'sale_price',
-                cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
-                minWidth: 150,
-                filter: false,
-                floatingFilter: false
-            },
-            {
-                headerName: 'S.Total',
-                field: 'sub_total',
-                valueGetter: (params: any) => {
-                    return (params.data.delivered_quantity || 0) * params.data.sale_price;
-                },
-                cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
-                minWidth: 150,
-                filter: false,
-                floatingFilter: false
-            },
-            {
-                headerName: 'VAT@5%',
-                field: 'tax_amount',
-                valueGetter: (params: any) => {
-                    return (params.data.sale_price * (params.data.delivered_quantity || 0) * 0.05)
-                        .toLocaleString(undefined, {
-                            minimumFractionDigits: 4,
-                            maximumFractionDigits: 4
-                        });
-                },
-                cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
-                minWidth: 150,
-                filter: false,
-                floatingFilter: false
-            },
-            {
-                headerName: 'Total',
-                field: 'grand_total',
-                valueGetter: (params: any) => {
-                    const subTotal = params.data.sale_price * (params.data.delivered_quantity || 0);
-                    const tax = subTotal * 0.05;
-                    return subTotal + tax;
-                },
-                cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
-                minWidth: 150,
-                filter: false,
-                floatingFilter: false
-            },
+            // {
+            //     headerName: 'S.Price',
+            //     field: 'sale_price',
+            //     cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+            //     minWidth: 150,
+            //     filter: false,
+            //     floatingFilter: false
+            // },
+            // {
+            //     headerName: 'S.Total',
+            //     field: 'sub_total',
+            //     valueGetter: (params: any) => {
+            //         return (params.data.delivered_quantity || 0) * params.data.sale_price;
+            //     },
+            //     cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+            //     minWidth: 150,
+            //     filter: false,
+            //     floatingFilter: false
+            // },
+            // {
+            //     headerName: 'VAT@5%',
+            //     field: 'tax_amount',
+            //     valueGetter: (params: any) => {
+            //         return (params.data.sale_price * (params.data.delivered_quantity || 0) * 0.05)
+            //             .toLocaleString(undefined, {
+            //                 minimumFractionDigits: 4,
+            //                 maximumFractionDigits: 4
+            //             });
+            //     },
+            //     cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+            //     minWidth: 150,
+            //     filter: false,
+            //     floatingFilter: false
+            // },
+            // {
+            //     headerName: 'Total',
+            //     field: 'grand_total',
+            //     valueGetter: (params: any) => {
+            //         const subTotal = params.data.sale_price * (params.data.delivered_quantity || 0);
+            //         const tax = subTotal * 0.05;
+            //         return subTotal + tax;
+            //     },
+            //     cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+            //     minWidth: 150,
+            //     filter: false,
+            //     floatingFilter: false
+            // },
             {
                 headerName: '',
                 field: 'remove',
@@ -247,15 +261,15 @@ const DeliveryNoteForm = () => {
                     minWidth: 150,
                     filter: false,
                     floatingFilter: false
-                },
-                {
-                    headerName: 'A.Qty',
-                    field: 'available_quantity',
-                    cellRenderer: (params: any) => params.node?.rowPinned ? '' : params.value,
-                    minWidth: 150,
-                    filter: false,
-                    floatingFilter: false
                 }
+                // {
+                //     headerName: 'A.Qty',
+                //     field: 'available_quantity',
+                //     cellRenderer: (params: any) => params.node?.rowPinned ? '' : params.value,
+                //     minWidth: 150,
+                //     filter: false,
+                //     floatingFilter: false
+                // }
             ];
 
             setColDefs([...finishGoodsColDefs, ...defaultColDef]);
@@ -278,15 +292,15 @@ const DeliveryNoteForm = () => {
                     filter: false,
                     floatingFilter: false
                 },
-                {
-                    headerName: 'Stock',
-                    field: 'stock_quantity',
-                    valueGetter: (params: any) => params.data.product.stock_quantity,
-                    cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
-                    minWidth: 150,
-                    filter: false,
-                    floatingFilter: false
-                }
+                // {
+                //     headerName: 'Stock',
+                //     field: 'stock_quantity',
+                //     valueGetter: (params: any) => params.data.product.stock_quantity,
+                //     cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+                //     minWidth: 150,
+                //     filter: false,
+                //     floatingFilter: false
+                // }
             ];
 
             setColDefs([...rawProductColDefs, ...defaultColDef]);
@@ -362,6 +376,9 @@ const DeliveryNoteForm = () => {
         dispatch(getEmployees());
         dispatch(generateCode(FORM_CODE_TYPE.DELIVERY_NOTE));
         dispatch(clearQuotationState());
+        setShowPreview(false);
+        setPreviewData({});
+        setPreviewItems([]);
     }, []);
 
     useEffect(() => {
@@ -398,6 +415,11 @@ const DeliveryNoteForm = () => {
                 ...prev,
                 deliver_note_code: code[FORM_CODE_TYPE.DELIVERY_NOTE]
             }));
+
+            setPreviewData({
+                ...previewData,
+                code: code[FORM_CODE_TYPE.DELIVERY_NOTE]
+            });
         }
     }, [code]);
 
@@ -441,7 +463,13 @@ const DeliveryNoteForm = () => {
                         type="text"
                         name="deliver_note_code"
                         value={formData.deliver_note_code}
-                        onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
+                        onChange={(e) => {
+                            handleChange(e.target.name, e.target.value, e.target.required);
+                            setPreviewData({
+                                ...previewData,
+                                code: e.target.value
+                            });
+                        }}
                         placeholder="Enter Delivery Note Code"
                         isMasked={false}
                         disabled={true}
@@ -453,7 +481,13 @@ const DeliveryNoteForm = () => {
                         name="delivery_note_for"
                         options={quotationForOptions}
                         value={formData.delivery_note_for}
-                        onChange={(e: any) => handleChange('delivery_note_for', e?.value, true)}
+                        onChange={(e: any) => {
+                            handleChange('delivery_note_for', e?.value, true);
+                            setPreviewData({
+                                ...previewData,
+                                delivery_note_for: e?.label
+                            });
+                        }}
                         required={true}
                         errorMessage={validations.delivery_note_for}
                     />
@@ -474,6 +508,14 @@ const DeliveryNoteForm = () => {
                                         delivery_due_in_days: customerOption.customer?.due_in_days,
                                         customer_id: e?.value
                                     });
+
+                                    setPreviewData({
+                                        ...previewData,
+                                        delivery_due_date: calculateDateFromDays(customerOption.customer?.due_in_days),
+                                        delivery_due_in_days: customerOption.customer?.due_in_days,
+                                        customer: e?.label
+                                    });
+
                                     setContactPersonOptions(customerOption.customer?.contact_persons.map((contactPerson: any) => ({
                                         label: contactPerson.name,
                                         value: contactPerson.id,
@@ -486,6 +528,14 @@ const DeliveryNoteForm = () => {
                                         delivery_due_in_days: '',
                                         customer_id: ''
                                     });
+
+                                    setPreviewData({
+                                        ...previewData,
+                                        delivery_due_date: '',
+                                        delivery_due_in_days: '',
+                                        customer: ''
+                                    });
+
                                     setContactPersonOptions([]);
                                 }
                             }}
@@ -499,7 +549,13 @@ const DeliveryNoteForm = () => {
                             name="contact_person_id"
                             options={contactPersonOptions}
                             value={formData.contact_person_id}
-                            onChange={(e: any) => handleChange('contact_person_id', e?.value, true)}
+                            onChange={(e: any) => {
+                                handleChange('contact_person_id', e?.value, true);
+                                setPreviewData({
+                                    ...previewData,
+                                    contact_person: e?.label
+                                });
+                            }}
                             required={true}
                             errorMessage={validations.contact_person_id}
                         />
@@ -514,7 +570,7 @@ const DeliveryNoteForm = () => {
                         onChange={(e: any) => {
                             if (e && typeof e !== 'undefined') {
                                 let selectedQuotations = e.map((quotation: any) => quotation?.quotation);
-                                setDeliveryNoteItems(selectedQuotations.map((item: any, index: number) => {
+                                let quotationItems = selectedQuotations.map((item: any, index: number) => {
                                     return item.quotation_items.map((qItem: any) => {
                                         return {
                                             ...qItem,
@@ -524,7 +580,11 @@ const DeliveryNoteForm = () => {
                                         };
 
                                     }).flat();
-                                }).flat());
+                                }).flat();
+
+                                setDeliveryNoteItems(quotationItems);
+                                setPreviewItems(quotationItems);
+
                                 let ids = e.map((quotation: any) => quotation.value);
                                 if (ids.includes(0)) {
                                     ids = [0];
@@ -541,6 +601,7 @@ const DeliveryNoteForm = () => {
                                 }
                             } else {
                                 setDeliveryNoteItems([]);
+                                setPreviewItems([]);
                                 setFormData((prev: any) => ({
                                     ...prev,
                                     quotation_ids: ''
@@ -559,7 +620,13 @@ const DeliveryNoteForm = () => {
                             name="salesman_id"
                             options={salesmanOptions}
                             value={formData.salesman_id}
-                            onChange={(e: any) => handleChange('salesman_id', e, true)}
+                            onChange={(e: any) => {
+                                handleChange('salesman_id', e, true);
+                                setPreviewData({
+                                    ...previewData,
+                                    salesman: e?.label
+                                });
+                            }}
                             required={true}
                             errorMessage={validations.salesman_id}
                         />
@@ -593,7 +660,7 @@ const DeliveryNoteForm = () => {
                         )}
                     </Tab>
                 </Tab.List>
-                <Tab.Panels className="rounded-none">
+                <Tab.Panels className="rounded-none py-3">
                     <Tab.Panel>
                         <div
                             className="flex mb-3 justify-start items-start md:justify-between md:items-center gap-3 flex-col md:flex-row">
@@ -617,12 +684,28 @@ const DeliveryNoteForm = () => {
                 label="Terms & Conditions"
                 name="terms_conditions"
                 value={formData.terms_conditions}
-                onChange={(e) => handleChange('terms_conditions', e, false)}
+                onChange={(e) => {
+                    handleChange('terms_conditions', e, false);
+                    setPreviewData({
+                        ...previewData,
+                        terms_conditions: e
+                    });
+                }}
                 isReactQuill={true}
             />
 
 
             <div className="w-full flex justify-center items-center flex-col md:flex-row gap-3 mt-5">
+                <Button
+                    type={ButtonType.button}
+                    text={showPreview ? 'Close Preview' : 'Show Preview'}
+                    variant={ButtonVariant.success}
+                    disabled={false}
+                    onClick={() => {
+                        setShowPreview(!showPreview);
+                    }}
+                    // link="/apps/sales/orders/quotations/preview"
+                />
                 <Button
                     type={ButtonType.submit}
                     text="Submit"

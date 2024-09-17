@@ -47,21 +47,22 @@ const Index = () => {
         {
             headerName: 'Color Code',
             field: 'color_code',
-            cellRenderer: (row: any) => {
+            valueGetter: (row: any) => {
                 // console.log(row.data);
                 return (
-                    <div className="flex justify-start items-center gap-2">
-                        <div className="w-6 h-6 rounded-full"
-                             style={{ backgroundColor: `${row.data.product_assembly.color_code.hex_code}` }}></div>
-                        {row.data.product_assembly.color_code.name} ({row.data.product_assembly.color_code.code})
-                    </div>
+                    row.data.product_assembly.color_code.name + ' (' + row.data.product_assembly.color_code.code + ')'
+                    // <div className="flex justify-start items-center gap-2">
+                    //     <div className="w-8 h-8 rounded-full"
+                    //          style={{ backgroundColor: `${row.data.product_assembly.color_code.hex_code}` }}></div>
+                    //     {row.data.product_assembly.color_code.name} ({row.data.product_assembly.color_code.code})
+                    // </div>
                 );
             },
             minWidth: 150
         },
         {
             headerName: 'Quantity (KG)',
-            field: 'production.no_of_quantity',
+            field: 'filling_quantity',
             minWidth: 150
         },
         {

@@ -498,159 +498,170 @@ const PaymentVoucherForm = () => {
                                     }}
                                 />
                             </div>
-                            <table>
-                                <thead>
-                                <tr>
-                                    <th>Expense Account</th>
-                                    <th>Payment For</th>
-                                    <th>Qty</th>
-                                    <th>Unit Price</th>
-                                    <th>Before Tax</th>
-                                    <th>Discount</th>
-                                    <th>VAT@5%</th>
-                                    <th>Total</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {paymentItems.length > 0 ? (
-                                    paymentItems.map((item, index: number) => (
-                                        <tr key={index}>
-                                            <td>
-                                                <div className="flex items-center gap-1">
-                                                    <Button
-                                                        type={ButtonType.button}
-                                                        text={<Trash2Icon size={18} />}
-                                                        variant={ButtonVariant.danger}
-                                                        size={ButtonSize.small}
-                                                        onClick={() => handleRemoveItem(item)}
+                            <div className="table-responsive">
+                                <table>
+                                    <thead>
+                                    <tr>
+                                        <th>Expense Account</th>
+                                        <th>Payment For</th>
+                                        <th>Qty</th>
+                                        <th>Unit Price</th>
+                                        <th>Before Tax</th>
+                                        <th>Discount</th>
+                                        <th>VAT@5%</th>
+                                        <th>Total</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {paymentItems.length > 0 ? (
+                                        paymentItems.map((item, index: number) => (
+                                            <tr key={index}>
+                                                <td>
+                                                    <div className="flex items-center gap-1">
+                                                        <Button
+                                                            type={ButtonType.button}
+                                                            text={<Trash2Icon size={18} />}
+                                                            variant={ButtonVariant.danger}
+                                                            size={ButtonSize.small}
+                                                            onClick={() => handleRemoveItem(item)}
+                                                        />
+                                                        <select
+                                                            className="form-select"
+                                                            name="expanse_account_id"
+                                                            id="expanse_account_id"
+                                                            onChange={(e) => updatePaymentItem(item.id, { expanse_account_id: e.target.value })}
+                                                        >
+                                                            <option value="">Select Account</option>
+                                                            {expanseAccountOptions.map((account: any) => (
+                                                                <optgroup key={account.value} label={account.label}>
+                                                                    {account.children.map((child: any) => (
+                                                                        <option key={child.value} value={child.value}>
+                                                                            {child.label}
+                                                                        </option>
+                                                                    ))}
+                                                                </optgroup>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <Input
+                                                        type="text"
+                                                        name="payment_for"
+                                                        value={item.payment_for}
+                                                        onChange={(e) => updatePaymentItem(item.id, { payment_for: e.target.value })}
+                                                        isMasked={false}
                                                     />
-                                                    <select
-                                                        className="form-select"
-                                                        name="expanse_account_id"
-                                                        id="expanse_account_id"
-                                                        onChange={(e) => updatePaymentItem(item.id, { expanse_account_id: e.target.value })}
-                                                    >
-                                                        <option value="">Select Account</option>
-                                                        {expanseAccountOptions.map((account: any) => (
-                                                            <optgroup key={account.value} label={account.label}>
-                                                                {account.children.map((child: any) => (
-                                                                    <option key={child.value} value={child.value}>
-                                                                        {child.label}
-                                                                    </option>
-                                                                ))}
-                                                            </optgroup>
-                                                        ))}
-                                                    </select>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <Input
-                                                    type="text"
-                                                    name="payment_for"
-                                                    value={item.payment_for}
-                                                    onChange={(e) => updatePaymentItem(item.id, { payment_for: e.target.value })}
-                                                    isMasked={false}
-                                                />
-                                            </td>
-                                            <td>
-                                                <Input
-                                                    type="number"
-                                                    name="quantity"
-                                                    value={item.quantity}
-                                                    onChange={(e) => {
-                                                        const value = parseFloat(e.target.value);
-                                                        updatePaymentItem(item.id, {
-                                                            quantity: value,
-                                                            sub_total: calculateSubTotal({ ...item, quantity: value }),
-                                                            grand_total: calculateGrandTotal({
-                                                                ...item,
-                                                                quantity: value
-                                                            })
-                                                        });
-                                                    }}
-                                                    isMasked={false}
-                                                />
-                                            </td>
-                                            <td>
-                                                <Input
-                                                    type="number"
-                                                    name="amount"
-                                                    value={item.amount}
-                                                    onChange={(e) => {
-                                                        const value = parseFloat(e.target.value);
-                                                        updatePaymentItem(item.id, {
-                                                            amount: value,
-                                                            sub_total: calculateSubTotal({ ...item, amount: value }),
-                                                            grand_total: calculateGrandTotal({ ...item, amount: value })
-                                                        });
-                                                    }}
-                                                    isMasked={false}
-                                                />
-                                            </td>
-                                            <td>
-                                                {item.sub_total.toLocaleString(
-                                                    undefined,
-                                                    { minimumFractionDigits: 2, maximumFractionDigits: 2 }
-                                                )}
-                                            </td>
-                                            <td>
-                                                <Input
-                                                    type="number"
-                                                    name="discount"
-                                                    value={item.discount}
-                                                    onChange={(e) => {
-                                                        const value = parseFloat(e.target.value);
-                                                        updatePaymentItem(item.id, {
-                                                            discount: value,
-                                                            grand_total: calculateGrandTotal({
-                                                                ...item,
-                                                                discount: value
-                                                            })
-                                                        });
-                                                    }}
-                                                    isMasked={false}
-                                                />
-                                            </td>
-                                            <td>
-                                                <div className="flex items-center gap-1">
-                                                    <Option
-                                                        type="checkbox"
-                                                        name="has_tax"
-                                                        value="1"
-                                                        defaultChecked={item.has_tax}
+                                                </td>
+                                                <td>
+                                                    <Input
+                                                        type="number"
+                                                        name="quantity"
+                                                        value={item.quantity}
                                                         onChange={(e) => {
-                                                            const isChecked = e.target.checked;
+                                                            const value = parseFloat(e.target.value);
                                                             updatePaymentItem(item.id, {
-                                                                has_tax: isChecked ? 1 : 0,
-                                                                tax_amount: calculateTax({
+                                                                quantity: value,
+                                                                sub_total: calculateSubTotal({
                                                                     ...item,
-                                                                    has_tax: isChecked ? 1 : 0
+                                                                    quantity: value
                                                                 }),
                                                                 grand_total: calculateGrandTotal({
                                                                     ...item,
-                                                                    has_tax: isChecked ? 1 : 0
+                                                                    quantity: value
                                                                 })
                                                             });
                                                         }}
+                                                        isMasked={false}
                                                     />
-                                                    {item.has_tax && <span>{calculateTax(item)}</span>}
-                                                </div>
-                                            </td>
-                                            <td>
-                                                {item.grand_total.toLocaleString(
-                                                    undefined,
-                                                    { minimumFractionDigits: 2, maximumFractionDigits: 2 }
-                                                )}
-                                            </td>
+                                                </td>
+                                                <td>
+                                                    <Input
+                                                        type="number"
+                                                        name="amount"
+                                                        value={item.amount}
+                                                        onChange={(e) => {
+                                                            const value = parseFloat(e.target.value);
+                                                            updatePaymentItem(item.id, {
+                                                                amount: value,
+                                                                sub_total: calculateSubTotal({
+                                                                    ...item,
+                                                                    amount: value
+                                                                }),
+                                                                grand_total: calculateGrandTotal({
+                                                                    ...item,
+                                                                    amount: value
+                                                                })
+                                                            });
+                                                        }}
+                                                        isMasked={false}
+                                                    />
+                                                </td>
+                                                <td>
+                                                    {item.sub_total.toLocaleString(
+                                                        undefined,
+                                                        { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+                                                    )}
+                                                </td>
+                                                <td>
+                                                    <Input
+                                                        type="number"
+                                                        name="discount"
+                                                        value={item.discount}
+                                                        onChange={(e) => {
+                                                            const value = parseFloat(e.target.value);
+                                                            updatePaymentItem(item.id, {
+                                                                discount: value,
+                                                                grand_total: calculateGrandTotal({
+                                                                    ...item,
+                                                                    discount: value
+                                                                })
+                                                            });
+                                                        }}
+                                                        isMasked={false}
+                                                    />
+                                                </td>
+                                                <td>
+                                                    <div className="flex items-center gap-1">
+                                                        <Option
+                                                            type="checkbox"
+                                                            name="has_tax"
+                                                            value="1"
+                                                            defaultChecked={item.has_tax}
+                                                            onChange={(e) => {
+                                                                const isChecked = e.target.checked;
+                                                                updatePaymentItem(item.id, {
+                                                                    has_tax: isChecked ? 1 : 0,
+                                                                    tax_amount: calculateTax({
+                                                                        ...item,
+                                                                        has_tax: isChecked ? 1 : 0
+                                                                    }),
+                                                                    grand_total: calculateGrandTotal({
+                                                                        ...item,
+                                                                        has_tax: isChecked ? 1 : 0
+                                                                    })
+                                                                });
+                                                            }}
+                                                        />
+                                                        {item.has_tax && <span>{calculateTax(item)}</span>}
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    {item.grand_total.toLocaleString(
+                                                        undefined,
+                                                        { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={7} className="text-center">No items found</td>
                                         </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan={7} className="text-center">No items found</td>
-                                    </tr>
-                                )}
-                                </tbody>
-                            </table>
+                                    )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </Tab.Panel>
                     <Tab.Panel>

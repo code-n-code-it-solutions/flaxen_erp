@@ -137,7 +137,7 @@ const FillingForm = ({ id }: IFormProps) => {
         dispatch(clearFillingState());
 
         // Check for missing data in formData
-        const requiredFields = ['filling_code', 'filling_date', 'filling_time', 'filling_shift_id', 'product_assembly_id', 'production_ids'];
+        const requiredFields = ['filling_date', 'filling_time', 'filling_shift_id', 'product_assembly_id', 'production_ids'];
         const missingFields = requiredFields.filter(field => !formData[field]);
 
         // Check for missing data in the arrays
@@ -146,6 +146,9 @@ const FillingForm = ({ id }: IFormProps) => {
             fillingMaterials: fillingMaterials.length === 0,
             batchCalculations: batchCalculations.length === 0
         };
+
+        console.log('missingArrayData', missingArrayData);
+        console.log('missingFields', missingFields);
 
         // If there are missing fields or array data, show SweetAlert and prevent submission
         if (missingFields.length > 0 || Object.values(missingArrayData).includes(true)) {
