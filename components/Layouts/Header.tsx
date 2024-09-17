@@ -175,19 +175,19 @@ const Header = () => {
                         <ul className="flex items-center space-x-2 rtl:space-x-reverse dark:text-[#d0d2d6]">
                             <li>
                                 <Link href="/apps/calendar"
-                                      className="block rounded-full bg-white-light/40 p-2 hover:bg-white-light/90 hover:text-primary dark:bg-dark/40 dark:hover:bg-dark/60">
+                                    className="block rounded-full bg-white-light/40 p-2 hover:bg-white-light/90 hover:text-primary dark:bg-dark/40 dark:hover:bg-dark/60">
                                     <IconCalendar />
                                 </Link>
                             </li>
                             <li>
                                 <Link href="/apps/todolist"
-                                      className="block rounded-full bg-white-light/40 p-2 hover:bg-white-light/90 hover:text-primary dark:bg-dark/40 dark:hover:bg-dark/60">
+                                    className="block rounded-full bg-white-light/40 p-2 hover:bg-white-light/90 hover:text-primary dark:bg-dark/40 dark:hover:bg-dark/60">
                                     <IconEdit />
                                 </Link>
                             </li>
                             <li>
                                 <Link href="/apps/chat"
-                                      className="block rounded-full bg-white-light/40 p-2 hover:bg-white-light/90 hover:text-primary dark:bg-dark/40 dark:hover:bg-dark/60">
+                                    className="block rounded-full bg-white-light/40 p-2 hover:bg-white-light/90 hover:text-primary dark:bg-dark/40 dark:hover:bg-dark/60">
                                     <IconChatNotification />
                                 </Link>
                             </li>
@@ -207,12 +207,12 @@ const Header = () => {
                                         placeholder="Search..."
                                     />
                                     <button type="button"
-                                            className="absolute inset-0 h-9 w-9 appearance-none peer-focus:text-primary ltr:right-auto rtl:left-auto">
+                                        className="absolute inset-0 h-9 w-9 appearance-none peer-focus:text-primary ltr:right-auto rtl:left-auto">
                                         <IconSearch className="mx-auto" />
                                     </button>
                                     <button type="button"
-                                            className="absolute top-1/2 block -translate-y-1/2 hover:opacity-80 ltr:right-2 rtl:left-2 sm:hidden"
-                                            onClick={() => setSearch(false)}>
+                                        className="absolute top-1/2 block -translate-y-1/2 hover:opacity-80 ltr:right-2 rtl:left-2 sm:hidden"
+                                        onClick={() => setSearch(false)}>
                                         <IconXCircle />
                                     </button>
                                 </div>
@@ -228,10 +228,9 @@ const Header = () => {
                         <div>
                             {themeConfig.theme === 'light' ? (
                                 <button
-                                    className={`${
-                                        themeConfig.theme === 'light' &&
+                                    className={`${themeConfig.theme === 'light' &&
                                         'flex items-center rounded-full bg-white-light/40 p-2 hover:bg-white-light/90 hover:text-primary dark:bg-dark/40 dark:hover:bg-dark/60'
-                                    }`}
+                                        }`}
                                     onClick={() => dispatch(toggleTheme('dark'))}
                                 >
                                     <IconSun />
@@ -241,10 +240,9 @@ const Header = () => {
                             )}
                             {themeConfig.theme === 'dark' && (
                                 <button
-                                    className={`${
-                                        themeConfig.theme === 'dark' &&
+                                    className={`${themeConfig.theme === 'dark' &&
                                         'flex items-center rounded-full bg-white-light/40 p-2 hover:bg-white-light/90 hover:text-primary dark:bg-dark/40 dark:hover:bg-dark/60'
-                                    }`}
+                                        }`}
                                     onClick={() => dispatch(toggleTheme('system'))}
                                 >
                                     <IconMoon />
@@ -252,10 +250,9 @@ const Header = () => {
                             )}
                             {themeConfig.theme === 'system' && (
                                 <button
-                                    className={`${
-                                        themeConfig.theme === 'system' &&
+                                    className={`${themeConfig.theme === 'system' &&
                                         'flex items-center rounded-full bg-white-light/40 p-2 hover:bg-white-light/90 hover:text-primary dark:bg-dark/40 dark:hover:bg-dark/60'
-                                    }`}
+                                        }`}
                                     onClick={() => dispatch(toggleTheme('light'))}
                                 >
                                     <IconLaptop />
@@ -268,8 +265,8 @@ const Header = () => {
                                 placement={`${isRtl ? 'bottom-start' : 'bottom-end'}`}
                                 btnClassName="block p-2 rounded-full bg-white-light/40 dark:bg-dark/40 hover:text-primary hover:bg-white-light/90 dark:hover:bg-dark/60"
                                 button={flag && <img className="h-5 w-5 rounded-full object-cover"
-                                                     src={`/assets/images/flags/${flag.toUpperCase()}.svg`}
-                                                     alt="flag" />}
+                                    src={`/assets/images/flags/${flag.toUpperCase()}.svg`}
+                                    alt="flag" />}
                             >
                                 <ul className="grid w-[280px] grid-cols-2 gap-2 !px-2 font-semibold text-dark dark:text-white-dark dark:text-white-light/90">
                                     {themeConfig.languageList.map((item: any) => {
@@ -285,7 +282,7 @@ const Header = () => {
                                                     }}
                                                 >
                                                     <img src={`/assets/images/flags/${item.code.toUpperCase()}.svg`}
-                                                         alt="flag" className="h-5 w-5 rounded-full object-cover" />
+                                                        alt="flag" className="h-5 w-5 rounded-full object-cover" />
                                                     <span className="ltr:ml-3 rtl:mr-3">{item.name}</span>
                                                 </button>
                                             </li>
@@ -328,8 +325,8 @@ const Header = () => {
                                                                 {message.time}
                                                             </span>
                                                             <button type="button"
-                                                                    className="text-neutral-300 hover:text-danger"
-                                                                    onClick={() => removeMessage(message.id)}>
+                                                                className="text-neutral-300 hover:text-danger"
+                                                                onClick={() => removeMessage(message.id)}>
                                                                 <IconXCircle />
                                                             </button>
                                                         </div>
@@ -338,7 +335,7 @@ const Header = () => {
                                             </li>
                                             <li className="mt-5 border-t border-white-light text-center dark:border-white/10">
                                                 <button type="button"
-                                                        className="group !h-[48px] justify-center !py-4 font-semibold text-primary dark:text-gray-400">
+                                                    className="group !h-[48px] justify-center !py-4 font-semibold text-primary dark:text-gray-400">
                                                     <span className="group-hover:underline ltr:mr-1 rtl:ml-1">VIEW ALL
                                                         ACTIVITIES</span>
                                                     <IconArrowLeft
@@ -349,7 +346,7 @@ const Header = () => {
                                     ) : (
                                         <li className="mb-5" onClick={(e) => e.stopPropagation()}>
                                             <button type="button"
-                                                    className="!grid min-h-[200px] place-content-center text-lg hover:!bg-transparent">
+                                                className="!grid min-h-[200px] place-content-center text-lg hover:!bg-transparent">
                                                 <div
                                                     className="mx-auto mb-4 rounded-full text-white ring-4 ring-primary/30">
                                                     <IconInfoCircle fill={true} className="h-10 w-10" />
@@ -396,8 +393,8 @@ const Header = () => {
                                                             <div className="grid place-content-center rounded">
                                                                 <div className="relative h-12 w-12">
                                                                     <img className="h-12 w-12 rounded-full object-cover"
-                                                                         alt="profile"
-                                                                         src={`/assets/images/${notification.profile}`} />
+                                                                        alt="profile"
+                                                                        src={`/assets/images/${notification.profile}`} />
                                                                     <span
                                                                         className="absolute bottom-0 right-[6px] block h-2 w-2 rounded-full bg-success"></span>
                                                                 </div>
@@ -435,7 +432,7 @@ const Header = () => {
                                     ) : (
                                         <li onClick={(e) => e.stopPropagation()}>
                                             <button type="button"
-                                                    className="!grid min-h-[200px] place-content-center text-lg hover:!bg-transparent">
+                                                className="!grid min-h-[200px] place-content-center text-lg hover:!bg-transparent">
                                                 <div className="mx-auto mb-4 rounded-full ring-4 ring-primary/30">
                                                     <IconInfoCircle fill={true} className="h-10 w-10 text-primary" />
                                                 </div>
@@ -459,13 +456,13 @@ const Header = () => {
                                     <li>
                                         <div className="flex items-center px-4 py-4">
                                             <img className="h-10 w-10 rounded-md object-cover"
-                                                 src="/assets/images/default.jpeg" alt="userProfile" />
+                                                src="/assets/images/default.jpeg" alt="userProfile" />
                                             <div className="ltr:pl-4 rtl:pr-4">
                                                 <h4 className="text-base">
                                                     {user?.name || 'User'}
                                                 </h4>
                                                 <button type="button"
-                                                        className="text-[10px] text-black/60 hover:text-primary dark:text-dark-light/60 dark:hover:text-white">
+                                                    className="text-[10px] text-black/60 hover:text-primary dark:text-dark-light/60 dark:hover:text-white">
                                                     {user?.email || 'abc@xyz.com'}
                                                 </button>
                                             </div>
@@ -489,15 +486,15 @@ const Header = () => {
                                     <li>
                                         <button className="dark:hover:text-white" onClick={() => handleLockScreen()}>
                                             <svg className="ltr:mr-2 rtl:ml-2" width="18" height="18"
-                                                 viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <path
                                                     d="M2 16C2 13.1716 2 11.7574 2.87868 10.8787C3.75736 10 5.17157 10 8 10H16C18.8284 10 20.2426 10 21.1213 10.8787C22 11.7574 22 13.1716 22 16C22 18.8284 22 20.2426 21.1213 21.1213C20.2426 22 18.8284 22 16 22H8C5.17157 22 3.75736 22 2.87868 21.1213C2 20.2426 2 18.8284 2 16Z"
                                                     stroke="currentColor"
                                                     strokeWidth="1.5"
                                                 />
                                                 <path opacity="0.5"
-                                                      d="M6 10V8C6 4.68629 8.68629 2 12 2C15.3137 2 18 4.68629 18 8V10"
-                                                      stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                                    d="M6 10V8C6 4.68629 8.68629 2 12 2C15.3137 2 18 4.68629 18 8V10"
+                                                    stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                                                 <g opacity="0.5">
                                                     <path
                                                         d="M9 16C9 16.5523 8.55228 17 8 17C7.44772 17 7 16.5523 7 16C7 15.4477 7.44772 15 8 15C8.55228 15 9 15.4477 9 16Z"
@@ -518,7 +515,7 @@ const Header = () => {
                                     <li className="border-t border-white-light dark:border-white-light/10">
                                         <button onClick={handleLogout} className="!py-3 text-danger">
                                             <svg className="rotate-90 ltr:mr-2 rtl:ml-2" width="18" height="18"
-                                                 viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <path
                                                     opacity="0.5"
                                                     d="M17 9.00195C19.175 9.01406 20.3529 9.11051 21.1213 9.8789C22 10.7576 22 12.1718 22 15.0002V16.0002C22 18.8286 22 20.2429 21.1213 21.1215C20.2426 22.0002 18.8284 22.0002 16 22.0002H8C5.17157 22.0002 3.75736 22.0002 2.87868 21.1215C2 20.2429 2 18.8286 2 16.0002L2 15.0002C2 12.1718 2 10.7576 2.87868 9.87889C3.64706 9.11051 4.82497 9.01406 7 9.00195"
@@ -527,7 +524,7 @@ const Header = () => {
                                                     strokeLinecap="round"
                                                 />
                                                 <path d="M12 15L12 2M12 2L15 5.5M12 2L9 5.5" stroke="currentColor"
-                                                      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                                    strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                             </svg>
                                             Sign Out
                                         </button>
