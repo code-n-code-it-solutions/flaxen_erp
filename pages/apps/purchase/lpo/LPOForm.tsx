@@ -143,7 +143,7 @@ const LPOForm = ({ id }: IFormProps) => {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setAuthToken(token);
-        setContentType('multipart/form-data');
+        // setContentType('multipart/form-data');
         let finalData = {
             ...formData,
             user_id: user.id,
@@ -154,7 +154,7 @@ const LPOForm = ({ id }: IFormProps) => {
                     ? rawProducts.map((product: any) => {
                         return {
                             status: product.status,
-                            purchase_requisition_item_id: product.id,
+                            purchase_requisition_item_id: product.purchase_requisition_item_id,
                             purchase_requisition_id: product.purchase_requisition_id,
                             raw_product_id: product.raw_product_id,
                             description: product.description || '',
@@ -709,7 +709,7 @@ const LPOForm = ({ id }: IFormProps) => {
                                             ...rawProducts,
                                             {
                                                 status: 'Completed',
-                                                purchase_requisition_item_id: product.purchase_requisition_item_id, // set the parent purchase requisition id
+                                                purchase_requisition_item_id: product.id, // set the parent purchase requisition id
                                                 purchase_requisition_id: product.purchase_requisition_id, // set the parent purchase requisition id
                                                 raw_product_id: product.raw_product_id,
                                                 quantity: parseInt(product.quantity),

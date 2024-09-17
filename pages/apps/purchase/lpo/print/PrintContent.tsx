@@ -4,9 +4,10 @@ import Header from '@/components/Report/Header';
 import Footer from '@/components/Report/Footer';
 
 const PrintContent = ({ content }: any) => {
+    console.log(content);
     // Calculating totals
     const subTotal = content?.raw_materials.reduce(
-        (acc: any, item: any) => acc + parseFloat(item.processed_quantity) * parseFloat(item.unit_price), 0
+        (acc: any, item: any) => acc + parseFloat(item.quantity) * parseFloat(item.unit_price), 0
     ).toFixed(2);
 
     const totalTax = content?.raw_materials.reduce(
@@ -72,11 +73,11 @@ const PrintContent = ({ content }: any) => {
                             <Text style={[styles.tableCell, styles.col4]}>{item.unit?.name}</Text>
                             <Text style={[styles.tableCell, styles.col5]}>
                                 {item.unit_price.toLocaleString(undefined, {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2
+                                    minimumFractionDigits: 4,
+                                    maximumFractionDigits: 4
                                 })}
                             </Text>
-                            <Text style={[styles.tableCell, styles.col6]}>{item.processed_quantity}</Text>
+                            <Text style={[styles.tableCell, styles.col6]}>{item.quantity}</Text>
                             <Text style={[styles.tableCell, styles.col7]}>
                                 {item.tax_amount.toLocaleString(undefined, {
                                     minimumFractionDigits: 2,
@@ -84,7 +85,7 @@ const PrintContent = ({ content }: any) => {
                                 })}
                             </Text>
                             <Text style={[styles.tableCell, styles.col8]}>
-                                {((parseFloat(item.processed_quantity) * parseFloat(item.unit_price)) +
+                                {((parseFloat(item.quantity) * parseFloat(item.unit_price)) +
                                     parseFloat(item.tax_amount)
                                 ).toLocaleString(undefined, {
                                     minimumFractionDigits: 2,
