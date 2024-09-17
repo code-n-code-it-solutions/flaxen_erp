@@ -311,7 +311,7 @@ const PurchaseRequestForm = ({ id }: IFormProps) => {
                     <div className="flex flex-col md:flex-row justify-between items-center gap-3 w-full">
                         <Dropdown
                             divClasses="w-full"
-                            label="Requistion Type"
+                            label="Requisition Type"
                             name="type"
                             options={requisitionTypeOptions}
                             value={formData.type}
@@ -323,10 +323,10 @@ const PurchaseRequestForm = ({ id }: IFormProps) => {
                     <div className="flex flex-col md:flex-row justify-between items-center gap-3 w-full">
                         <Input
                             divClasses="w-full"
-                            label="Purchase Request Code"
+                            label="Purchase Requisition Code"
                             type="text"
                             name="pr_code"
-                            placeholder="Enter Purchase Request Code"
+                            placeholder="Enter Purchase Requisition Code"
                             value={formData.pr_code}
                             onChange={(e: any) => handleChange(e.target.name, e.target.value, e.target.required)}
                             disabled={true}

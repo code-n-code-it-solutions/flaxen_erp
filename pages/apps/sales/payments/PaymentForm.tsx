@@ -138,8 +138,8 @@ const PaymentForm = () => {
                 text: 'Please select receiving account'
             });
         } else {
-            console.log(finalData);
-            // dispatch(storeCustomerPayment(finalData));
+            // console.log(finalData);
+            dispatch(storeCustomerPayment(finalData));
         }
     };
 

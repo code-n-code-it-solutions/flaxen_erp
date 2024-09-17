@@ -70,6 +70,16 @@ const DeliveryNoteForm = () => {
                 },
                 valueSetter: (params: any) => {
                     const value = Number(params.newValue);
+
+                    if (isNaN(value)) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Invalid input',
+                            text: `Please enter a valid number`,
+                        });
+                        return false;
+                    }
+
                     if (value > params.data.quantity) {
                         Swal.fire({
                             icon: 'error',
@@ -78,6 +88,7 @@ const DeliveryNoteForm = () => {
                         });
                         return false;
                     }
+
                     if (value > params.data.stock_quantity) {
                         Swal.fire({
                             icon: 'error',
@@ -87,6 +98,7 @@ const DeliveryNoteForm = () => {
                         return false;
                     }
 
+                    // Update the preview items
                     setPreviewItems(deliveryNoteItems.map((item) => {
                         if (item.id === params.data.id) {
                             return {
@@ -97,61 +109,26 @@ const DeliveryNoteForm = () => {
                         return item;
                     }));
 
-                    params.data.delivered_quantity = value;
+                    params.data.delivered_quantity = value; // Update the cell value
                     return true;
                 },
                 cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+                onCellValueChanged: (params: any) => {
+                    // This event will trigger when the cell's value has changed.
+                    setPreviewItems(deliveryNoteItems.map((item) => {
+                        if (item.id === params.data.id) {
+                            return {
+                                ...item,
+                                delivered_quantity: params.data.delivered_quantity
+                            };
+                        }
+                        return item;
+                    }));
+                },
                 minWidth: 150,
                 filter: false,
                 floatingFilter: false
             },
-            // {
-            //     headerName: 'S.Price',
-            //     field: 'sale_price',
-            //     cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
-            //     minWidth: 150,
-            //     filter: false,
-            //     floatingFilter: false
-            // },
-            // {
-            //     headerName: 'S.Total',
-            //     field: 'sub_total',
-            //     valueGetter: (params: any) => {
-            //         return (params.data.delivered_quantity || 0) * params.data.sale_price;
-            //     },
-            //     cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
-            //     minWidth: 150,
-            //     filter: false,
-            //     floatingFilter: false
-            // },
-            // {
-            //     headerName: 'VAT@5%',
-            //     field: 'tax_amount',
-            //     valueGetter: (params: any) => {
-            //         return (params.data.sale_price * (params.data.delivered_quantity || 0) * 0.05)
-            //             .toLocaleString(undefined, {
-            //                 minimumFractionDigits: 4,
-            //                 maximumFractionDigits: 4
-            //             });
-            //     },
-            //     cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
-            //     minWidth: 150,
-            //     filter: false,
-            //     floatingFilter: false
-            // },
-            // {
-            //     headerName: 'Total',
-            //     field: 'grand_total',
-            //     valueGetter: (params: any) => {
-            //         const subTotal = params.data.sale_price * (params.data.delivered_quantity || 0);
-            //         const tax = subTotal * 0.05;
-            //         return subTotal + tax;
-            //     },
-            //     cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
-            //     minWidth: 150,
-            //     filter: false,
-            //     floatingFilter: false
-            // },
             {
                 headerName: '',
                 field: 'remove',
@@ -261,15 +238,15 @@ const DeliveryNoteForm = () => {
                     minWidth: 150,
                     filter: false,
                     floatingFilter: false
+                },
+                {
+                    headerName: 'A.Qty',
+                    field: 'available_quantity',
+                    cellRenderer: (params: any) => params.node?.rowPinned ? '' : params.value,
+                    minWidth: 150,
+                    filter: false,
+                    floatingFilter: false
                 }
-                // {
-                //     headerName: 'A.Qty',
-                //     field: 'available_quantity',
-                //     cellRenderer: (params: any) => params.node?.rowPinned ? '' : params.value,
-                //     minWidth: 150,
-                //     filter: false,
-                //     floatingFilter: false
-                // }
             ];
 
             setColDefs([...finishGoodsColDefs, ...defaultColDef]);
@@ -292,15 +269,15 @@ const DeliveryNoteForm = () => {
                     filter: false,
                     floatingFilter: false
                 },
-                // {
-                //     headerName: 'Stock',
-                //     field: 'stock_quantity',
-                //     valueGetter: (params: any) => params.data.product.stock_quantity,
-                //     cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
-                //     minWidth: 150,
-                //     filter: false,
-                //     floatingFilter: false
-                // }
+                {
+                    headerName: 'Stock',
+                    field: 'stock_quantity',
+                    valueGetter: (params: any) => params.data.product.stock_quantity,
+                    cellRenderer: (params: any) => params.node?.rowPinned ? params.value : params.value,
+                    minWidth: 150,
+                    filter: false,
+                    floatingFilter: false
+                }
             ];
 
             setColDefs([...rawProductColDefs, ...defaultColDef]);
@@ -353,6 +330,8 @@ const DeliveryNoteForm = () => {
             setFormError('Some items have a quantity greater than the stock quantity. Please correct them before submitting.');
             return;
         }
+
+        // console.log(deliveryNoteItems);
 
         // Proceed with form submission if there are no invalid rows
         if (deliveryNoteItems.length === 0) {
