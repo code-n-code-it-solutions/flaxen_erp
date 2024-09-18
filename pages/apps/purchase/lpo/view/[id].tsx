@@ -67,7 +67,7 @@ const View = () => {
     }, [router.query.id, dispatch]);
 
     return (
-        <div>
+        <div className="flex flex-col gap-3">
             <DetailPageHeader
                 appBasePath={AppBasePath.Local_Purchase_Order}
                 title="LPO Details"
@@ -168,8 +168,9 @@ const View = () => {
                                     <th className="text-[12px]">Unit</th>
                                     {/*<th>Description</th>*/}
                                     <th className="text-[12px]">Unit Price</th>
-                                    <th className="text-[12px]">Qty</th>
-                                    <th className="text-[12px]">Tax</th>
+                                    <th className="text-[12px]">Req Qty</th>
+                                    <th className="text-[12px]">Rec Qty</th>
+                                    <th className="text-[12px]">Tax@5%</th>
                                     <th className="text-[12px]">Total</th>
                                     {LPODetail?.raw_materials?.filter((item: any) => item.status === 'Pending' || item.status === 'Partial').length > 0 && (
                                         <th className="text-[12px]">Actions</th>
@@ -215,50 +216,13 @@ const View = () => {
                                             )}
                                         </td>
                                         <td className="text-[12px]">{index + 1}</td>
-                                        <td className="text-[12px]">
-                                            <div className="flex flex-col">
-                                                <span>
-                                                    <strong>PR: </strong>
-                                                    {item.purchase_requisition?.pr_code}
-                                                </span>
-                                                <span>
-                                                    <strong>By: </strong>
-                                                    {item.purchase_requisition?.employee?.name}
-                                                </span>
-                                            </div>
-                                        </td>
+                                        <td className="text-[12px]">{item.purchase_requisition?.pr_code}</td>
                                         <td className="text-[12px]">{item.raw_product?.item_code}</td>
                                         <td className="text-[12px]">{item.unit?.name}</td>
-                                        {/*<td>{item.description}</td>*/}
                                         <td className="text-[12px]">{item.unit_price.toFixed(2)}</td>
-                                        <td className="text-[12px]">
-                                            <div className="flex flex-col">
-                                                <span>
-                                                    <strong>Requested: </strong>
-                                                    {item.request_quantity}
-                                                </span>
-                                                <span>
-                                                    <strong>Processed: </strong>
-                                                    {item.processed_quantity}
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td className="text-[12px]">
-                                            <div className="flex flex-col">
-                                                <span>
-                                                    <strong>Category: </strong>
-                                                    {item.tax_category ? item.tax_category.name : 'None'}
-                                                </span>
-                                                <span>
-                                                    <strong>Rate: </strong>
-                                                    {item.tax_rate.toFixed(2)}
-                                                </span>
-                                                <span>
-                                                    <strong>Amount: </strong>
-                                                    {item.tax_amount.toFixed(2)}
-                                                </span>
-                                            </div>
-                                        </td>
+                                        <td className="text-[12px]">{item.request_quantity}</td>
+                                        <td className="text-[12px]">{item.processed_quantity}</td>
+                                        <td className="text-[12px]">{item.tax_amount.toFixed(2)}</td>
                                         <td className="text-[12px]">{(parseFloat(item.processed_quantity) * parseFloat(item.unit_price)).toFixed(2)}</td>
                                         {LPODetail?.raw_materials?.filter((item: any) => item.status === 'Pending' || item.status === 'Partial').length > 0 && (
                                             <td>
@@ -276,32 +240,36 @@ const View = () => {
                                     </tr>
                                 ))}
                                 </tbody>
-                                {/*<tfoot className="text-[12px]">*/}
-                                {/*<tr>*/}
-                                {/*    <td colSpan={8} className="text-right">*/}
-                                {/*        Total Without Tax*/}
-                                {/*    </td>*/}
-                                {/*    <td className="text-left ps-5">*/}
-                                {/*        {LPODetail?.items?.reduce((acc: number, item: any) => acc + item.sub_total, 0).toFixed(2)}*/}
-                                {/*    </td>*/}
-                                {/*</tr>*/}
-                                {/*<tr>*/}
-                                {/*    <td colSpan={8} className="text-right">*/}
-                                {/*        VAT*/}
-                                {/*    </td>*/}
-                                {/*    <td className="text-left ps-5">*/}
-                                {/*        {LPODetail?.items?.reduce((acc: number, item: any) => acc + item.tax_amount, 0).toFixed(2)}*/}
-                                {/*    </td>*/}
-                                {/*</tr>*/}
-                                {/*<tr>*/}
-                                {/*    <td colSpan={8} className="text-right">*/}
-                                {/*        Grand Total*/}
-                                {/*    </td>*/}
-                                {/*    <td className="text-left ps-5">*/}
-                                {/*        {LPODetail?.items?.reduce((acc: number, item: any) => acc + (parseFloat(item.processed_quantity) * parseFloat(item.unit_price)), 0).toFixed(2)}*/}
-                                {/*    </td>*/}
-                                {/*</tr>*/}
-                                {/*</tfoot>*/}
+                                <tfoot className="text-[12px]">
+                                <tr>
+                                    <td colSpan={9} className="text-right">
+                                        Total Without Tax
+                                    </td>
+                                    <td className="text-left ps-5">
+                                        {LPODetail?.raw_materials?.reduce((acc: number, item: any) => acc + item.sub_total, 0).toFixed(2)}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colSpan={9} className="text-right">
+                                        VAT
+                                    </td>
+                                    <td className="text-left ps-5">
+                                        {LPODetail?.raw_materials?.reduce((acc: number, item: any) => acc + item.tax_amount, 0).toFixed(2)}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colSpan={9} className="text-right">
+                                        Grand Total
+                                    </td>
+                                    <td className="text-left ps-5">
+                                        {LPODetail
+                                            ?.raw_materials
+                                            ?.reduce((acc: number, item: any) =>
+                                                acc + (parseFloat(item.processed_quantity) * parseFloat(item.unit_price)) + item.tax_amount, 0)
+                                            .toFixed(2)}
+                                    </td>
+                                </tr>
+                                </tfoot>
                             </table>
                         </div>
                         <div className="p-2.5">
@@ -317,5 +285,5 @@ const View = () => {
     );
 };
 
-View.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
+// View.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
 export default View;

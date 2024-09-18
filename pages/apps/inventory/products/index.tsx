@@ -24,10 +24,8 @@ const Index = () => {
     const router = useRouter();
 
     const dispatch = useAppDispatch();
-    const { token } = useAppSelector((state) => state.user);
-
+    const { token, menus } = useAppSelector((state) => state.user);
     const { allRawProducts, loading } = useAppSelector((state) => state.rawProduct);
-    const { permittedMenus } = useAppSelector((state) => state.menu);
     const { activeMenu } = useAppSelector((state) => state.menu);
     const [selectedRows, setSelectedRows] = useState<any[]>([]);
     const gridRef = useRef<AgGridReact<any>>(null);
@@ -57,7 +55,7 @@ const Index = () => {
             headerName: 'Unit',
             field: 'retail_price',
             valueGetter: (row: any) => (
-                capitalize(row.data.sub_unit.name)
+                capitalize(row.data.sub_unit?.name)
             ),
             minWidth: 150
         },
@@ -68,17 +66,17 @@ const Index = () => {
         },
         {
             headerName: 'Valuation Price',
-            valueGetter: (row: any) => row.data.valuated_unit_price.toFixed(2),
+            valueGetter: (row: any) => row.data.valuated_unit_price.toFixed(4),
             minWidth: 150
         },
         {
             headerName: 'Sale Price',
-            valueGetter: (row: any) => parseFloat(row.data.retail_price).toFixed(2),
+            valueGetter: (row: any) => parseFloat(row.data.retail_price).toFixed(4),
             minWidth: 150
         },
         {
             headerName: 'On Hand',
-            valueGetter: (row: any) => row.data.stock_quantity.toFixed(2),
+            valueGetter: (row: any) => row.data.stock_quantity.toFixed(4),
             minWidth: 150
         }
     ]);
@@ -142,7 +140,7 @@ const Index = () => {
     // }, [selectedRows]);
 
     return (
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-3">
             <PageHeader
                 appBasePath={AppBasePath.Raw_Product}
                 key={selectedRows.length}
@@ -185,7 +183,7 @@ const Index = () => {
                         // const displayedColumns = params.api.getAllDisplayedColumns();
                         // console.log(displayedColumns, params.column, displayedColumns[0], displayedColumns[0] === params.column);
                         // return displayedColumns[0] === params.column;
-                        checkPermission(permittedMenus, activeMenu.route, ActionList.VIEW_DETAIL, AppBasePath.Raw_Product) &&
+                        checkPermission(menus.map((plugin: any) => plugin.menus).flat(), activeMenu.route, ActionList.VIEW_DETAIL, AppBasePath.Raw_Product) &&
                         router.push(`/apps/inventory/products/view/${params.data.id}`);
                     }}
                 />
@@ -194,5 +192,5 @@ const Index = () => {
     );
 };
 
-Index.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
+// Index.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
 export default Index;

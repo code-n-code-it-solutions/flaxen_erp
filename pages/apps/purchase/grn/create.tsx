@@ -28,7 +28,7 @@ const Create = () => {
     }, [GRN, success]);
 
     return (
-        <div>
+        <div className="flex flex-col gap-3">
             <DetailPageHeader
                 appBasePath={AppBasePath.Good_Receive_Note}
                 title="Create GRN"
@@ -50,5 +50,5 @@ const Create = () => {
         </div>
     );
 };
-Create.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
+// Create.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
 export default Create;

@@ -1,17 +1,16 @@
 import { useRouter } from 'next/router';
-import { useDispatch, useSelector } from 'react-redux';
-import { IRootState } from '@/store';
+import { useAppDispatch, useAppSelector } from '@/store';
 import { useEffect } from 'react';
 import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import BlankLayout from '@/components/Layouts/BlankLayout';
 
 const RecoverIdBox = () => {
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     useEffect(() => {
         dispatch(setPageTitle('Recover Id Box'));
-    });
+    }, []);
     const router = useRouter();
-    const isDark = useSelector((state: IRootState) => state.themeConfig.theme) === 'dark' ? true : false;
+    const isDark = useAppSelector((state) => state.themeConfig.theme) === 'dark';
 
     const submitForm = (e: any) => {
         e.preventDefault();

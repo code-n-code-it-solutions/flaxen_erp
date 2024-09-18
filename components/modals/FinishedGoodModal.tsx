@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import Button from '@/components/Button';
-import { ButtonType, ButtonVariant, RAW_PRODUCT_LIST_TYPE } from '@/utils/enums';
+import { ButtonType, ButtonVariant } from '@/utils/enums';
 import { Dropdown } from '@/components/form/Dropdown';
 import { Input } from '@/components/form/Input';
 import Modal from '@/components/Modal';
 import { IRootState, useAppDispatch, useAppSelector } from '@/store';
-import { uniqBy } from 'lodash';
 import { useSelector } from 'react-redux';
 import { getTaxCategories } from '@/store/slices/taxCategorySlice';
 import { setAuthToken } from '@/configs/api.config';
@@ -56,7 +55,7 @@ const FinishedGoodModal = ({
                     if (finishedGoods) {
                         let stock = finishedGoods[value.value];
                         if (stock) {
-                            console.log(stock);
+                            // console.log(stock);
                             setFinishGoodsList(stock.items.map((stock: any) => ({
                                 label: stock.product.title + '-' + stock.product.item_code + ' (' + stock.final_stock + ')',
                                 value: stock.raw_product_id,
@@ -240,7 +239,7 @@ const FinishedGoodModal = ({
     }, [allProductAssemblies]);
 
     useEffect(() => {
-        console.log(quotationItem);
+        // console.log(quotationItem);
     }, [quotationItem]);
 
     return (
@@ -305,6 +304,7 @@ const FinishedGoodModal = ({
             <Input
                 label="Quantity"
                 type="number"
+                step="any"
                 name="quantity"
                 value={quotationItem.quantity}
                 onChange={(e) => handleChange('quantity', parseFloat(e.target.value), true)}
@@ -325,6 +325,7 @@ const FinishedGoodModal = ({
                     divClasses="w-full"
                     label="Tax Rate"
                     type="number"
+                    step="any"
                     name="tax_rate"
                     value={quotationItem.tax_rate}
                     onChange={(e) => handleChange('tax_rate', parseFloat(e.target.value), false)}
@@ -336,6 +337,7 @@ const FinishedGoodModal = ({
                 divClasses="w-full"
                 label="Tax Amount"
                 type="number"
+                step="any"
                 name="tax_amount"
                 value={quotationItem.tax_amount?.toFixed(2)}
                 onChange={(e) => handleChange('tax_amount', parseFloat(e.target.value), false)}
@@ -357,6 +359,7 @@ const FinishedGoodModal = ({
                     divClasses="w-full"
                     label="Discount Rate/Amount"
                     type="number"
+                    step="any"
                     name="discount_amount_rate"
                     value={quotationItem.discount_amount_rate?.toFixed(2)}
                     onChange={(e) => handleChange('discount_amount_rate', parseFloat(e.target.value), false)}
@@ -367,6 +370,7 @@ const FinishedGoodModal = ({
             <Input
                 label="Total Cost"
                 type="number"
+                step="any"
                 name="total_cost"
                 value={quotationItem.total_cost}
                 onChange={(e) => setQuotationItem({ ...quotationItem, total_cost: parseFloat(e.target.value) })}

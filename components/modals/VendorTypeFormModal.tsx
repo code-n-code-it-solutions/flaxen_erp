@@ -6,7 +6,6 @@ import Button from "@/components/Button";
 import {ButtonType, ButtonVariant} from "@/utils/enums";
 import {useAppDispatch, useAppSelector} from "@/store";
 import {clearVendorTypeState, storeVendorType} from "@/store/slices/vendorTypeSlice";
-import {di} from "@fullcalendar/core/internal-common";
 
 interface IProps {
     modalOpen: boolean;
@@ -35,7 +34,6 @@ const VendorTypeFormModal = ({modalOpen, setModalOpen, modalFormData}: IProps) =
         if (required) {
             if (!value) {
                 setErrorMessages({...errorMessages, [name]: 'This field is required.'});
-                return
             } else {
                 setErrorMessages((prev: any) => {
                     delete prev[name];

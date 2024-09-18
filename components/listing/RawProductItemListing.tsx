@@ -275,7 +275,7 @@ const RawProductItemListing: FC<IProps> = ({
                 sortable: true,
                 render: (row: any, index: number) => (
                     table.numericColumns.includes(column)
-                        ? <>{parseFloat(row[column]).toFixed(2)}</>
+                        ? <>{parseFloat(row[column]).toFixed(5)}</>
                         : column === 'purchase_requisition_id'
                             ? <>{purchaseRequests?.find((item: any) => item.id === row[column])?.pr_code}</>
                             : column === 'raw_product_id'
@@ -303,7 +303,7 @@ const RawProductItemListing: FC<IProps> = ({
                     column.footer = (
                         <div className="flex gap-2 items-center">
                             <span className="h-3 w-3">{getIcon(IconType.sum)}</span>
-                            <span>{typeof columnTotals[column.accessor] === 'number' ? columnTotals[column.accessor].toFixed(2) : columnTotals[column.accessor]}</span>
+                            <span>{typeof columnTotals[column.accessor] === 'number' ? columnTotals[column.accessor].toFixed(5) : columnTotals[column.accessor]}</span>
                         </div>
                     )
                 }
@@ -352,7 +352,7 @@ const RawProductItemListing: FC<IProps> = ({
             <div
                 className="flex justify-between items-center flex-col md:flex-row space-y-3 md:space-y-0 mb-3">
                 <h3 className="text-lg font-semibold">{title}</h3>
-                {type !== RAW_PRODUCT_LIST_TYPE.GOOD_RECEIVE_NOTE && type !== RAW_PRODUCT_LIST_TYPE.PRODUCTION && type !== RAW_PRODUCT_LIST_TYPE.FILLING && type !== RAW_PRODUCT_LIST_TYPE.VENDOR_BILL &&
+                {type !== RAW_PRODUCT_LIST_TYPE.LOCAL_PURCHASE_ORDER && type !== RAW_PRODUCT_LIST_TYPE.GOOD_RECEIVE_NOTE && type !== RAW_PRODUCT_LIST_TYPE.PRODUCTION && type !== RAW_PRODUCT_LIST_TYPE.FILLING && type !== RAW_PRODUCT_LIST_TYPE.VENDOR_BILL &&
                     <Button
                         type={ButtonType.button}
                         text='Add New Item'

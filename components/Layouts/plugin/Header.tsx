@@ -1,52 +1,56 @@
-"use client";
-import {useEffect, useState} from 'react';
+'use client';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import {useRouter} from 'next/router';
-import {useAppDispatch, useAppSelector} from '@/store';
-import {toggleLocale, toggleTheme} from '@/store/slices/themeConfigSlice';
-import {useTranslation} from 'react-i18next';
-import {toggleSidebar} from '@/store/slices/themeConfigSlice';
+import { useRouter } from 'next/router';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { toggleLocale, toggleTheme } from '@/store/slices/themeConfigSlice';
+import { useTranslation } from 'react-i18next';
+import { toggleSidebar } from '@/store/slices/themeConfigSlice';
 import Dropdown from '@/components/Dropdown';
-import {logoutUser} from "@/store/slices/userSlice";
-import {clearMenuState, getPermittedMenu, setActiveModule, setModuleMenus} from "@/store/slices/menuSlice";
-import {setAuthToken} from "@/configs/api.config";
+import { logoutUser, setIsLocked } from '@/store/slices/userSlice';
+import { clearMenuState, getPermittedMenu, setActiveModule, setModuleMenus } from '@/store/slices/menuSlice';
+import { setAuthToken } from '@/configs/api.config';
 
 const Header = () => {
     const router = useRouter();
     const dispatch = useAppDispatch();
-    const {t, i18n} = useTranslation();
-    const {isLoggedIn, token} = useAppSelector((state) => state.user);
-    const {permittedMenus, moduleMenus, activeModule} = useAppSelector((state) => state.menu);
+    const { t, i18n } = useTranslation();
+    const { user, isLoggedIn, token } = useAppSelector((state) => state.user);
+    const { permittedMenus, moduleMenus, activeModule } = useAppSelector((state) => state.menu);
     const isRtl = useAppSelector((state) => state.themeConfig.rtlClass) === 'rtl';
     const themeConfig = useAppSelector((state) => state.themeConfig);
     const [flag, setFlag] = useState('');
     const [notifications, setNotifications] = useState([
         {
             id: 1,
-            profile: 'user-profile.jpeg',
+            profile: 'default.jpeg',
             message: '<strong class="text-sm mr-1">John Doe</strong>invite you to <strong>Prototyping</strong>',
-            time: '45 min ago',
-        },
+            time: '45 min ago'
+        }
     ]);
 
     const handleLogout = () => {
-        setAuthToken(token)
+        setAuthToken(token);
         dispatch(clearMenuState());
         dispatch(logoutUser());
-    }
+    };
+
+    const handleLockScreen = () => {
+        dispatch(setIsLocked({ lockStatus: true, beforeLockUrl: router.pathname }));
+    };
 
     useEffect(() => {
-        setActiveMenu()
+        setActiveMenu();
     }, [activeModule]);
 
     useEffect(() => {
         if (!isLoggedIn) {
-            router.push('/auth/signin')
+            router.push('/auth/signin');
         } else {
-            setAuthToken(token)
+            setAuthToken(token);
             // dispatch(getPermittedMenu());
         }
-    }, [isLoggedIn, router])
+    }, [isLoggedIn, router]);
 
     const setActiveMenu = () => {
         const selector = document.querySelector('ul.horizontal-menu a[href="' + window?.location?.pathname + '"]');
@@ -74,10 +78,10 @@ const Header = () => {
                 }
             }
         }
-    }
+    };
 
     useEffect(() => {
-        setActiveMenu()
+        setActiveMenu();
     }, [router.pathname]);
 
     useEffect(() => {
@@ -109,10 +113,10 @@ const Header = () => {
                         >
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                                  xmlns="http://www.w3.org/2000/svg">
-                                <path d="M20 7L4 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                                <path d="M20 7L4 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                                 <path opacity="0.5" d="M20 12L4 12" stroke="currentColor" strokeWidth="1.5"
-                                      strokeLinecap="round"/>
-                                <path d="M20 17L4 17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                                      strokeLinecap="round" />
+                                <path d="M20 17L4 17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                             </svg>
                         </button>
                     </div>
@@ -130,11 +134,11 @@ const Header = () => {
                                             strokeWidth="1.5"
                                         />
                                         <path opacity="0.5" d="M7 4V2.5" stroke="currentColor" strokeWidth="1.5"
-                                              strokeLinecap="round"/>
+                                              strokeLinecap="round" />
                                         <path opacity="0.5" d="M17 4V2.5" stroke="currentColor" strokeWidth="1.5"
-                                              strokeLinecap="round"/>
+                                              strokeLinecap="round" />
                                         <path opacity="0.5" d="M2 9H22" stroke="currentColor" strokeWidth="1.5"
-                                              strokeLinecap="round"/>
+                                              strokeLinecap="round" />
                                     </svg>
                                 </Link>
                             </li>
@@ -170,7 +174,7 @@ const Header = () => {
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                                          xmlns="http://www.w3.org/2000/svg">
                                         <circle r="3" transform="matrix(-1 0 0 1 19 5)" stroke="currentColor"
-                                                strokeWidth="1.5"/>
+                                                strokeWidth="1.5" />
                                         <path
                                             opacity="0.5"
                                             d="M14 2.20004C13.3538 2.06886 12.6849 2 12 2C6.47715 2 2 6.47715 2 12C2 13.5997 2.37562 15.1116 3.04346 16.4525C3.22094 16.8088 3.28001 17.2161 3.17712 17.6006L2.58151 19.8267C2.32295 20.793 3.20701 21.677 4.17335 21.4185L6.39939 20.8229C6.78393 20.72 7.19121 20.7791 7.54753 20.9565C8.88837 21.6244 10.4003 22 12 22C17.5228 22 22 17.5228 22 12C22 11.3151 21.9311 10.6462 21.8 10"
@@ -201,9 +205,9 @@ const Header = () => {
                                         <svg className="mx-auto" width="16" height="16" viewBox="0 0 24 24" fill="none"
                                              xmlns="http://www.w3.org/2000/svg">
                                             <circle cx="11.5" cy="11.5" r="9.5" stroke="currentColor" strokeWidth="1.5"
-                                                    opacity="0.5"/>
+                                                    opacity="0.5" />
                                             <path d="M18.5 18.5L22 22" stroke="currentColor" strokeWidth="1.5"
-                                                  strokeLinecap="round"/>
+                                                  strokeLinecap="round" />
                                         </svg>
                                     </button>
                                     <button type="button"
@@ -212,9 +216,9 @@ const Header = () => {
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                                              xmlns="http://www.w3.org/2000/svg">
                                             <circle opacity="0.5" cx="12" cy="12" r="10" stroke="currentColor"
-                                                    strokeWidth="1.5"/>
+                                                    strokeWidth="1.5" />
                                             <path d="M14.5 9.50002L9.5 14.5M9.49998 9.5L14.5 14.5" stroke="currentColor"
-                                                  strokeWidth="1.5" strokeLinecap="round"/>
+                                                  strokeWidth="1.5" strokeLinecap="round" />
                                         </svg>
                                     </button>
                                 </div>
@@ -227,9 +231,9 @@ const Header = () => {
                                 <svg className="mx-auto h-4.5 w-4.5 dark:text-[#d0d2d6]" width="20" height="20"
                                      viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <circle cx="11.5" cy="11.5" r="9.5" stroke="currentColor" strokeWidth="1.5"
-                                            opacity="0.5"/>
+                                            opacity="0.5" />
                                     <path d="M18.5 18.5L22 22" stroke="currentColor" strokeWidth="1.5"
-                                          strokeLinecap="round"/>
+                                          strokeLinecap="round" />
                                 </svg>
                             </button>
                         </div>
@@ -244,23 +248,23 @@ const Header = () => {
                                 >
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                                          xmlns="http://www.w3.org/2000/svg">
-                                        <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="1.5"/>
+                                        <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="1.5" />
                                         <path d="M12 2V4" stroke="currentColor" strokeWidth="1.5"
-                                              strokeLinecap="round"/>
+                                              strokeLinecap="round" />
                                         <path d="M12 20V22" stroke="currentColor" strokeWidth="1.5"
-                                              strokeLinecap="round"/>
+                                              strokeLinecap="round" />
                                         <path d="M4 12L2 12" stroke="currentColor" strokeWidth="1.5"
-                                              strokeLinecap="round"/>
+                                              strokeLinecap="round" />
                                         <path d="M22 12L20 12" stroke="currentColor" strokeWidth="1.5"
-                                              strokeLinecap="round"/>
+                                              strokeLinecap="round" />
                                         <path opacity="0.5" d="M19.7778 4.22266L17.5558 6.25424" stroke="currentColor"
-                                              strokeWidth="1.5" strokeLinecap="round"/>
+                                              strokeWidth="1.5" strokeLinecap="round" />
                                         <path opacity="0.5" d="M4.22217 4.22266L6.44418 6.25424" stroke="currentColor"
-                                              strokeWidth="1.5" strokeLinecap="round"/>
+                                              strokeWidth="1.5" strokeLinecap="round" />
                                         <path opacity="0.5" d="M6.44434 17.5557L4.22211 19.7779" stroke="currentColor"
-                                              strokeWidth="1.5" strokeLinecap="round"/>
+                                              strokeWidth="1.5" strokeLinecap="round" />
                                         <path opacity="0.5" d="M19.7778 19.7773L17.5558 17.5551" stroke="currentColor"
-                                              strokeWidth="1.5" strokeLinecap="round"/>
+                                              strokeWidth="1.5" strokeLinecap="round" />
                                     </svg>
                                 </button>
                             ) : (
@@ -299,9 +303,9 @@ const Header = () => {
                                             strokeWidth="1.5"
                                         />
                                         <path opacity="0.5" d="M22 21H2" stroke="currentColor" strokeWidth="1.5"
-                                              strokeLinecap="round"/>
+                                              strokeLinecap="round" />
                                         <path opacity="0.5" d="M15 15H9" stroke="currentColor" strokeWidth="1.5"
-                                              strokeLinecap="round"/>
+                                              strokeLinecap="round" />
                                     </svg>
                                 </button>
                             )}
@@ -313,7 +317,7 @@ const Header = () => {
                                 btnClassName="block p-2 rounded-full bg-white-light/40 dark:bg-dark/40 hover:text-primary hover:bg-white-light/90 dark:hover:bg-dark/60"
                                 button={flag && <img className="h-5 w-5 rounded-full object-cover"
                                                      src={`/assets/images/flags/${flag.toUpperCase()}.svg`}
-                                                     alt="flag"/>}
+                                                     alt="flag" />}
                             >
                                 <ul className="grid w-[280px] grid-cols-2 gap-2 !px-2 font-semibold text-dark dark:text-white-dark dark:text-white-light/90">
                                     {themeConfig.languageList.map((item: any) => {
@@ -329,7 +333,7 @@ const Header = () => {
                                                     }}
                                                 >
                                                     <img src={`/assets/images/flags/${item.code.toUpperCase()}.svg`}
-                                                         alt="flag" className="h-5 w-5 rounded-full object-cover"/>
+                                                         alt="flag" className="h-5 w-5 rounded-full object-cover" />
                                                     <span className="ltr:ml-3 rtl:mr-3">{t(item.translation_key)}</span>
                                                 </button>
                                             </li>
@@ -355,9 +359,9 @@ const Header = () => {
                                             />
                                             <path
                                                 d="M7.5 19C8.15503 20.7478 9.92246 22 12 22C14.0775 22 15.845 20.7478 16.5 19"
-                                                stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                                                stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                                             <path d="M12 6V10" stroke="currentColor" strokeWidth="1.5"
-                                                  strokeLinecap="round"/>
+                                                  strokeLinecap="round" />
                                         </svg>
                                         <span className="absolute top-0 flex h-3 w-3 ltr:right-0 rtl:left-0">
                                             <span
@@ -387,7 +391,7 @@ const Header = () => {
                                                                 <div className="relative h-12 w-12">
                                                                     <img className="h-12 w-12 rounded-full object-cover"
                                                                          alt="profile"
-                                                                         src={`/assets/images/${notification.profile}`}/>
+                                                                         src={`/assets/images/${notification.profile}`} />
                                                                     <span
                                                                         className="absolute right-[6px] bottom-0 block h-2 w-2 rounded-full bg-success"></span>
                                                                 </div>
@@ -396,7 +400,7 @@ const Header = () => {
                                                                 <div className="ltr:pr-3 rtl:pl-3">
                                                                     <h6
                                                                         dangerouslySetInnerHTML={{
-                                                                            __html: notification.message,
+                                                                            __html: notification.message
                                                                         }}
                                                                     ></h6>
                                                                     <span
@@ -411,11 +415,11 @@ const Header = () => {
                                                                          fill="none" xmlns="http://www.w3.org/2000/svg">
                                                                         <circle opacity="0.5" cx="12" cy="12" r="10"
                                                                                 stroke="currentColor"
-                                                                                strokeWidth="1.5"/>
+                                                                                strokeWidth="1.5" />
                                                                         <path
                                                                             d="M14.5 9.50002L9.5 14.5M9.49998 9.5L14.5 14.5"
                                                                             stroke="currentColor" strokeWidth="1.5"
-                                                                            strokeLinecap="round"/>
+                                                                            strokeLinecap="round" />
                                                                     </svg>
                                                                 </button>
                                                             </div>
@@ -470,16 +474,16 @@ const Header = () => {
                                          xmlns="http://www.w3.org/2000/svg">
                                         <path
                                             d="M13.5 15.5C13.5 13.6144 13.5 12.6716 14.0858 12.0858C14.6716 11.5 15.6144 11.5 17.5 11.5C19.3856 11.5 20.3284 11.5 20.9142 12.0858C21.5 12.6716 21.5 13.6144 21.5 15.5V17.5C21.5 19.3856 21.5 20.3284 20.9142 20.9142C20.3284 21.5 19.3856 21.5 17.5 21.5C15.6144 21.5 14.6716 21.5 14.0858 20.9142C13.5 20.3284 13.5 19.3856 13.5 17.5V15.5Z"
-                                            stroke="currentColor" strokeWidth="1.5"/>
+                                            stroke="currentColor" strokeWidth="1.5" />
                                         <path
                                             d="M2 8.5C2 10.3856 2 11.3284 2.58579 11.9142C3.17157 12.5 4.11438 12.5 6 12.5C7.88562 12.5 8.82843 12.5 9.41421 11.9142C10 11.3284 10 10.3856 10 8.5V6.5C10 4.61438 10 3.67157 9.41421 3.08579C8.82843 2.5 7.88562 2.5 6 2.5C4.11438 2.5 3.17157 2.5 2.58579 3.08579C2 3.67157 2 4.61438 2 6.5V8.5Z"
-                                            stroke="currentColor" strokeWidth="1.5"/>
+                                            stroke="currentColor" strokeWidth="1.5" />
                                         <path
                                             d="M13.5 5.5C13.5 4.56812 13.5 4.10218 13.6522 3.73463C13.8552 3.24458 14.2446 2.85523 14.7346 2.65224C15.1022 2.5 15.5681 2.5 16.5 2.5H18.5C19.4319 2.5 19.8978 2.5 20.2654 2.65224C20.7554 2.85523 21.1448 3.24458 21.3478 3.73463C21.5 4.10218 21.5 4.56812 21.5 5.5C21.5 6.43188 21.5 6.89782 21.3478 7.26537C21.1448 7.75542 20.7554 8.14477 20.2654 8.34776C19.8978 8.5 19.4319 8.5 18.5 8.5H16.5C15.5681 8.5 15.1022 8.5 14.7346 8.34776C14.2446 8.14477 13.8552 7.75542 13.6522 7.26537C13.5 6.89782 13.5 6.43188 13.5 5.5Z"
-                                            stroke="currentColor" strokeWidth="1.5"/>
+                                            stroke="currentColor" strokeWidth="1.5" />
                                         <path
                                             d="M2 18.5C2 19.4319 2 19.8978 2.15224 20.2654C2.35523 20.7554 2.74458 21.1448 3.23463 21.3478C3.60218 21.5 4.06812 21.5 5 21.5H7C7.93188 21.5 8.39782 21.5 8.76537 21.3478C9.25542 21.1448 9.64477 20.7554 9.84776 20.2654C10 19.8978 10 19.4319 10 18.5C10 17.5681 10 17.1022 9.84776 16.7346C9.64477 16.2446 9.25542 15.8552 8.76537 15.6522C8.39782 15.5 7.93188 15.5 7 15.5H5C4.06812 15.5 3.60218 15.5 3.23463 15.6522C2.74458 15.8552 2.35523 16.2446 2.15224 16.7346C2 17.1022 2 17.5681 2 18.5Z"
-                                            stroke="currentColor" strokeWidth="1.5"/>
+                                            stroke="currentColor" strokeWidth="1.5" />
                                     </svg>
                                 }
                             >
@@ -494,7 +498,7 @@ const Header = () => {
                                                     dispatch(setModuleMenus(module.menus));
                                                 }}
                                             >
-                                                <div dangerouslySetInnerHTML={{__html: module.icon}}></div>
+                                                <div dangerouslySetInnerHTML={{ __html: module.icon }}></div>
                                                 <span className="ltr:ml-3 rtl:mr-3">
                                                     {module.name}
                                                 </span>
@@ -512,63 +516,61 @@ const Header = () => {
                                 btnClassName="relative group block"
                                 button={<img
                                     className="h-9 w-9 rounded-full object-cover saturate-50 group-hover:saturate-100"
-                                    src="/assets/images/user-profile.jpeg" alt="userProfile"/>}
+                                    src="/assets/images/default.jpeg" alt="userProfile" />}
                             >
                                 <ul className="w-[230px] !py-0 font-semibold text-dark dark:text-white-dark dark:text-white-light/90">
                                     <li>
                                         <div className="flex items-center px-4 py-4">
                                             <img className="h-10 w-10 rounded-md object-cover"
-                                                 src="/assets/images/user-profile.jpeg" alt="userProfile"/>
+                                                 src="/assets/images/default.jpeg" alt="userProfile" />
                                             <div className="ltr:pl-4 rtl:pr-4">
                                                 <h4 className="text-base">
-                                                    John Doe
-                                                    <span
-                                                        className="rounded bg-success-light px-1 text-xs text-success ltr:ml-2 rtl:ml-2">Pro</span>
+                                                    {user?.name}
                                                 </h4>
                                                 <button type="button"
                                                         className="text-black/60 hover:text-primary dark:text-dark-light/60 dark:hover:text-white">
-                                                    johndoe@gmail.com
+                                                    {user?.email}
                                                 </button>
                                             </div>
                                         </div>
                                     </li>
+                                    {/*<li>*/}
+                                    {/*    <Link href="/users/profile" className="dark:hover:text-white">*/}
+                                    {/*        <svg className="ltr:mr-2 rtl:ml-2" width="18" height="18"*/}
+                                    {/*             viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">*/}
+                                    {/*            <circle cx="12" cy="6" r="4" stroke="currentColor" strokeWidth="1.5" />*/}
+                                    {/*            <path*/}
+                                    {/*                opacity="0.5"*/}
+                                    {/*                d="M20 17.5C20 19.9853 20 22 12 22C4 22 4 19.9853 4 17.5C4 15.0147 7.58172 13 12 13C16.4183 13 20 15.0147 20 17.5Z"*/}
+                                    {/*                stroke="currentColor"*/}
+                                    {/*                strokeWidth="1.5"*/}
+                                    {/*            />*/}
+                                    {/*        </svg>*/}
+                                    {/*        Profile*/}
+                                    {/*    </Link>*/}
+                                    {/*</li>*/}
+                                    {/*<li>*/}
+                                    {/*    <Link href="/apps/mailbox" className="dark:hover:text-white">*/}
+                                    {/*        <svg className="ltr:mr-2 rtl:ml-2" width="18" height="18"*/}
+                                    {/*             viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">*/}
+                                    {/*            <path*/}
+                                    {/*                opacity="0.5"*/}
+                                    {/*                d="M2 12C2 8.22876 2 6.34315 3.17157 5.17157C4.34315 4 6.22876 4 10 4H14C17.7712 4 19.6569 4 20.8284 5.17157C22 6.34315 22 8.22876 22 12C22 15.7712 22 17.6569 20.8284 18.8284C19.6569 20 17.7712 20 14 20H10C6.22876 20 4.34315 20 3.17157 18.8284C2 17.6569 2 15.7712 2 12Z"*/}
+                                    {/*                stroke="currentColor"*/}
+                                    {/*                strokeWidth="1.5"*/}
+                                    {/*            />*/}
+                                    {/*            <path*/}
+                                    {/*                d="M6 8L8.1589 9.79908C9.99553 11.3296 10.9139 12.0949 12 12.0949C13.0861 12.0949 14.0045 11.3296 15.8411 9.79908L18 8"*/}
+                                    {/*                stroke="currentColor"*/}
+                                    {/*                strokeWidth="1.5"*/}
+                                    {/*                strokeLinecap="round"*/}
+                                    {/*            />*/}
+                                    {/*        </svg>*/}
+                                    {/*        Inbox*/}
+                                    {/*    </Link>*/}
+                                    {/*</li>*/}
                                     <li>
-                                        <Link href="/users/profile" className="dark:hover:text-white">
-                                            <svg className="ltr:mr-2 rtl:ml-2" width="18" height="18"
-                                                 viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <circle cx="12" cy="6" r="4" stroke="currentColor" strokeWidth="1.5"/>
-                                                <path
-                                                    opacity="0.5"
-                                                    d="M20 17.5C20 19.9853 20 22 12 22C4 22 4 19.9853 4 17.5C4 15.0147 7.58172 13 12 13C16.4183 13 20 15.0147 20 17.5Z"
-                                                    stroke="currentColor"
-                                                    strokeWidth="1.5"
-                                                />
-                                            </svg>
-                                            Profile
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link href="/apps/mailbox" className="dark:hover:text-white">
-                                            <svg className="ltr:mr-2 rtl:ml-2" width="18" height="18"
-                                                 viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <path
-                                                    opacity="0.5"
-                                                    d="M2 12C2 8.22876 2 6.34315 3.17157 5.17157C4.34315 4 6.22876 4 10 4H14C17.7712 4 19.6569 4 20.8284 5.17157C22 6.34315 22 8.22876 22 12C22 15.7712 22 17.6569 20.8284 18.8284C19.6569 20 17.7712 20 14 20H10C6.22876 20 4.34315 20 3.17157 18.8284C2 17.6569 2 15.7712 2 12Z"
-                                                    stroke="currentColor"
-                                                    strokeWidth="1.5"
-                                                />
-                                                <path
-                                                    d="M6 8L8.1589 9.79908C9.99553 11.3296 10.9139 12.0949 12 12.0949C13.0861 12.0949 14.0045 11.3296 15.8411 9.79908L18 8"
-                                                    stroke="currentColor"
-                                                    strokeWidth="1.5"
-                                                    strokeLinecap="round"
-                                                />
-                                            </svg>
-                                            Inbox
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link href="/auth/lockscreen" className="dark:hover:text-white">
+                                        <button onClick={() => handleLockScreen()} className="dark:hover:text-white">
                                             <svg className="ltr:mr-2 rtl:ml-2" width="18" height="18"
                                                  viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <path
@@ -578,11 +580,11 @@ const Header = () => {
                                                 />
                                                 <path opacity="0.5"
                                                       d="M6 10V8C6 4.68629 8.68629 2 12 2C15.3137 2 18 4.68629 18 8V10"
-                                                      stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                                                      stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                                                 <g opacity="0.5">
                                                     <path
                                                         d="M9 16C9 16.5523 8.55228 17 8 17C7.44772 17 7 16.5523 7 16C7 15.4477 7.44772 15 8 15C8.55228 15 9 15.4477 9 16Z"
-                                                        fill="currentColor"/>
+                                                        fill="currentColor" />
                                                     <path
                                                         d="M13 16C13 16.5523 12.5523 17 12 17C11.4477 17 11 16.5523 11 16C11 15.4477 11.4477 15 12 15C12.5523 15 13 15.4477 13 16Z"
                                                         fill="currentColor"
@@ -594,7 +596,7 @@ const Header = () => {
                                                 </g>
                                             </svg>
                                             Lock Screen
-                                        </Link>
+                                        </button>
                                     </li>
                                     <li className="border-t border-white-light dark:border-white-light/10">
                                         <button onClick={handleLogout} className="!py-3 text-danger">
@@ -608,7 +610,7 @@ const Header = () => {
                                                     strokeLinecap="round"
                                                 />
                                                 <path d="M12 15L12 2M12 2L15 5.5M12 2L9 5.5" stroke="currentColor"
-                                                      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                                      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                             </svg>
                                             Sign Out
                                         </button>
@@ -626,14 +628,14 @@ const Header = () => {
                                 ? <li className="menu nav-item relative" key={moduleIndex}>
                                     <button type="button" className="nav-link">
                                         <div className="flex items-center">
-                                            <div dangerouslySetInnerHTML={{__html: menu.icon}}></div>
+                                            <div dangerouslySetInnerHTML={{ __html: menu.icon }}></div>
                                             <span className="px-1">{t(menu.translation_key)}</span>
                                         </div>
                                         <div className="right_arrow">
                                             <svg className="rotate-90" width="16" height="16" viewBox="0 0 24 24" fill="none"
                                                  xmlns="http://www.w3.org/2000/svg">
                                                 <path d="M9 5L15 12L9 19" stroke="currentColor" strokeWidth="1.5"
-                                                      strokeLinecap="round" strokeLinejoin="round"/>
+                                                      strokeLinecap="round" strokeLinejoin="round" />
                                             </svg>
                                         </div>
                                     </button>
@@ -646,7 +648,7 @@ const Header = () => {
                                                         <button type="button">
                                                             <div className="flex items-center">
                                                                 <div
-                                                                    dangerouslySetInnerHTML={{__html: menu.icon}}></div>
+                                                                    dangerouslySetInnerHTML={{ __html: menu.icon }}></div>
                                                                 {t(menu.translation_key)}
                                                             </div>
                                                             <div className="ltr:ml-auto rtl:mr-auto rtl:rotate-180">
@@ -654,7 +656,7 @@ const Header = () => {
                                                                      xmlns="http://www.w3.org/2000/svg">
                                                                     <path d="M9 5L15 12L9 19" stroke="currentColor"
                                                                           strokeWidth="1.5"
-                                                                          strokeLinecap="round" strokeLinejoin="round"/>
+                                                                          strokeLinecap="round" strokeLinejoin="round" />
                                                                 </svg>
                                                             </div>
                                                         </button>
@@ -672,7 +674,7 @@ const Header = () => {
                                                         <Link href={menu.route}>
                                                             <div className="flex items-center">
                                                                 <div
-                                                                    dangerouslySetInnerHTML={{__html: menu.icon}}></div>
+                                                                    dangerouslySetInnerHTML={{ __html: menu.icon }}></div>
                                                                 <span className="px-1">{t(menu.translation_key)}</span>
                                                             </div>
                                                         </Link>
@@ -685,7 +687,7 @@ const Header = () => {
                                     <li className="menu nav-item" key={moduleIndex}>
                                         <Link href={menu.route} className="nav-link">
                                             <div className="flex items-center">
-                                                <div dangerouslySetInnerHTML={{__html: menu.icon}}></div>
+                                                <div dangerouslySetInnerHTML={{ __html: menu.icon }}></div>
                                                 <span className="px-1">{t(menu.translation_key)}</span>
                                             </div>
                                         </Link>

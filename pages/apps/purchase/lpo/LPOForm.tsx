@@ -43,7 +43,6 @@ interface IFormData {
     term_and_conditions: string;
     payment_terms_in_days: number;
     currency_id: number;
-    status: string,
     type: string,
     terms_conditions: string;
     items: any[];
@@ -62,12 +61,9 @@ const LPOForm = ({ id }: IFormProps) => {
     const { allVendors, representatives } = useAppSelector(state => state.vendor);
     const { currencies } = useAppSelector(state => state.currency);
     const { vehicle, success, vehicles } = useAppSelector(state => state.vehicle);
-    const { employees } = useAppSelector(state => state.employee);
     const { taxCategories } = useAppSelector(state => state.taxCategory);
 
     const [itemModalOpen, setItemModalOpen] = useState<boolean>(false);
-    const [showVendorDetail, setShowVendorDetail] = useState<boolean>(false);
-    const [vendorDetail, setVendorDetail] = useState<any>({});
     const [rawProducts, setRawProducts] = useState<any[]>([]);
     const [rawProductForSelect, setRawProductForSelect] = useState<any[]>([]);
     const [originalProductState, setOriginalProductState] = useState<any[]>([]);
@@ -91,7 +87,6 @@ const LPOForm = ({ id }: IFormProps) => {
         term_and_conditions: '',
         payment_terms_in_days: 0,
         currency_id: 0,
-        status: '',
         type: '',
         terms_conditions: '',
         items: []
@@ -106,12 +101,8 @@ const LPOForm = ({ id }: IFormProps) => {
     const [currencyOptions, setCurrencyOptions] = useState<any[]>([]);
     const [vendorRepresentativeOptions, setVendorRepresentativeOptions] = useState<any[]>([]);
     const [vehicleOptions, setVehicleOptions] = useState<any[]>([]);
-    const [receivedByEmployeeOptions, setReceivedByEmployeeOptions] = useState<any[]>([]);
-    const [purchasedByEmployeeOptions, setPurchasedByEmployeeOptions] = useState<any[]>([]);
     const [vehicleModalOpen, setVehicleModalOpen] = useState<boolean>(false);
 
-    const [representativeDetail, setRepresentativeDetail] = useState<any>({});
-    const [showRepresentativeDetail, setShowRepresentativeDetail] = useState<boolean>(false);
 
     const [vehicleDetail, setVehicleDetail] = useState<any>({});
     const [showVehicleDetail, setShowVehicleDetail] = useState<boolean>(false);
@@ -120,16 +111,11 @@ const LPOForm = ({ id }: IFormProps) => {
         type: null
     });
 
-    const [requisitionStatusOptions, setRequisitionStatusOptions] = useState<any[]>([
-        { value: '', label: 'Select Status' },
-        { value: 'Draft', label: 'Draft' },
-        { value: 'Pending', label: 'Proceed' }
-    ]);
     const [lpoTypeOptions, setLpoTypeOptions] = useState<any[]>([
         { value: '', label: 'Select Type' },
         { value: 'Material', label: 'Material' },
         { value: 'Service', label: 'Service' },
-        { value: 'Miscellaneous', label: 'Miscellaneous' }
+        // { value: 'Miscellaneous', label: 'Miscellaneous' }
     ]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -157,7 +143,7 @@ const LPOForm = ({ id }: IFormProps) => {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setAuthToken(token);
-        setContentType('multipart/form-data');
+        // setContentType('multipart/form-data');
         let finalData = {
             ...formData,
             user_id: user.id,
@@ -168,7 +154,7 @@ const LPOForm = ({ id }: IFormProps) => {
                     ? rawProducts.map((product: any) => {
                         return {
                             status: product.status,
-                            purchase_requisition_item_id: product.id,
+                            purchase_requisition_item_id: product.purchase_requisition_item_id,
                             purchase_requisition_id: product.purchase_requisition_id,
                             raw_product_id: product.raw_product_id,
                             description: product.description || '',
@@ -211,13 +197,9 @@ const LPOForm = ({ id }: IFormProps) => {
                 ...prev,
                 vendor_id: e.value
             }));
-            setShowVendorDetail(true);
-            setVendorDetail(e.vendor);
             dispatch(getRepresentatives(e.value));
             console.log(e.vendor);
         } else {
-            setShowVendorDetail(false);
-            setVendorDetail({});
             setFormData(prev => ({
                 ...prev,
                 vendor_id: 0
@@ -232,13 +214,7 @@ const LPOForm = ({ id }: IFormProps) => {
                 ...prev,
                 vendor_representative_id: e.value
             }));
-
-            setRepresentativeDetail(e.representative);
-            setShowRepresentativeDetail(true);
-            console.log(e.vendor);
         } else {
-            setRepresentativeDetail({});
-            setShowRepresentativeDetail(false);
             dispatch(clearVendorState());
             setFormData(prev => ({
                 ...prev,
@@ -282,10 +258,13 @@ const LPOForm = ({ id }: IFormProps) => {
                 }));
 
                 // Merge all items from all non-zero selections
-                const allItems = nonZeroSelections.flatMap((item: any) => item.request.purchase_requisition_items.map((i: any) => ({
-                    ...i,
-                    quantity: i.remaining_quantity
-                })));
+                const allItems = nonZeroSelections.flatMap((item: any) => {
+                    return item.request.purchase_requisition_items.map((i: any) => ({
+                        pr_code: item.request.pr_code,
+                        ...i,
+                        quantity: i.remaining_quantity
+                    }));
+                });
 
                 // Based on the form's type, set the appropriate items
                 if (formData.type === 'Material') {
@@ -539,55 +518,12 @@ const LPOForm = ({ id }: IFormProps) => {
                                 isMasked={false}
                                 disabled={true}
                             />
-                            <Dropdown
-                                divClasses="w-full"
-                                label="Status"
-                                name="status_id"
-                                options={requisitionStatusOptions}
-                                value={formData.status}
-                                onChange={(e: any) => {
-                                    if (e && typeof e !== 'undefined') {
-                                        setFormData(prev => ({
-                                            ...prev,
-                                            status: e.value
-                                        }));
-                                    } else {
-                                        setFormData(prev => ({
-                                            ...prev,
-                                            status: ''
-                                        }));
-                                    }
-                                }}
-                            />
-
-
-                            <Input
-                                divClasses="w-full"
-                                label="Delivery Due Days"
-                                type="number"
-                                name="delivery_due_in_days"
-                                value={formData.delivery_due_in_days.toString()}
-                                onChange={handleChange}
-                                isMasked={false}
-                                placeholder="Delivery Due Days"
-                            />
-
-                            <Input
-                                divClasses="w-full"
-                                label="Delivery Due Date"
-                                type="text"
-                                name="delivery_due_date"
-                                value={formData.delivery_due_date}
-                                onChange={handleChange}
-                                isMasked={false}
-                                placeholder="Delivery Due Date"
-                                disabled={true}
-                            />
 
                             <Input
                                 divClasses="w-full"
                                 label="Payment Terms (Days)"
                                 type="number"
+                                step="any"
                                 name="payment_terms_in_days"
                                 value={formData.payment_terms_in_days.toString()}
                                 onChange={handleChange}
@@ -759,7 +695,7 @@ const LPOForm = ({ id }: IFormProps) => {
                     <tbody>
                     {rawProductForSelect.map((product: any, index: number) => (
                         <tr key={index}>
-                            <td>{product.purchase_requisition?.pr_code}</td>
+                            <td>{product.pr_code}</td>
                             <td>{product.raw_product?.item_code}</td>
                             <td>{product.quantity}</td>
                             <td>{product.unit_price}</td>
@@ -773,6 +709,7 @@ const LPOForm = ({ id }: IFormProps) => {
                                             ...rawProducts,
                                             {
                                                 status: 'Completed',
+                                                purchase_requisition_item_id: product.id, // set the parent purchase requisition id
                                                 purchase_requisition_id: product.purchase_requisition_id, // set the parent purchase requisition id
                                                 raw_product_id: product.raw_product_id,
                                                 quantity: parseInt(product.quantity),
@@ -780,10 +717,10 @@ const LPOForm = ({ id }: IFormProps) => {
                                                 unit_price: parseFloat(product.unit_price),
                                                 sub_total: parseFloat(product.unit_price) * parseInt(product.quantity),
                                                 description: product.description || '',
-                                                tax_category_id: taxCategories?.find((tc: any) => tc.name==='VAT')?.id || 0,
-                                                tax_rate: taxCategories?.find((tc: any) => tc.name==='VAT')?.rate || 0,
-                                                tax_amount: parseFloat(product.unit_price) * parseInt(product.quantity) * (taxCategories?.find((tc: any) => tc.name==='VAT')?.rate || 0) / 100,
-                                                grand_total: parseFloat(product.unit_price) * parseInt(product.quantity) + parseFloat(product.unit_price) * parseInt(product.quantity) * (taxCategories?.find((tc: any) => tc.name==='VAT')?.rate || 0) / 100
+                                                tax_category_id: taxCategories?.find((tc: any) => tc.name === 'VAT')?.id || 0,
+                                                tax_rate: taxCategories?.find((tc: any) => tc.name === 'VAT')?.rate || 0,
+                                                tax_amount: parseFloat(product.unit_price) * parseInt(product.quantity) * (taxCategories?.find((tc: any) => tc.name === 'VAT')?.rate || 0) / 100,
+                                                grand_total: parseFloat(product.unit_price) * parseInt(product.quantity) + parseFloat(product.unit_price) * parseInt(product.quantity) * (taxCategories?.find((tc: any) => tc.name === 'VAT')?.rate || 0) / 100
                                             }
                                         ]);
                                         setOriginalProductState([

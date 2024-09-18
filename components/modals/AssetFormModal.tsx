@@ -1,12 +1,8 @@
 import React, {Fragment, useEffect, useState} from 'react';
-import {Dialog, Transition} from "@headlessui/react";
 import ImageUploader from "@/components/form/ImageUploader";
-import {useDispatch, useSelector} from "react-redux";
-import {IRootState} from "@/store";
+import { IRootState, useAppDispatch, useAppSelector } from '@/store';
 import {generateCode} from "@/store/slices/utilSlice";
 import {FORM_CODE_TYPE} from "@/utils/enums";
-import {ThunkDispatch} from "redux-thunk";
-import {AnyAction} from "redux";
 import {clearAssetState, getAssetStatuses} from "@/store/slices/assetSlice";
 import Select from "react-select";
 import Modal from "@/components/Modal";
@@ -19,7 +15,7 @@ interface IProps {
 }
 
 const AssetFormModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData}: IProps) => {
-    const dispatch = useDispatch<ThunkDispatch<IRootState, any, AnyAction>>();
+    const dispatch = useAppDispatch();
     const [assetCode, setAssetCode] = useState<string>('');
     const [name, setName] = useState<string>('');
     const [description, setDescription] = useState<string>('');
@@ -28,15 +24,11 @@ const AssetFormModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData}: 
     const [selectedStatus, setSelectedStatus] = useState<any>({});
     const [image, setImage] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState('')
-    const {code} = useSelector((state: IRootState) => state.util);
-    const {loading, statuses} = useSelector((state: IRootState) => state.asset);
-
-
+    const {code} = useAppSelector((state) => state.util);
+    const {loading, statuses} = useAppSelector((state) => state.asset);
 
     useEffect(() => {
         if (modalOpen) {
-            console.log("hello");
-
             setName('');
             setDescription('');
             setStatus('')
@@ -95,8 +87,6 @@ const AssetFormModal = ({modalOpen, setModalOpen, handleSubmit, modalFormData}: 
                 </button>
             </div>}
         >
-
-
             <div className="flex justify-center items-center">
                 <ImageUploader
                     image={image}

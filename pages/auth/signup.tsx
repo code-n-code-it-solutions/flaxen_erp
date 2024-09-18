@@ -13,7 +13,7 @@ import { checkServerSideAuth } from '@/utils/authCheck';
 const Register = () => {
     const dispatch = useAppDispatch();
     const router = useRouter();
-    const {user, token, isLoggedIn} = useAppSelector((state) => state.user);
+    const { user, token, isLoggedIn } = useAppSelector((state) => state.user);
     const isDark = useAppSelector((state) => state.themeConfig.theme) === 'dark';
     const [formData, setFormData] = useState<any>({});
     const [errorMessages, setErrorMessages] = useState<any>({});
@@ -38,8 +38,8 @@ const Register = () => {
 
     const submitForm = (e: any) => {
         e.preventDefault();
-        dispatch(clearMenuState())
-        dispatch(clearCompanySlice())
+        dispatch(clearMenuState());
+        dispatch(clearCompanySlice());
         dispatch(registerUser(formData));
     };
 
@@ -55,7 +55,7 @@ const Register = () => {
                         if (user.roles.map((role: any) => role.name).includes('Admin')) {
                             router.push('/workspace');
                         } else {
-                            router.push('/erp/main');
+                            router.push('/apps');
                         }
                         dispatch(getBranches(user.id));
 
@@ -74,13 +74,13 @@ const Register = () => {
                 <div className="panel m-6 w-full max-w-lg sm:w-[480px]">
                     <h2 className="mb-3 text-2xl font-bold">Sign Up</h2>
                     <p className="mb-7">Enter your email and password to register</p>
-                    <form className="space-y-5" onSubmit={submitForm}>
+                    <form className="space-y-5" onSubmit={(e) => submitForm(e)}>
                         <Input
                             label="Name"
                             type="text"
                             name="name"
                             placeholder={'Enter Name'}
-                            onChange={(e)=>handleChange(e.target.name, e.target.value, e.target.required)}
+                            onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
                             isMasked={false}
                             required={true}
                             errorMessage={errorMessages.name}
@@ -90,7 +90,7 @@ const Register = () => {
                             type="email"
                             name="email"
                             placeholder={'Enter Email address'}
-                            onChange={(e)=>handleChange(e.target.name, e.target.value, e.target.required)}
+                            onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
                             isMasked={false}
                             required={true}
                             errorMessage={errorMessages.email}
@@ -100,14 +100,14 @@ const Register = () => {
                             type="password"
                             name="password"
                             placeholder={'Enter Password'}
-                            onChange={(e)=>handleChange(e.target.name, e.target.value, e.target.required)}
+                            onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
                             isMasked={false}
                             required={true}
                             errorMessage={errorMessages.password}
                         />
                         <div>
                             <label className="cursor-pointer">
-                                <input type="checkbox" className="form-checkbox" required={true}/>
+                                <input type="checkbox" className="form-checkbox" required={true} />
                                 <span className="text-white-dark">
                                     I agree the{' '}
                                     <button type="button" className="text-primary hover:underline">

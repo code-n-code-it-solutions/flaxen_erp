@@ -5,9 +5,9 @@ import { configureSlice } from '@/utils/helper';
 interface IRawProductState {
     rawProduct: any;
     rawProductDetail: any;
-    allRawProducts: any;
+    allRawProducts: any[];
     rawProductsForPrint: any;
-    fillingProducts: any;
+    fillingProducts: any[];
     loading: boolean;
     error: any;
     success: boolean;
@@ -17,9 +17,9 @@ interface IRawProductState {
 const initialState: IRawProductState = {
     rawProduct: null,
     rawProductDetail: null,
-    allRawProducts: null,
+    allRawProducts: [],
     rawProductsForPrint: null,
-    fillingProducts: null,
+    fillingProducts: [],
     loading: false,
     error: null,
     success: false
@@ -81,7 +81,7 @@ export const getProductsForPrint = createAsyncThunk(
     async (data: any, thunkAPI) => {
         try {
             const response = await API.post('/raw-products/print', data);
-            console.log(response.data);
+            // console.log(response.data);
             return response.data;
         } catch (error: any) {
             const message =
@@ -110,7 +110,7 @@ export const editRawProduct = createAsyncThunk(
     async (id: number, thunkAPI) => {
         try {
             const response = await API.get('/raw-products/edit/' + id);
-            console.log(response);
+            // console.log(response);
             return response.data;
         } catch (error: any) {
             const message =

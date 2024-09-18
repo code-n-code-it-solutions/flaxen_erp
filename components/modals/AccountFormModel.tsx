@@ -1,10 +1,6 @@
-import React, {Fragment, useEffect, useState} from 'react';
-import {useDispatch, useSelector} from "react-redux";
+import React, {useEffect, useState} from 'react';
+import {useSelector} from "react-redux";
 import {IRootState, useAppDispatch} from "@/store";
-import {generateCode} from "@/store/slices/utilSlice";
-import {ThunkDispatch} from "redux-thunk";
-import {AnyAction} from "redux";
-import {clearUnitState, getUnitStatuses} from "@/store/slices/unitSlice";
 import Modal from "@/components/Modal";
 import Button from "@/components/Button";
 import {ButtonType, ButtonVariant} from "@/utils/enums";
@@ -40,7 +36,6 @@ const AccountFormModel = ({modalOpen, setModalOpen, modalFormData, setModalFormD
     const handleChange = (name: string, value: any, required: boolean) => {
         if (required && !value) {
             setErrors({...errors, [name]: 'This field is required'})
-            return;
         } else {
             setErrors((prev: any) => {
                 delete prev[name];
@@ -229,6 +224,7 @@ const AccountFormModel = ({modalOpen, setModalOpen, modalFormData, setModalFormD
                 divClasses="w-full"
                 label="Opening Balance"
                 type="number"
+                step="any"
                 name="opening_balance"
                 value={formData.opening_balance}
                 onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}

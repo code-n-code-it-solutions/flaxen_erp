@@ -17,26 +17,26 @@ const PrintContent = ({ content }: any) => {
                     <Text style={{ textAlign: 'center', ...styles.tableCell, ...styles.cellWidth }}>
                         {item.unit?.name}
                     </Text>
-                    <Text style={{ textAlign: 'center', ...styles.tableCell, ...styles.cellWidth }}>
-                        {parseFloat(item.unit_price).toFixed(2)}
-                    </Text>
-                    <View style={{ textAlign: 'left', ...styles.tableCell, ...styles.cellWidth }}>
+                    {/*<Text style={{ textAlign: 'center', ...styles.tableCell, ...styles.cellWidth }}>*/}
+                    {/*    {parseFloat(item.unit_price).toFixed(2)}*/}
+                    {/*</Text>*/}
+
+
+                    <View style={{ textAlign: 'center', ...styles.tableCell, ...styles.cellWidth }}>
                         <Text>
-                            <Text style={styles.bold}>Requested: </Text>
                             {parseFloat(item.request_quantity).toFixed(2)}
                         </Text>
+                    </View>
+                    <View style={{ textAlign: 'center', ...styles.tableCell, ...styles.cellWidth }}>
                         <Text>
-                            <Text style={styles.bold}>Processed: </Text>
                             {parseFloat(item.processed_quantity).toFixed(2)}
                         </Text>
+                    </View>
+                    <View style={{ textAlign: 'center', ...styles.tableCell, ...styles.cellWidth }}>
                         <Text>
-                            <Text style={styles.bold}>Remaining: </Text>
                             {parseFloat(item.remaining_quantity).toFixed(2)}
                         </Text>
                     </View>
-                    <Text style={{ textAlign: 'center', ...styles.tableCell, ...styles.cellWidth }}>
-                        {(parseFloat(item.request_quantity) * parseFloat(item.unit_price)).toFixed(2)}
-                    </Text>
                     <Text style={{ textAlign: 'center', ...styles.tableCell, ...styles.cellWidth }}>
                         {item.status}
                     </Text>
@@ -98,9 +98,10 @@ const PrintContent = ({ content }: any) => {
                                 <Text style={{ ...styles.tableHeaderCell, ...styles.cellWidthSmall }}>#</Text>
                                 <Text style={{ ...styles.tableHeaderCell, ...styles.cellWidth }}>Item</Text>
                                 <Text style={{ ...styles.tableHeaderCell, ...styles.cellWidth }}>Unit</Text>
-                                <Text style={{ ...styles.tableHeaderCell, ...styles.cellWidth }}>Unit Price</Text>
-                                <Text style={{ ...styles.tableHeaderCell, ...styles.cellWidth }}>Quantity</Text>
-                                <Text style={{ ...styles.tableHeaderCell, ...styles.cellWidth }}>Total (Req)</Text>
+                                {/*<Text style={{ ...styles.tableHeaderCell, ...styles.cellWidth }}>Unit Price</Text>*/}
+                                <Text style={{ ...styles.tableHeaderCell, ...styles.cellWidth }}>Requested</Text>
+                                <Text style={{ ...styles.tableHeaderCell, ...styles.cellWidth }}>Processed</Text>
+                                <Text style={{ ...styles.tableHeaderCell, ...styles.cellWidth }}>Remaining</Text>
                                 <Text style={{ ...styles.tableHeaderCell, ...styles.cellWidth }}>Status</Text>
                             </>
                         ) : (
@@ -120,11 +121,13 @@ const PrintContent = ({ content }: any) => {
                             <Text style={{ ...styles.tableFooterCell, ...styles.cellWidth }}>Total</Text>
                             <Text style={{ ...styles.tableFooterCell, ...styles.cellWidth }}></Text>
                             <Text style={{ ...styles.tableFooterCell, ...styles.cellWidth }}>
-                                {content?.purchase_requisition_items?.reduce((acc: number, item: any) => acc + parseFloat(item.unit_price), 0).toFixed(2)}
+                                {content?.purchase_requisition_items?.reduce((acc: number, item: any) => acc + parseFloat(item.request_quantity), 0).toFixed(2)}
                             </Text>
-                            <Text style={{ ...styles.tableFooterCell, ...styles.cellWidth }}></Text>
                             <Text style={{ ...styles.tableFooterCell, ...styles.cellWidth }}>
-                                {content?.purchase_requisition_items?.reduce((acc: number, item: any) => acc + parseFloat(item.unit_price) * parseFloat(item.request_quantity), 0).toFixed(2)}
+                                {content?.purchase_requisition_items?.reduce((acc: number, item: any) => acc + parseFloat(item.processed_quantity), 0).toFixed(2)}
+                            </Text>
+                            <Text style={{ ...styles.tableFooterCell, ...styles.cellWidth }}>
+                                {content?.purchase_requisition_items?.reduce((acc: number, item: any) => acc + parseFloat(item.remaining_quantity), 0).toFixed(2)}
                             </Text>
                             <Text style={{ ...styles.tableFooterCell, ...styles.cellWidth }}></Text>
                         </View>

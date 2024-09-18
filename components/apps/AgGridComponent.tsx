@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { ModuleRegistry } from '@ag-grid-community/core';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
@@ -7,9 +7,9 @@ import { ColumnsToolPanelModule } from '@ag-grid-enterprise/column-tool-panel';
 import { FiltersToolPanelModule } from '@ag-grid-enterprise/filter-tool-panel';
 import { MenuModule } from '@ag-grid-enterprise/menu';
 import { SetFilterModule } from '@ag-grid-enterprise/set-filter';
-import { MasterDetailModule } from "@ag-grid-enterprise/master-detail";
-import { RangeSelectionModule } from "@ag-grid-enterprise/range-selection";
-import { RowGroupingModule } from "@ag-grid-enterprise/row-grouping";
+import { MasterDetailModule } from '@ag-grid-enterprise/master-detail';
+import { RangeSelectionModule } from '@ag-grid-enterprise/range-selection';
+import { RowGroupingModule } from '@ag-grid-enterprise/row-grouping';
 
 ModuleRegistry.registerModules([
     ClientSideRowModelModule,
@@ -19,7 +19,7 @@ ModuleRegistry.registerModules([
     SetFilterModule,
     MasterDetailModule,
     RangeSelectionModule,
-    RowGroupingModule
+    RowGroupingModule,
 ]);
 
 interface IProps {
@@ -39,6 +39,10 @@ interface IProps {
     gridRef?: any;
     grandTotalRow?: any;
     pinnedBottomRowData?: any;
+    height?: number;
+    rowClassRules?: any;
+    autoSizeStrategy?: any;
+    getRowStyle?: any;
 }
 
 const AgGridComponent = ({
@@ -57,12 +61,16 @@ const AgGridComponent = ({
                              onFirstDataRendered,
                              gridRef,
                              grandTotalRow,
-                             pinnedBottomRowData
+                             pinnedBottomRowData,
+                             height,
+                             rowClassRules,
+                             autoSizeStrategy,
+                             getRowStyle
                          }: IProps) => {
 
     const themeConfig = useAppSelector((state) => state.themeConfig);
     const [rowData, setRowData] = useState([]);
-    const gridStyle = useMemo(() => ({ height: 600, width: '100%' }), []);
+    const gridStyle = useMemo(() => ({ height: height ? height : 600, width: '100%' }), []);
     const defaultColDef = useMemo<any>(() => {
         return {
             initialWidth: 100,
@@ -132,7 +140,7 @@ const AgGridComponent = ({
                 columnDefs={colDefs}
                 defaultColDef={defaultColDef}
                 onGridReady={onGridReady}
-                suppressServerSideFullWidthLoadingRow={false}
+                suppressServerSideFullWidthLoadingRow={true}
                 // suppressRowClickSelection
                 cacheBlockSize={5}
                 maxBlocksInCache={0}
@@ -153,6 +161,9 @@ const AgGridComponent = ({
                 sideBar={'filters'}
                 grandTotalRow={grandTotalRow}
                 pinnedBottomRowData={pinnedBottomRowData}
+                rowClassRules={rowClassRules}
+                autoSizeStrategy={autoSizeStrategy}
+                getRowStyle={getRowStyle}
             />
         </div>
     );

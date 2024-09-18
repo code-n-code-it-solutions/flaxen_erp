@@ -6,7 +6,9 @@ import { configureSlice } from '@/utils/helper';
 // Define a type for the slice state
 interface IUserState {
     user: any;
-    // permissions: any;
+    menus: any[];
+    isLocked: boolean;
+    beforeLockedUrl: string;
     token: string;
     isLoggedIn: boolean;
     loading: boolean;
@@ -16,7 +18,9 @@ interface IUserState {
 // Initial state
 const initialState: IUserState = {
     user: null,
-    // permissions: null,
+    menus: [],
+    isLocked: false,
+    beforeLockedUrl: '',
     token: '',
     isLoggedIn: false,
     loading: false,
@@ -66,12 +70,45 @@ export const logoutUser = createAsyncThunk(
     }
 );
 
+export const unLockedUser = createAsyncThunk(
+    'user/unlock',
+    async (data: any, thunkAPI) => {
+        try {
+            const response = await API.post('/user/unlock', data);
+            return response.status === 200;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to unlock';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 // Slice
 export const userSlice = createSlice({
     name: 'user',
     initialState,
     reducers: {
-        // Sync reducers if needed
+        clearAuthState: (state) => {
+            state.user = null;
+            state.menus = [];
+            state.token = '';
+            state.isLoggedIn = false;
+            state.error = null;
+        },
+        clearIsLocked: (state) => {
+            state.isLocked = false;
+            state.beforeLockedUrl = '';
+        },
+
+        setIsLocked: (state, action) => {
+            state.isLocked = action.payload.lockStatus;
+            state.beforeLockedUrl = action.payload.beforeLockUrl;
+        },
+
+        resetAuthError: (state) => {
+            state.error = null;
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -83,11 +120,13 @@ export const userSlice = createSlice({
                 state.isLoggedIn = true;
                 state.token = action.payload.token;
                 state.user = action.payload.user;
+                state.menus = action.payload.menus;
             })
             .addCase(loginUser.rejected, (state, action) => {
+                // console.log(action);
                 state.loading = false;
                 state.isLoggedIn = false;
-                state.error = action.error.message;
+                state.error = action.payload;
             })
             .addCase(registerUser.pending, (state) => {
                 state.loading = true;
@@ -97,25 +136,44 @@ export const userSlice = createSlice({
                 state.isLoggedIn = true;
                 state.token = action.payload.token;
                 state.user = action.payload.user;
+                state.menus = action.payload.menus;
             })
             .addCase(registerUser.rejected, (state, action) => {
                 state.loading = false;
                 state.isLoggedIn = false;
-                state.error = action.error.message;
+                state.error = action.payload;
+            })
+            .addCase(unLockedUser.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(unLockedUser.fulfilled, (state, action: any) => {
+                state.loading = false;
+                state.isLocked = !state.isLocked;
+            })
+            .addCase(unLockedUser.rejected, (state, action) => {
+                state.loading = false;
+                state.isLocked = true;
+                state.error = action.payload;
             })
             .addCase(logoutUser.fulfilled, (state) => {
                 state.user = null;
                 state.token = '';
                 state.isLoggedIn = false;
             })
-            .addCase(logoutUser.rejected, (state) => {
+            .addCase(logoutUser.rejected, (state, action) => {
                 state.user = null;
                 state.token = '';
                 state.isLoggedIn = false;
+                state.error = action.payload;
             });
     }
 });
 
 // Export reducer
-
+export const {
+    clearAuthState,
+    setIsLocked,
+    clearIsLocked,
+    resetAuthError
+} = userSlice.actions;
 export const userSliceConfig = configureSlice(userSlice, true);

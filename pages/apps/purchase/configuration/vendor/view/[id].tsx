@@ -30,9 +30,9 @@ const View = () => {
     }, [router.query.id, dispatch]);
 
     return (
-        <div>
+        <div className="flex flex-col gap-3">
             <DetailPageHeader
-                appBasePath={AppBasePath.Filling}
+                appBasePath={AppBasePath.Vendor}
                 title="Vendor Details"
                 middleComponent={{
                     show: true,
@@ -107,7 +107,7 @@ const View = () => {
                             <tr>
                                 <td>Address:</td>
                                 <td colSpan={3}>
-                                    {vendorDetail.address} {vendorDetail.city} {vendorDetail?.state},{vendorDetail.country},{vendorDetail.postal_code}
+                                    {vendorDetail.address} {vendorDetail.city?.name} {vendorDetail?.state?.name}, {vendorDetail.country?.name}, {vendorDetail.postal_code}
                                 </td>
                             </tr>
                             </tbody>
@@ -136,7 +136,7 @@ const View = () => {
                                         <td>{rep.name}</td>
                                         <td>{rep.phone}</td>
                                         <td>{rep.email}</td>
-                                        <td>{rep.address} {rep.city} {rep.state},{rep.country},{rep.postal_code}</td>
+                                        <td>{rep.address} {rep.city?.name} {rep.state?.name}, {rep.country?.name}, {rep.postal_code}</td>
                                     </tr>
                                 )) : (
                                     <tr>
@@ -215,5 +215,5 @@ const View = () => {
     );
 };
 
-View.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
+// View.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
 export default View;

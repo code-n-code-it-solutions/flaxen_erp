@@ -19,6 +19,10 @@ interface IProps {
     maskPattern?: any[];
     styles?: any;
     className?: string;
+    helperText?: string;
+    step?: any;
+    labelClassName?: string;
+    max?: number;
 }
 
 export const Input: FC<IProps> = ({
@@ -36,12 +40,16 @@ export const Input: FC<IProps> = ({
                                       required = false,
                                       disabled = false,
                                       styles,
-                                      className
+                                      className,
+                                      helperText,
+                                      step,
+                                      labelClassName,
+                                      max
                                   }) => {
     return (
         <div className={divClasses}>
             {label && (
-                <label htmlFor={name} className="form-label flex">
+                <label htmlFor={name} className={`form-label flex ${labelClassName}`}>
                     {label} {required && <span className="text-sm text-red-500">*</span>}
                 </label>
             )}
@@ -64,10 +72,11 @@ export const Input: FC<IProps> = ({
                 />
                 : type === 'date'
                     ? <Flatpickr
-                        value={value ? new Date(value) : new Date()}
+                        value={value ? new Date(value) : ''}
                         placeholder={placeholder}
                         options={{
-                            dateFormat: 'Y-m-d'
+                            dateFormat: 'Y-m-d',
+                            allowInput: true,
                         }}
                         className="form-input"
                         onChange={onChange}
@@ -77,7 +86,8 @@ export const Input: FC<IProps> = ({
                             options={{
                                 noCalendar: true,
                                 enableTime: true,
-                                dateFormat: 'h:i K'
+                                dateFormat: 'h:i K',
+                                allowInput: true,
                             }}
                             placeholder={placeholder}
                             defaultValue={value}
@@ -96,9 +106,12 @@ export const Input: FC<IProps> = ({
                             required={required}
                             readOnly={readonly}
                             style={styles}
+                            step={step}
+                            max={max}
                         />
             }
 
+            {helperText && <p className="text-sm text-info">{helperText}</p>}
             {errorMessage && <p className="text-sm text-red-500">{errorMessage}</p>}
         </div>
     );

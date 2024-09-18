@@ -55,7 +55,6 @@ const VendorRepresentativeModal = ({
         if (required) {
             if (!value) {
                 setErrorMessages({...errorMessages, [name]: 'This field is required.'});
-                return
             } else {
                 setErrorMessages((prev: any) => {
                     delete prev[name];
@@ -78,7 +77,7 @@ const VendorRepresentativeModal = ({
             case 'state_id':
                 if (value && typeof value !== 'undefined') {
                     setFormData((prev: any) => ({...prev, state_id: value.value, state_name: value.label}));
-                    dispatch(getCities({countryId: formData.country_id, stateId: parseInt(value)}));
+                    dispatch(getCities({countryId: formData.country_id, stateId: parseInt(value.value)}));
                 } else {
                     setFormData((prev: any) => ({...prev, state_id: 0, state_name: ''}));
                     setCityOptions([])

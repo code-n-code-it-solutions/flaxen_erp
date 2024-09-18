@@ -5,7 +5,7 @@ import { uniqBy } from 'lodash';
 import Link from 'next/link';
 import Image from 'next/image';
 import { clearMenuState } from '@/store/slices/menuSlice';
-import { setSelectedPlugin } from '@/store/slices/pluginSlice';
+import { clearPluginState, getPermittedPlugins, setSelectedPlugin } from '@/store/slices/pluginSlice';
 import { useRouter } from 'next/router';
 
 interface IProps {
@@ -16,12 +16,9 @@ interface IProps {
 const PluginSearchModal = ({ modalOpen, setModalOpen }: IProps) => {
     const dispatch = useAppDispatch();
     const router = useRouter();
-    // const {plugins} = useAppSelector(state => state.plugin);
     const { user, token } = useAppSelector(state => state.user);
-    const { companyDetail } = useAppSelector(state => state.company);
+    const { permittedPlugins, loading, favouriteStatus, favouriteLoading } = useAppSelector(state => state.plugin);
     const [searchQuery, setSearchQuery] = useState('');
-    const [pluginTypes, setPluginTypes] = useState<any[]>([]);
-    const [branches, setBranches] = useState<any[]>([]);
     const [filteredPlugins, setFilteredPlugins] = useState<any>([]);
     const [pluginList, setPluginList] = useState<any>({});
     const searchInputRef = useRef<HTMLInputElement>(null);
@@ -30,12 +27,13 @@ const PluginSearchModal = ({ modalOpen, setModalOpen }: IProps) => {
         dispatch(clearMenuState());
         dispatch(setSelectedPlugin(plugin));
         setModalOpen(false);
-        router.push('/apps/' + plugin.name.toLowerCase().replace(' ', '-'));
+        router.push('/apps/' + plugin?.name.toLowerCase().replace(' ', '-'));
     };
     useEffect(() => {
         if (modalOpen) {
             setSearchQuery('');
-            setFilteredPlugins(pluginList);
+            dispatch(clearPluginState());
+            // dispatch(getPermittedPlugins(user.id));
             if (searchInputRef.current) {
                 searchInputRef.current.focus();
             }
@@ -43,32 +41,11 @@ const PluginSearchModal = ({ modalOpen, setModalOpen }: IProps) => {
     }, [modalOpen]);
 
     useEffect(() => {
-        if (companyDetail) {
-            setBranches(companyDetail.branches);
-
-            const plugins = companyDetail.branches
-                .filter((branch: any) => branch.id === user?.registered_branch?.id)
-                .map((branch: any) => branch.plugins)
-                .flat();
-
-            let pluginTypes = companyDetail.branches
-                .map((branch: any) => branch.plugins)
-                .flat()
-                .map((plugin: any) => plugin.plugin.plugin_type);
-
-            pluginTypes = uniqBy(pluginTypes, 'name');
-
-            const groupedPlugins = pluginTypes.reduce((acc: any, pluginType: any) => {
-                acc[pluginType.name] = plugins
-                    .filter((plugin: any) => plugin.plugin.plugin_type_id === pluginType.id)
-                    .map((plugin: any) => plugin.plugin);
-                return acc;
-            }, {});
-
-            setPluginList(groupedPlugins);
-            setPluginTypes(uniqBy(pluginTypes, 'name'));
+        if (permittedPlugins) {
+            setPluginList(permittedPlugins);
+            setFilteredPlugins(permittedPlugins);
         }
-    }, [companyDetail]);
+    }, [permittedPlugins]);
 
     useEffect(() => {
         setFilteredPlugins(pluginList);
@@ -78,7 +55,7 @@ const PluginSearchModal = ({ modalOpen, setModalOpen }: IProps) => {
         if (searchQuery) {
             const filtered = Object.keys(pluginList).reduce((acc: any, key) => {
                 const filteredPlugins = pluginList[key].filter((plugin: any) =>
-                    plugin.name.toLowerCase().includes(searchQuery.toLowerCase())
+                    plugin.plugin.name.toLowerCase().includes(searchQuery.toLowerCase())
                 );
                 if (filteredPlugins.length > 0) {
                     acc[key] = filteredPlugins;
@@ -90,6 +67,10 @@ const PluginSearchModal = ({ modalOpen, setModalOpen }: IProps) => {
             setFilteredPlugins(pluginList);
         }
     }, [searchQuery, pluginList]);
+
+    useEffect(() => {
+        // console.log(filteredPlugins);
+    }, [filteredPlugins]);
 
     return (
         <Modal
@@ -108,32 +89,34 @@ const PluginSearchModal = ({ modalOpen, setModalOpen }: IProps) => {
                 onChange={(e) => setSearchQuery(e.target.value)}
             />
             <div className="px-4">
-                {Object.keys(filteredPlugins).length > 0 ? (
-                    Object.keys(filteredPlugins).map((type, index) => (
-                        <div key={index} className="mb-4">
-                            <h3 className="font-semibold">{type}</h3>
-                            <ul className="px-5">
-                                {filteredPlugins[type].map((plugin: any, index: number) => (
-                                    <li
-                                        key={index}
-                                        className="py-2 border-b"
-                                        onClick={() => handlePluginClick(plugin)}
-                                    >
-                                        <Link
-                                            className="w-full"
-                                            href={'/apps/' + plugin.name.toLowerCase().replace(' ', '-')}
+                {loading
+                    ? (<p>Loading...</p>)
+                    : Object.keys(filteredPlugins).length > 0 ? (
+                        Object.keys(filteredPlugins).map((type, index) => (
+                            <div key={index} className="mb-4">
+                                <h3 className="font-semibold">{type}</h3>
+                                <ul className="px-5">
+                                    {filteredPlugins[type].map((plugin: any, index: number) => (
+                                        <li
+                                            key={index}
+                                            className="py-2 border-b"
                                             onClick={() => handlePluginClick(plugin)}
                                         >
-                                            {plugin.name}
-                                        </Link>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    ))
-                ) : (
-                    <p>No plugins found.</p>
-                )}
+                                            <Link
+                                                className="w-full"
+                                                href={'/apps/' + plugin?.plugin?.name.toLowerCase().replace(' ', '-')}
+                                                onClick={() => handlePluginClick(plugin)}
+                                            >
+                                                {plugin.plugin.name}
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ))
+                    ) : (
+                        <p>No plugins found.</p>
+                    )}
             </div>
         </Modal>
     );

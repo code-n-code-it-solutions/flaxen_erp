@@ -18,6 +18,7 @@ const Create = () => {
 
     useEffect(() => {
         dispatch(setPageTitle('New'));
+        dispatch(clearRawProductState());
     }, []);
 
     useEffect(() => {
@@ -28,7 +29,7 @@ const Create = () => {
     }, [rawProduct]);
 
     return (
-        <div>
+        <div className="flex flex-col gap-3">
             <DetailPageHeader
                 appBasePath={AppBasePath.Raw_Product}
                 title="New Product"
@@ -51,5 +52,5 @@ const Create = () => {
     );
 };
 
-Create.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
+// Create.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
 export default Create;

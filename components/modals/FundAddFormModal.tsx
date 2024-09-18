@@ -68,7 +68,6 @@ const FundAddFormModal = ({
     const handleChange = (name: string, value: any, required: boolean) => {
         if (required && !value) {
             setErrors({...errors, [name]: 'This field is required'})
-            return;
         } else {
             setErrors((prev: any) => {
                 delete prev[name];
@@ -95,7 +94,7 @@ const FundAddFormModal = ({
                 break;
             case 'account_type_to':
                 if (value && typeof value !== 'undefined') {
-                    console.log(value)
+                    // console.log(value)
                     setFormData({...formData, 'account_type': value.value})
                     setAccountListTo(accounts?.filter(account => account.account_type === value.value)
                         .map(account => ({
@@ -334,6 +333,7 @@ const FundAddFormModal = ({
                 divClasses="w-full"
                 label="Amount"
                 type="number"
+                step="any"
                 name="amount"
                 value={formData.amount}
                 onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}

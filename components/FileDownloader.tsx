@@ -2,7 +2,6 @@ import React from "react";
 import IconButton from "@/components/IconButton";
 import {ButtonSize, ButtonType, ButtonVariant, IconType} from "@/utils/enums";
 import Button from "@/components/Button";
-import {BASE_URL} from "@/configs/server.config";
 
 const FileDownloader = ({file, title, buttonType, buttonVariant, size}: {
     file: File | string,
@@ -14,7 +13,7 @@ const FileDownloader = ({file, title, buttonType, buttonVariant, size}: {
     const downloadFile = () => {
         if (file) {
             if (typeof file === 'string') {
-                window.open(BASE_URL + '/' + file, '_blank');
+                window.open(process.env.NEXT_PUBLIC_API_BASE_URL + '/' + file, '_blank');
                 return;
             }
             const blobUrl = URL.createObjectURL(file);

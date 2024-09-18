@@ -4,23 +4,27 @@ import { useAppDispatch, useAppSelector } from '@/store';
 import { getUnits } from '@/store/slices/unitSlice';
 import { clearRawProductState, storeRawProduct, updateRawProduct } from '@/store/slices/rawProductSlice';
 import { setAuthToken, setContentType } from '@/configs/api.config';
-import { clearLatestRecord, clearUtilState, generateCode, getLatestRecord } from '@/store/slices/utilSlice';
+import {
+    clearUtilState,
+    generateRawProductCode,
+} from '@/store/slices/utilSlice';
 import { ButtonType, ButtonVariant, FORM_CODE_TYPE } from '@/utils/enums';
 import { Dropdown } from '@/components/form/Dropdown';
 import { Input } from '@/components/form/Input';
 import Textarea from '@/components/form/Textarea';
 import Button from '@/components/Button';
-import { serverFilePath, transformAccountsToSelectOptions } from '@/utils/helper';
+import { serverFilePath } from '@/utils/helper';
 import Alert from '@/components/Alert';
 import { Tab } from '@headlessui/react';
-import Option from '@/components/form/Option';
-import dynamic from 'next/dynamic';
-import useTransformToSelectOptions from '@/hooks/useTransformToSelectOptions';
-import { getAccounts, getAccountsTypes } from '@/store/slices/accountSlice';
+import { getAccountsTypes } from '@/store/slices/accountSlice';
 import Swal from 'sweetalert2';
-
-const TreeSelect = dynamic(() => import('antd/es/tree-select'), { ssr: false });
-
+import { PlusCircleIcon } from 'lucide-react';
+import Modal from '@/components/Modal';
+import {
+    clearRawProductCategoryState,
+    getRawProductCategories,
+    storeRawProductCategory
+} from '@/store/slices/rawProductCategorySlice';
 
 interface IFormProps {
     id?: any;
@@ -28,26 +32,25 @@ interface IFormProps {
 
 const ProductForm = ({ id }: IFormProps) => {
     const dispatch = useAppDispatch();
-    const accountOptions = useTransformToSelectOptions(useAppSelector(state => state.account).accountTypes);
-    // console.log(accountOptions);
     const { units } = useAppSelector(state => state.unit);
-    const { code, latestRecord } = useAppSelector(state => state.util);
+    const { rawProductCode, latestRecord } = useAppSelector(state => state.util);
     const { loading, rawProductDetail } = useAppSelector((state) => state.rawProduct);
+    const { rawProductCategories, rawProductCategory } = useAppSelector((state) => state.rawProductCategory);
     const { branchList } = useAppSelector((state) => state.company);
-    // const { accounts } = useAppSelector((state) => state.account);
     const { token, user } = useAppSelector(state => state.user);
+    const [rawProductCategoryModal, setRawProductCategoryModal] = useState<boolean>(false);
+    const [rawProductCatData, setRawProductCatData] = useState<any>({});
+
     const [image, setImage] = useState<File | null>(null);
     const [isFormValid, setIsFormValid] = useState<boolean>(false);
     const [errorMessages, setErrorMessages] = useState<any>({});
     const [validationMessage, setValidationMessage] = useState<any>('');
     const [formData, setFormData] = useState<any>({});
 
-    // const [selectedBranches, setSelectedBranches] = useState<any[]>([]);
     const [imagePreview, setImagePreview] = useState('');
+    const [rawProductCategoryOptions, setRawProductCategoryOptions] = useState([]);
     const [unitOptions, setUnitOptions] = useState([]);
     const [subUnitOptions, setSubUnitOptions] = useState([]);
-    // const [accountsList, setAccountsList] = useState([]);
-    // const [accountOptions, setAccountOptions] = useState([]);
     const [valuationMethodOptions, setValuationMethodOptions] = useState([
         { value: '', label: 'Select Valuation Method' },
         { value: 'LIFO', label: 'LIFO' },
@@ -67,7 +70,7 @@ const ProductForm = ({ id }: IFormProps) => {
         if (required) {
             if (!value || value == '0') {
                 setErrorMessages({ ...errorMessages, [name]: 'This is required' });
-                return;
+                // return;
             } else {
                 setErrorMessages((prev: any) => {
                     delete prev[name];
@@ -77,16 +80,8 @@ const ProductForm = ({ id }: IFormProps) => {
         }
 
         switch (name) {
+            case 'raw_product_category_id':
             case 'branch_id':
-            // if (value && typeof value !== 'undefined') {
-            //     setFormData((prevFormData: any) => ({
-            //         ...prevFormData,
-            //         branch_id: value.map((v: any) => v.value).join(',')
-            //     }));
-            // } else {
-            //     setFormData((prevFormData: any) => ({ ...prevFormData, branch_id: '' }));
-            // }
-            // break;
             case 'product_type':
             case 'unit_id':
             case 'valuation_method':
@@ -125,43 +120,33 @@ const ProductForm = ({ id }: IFormProps) => {
 
         setAuthToken(token);
         setContentType('multipart/form-data');
-        if (!formData.stock_account_id) {
-            Swal.fire('Error', 'Please select accounting for stock', 'error');
-        } else {
-            if (id) {
-                dispatch(updateRawProduct({ id, rawProductData: formData }));
-            } else {
-                dispatch(storeRawProduct(formData));
-            }
-            setValidationMessage('');
+        if (formData.raw_product_category_id === undefined || formData.raw_product_category_id === null || formData.raw_product_category_id === '') {
+            Swal.fire('Error', 'Please select raw product category', 'error');
+            return;
         }
-    };
-
-    const customStyles = {
-        option: (provided: any, state: any) => ({
-            ...provided,
-            paddingLeft: `${state.data.depth * 10}px`
-        }),
-        group: (provided: any) => ({
-            ...provided,
-            paddingLeft: '10px'
-        })
+        if (id) {
+            dispatch(updateRawProduct({ id, rawProductData: formData }));
+        } else {
+            dispatch(storeRawProduct(formData));
+        }
+        setValidationMessage('');
     };
 
     useEffect(() => {
+        setAuthToken(token);
         dispatch(getUnits());
         dispatch(clearUtilState());
-        setAuthToken(token);
         setContentType('application/json');
+
     }, [dispatch, token]);
 
     useEffect(() => {
         if (!id) {
-            dispatch(generateCode(FORM_CODE_TYPE.RAW_MATERIAL));
             setImagePreview(serverFilePath(''));
         }
         return () => {
             dispatch(clearRawProductState());
+            dispatch(clearRawProductCategoryState());
         };
     }, [id, dispatch]);
 
@@ -169,21 +154,23 @@ const ProductForm = ({ id }: IFormProps) => {
         setValidationMessage('');
         dispatch(getAccountsTypes({}));
         setFormData({});
-        dispatch(clearLatestRecord());
+        dispatch(getRawProductCategories());
     }, []);
 
     useEffect(() => {
-        if (code) {
-            setFormData((prev: any) => ({ ...prev, item_code: code[FORM_CODE_TYPE.RAW_MATERIAL] }));
+        if (rawProductCode) {
+            setFormData((prev: any) => ({ ...prev, item_code: rawProductCode }));
+        } else {
+            setFormData((prev: any) => ({ ...prev, item_code: '' }));
         }
-    }, [code]);
+    }, [rawProductCode]);
 
     useEffect(() => {
         if (rawProductDetail) {
             setImagePreview(serverFilePath(rawProductDetail.thumbnail?.path));
             setFormData({
                 ...formData,
-                // company_id: rawProductDetail.company_id,
+                raw_product_category_id: rawProductDetail.raw_product_category_id,
                 retail_price: rawProductDetail.retail_price,
                 branch_id: rawProductDetail.branch_id,
                 product_type: rawProductDetail.product_type,
@@ -198,7 +185,7 @@ const ProductForm = ({ id }: IFormProps) => {
                 opening_stock: rawProductDetail.opening_stock,
                 opening_stock_unit_balance: rawProductDetail.opening_stock_unit_balance,
                 opening_stock_total_balance: rawProductDetail.opening_stock_total_balance,
-                sale_description: rawProductDetail.sale_description
+                sale_description: rawProductDetail.sale_description,
             });
         } else {
             setImagePreview(serverFilePath(''));
@@ -225,16 +212,22 @@ const ProductForm = ({ id }: IFormProps) => {
     }, [errorMessages]);
 
     useEffect(() => {
-        if (latestRecord) {
-            setFormData((prevFormData: any) => ({
-                ...prevFormData,
-                stock_account_id: latestRecord.stock_account?.code,
-                vat_receivable_id: latestRecord.vat_receivable?.code,
-                account_payable_id: latestRecord.account_payable?.code,
-                vat_payable_id: latestRecord.vat_payable?.code
-            }));
+        if (rawProductCategory) {
+            setRawProductCatData({});
+            setRawProductCategoryModal(false);
+            dispatch(clearRawProductCategoryState());
+            dispatch(getRawProductCategories());
         }
-    }, [latestRecord]);
+    }, [rawProductCategory]);
+
+    useEffect(() => {
+        if (rawProductCategories) {
+            setRawProductCategoryOptions(rawProductCategories.map((category: any) => ({
+                value: category.id,
+                label: category.name + ' (' + category.code + ')'
+            })));
+        }
+    }, [rawProductCategories]);
 
     return (
         <form className="space-y-5" onSubmit={handleSubmit}>
@@ -247,6 +240,37 @@ const ProductForm = ({ id }: IFormProps) => {
             }
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
                 <div className="flex flex-col items-start justify-start space-y-3">
+                    <div className="flex items-end gap-1">
+                        <Dropdown
+                            // divClasses="w-full"
+                            label="Product Category"
+                            name="raw_product_category_id"
+                            options={rawProductCategoryOptions}
+                            value={formData.raw_product_category_id}
+                            onChange={(e) => {
+                                handleChange('raw_product_category_id', e, true);
+                                if (e && typeof e !== 'undefined') {
+                                    dispatch(generateRawProductCode(e.value));
+                                } else {
+                                    dispatch(clearUtilState());
+                                    setFormData((prevFormData: any) => ({
+                                        ...prevFormData,
+                                        item_code: ''
+                                    }));
+                                }
+                            }}
+                            required={true}
+                        />
+                        <Button
+                            type={ButtonType.button}
+                            text={<PlusCircleIcon size={18} />}
+                            variant={ButtonVariant.primary}
+                            onClick={() => {
+                                setRawProductCategoryModal(true);
+                                setRawProductCatData({});
+                            }}
+                        />
+                    </div>
                     <Input
                         label="Item Code"
                         type="text"
@@ -305,21 +329,8 @@ const ProductForm = ({ id }: IFormProps) => {
                             </button>
                         )}
                     </Tab>
-                    {!id && (
-                        <Tab as={Fragment}>
-                            {({ selected }) => (
-                                <button
-                                    className={`${
-                                        selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
-                                    } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
-                                >
-                                    Accounting
-                                </button>
-                            )}
-                        </Tab>
-                    )}
                 </Tab.List>
-                <Tab.Panels className="panel rounded-none">
+                <Tab.Panels className="rounded-none">
                     <Tab.Panel>
                         <div className="active">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -347,6 +358,7 @@ const ProductForm = ({ id }: IFormProps) => {
                                     divClasses="w-full"
                                     label="Retail Price"
                                     type="number"
+                                    step="any"
                                     name="retail_price"
                                     value={formData.retail_price?.toString()}
                                     onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
@@ -382,6 +394,7 @@ const ProductForm = ({ id }: IFormProps) => {
                                     divClasses="w-full"
                                     label="Value per Unit (According to sub unit)"
                                     type="number"
+                                    step="any"
                                     name="value_per_unit"
                                     value={formData.value_per_unit}
                                     onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
@@ -395,6 +408,7 @@ const ProductForm = ({ id }: IFormProps) => {
                                     divClasses="w-full"
                                     label="Min Stock Level (Main Unit)"
                                     type="number"
+                                    step="any"
                                     name="min_stock_level"
                                     value={formData.min_stock_level}
                                     onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
@@ -408,6 +422,7 @@ const ProductForm = ({ id }: IFormProps) => {
                                     divClasses="w-full"
                                     label="Opening Stock Count (Sub Unit)"
                                     type="number"
+                                    step="any"
                                     name="opening_stock"
                                     value={formData.opening_stock?.toString()}
                                     onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
@@ -422,6 +437,7 @@ const ProductForm = ({ id }: IFormProps) => {
                                         divClasses="w-full"
                                         label="Opening Per Sub Unit Price"
                                         type="number"
+                                        step="any"
                                         name="opening_stock_unit_balance"
                                         value={formData.opening_stock_unit_balance?.toString()}
                                         onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
@@ -434,6 +450,7 @@ const ProductForm = ({ id }: IFormProps) => {
                                         divClasses="w-full"
                                         label="Opening Stock Total Balance"
                                         type="number"
+                                        step="any"
                                         name="opening_stock_total_balance"
                                         value={formData.opening_stock_total_balance?.toString()}
                                         onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
@@ -447,53 +464,6 @@ const ProductForm = ({ id }: IFormProps) => {
                             </div>
                         </div>
                     </Tab.Panel>
-                    <Tab.Panel>
-                        <div>
-                            <Option
-                                divClasses="mb-5"
-                                label="Use Previous Item Accounting"
-                                type="checkbox"
-                                name="use_previous_accounting"
-                                value="1"
-                                defaultChecked={formData.use_previous_accounting}
-                                onChange={(e) => {
-                                    setFormData((prevFormData: any) => ({
-                                        ...prevFormData,
-                                        use_previous_accounting: e.target.checked ? 1 : 0
-                                    }));
-                                    dispatch(clearLatestRecord());
-                                    if (e.target.checked) {
-                                        dispatch(getLatestRecord('raw-product'));
-                                    } else {
-                                        dispatch(clearLatestRecord());
-                                    }
-                                }}
-                            />
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <div>
-                                    <h3 className="font-bold text-lg mb-5 border-b">Accounts</h3>
-                                    <div className="space-y-3">
-                                        <div>
-                                            <label>Stock Accounting</label>
-                                            <TreeSelect
-                                                showSearch
-                                                style={{ width: '100%' }}
-                                                value={latestRecord ? latestRecord.stock_account?.code : formData.stock_account_id}
-                                                dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-                                                placeholder="Please select stock account"
-                                                allowClear
-                                                treeDefaultExpandAll
-                                                onChange={(e) => handleChange('stock_account_id', e, true)}
-                                                treeData={accountOptions}
-                                                // onPopupScroll={onPopupScroll}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </Tab.Panel>
-
                 </Tab.Panels>
             </Tab.Group>
 
@@ -532,6 +502,64 @@ const ProductForm = ({ id }: IFormProps) => {
                 disabled={loading}
                 classes="!mt-6" />
             {/*)}*/}
+
+            <Modal
+                title="New Raw Product Category"
+                show={rawProductCategoryModal}
+                setShow={setRawProductCategoryModal}
+                footer={
+                    <div className="flex items-center justify-end gap-3">
+                        <Button
+                            type={ButtonType.button}
+                            text="Cancel"
+                            variant={ButtonVariant.danger}
+                            onClick={() => {
+                                setRawProductCategoryModal(false);
+                                setRawProductCatData({});
+                            }}
+                        />
+                        <Button
+                            type={ButtonType.button}
+                            text="Save"
+                            variant={ButtonVariant.info}
+                            onClick={() => {
+                                if (typeof rawProductCatData.name === 'undefined' || typeof rawProductCatData.code === 'undefined' || rawProductCatData.name === '' || rawProductCatData.code === '') {
+                                    Swal.fire('Error', 'Please fill all the required fields', 'error');
+                                } else {
+                                    if (rawProductCategoryOptions.filter((cat: any) => cat.label === rawProductCatData.name).length > 0) {
+                                        Swal.fire('Error', 'Category already exists', 'error');
+                                    } else {
+                                        dispatch(storeRawProductCategory(rawProductCatData));
+                                    }
+                                }
+                            }}
+                        />
+                    </div>
+                }
+            >
+                <div className="grid grid-cols-1 gap-5">
+                    <Input
+                        label="Category Name"
+                        type="text"
+                        name="name"
+                        value={rawProductCatData.name}
+                        onChange={(e) => setRawProductCatData({ ...rawProductCatData, name: e.target.value })}
+                        isMasked={false}
+                        placeholder="Enter category name"
+                        required={true}
+                    />
+                    <Input
+                        label="Category Code (Short Form)"
+                        type="text"
+                        name="code"
+                        value={rawProductCatData.code}
+                        onChange={(e) => setRawProductCatData({ ...rawProductCatData, code: e.target.value })}
+                        isMasked={false}
+                        placeholder="Enter category code"
+                        required={true}
+                    />
+                </div>
+            </Modal>
         </form>
     );
 };

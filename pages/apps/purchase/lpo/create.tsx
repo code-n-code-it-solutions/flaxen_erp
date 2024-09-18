@@ -28,7 +28,7 @@ const Create = () => {
     }, [LPO, success]);
 
     return (
-        <div>
+        <div className="flex flex-col gap-3">
             <DetailPageHeader
                 appBasePath={AppBasePath.Local_Purchase_Order}
                 title="Create LPO"
@@ -51,5 +51,5 @@ const Create = () => {
     );
 };
 
-Create.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
+// Create.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
 export default Create;

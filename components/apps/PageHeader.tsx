@@ -77,8 +77,7 @@ const SettingComponent = ({
 const PageHeader = ({ appBasePath, selectedRows, gridRef, leftComponent, rightComponent, showSearch, buttonActions }: IProps) => {
     // console.log(selectedRows);
     const router = useRouter();
-    const { permittedMenus } = useAppSelector((state) => state.menu);
-    const { user } = useAppSelector((state) => state.user);
+    const { menus } = useAppSelector((state) => state.user);
     const rightButtons = [
         {
             show: true,
@@ -103,17 +102,17 @@ const PageHeader = ({ appBasePath, selectedRows, gridRef, leftComponent, rightCo
         gridRef.current!.api.exportDataAsCsv();
     }, []);
 
-    const actionButtons: any = generateActionButtons(router.pathname, permittedMenus, buttonActions, appBasePath);
-    const otherButtons = generateOtherButtons(router.pathname, permittedMenus, selectedRows, appBasePath);
+    const actionButtons: any = generateActionButtons(router.pathname, menus.map((menu: any) => menu.menus).flat(), buttonActions, appBasePath);
+    const otherButtons = generateOtherButtons(router.pathname, menus.map((menu: any) => menu.menus).flat(), selectedRows, appBasePath);
 
     // console.log(otherButtons);
     return (
         <div>
-            <div className="flex md:justify-end md:items-center" style={{ marginTop: -22 }}>
-                <div className="badge bg-success text-white text-xs font-semibold px-2 py-1 rounded-full">
-                    {user.registered_company ? user.registered_company.name : 'All Companies'} - {user.registered_branch ? user.registered_branch.name : 'All Branches'}
-                </div>
-            </div>
+            {/*<div className="flex md:justify-end md:items-center" style={{ marginTop: -22 }}>*/}
+            {/*    <div className="badge bg-success text-white text-xs font-semibold px-2 py-1 rounded-full">*/}
+            {/*        {user.registered_company ? user.registered_company.name : 'All Companies'} - {user.registered_branch ? user.registered_branch.name : 'All Branches'}*/}
+            {/*    </div>*/}
+            {/*</div>*/}
             <div
                 className="shadow bg-white px-5 py-5 flex flex-col md:flex-row justify-between gap-3 md:items-center panel rounded">
                 {leftComponent && (
@@ -186,7 +185,6 @@ const PageHeader = ({ appBasePath, selectedRows, gridRef, leftComponent, rightCo
                         </div>
                     </div>)
                 }
-
             </div>
         </div>
     );

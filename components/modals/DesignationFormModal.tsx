@@ -47,7 +47,7 @@ const DesignationFormModal = ({modalOpen, setModalOpen, modalFormData, departmen
             setFormData({...formData, [name]: value})
         }
         if (required) {
-            console.log(value)
+            // console.log(value)
             if (!value) {
                 setErrorMessages({...errorMessages, [name]: 'This field is required.'});
             } else {
@@ -77,7 +77,7 @@ const DesignationFormModal = ({modalOpen, setModalOpen, modalFormData, departmen
         if (isValid) {
             setValidationMessage("Please fill the required field.");
         }
-        console.log(isValid, errorMessages)
+        // console.log(isValid, errorMessages)
     }, [errorMessages]);
 
     useEffect(() => {

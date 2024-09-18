@@ -107,6 +107,20 @@ export const getSaleInvoicesByCustomer = createAsyncThunk(
     }
 );
 
+export const getSaleInvoicesForCreditNoteByCustomer = createAsyncThunk(
+    'sale-invoice/for-credit-note/by-customer',
+    async (customerId:number, thunkAPI) => {
+        try {
+            const response = await API.get('/sale-invoice/for-credit-note/by-customer/'+customerId);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 // Slice
 export const saleInvoiceSlice = createSlice({
     name: 'sale-invoice',
@@ -119,6 +133,11 @@ export const saleInvoiceSlice = createSlice({
             state.saleInvoiceDetail = null;
             state.saleInvoicesForPrint = null;
         },
+        clearSaleInvoiceListState: (state) => {
+            state.saleInvoices = null;
+            state.error = null;
+            state.success = false;
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -193,8 +212,20 @@ export const saleInvoiceSlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message;
             })
+            .addCase(getSaleInvoicesForCreditNoteByCustomer.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getSaleInvoicesForCreditNoteByCustomer.fulfilled, (state, action) => {
+                state.loading = false;
+                state.saleInvoices = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getSaleInvoicesForCreditNoteByCustomer.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
     },
 });
-export const {clearSaleInvoiceState} = saleInvoiceSlice.actions;
+export const {clearSaleInvoiceState, clearSaleInvoiceListState} = saleInvoiceSlice.actions;
 
 export const saleInvoiceSliceConfig = configureSlice(saleInvoiceSlice, false);

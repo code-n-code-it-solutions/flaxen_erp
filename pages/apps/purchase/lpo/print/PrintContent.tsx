@@ -3,7 +3,19 @@ import { Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import Header from '@/components/Report/Header';
 import Footer from '@/components/Report/Footer';
 
-const PrintContent = ({ content }:any) => {
+const PrintContent = ({ content }: any) => {
+    console.log(content);
+    // Calculating totals
+    const subTotal = content?.raw_materials.reduce(
+        (acc: any, item: any) => acc + parseFloat(item.quantity) * parseFloat(item.unit_price), 0
+    ).toFixed(2);
+
+    const totalTax = content?.raw_materials.reduce(
+        (acc: any, item: any) => acc + parseFloat(item.tax_amount), 0
+    ).toFixed(2);
+
+    const grandTotal = (parseFloat(subTotal) + parseFloat(totalTax)).toFixed(2);
+
     return (
         <Page size="A4" style={styles.page}>
             <Header />
@@ -11,14 +23,20 @@ const PrintContent = ({ content }:any) => {
                 <View style={styles.titleContainer}>
                     <Text style={styles.title}>Purchase Order</Text>
                     <Text style={styles.subtitle}>{content?.lpo_number}</Text>
-                    <Text style={styles.subtitle}>{new Date(content?.created_at).toLocaleDateString() + ' ' + new Date(content?.created_at).toLocaleTimeString()}</Text>
+                    <Text style={styles.subtitle}>
+                        {new Date(content?.created_at).toLocaleDateString() + ' ' + new Date(content?.created_at).toLocaleTimeString()}
+                    </Text>
                 </View>
                 <View style={styles.infoContainer}>
                     <View style={styles.infoColumn}>
                         <Text style={styles.text}>TO</Text>
                         <Text style={styles.text}>{content?.vendor?.name}</Text>
-                        <Text style={styles.text}>{content?.vendor?.address} {content?.vendor?.city?.name}, {content?.vendor?.state?.name}</Text>
-                        <Text style={styles.text}>{content?.vendor?.country?.name} {content?.vendor?.postal_code}</Text>
+                        <Text style={styles.text}>
+                            {content?.vendor?.address} {content?.vendor?.city?.name}, {content?.vendor?.state?.name}
+                        </Text>
+                        <Text style={styles.text}>
+                            {content?.vendor?.country?.name} {content?.vendor?.postal_code}
+                        </Text>
                         <Text style={styles.text}>{content?.vendor?.phone}</Text>
                         <Text style={styles.text}>Rep: {content?.vendor_representative.name}</Text>
                         <Text style={styles.text}>Rep Ph: {content?.vendor_representative.phone}</Text>
@@ -33,48 +51,64 @@ const PrintContent = ({ content }:any) => {
                         <Text style={styles.text}>Phone: +971544765504</Text>
                     </View>
                 </View>
+
+                {/* Table */}
                 <View style={styles.tableContainer}>
                     <View style={styles.tableHeader}>
-                        <Text style={styles.tableHeaderCell}>#</Text>
-                        <Text style={styles.tableHeaderCell}>PR</Text>
-                        <Text style={styles.tableHeaderCell}>Item</Text>
-                        <Text style={styles.tableHeaderCell}>Unit</Text>
-                        <Text style={styles.tableHeaderCell}>Unit Price</Text>
-                        <Text style={styles.tableHeaderCell}>Qty</Text>
-                        <Text style={styles.tableHeaderCell}>Tax</Text>
-                        <Text style={styles.tableHeaderCell}>Total</Text>
+                        <Text style={[styles.tableHeaderCell, styles.col1]}>#</Text>
+                        <Text style={[styles.tableHeaderCell, styles.col2]}>PR</Text>
+                        <Text style={[styles.tableHeaderCell, styles.col3]}>Item</Text>
+                        <Text style={[styles.tableHeaderCell, styles.col4]}>Unit</Text>
+                        <Text style={[styles.tableHeaderCell, styles.col5]}>Unit Price</Text>
+                        <Text style={[styles.tableHeaderCell, styles.col6]}>Qty</Text>
+                        <Text style={[styles.tableHeaderCell, styles.col7]}>Tax@5%</Text>
+                        <Text style={[styles.tableHeaderCell, styles.col8]}>Total</Text>
                     </View>
-                    {content?.raw_materials?.map((item:any, index:number) => (
+
+                    {content?.raw_materials?.map((item: any, index: number) => (
                         <View key={index} style={styles.tableRow}>
-                            <Text style={styles.tableCell}>{index + 1}</Text>
-                            <View style={styles.tableCell}>
-                                <Text style={styles.infoText}>{item.purchase_requisition?.pr_code}</Text>
-                                {/*<Text style={styles.infoText}>By: {item.purchase_requisition?.employee?.name}</Text>*/}
-                            </View>
-                            <Text style={styles.tableCell}>{item.raw_product?.item_code}</Text>
-                            <Text style={styles.tableCell}>{item.unit?.name}</Text>
-                            <Text style={styles.tableCell}>{item.unit_price.toFixed(2)}</Text>
-                            <View style={styles.tableCell}>
-                                <Text style={styles.infoText}>{item.processed_quantity}</Text>
-                            </View>
-                            {/*<View style={styles.tableCell}>*/}
-                            {/*    <Text style={styles.infoText}>Requested: {item.request_quantity}</Text>*/}
-                            {/*    <Text style={styles.infoText}>Processed: {item.processed_quantity}</Text>*/}
-                            {/*</View>*/}
-                            <View style={styles.tableCell}>
-                                <Text style={styles.infoText}>Category: {item.tax_category ? item.tax_category.name : 'None'}</Text>
-                                <Text style={styles.infoText}>Rate: {item.tax_rate.toFixed(2)}</Text>
-                                <Text style={styles.infoText}>Amount: {item.tax_amount.toFixed(2)}</Text>
-                            </View>
-                            <Text style={styles.tableCell}>{((parseFloat(item.processed_quantity) * parseFloat(item.unit_price)) + parseFloat(item.tax_amount)).toFixed(2)}</Text>
+                            <Text style={[styles.tableCell, styles.col1]}>{index + 1}</Text>
+                            <Text style={[styles.tableCell, styles.col2]}>{item.purchase_requisition?.pr_code}</Text>
+                            <Text style={[styles.tableCell, styles.col3]}>{item.raw_product?.item_code}</Text>
+                            <Text style={[styles.tableCell, styles.col4]}>{item.unit?.name}</Text>
+                            <Text style={[styles.tableCell, styles.col5]}>
+                                {item.unit_price.toLocaleString(undefined, {
+                                    minimumFractionDigits: 4,
+                                    maximumFractionDigits: 4
+                                })}
+                            </Text>
+                            <Text style={[styles.tableCell, styles.col6]}>{item.quantity}</Text>
+                            <Text style={[styles.tableCell, styles.col7]}>
+                                {item.tax_amount.toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                })}
+                            </Text>
+                            <Text style={[styles.tableCell, styles.col8]}>
+                                {((parseFloat(item.quantity) * parseFloat(item.unit_price)) +
+                                    parseFloat(item.tax_amount)
+                                ).toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                })}
+                            </Text>
                         </View>
                     ))}
 
+                    {/* Total Section */}
+                    <View style={styles.totalRow}>
+                        <Text style={styles.totalLabel}>Total Without Tax:</Text>
+                        <Text style={styles.totalValue}>{subTotal}</Text>
+                    </View>
+                    <View style={styles.totalRow}>
+                        <Text style={styles.totalLabel}>VAT:</Text>
+                        <Text style={styles.totalValue}>{totalTax}</Text>
+                    </View>
+                    <View style={styles.totalRow}>
+                        <Text style={styles.totalLabel}>Grand Total:</Text>
+                        <Text style={styles.totalValue}>{grandTotal}</Text>
+                    </View>
                 </View>
-                {/*<View style={styles.termsContainer}>*/}
-                {/*    <Text style={styles.infoText}>Terms and Conditions</Text>*/}
-                {/*    <View style={styles.termsText} dangerouslySetInnerHTML={{ __html: content?.terms_conditions }} />*/}
-                {/*</View>*/}
             </View>
             <Footer content={content} />
         </Page>
@@ -85,49 +119,45 @@ const styles = StyleSheet.create({
     page: {
         display: 'flex',
         flexDirection: 'column',
-        padding: 20,
+        padding: 20
     },
     container: {
         display: 'flex',
-        flexDirection: 'column',
+        flexDirection: 'column'
     },
     titleContainer: {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        marginVertical: 10,
+        marginVertical: 10
     },
     title: {
         fontSize: 11,
-        fontWeight: 'bold',
+        fontWeight: 'bold'
     },
     subtitle: {
         fontSize: 10,
-        marginVertical: 5,
+        marginVertical: 5
     },
     infoContainer: {
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginVertical: 10,
+        marginVertical: 10
     },
     infoColumn: {
         display: 'flex',
         flexDirection: 'column',
-        width: '48%',
-    },
-    infoText: {
-        fontWeight: 'bold',
-        fontSize: 10,
+        width: '48%'
     },
     text: {
-        fontSize: 10,
+        fontSize: 10
     },
     tableContainer: {
         display: 'flex',
         flexDirection: 'column',
         width: '100%',
-        marginTop: 20,
+        marginTop: 20
     },
     tableHeader: {
         display: 'flex',
@@ -135,34 +165,50 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         borderBottom: '1px solid #000',
         paddingBottom: 4,
-        fontWeight: 'bold',
+        fontWeight: 'bold'
     },
     tableHeaderCell: {
         fontSize: 10,
         textAlign: 'left',
-        padding: 2,
+        padding: 2
     },
     tableRow: {
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'space-between',
         borderBottom: '1px solid #000',
-        paddingBottom: 4,
+        paddingBottom: 4
     },
     tableCell: {
         fontSize: 10,
         padding: 2,
         flexShrink: 1,
-        textAlign: 'left',
+        textAlign: 'left'
     },
-    termsContainer: {
-        padding: 10,
-        marginTop: 20,
-        borderTop: '1px solid #000',
+    totalRow: {
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        paddingTop: 5
     },
-    termsText: {
+    totalLabel: {
         fontSize: 10,
+        fontWeight: 'bold',
+        paddingRight: 10
     },
+    totalValue: {
+        fontSize: 10,
+        fontWeight: 'bold'
+    },
+    // Column widths
+    col1: { flex: 0.5 },
+    col2: { flex: 1.5 },
+    col3: { flex: 2 },
+    col4: { flex: 1 },
+    col5: { flex: 1 },
+    col6: { flex: 0.7 },
+    col7: { flex: 1 },
+    col8: { flex: 1.2 },
 });
 
 export default PrintContent;

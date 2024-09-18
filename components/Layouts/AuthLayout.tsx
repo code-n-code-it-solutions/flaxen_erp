@@ -8,7 +8,7 @@ import { clearMenuState } from '@/store/slices/menuSlice';
 import { getBranches, setSelectedBranch, setSelectedCompany } from '@/store/slices/companySlice';
 
 const AuthLayout = ({ children }: PropsWithChildren) => {
-    const { token, isLoggedIn, user } = useAppSelector((state) => state.user);
+    const { token, isLoggedIn, user, isLocked } = useAppSelector((state) => state.user);
     const router = useRouter();
     const dispatch = useAppDispatch();
 
@@ -21,13 +21,16 @@ const AuthLayout = ({ children }: PropsWithChildren) => {
                     if (r) {
                         dispatch(setSelectedCompany(user.registered_company));
                         dispatch(setSelectedBranch(user.registered_branch));
-                        if (user.roles.map((role: any) => role.name).includes('Admin')) {
-                            router.push('/workspace');
-                        } else {
-                            router.push('/erp/main');
+                        if(!isLocked) {
+                            if (user.roles.map((role: any) => role.name).includes('Super Admin')) {
+                                router.push('/super-admin');
+                            } else if (user.roles.map((role: any) => role.name).includes('Admin')) {
+                                router.push('/workspace');
+                            } else {
+                                router.push('/apps');
+                            }
+                            dispatch(getBranches(user.id));
                         }
-                        dispatch(getBranches(user.id));
-
                     } else {
                         dispatch(logoutUser());
                         dispatch(clearMenuState());
@@ -35,6 +38,8 @@ const AuthLayout = ({ children }: PropsWithChildren) => {
                 });
         }
     }, [token, router]);
+
+
 
     return (
         <App>

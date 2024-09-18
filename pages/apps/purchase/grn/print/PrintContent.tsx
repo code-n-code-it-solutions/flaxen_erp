@@ -27,23 +27,17 @@ const PrintContent = ({ content }: any) => {
                     <View style={styles.addressColumn}>
                         <Text style={styles.bold}>TO</Text>
                         <Text style={styles.bold}>
-                            {content?.local_purchase_orders[0]?.vendor?.name}
+                            {content?.vendor?.name}
                         </Text>
                         <Text style={styles.text}>
-                            {content?.local_purchase_orders[0]?.vendor?.address} {content?.local_purchase_orders[0]?.vendor?.city?.name},
-                            {content?.local_purchase_orders[0]?.vendor?.state?.name}
+                            {content?.vendor?.address} {content?.vendor?.city?.name},
+                            {content?.vendor?.state?.name}
                         </Text>
                         <Text style={styles.text}>
-                            {content?.local_purchase_orders[0]?.vendor?.country?.name} {content?.local_purchase_orders[0]?.vendor?.postal_code}
+                            {content?.vendor?.country?.name} {content?.vendor?.postal_code}
                         </Text>
                         <Text style={styles.text}>
-                            {content?.local_purchase_orders[0]?.vendor?.phone}
-                        </Text>
-                        <Text style={styles.bold}>
-                            Rep: {content?.local_purchase_orders[0]?.vendor_representative.name}
-                        </Text>
-                        <Text style={styles.bold}>
-                            Rep Ph: {content?.local_purchase_orders[0]?.vendor_representative.phone}
+                            {content?.vendor?.phone}
                         </Text>
                     </View>
                     <View style={styles.addressColumn}>
@@ -58,59 +52,47 @@ const PrintContent = ({ content }: any) => {
                 </View>
                 <View style={styles.tableContainer}>
                     <View style={styles.tableHeader}>
-                        <Text style={styles.tableHeaderCell}>#</Text>
-                        <Text style={styles.tableHeaderCell}>PR</Text>
-                        <Text style={styles.tableHeaderCell}>LPO</Text>
-                        <Text style={styles.tableHeaderCell}>Item</Text>
-                        <Text style={styles.tableHeaderCell}>Unit</Text>
-                        <Text style={styles.tableHeaderCell}>Qty</Text>
-                        <Text style={styles.tableHeaderCell}>R. Qty</Text>
-                        {/*<Text style={styles.tableHeaderCell}>Unit Price</Text>*/}
-                        {/*<Text style={styles.tableHeaderCell}>Tax Category</Text>*/}
-                        {/*<Text style={styles.tableHeaderCell}>Tax Rate</Text>*/}
-                        {/*<Text style={styles.tableHeaderCell}>Tax Amount</Text>*/}
-                        {/*<Text style={styles.tableHeaderCell}>Total</Text>*/}
+                        <Text style={[styles.tableHeaderCell, styles.col1]}>#</Text>
+                        <Text style={[styles.tableHeaderCell, styles.col2]}>PR</Text>
+                        <Text style={[styles.tableHeaderCell, styles.col3]}>LPO</Text>
+                        <Text style={[styles.tableHeaderCell, styles.col4]}>Item</Text>
+                        <Text style={[styles.tableHeaderCell, styles.col5]}>Unit</Text>
+                        <Text style={[styles.tableHeaderCell, styles.col6]}>Req. Qty</Text>
+                        <Text style={[styles.tableHeaderCell, styles.col7]}>Rec. Qty</Text>
                     </View>
                     {content?.raw_products?.map((item: any, index: number) => (
                         <View key={index} style={styles.tableRow}>
-                            <Text style={styles.tableCell}>{index + 1}</Text>
-                            <Text style={styles.tableCell}>{item.purchase_requisition?.pr_code}</Text>
-                            <Text style={styles.tableCell}>{item.local_purchase_order?.lpo_number}</Text>
-                            <Text style={styles.tableCell}>{item.raw_product?.item_code}</Text>
-                            <Text style={styles.tableCell}>{item.unit?.name}</Text>
-                            <Text style={styles.tableCell}>{item.quantity}</Text>
-                            <Text style={styles.tableCell}>{item.received_quantity}</Text>
-                            {/*<Text style={styles.tableCell}>{item.unit_price.toFixed(2)}</Text>*/}
-                            {/*<Text style={styles.tableCell}>{item.tax_category ? item.tax_category.name : 'None'}</Text>*/}
-                            {/*<Text style={styles.tableCell}>{item.tax_rate.toFixed(2)}</Text>*/}
-                            {/*<Text style={styles.tableCell}>{item.tax_amount.toFixed(2)}</Text>*/}
-                            {/*<Text style={styles.tableCell}>{item.grand_total.toFixed(2)}</Text>*/}
+                            <Text style={[styles.tableCell, styles.col1]}>{index + 1}</Text>
+                            <Text style={[styles.tableCell, styles.col2]}>{item.purchase_requisition?.pr_code}</Text>
+                            <Text style={[styles.tableCell, styles.col3]}>{item.local_purchase_order?.lpo_number}</Text>
+                            <Text style={[styles.tableCell, styles.col4]}>{item.raw_product?.item_code}</Text>
+                            <Text style={[styles.tableCell, styles.col5]}>{item.unit?.name}</Text>
+                            <Text style={[styles.tableCell, styles.col6]}>{item.quantity}</Text>
+                            <Text style={[styles.tableCell, styles.col7]}>{item.received_quantity}</Text>
                         </View>
                     ))}
+
+                    {/* Total Section */}
+                    <View style={styles.tableFooter}>
+                        <Text style={[styles.tableFooterCell, styles.col1]}>Total</Text>
+                        <Text style={[styles.tableFooterCell, styles.col2]}></Text>
+                        <Text style={[styles.tableFooterCell, styles.col3]}></Text>
+                        <Text style={[styles.tableFooterCell, styles.col4]}></Text>
+                        <Text style={[styles.tableFooterCell, styles.col5]}></Text>
+                        <Text style={[styles.tableFooterCell, styles.col6]}>
+                            {content?.raw_products?.reduce((acc:number, item:any) => acc + item.quantity, 0).toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            })}
+                        </Text>
+                        <Text style={[styles.tableFooterCell, styles.col7]}>
+                            {content?.raw_products?.reduce((acc:number, item:any) => acc + item.received_quantity, 0).toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            })}
+                        </Text>
+                    </View>
                 </View>
-                {/*<View style={styles.tableFooter}>*/}
-                {/*    <Text style={styles.tableFooterCell}>Total Without Tax</Text>*/}
-                {/*    <Text style={styles.tableFooterCell}>*/}
-                {/*        {content?.raw_products?.reduce((acc:number, item:any) => acc + item.sub_total, 0).toFixed(2)}*/}
-                {/*    </Text>*/}
-                {/*</View>*/}
-                {/*<View style={styles.tableFooter}>*/}
-                {/*    <Text style={styles.tableFooterCell}>VAT</Text>*/}
-                {/*    <Text style={styles.tableFooterCell}>*/}
-                {/*        {content?.raw_products?.reduce((acc:number, item:any) => acc + item.tax_amount, 0).toFixed(2)}*/}
-                {/*    </Text>*/}
-                {/*</View>*/}
-                {/*<View style={styles.tableFooter}>*/}
-                {/*    <Text style={styles.tableFooterCell}>Grand Total</Text>*/}
-                {/*    <Text style={styles.tableFooterCell}>*/}
-                {/*        {content?.raw_products?.reduce((acc:number, item:any) => acc + item.grand_total, 0).toFixed(2)}*/}
-                {/*    </Text>*/}
-                {/*</View>*/}
-                {/*<View style={styles.termsContainer}>*/}
-                {/*    <Text style={styles.bold}>Terms and Conditions</Text>*/}
-                {/*    <View style={styles.termsText}*/}
-                {/*          dangerouslySetInnerHTML={{ __html: content?.local_purchase_order?.terms_conditions }} />*/}
-                {/*</View>*/}
             </View>
             <Footer content={content} />
         </Page>
@@ -183,7 +165,7 @@ const styles = StyleSheet.create({
     tableHeaderCell: {
         fontSize: 10,
         textAlign: 'left',
-        flex: 1
+        padding: 2
     },
     tableRow: {
         display: 'flex',
@@ -196,7 +178,7 @@ const styles = StyleSheet.create({
     tableCell: {
         fontSize: 10,
         textAlign: 'left',
-        flex: 1
+        padding: 2
     },
     tableFooter: {
         display: 'flex',
@@ -209,18 +191,16 @@ const styles = StyleSheet.create({
     tableFooterCell: {
         fontSize: 10,
         fontWeight: 'bold',
-        flex: 1,
-        textAlign: 'left'
+        padding: 2
     },
-    termsContainer: {
-        padding: 10,
-        marginTop: 20,
-        borderTopWidth: 1,
-        borderTopColor: '#000'
-    },
-    termsText: {
-        fontSize: 10
-    }
+    // Column widths
+    col1: { flex: 0.5 },
+    col2: { flex: 1.5 },
+    col3: { flex: 1.5 },
+    col4: { flex: 2 },
+    col5: { flex: 1 },
+    col6: { flex: 1 },
+    col7: { flex: 1 }
 });
 
 export default PrintContent;

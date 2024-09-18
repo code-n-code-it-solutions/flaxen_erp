@@ -5,9 +5,10 @@ import {configureSlice} from "@/utils/helper";
 interface IVendorBillState {
     vendorBill: any;
     vendorBillDetail: any
-    vendorBills: any;
-    pendingBills: any;
-    payments: any;
+    vendorBills: any[];
+    vendorBillsForPrint: any[];
+    pendingBills: any[];
+    payments: any[];
     payment: any;
     loading: boolean;
     error: any;
@@ -18,9 +19,10 @@ interface IVendorBillState {
 const initialState: IVendorBillState = {
     vendorBill: null,
     vendorBillDetail: null,
-    vendorBills: null,
-    pendingBills: null,
-    payments: null,
+    vendorBills: [],
+    vendorBillsForPrint: [],
+    pendingBills: [],
+    payments: [],
     payment: null,
     loading: false,
     error: null,
@@ -112,11 +114,39 @@ export const deleteVendorBill = createAsyncThunk(
     }
 );
 
+export const getVendorBillForPrint = createAsyncThunk(
+    'vendor-bill/print',
+    async (data: any, thunkAPI) => {
+        try {
+            const response = await API.post('/vendor-bill/print', data);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 export const getPendingVendorBills = createAsyncThunk(
     'vendor-bill/pending',
     async (vendorId: number, thunkAPI) => {
         try {
             const response = await API.get('/vendor-bill/pending/'+ vendorId);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const getVendorBillsForDebitNoteByVendor = createAsyncThunk(
+    'vendor-bill/for-debit-note/by-vendor',
+    async (vendorId:number, thunkAPI) => {
+        try {
+            const response = await API.get('/vendor-bill/for-debit-note/by-vendor/'+vendorId);
             return response.data;
         } catch (error: any) {
             const message =
@@ -137,8 +167,15 @@ export const vendorBillSlice = createSlice({
             state.error = null;
             state.success = false;
             state.vendorBillDetail = null;
-            state.pendingBills = null;
+            state.vendorBillsForPrint = [];
+            state.pendingBills = [];
         },
+        clearVendorBillListState : (state) => {
+            state.vendorBills = [];
+            state.vendorBillsForPrint = [];
+            state.error = null;
+            state.success = false
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -225,8 +262,32 @@ export const vendorBillSlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message;
             })
+            .addCase(getVendorBillsForDebitNoteByVendor.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getVendorBillsForDebitNoteByVendor.fulfilled, (state, action) => {
+                state.loading = false;
+                state.vendorBills = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getVendorBillsForDebitNoteByVendor.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(getVendorBillForPrint.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getVendorBillForPrint.fulfilled, (state, action) => {
+                state.loading = false;
+                state.vendorBillsForPrint = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getVendorBillForPrint.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
     },
 });
-export const {clearVendorBillState} = vendorBillSlice.actions;
+export const {clearVendorBillState, clearVendorBillListState} = vendorBillSlice.actions;
 
 export const vendorBillSliceConfig = configureSlice(vendorBillSlice, false);

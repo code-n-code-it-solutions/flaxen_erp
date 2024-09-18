@@ -32,7 +32,7 @@ const View = () => {
     }, [router.query, dispatch]);
 
     return (
-        <div>
+        <div className="flex flex-col gap-3">
             <DetailPageHeader
                 appBasePath={AppBasePath.Customer}
                 title="Customer Details"
@@ -222,5 +222,5 @@ const View = () => {
     );
 };
 
-View.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
+// View.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
 export default View;

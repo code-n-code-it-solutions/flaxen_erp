@@ -8,10 +8,7 @@ import {
 } from '@/store/slices/productAssemblySlice';
 import PageWrapper from '@/components/PageWrapper';
 import { AppBasePath, ButtonSize, ButtonType, ButtonVariant, IconType } from '@/utils/enums';
-import { getIcon } from '@/utils/helper';
-import Button from '@/components/Button';
 import ProductAssemblyForm from '@/pages/apps/manufacturing/formula/ProductAssemblyForm';
-import AppLayout from '@/components/Layouts/AppLayout';
 import useSetActiveMenu from '@/hooks/useSetActiveMenu';
 
 const Edit = () => {
@@ -64,5 +61,5 @@ const Edit = () => {
         </PageWrapper>
     );
 };
-Edit.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
+// Edit.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
 export default Edit;

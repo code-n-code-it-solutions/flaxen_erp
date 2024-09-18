@@ -3,14 +3,10 @@ module.exports = {
         {
             name: 'code-n-code',
             script: 'npm',
-            args: 'start',
+            args: 'run server-start',
             watch: true,
-            env: {
-                NODE_ENV: 'production',
-            },
         },
     ],
-
     deploy: {
         production: {
             user: 'root', // e.g., 'root'

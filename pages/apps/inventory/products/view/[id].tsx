@@ -6,7 +6,6 @@ import { clearRawProductState, deleteRawProduct, showDetails } from '@/store/sli
 import PageWrapper from '@/components/PageWrapper';
 import { serverFilePath } from '@/utils/helper';
 import Image from 'next/image';
-import AppLayout from '@/components/Layouts/AppLayout';
 import DetailPageHeader from '@/components/apps/DetailPageHeader';
 import Swal from 'sweetalert2';
 import { AppBasePath } from '@/utils/enums';
@@ -60,7 +59,7 @@ const View = () => {
     }, [router.query.id, dispatch]);
 
     return (
-        <div>
+        <div className="flex flex-col gap-3">
             <DetailPageHeader
                 appBasePath={AppBasePath.Raw_Product}
                 title="Product Details"
@@ -119,6 +118,10 @@ const View = () => {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 w-full mt-3">
 
                             <div className="flex md:justify-start md:items-center gap-3">
+                                <strong>Product Category: </strong>
+                                <span>{rawProductDetail.raw_product_category?.name + ' (' + rawProductDetail.raw_product_category?.code + ')'}</span>
+                            </div>
+                            <div className="flex md:justify-start md:items-center gap-3">
                                 <strong>Item Code: </strong>
                                 <span>{rawProductDetail.item_code}</span>
                             </div>
@@ -162,10 +165,6 @@ const View = () => {
                                 <strong>Retail Price: </strong>
                                 <span>{rawProductDetail.retail_price}</span>
                             </div>
-                            <div className="flex md:justify-start md:items-center gap-3">
-                                <strong>Stock Account: </strong>
-                                <span>{rawProductDetail?.stock_account?.code+' - '+rawProductDetail?.stock_account?.name}</span>
-                            </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full my-5">
                             <div className="flex flex-col justify-start items-start gap-3">
@@ -184,5 +183,5 @@ const View = () => {
     );
 };
 
-View.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
+// View.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
 export default View;

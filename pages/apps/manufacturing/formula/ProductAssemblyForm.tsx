@@ -1,35 +1,35 @@
-import React, {useEffect, useState} from 'react';
-import {Input} from "@/components/form/Input";
-import {Dropdown} from "@/components/form/Dropdown";
-import Button from "@/components/Button";
-import {ButtonType, ButtonVariant, FORM_CODE_TYPE, IconType, RAW_PRODUCT_LIST_TYPE} from "@/utils/enums";
-import {getIcon} from "@/utils/helper";
-import RawProductItemListing from "@/components/listing/RawProductItemListing";
-import ColorCodeFormModal from "@/components/modals/ColorCodeFormModal";
-import {getColorCodes} from "@/store/slices/colorCodeSlice";
-import {setAuthToken} from "@/configs/api.config";
+import React, { useEffect, useState } from 'react';
+import { Input } from '@/components/form/Input';
+import { Dropdown } from '@/components/form/Dropdown';
+import Button from '@/components/Button';
+import { ButtonType, ButtonVariant, FORM_CODE_TYPE, IconType, RAW_PRODUCT_LIST_TYPE } from '@/utils/enums';
+import { getIcon } from '@/utils/helper';
+import RawProductItemListing from '@/components/listing/RawProductItemListing';
+import ColorCodeFormModal from '@/components/modals/ColorCodeFormModal';
+import { getColorCodes } from '@/store/slices/colorCodeSlice';
+import { setAuthToken } from '@/configs/api.config';
 import {
     clearProductAssemblyState,
     storeProductAssembly,
     updateProductAssembly
-} from "@/store/slices/productAssemblySlice";
-import {clearUtilState, generateCode} from "@/store/slices/utilSlice";
-import {getProductCategory} from "@/store/slices/categorySlice";
-import {useAppDispatch, useAppSelector} from "@/store";
+} from '@/store/slices/productAssemblySlice';
+import { clearUtilState, generateCode } from '@/store/slices/utilSlice';
+import { getProductCategory } from '@/store/slices/categorySlice';
+import { useAppDispatch, useAppSelector } from '@/store';
 
 interface IFormProps {
     id?: any;
 }
 
-const ProductAssemblyForm = ({id}: IFormProps) => {
-    const dispatch = useAppDispatch()
-    const {token} = useAppSelector(state => state.user);
-    const {allProductCategory} = useAppSelector(state => state.productCategory);
-    const {code} = useAppSelector(state => state.util);
-    const {allColorCodes} = useAppSelector(state => state.colorCode);
-    const {productAssemblyDetail, loading} = useAppSelector(state => state.productAssembly);
+const ProductAssemblyForm = ({ id }: IFormProps) => {
+    const dispatch = useAppDispatch();
+    const { token } = useAppSelector(state => state.user);
+    const { allProductCategory } = useAppSelector(state => state.productCategory);
+    const { code } = useAppSelector(state => state.util);
+    const { allColorCodes } = useAppSelector(state => state.colorCode);
+    const { productAssemblyDetail, loading } = useAppSelector(state => state.productAssembly);
 
-    const [formData, setFormData] = useState<any>({})
+    const [formData, setFormData] = useState<any>({});
     const [colorCodeModal, setColorCodeModal] = useState(false);
 
     const [rawProducts, setRawProducts] = useState<any[]>([]);
@@ -43,27 +43,28 @@ const ProductAssemblyForm = ({id}: IFormProps) => {
         e.preventDefault();
         if (rawProducts.length === 0) {
             setValidationMessage('Raw products must have at least one item in the table');
-            setIsFormValid(false)
+            setIsFormValid(false);
         } else {
             setValidationMessage('');
-            setIsFormValid(true)
+            setIsFormValid(true);
             let finalData = {
                 ...formData,
                 raw_products: rawProducts.map((row: any) => {
                     return {
+                        lab_reference: formData.lab_reference,
                         raw_product_id: row.raw_product_id,
                         unit_id: row.unit_id,
                         quantity: row.quantity,
                         unit_price: row.quantity * row.unit_price,
-                        total: row.sub_total,
-                    }
+                        total: row.sub_total
+                    };
                 })
             };
             setAuthToken(token);
             // console.log(finalData);
             dispatch(clearProductAssemblyState());
             if (id) {
-                dispatch(updateProductAssembly({id: productAssemblyDetail.id, productAssemblyData: formData}));
+                dispatch(updateProductAssembly({ id: productAssemblyDetail.id, productAssemblyData: formData }));
             } else {
                 dispatch(storeProductAssembly(finalData));
             }
@@ -75,12 +76,12 @@ const ProductAssemblyForm = ({id}: IFormProps) => {
         dispatch(getProductCategory());
         dispatch(getColorCodes());
         // setRawProducts([])
-    }, [])
+    }, []);
 
     useEffect(() => {
         if (!id) {
             dispatch(generateCode(FORM_CODE_TYPE.PRODUCT_ASSEMBLY));
-            setRawProducts([])
+            setRawProducts([]);
         }
         return () => {
             dispatch(clearProductAssemblyState());
@@ -92,22 +93,24 @@ const ProductAssemblyForm = ({id}: IFormProps) => {
             setFormData((prev: any) => {
                 return {
                     ...prev,
+                    lab_reference: productAssemblyDetail.lab_reference,
                     formula_name: productAssemblyDetail.formula_name,
                     formula_code: productAssemblyDetail.formula_code,
                     category_id: productAssemblyDetail.category_id,
                     color_code_id: productAssemblyDetail.color_code_id,
                     raw_products: productAssemblyDetail.product_assembly_items.map((item: any) => {
                         return {
+                            lab_reference: productAssemblyDetail.lab_reference,
                             raw_product_id: item.raw_product_id,
                             unit_id: item.unit_id,
                             unit_price: parseFloat(item.cost),
                             quantity: parseFloat(item.quantity),
                             description: item.description,
-                            sub_total: parseFloat(item.cost) * parseFloat(item.quantity),
-                        }
+                            sub_total: parseFloat(item.cost) * parseFloat(item.quantity)
+                        };
                     })
-                }
-            })
+                };
+            });
 
             setRawProducts(prev => (
                 productAssemblyDetail.product_assembly_items.map((item: any) => {
@@ -117,17 +120,16 @@ const ProductAssemblyForm = ({id}: IFormProps) => {
                         unit_price: parseFloat(item.cost),
                         quantity: parseFloat(item.quantity),
                         description: item.description,
-                        sub_total: parseFloat(item.cost) * parseFloat(item.quantity),
-                    }
+                        sub_total: parseFloat(item.cost) * parseFloat(item.quantity)
+                    };
                 })
             ));
-
         }
     }, [productAssemblyDetail]);
 
     useEffect(() => {
         if (code) {
-            setFormData({...formData, formula_code: code[FORM_CODE_TYPE.PRODUCT_ASSEMBLY]});
+            setFormData({ ...formData, formula_code: code[FORM_CODE_TYPE.PRODUCT_ASSEMBLY] });
         }
     }, [code]);
 
@@ -142,10 +144,10 @@ const ProductAssemblyForm = ({id}: IFormProps) => {
             let categoryOptions = allProductCategory.map((category: any) => {
                 return {
                     value: category.id,
-                    label: category.name,
+                    label: category.name
                 };
             });
-            setCategoryOptions([{value: '', label: 'Select Category'}, ...categoryOptions]);
+            setCategoryOptions([{ value: '', label: 'Select Category' }, ...categoryOptions]);
         }
     }, [allProductCategory]);
 
@@ -157,10 +159,10 @@ const ProductAssemblyForm = ({id}: IFormProps) => {
                 return {
                     value: code.id,
                     label: simpleLabel,
-                    colorCode: code.hex_code,
+                    colorCode: code.hex_code
                 };
             });
-            setColorCodeOptions([{value: '', label: 'Select Color Code'}, ...colorCodes]);
+            setColorCodeOptions([{ value: '', label: 'Select Color Code' }, ...colorCodes]);
         }
     }, [allColorCodes]);
 
@@ -169,17 +171,17 @@ const ProductAssemblyForm = ({id}: IFormProps) => {
             ...provided,
             backgroundColor: state.data.colorCode,
             color: 'black',
-            padding: 20,
-        }),
+            padding: 20
+        })
     };
 
     const handleChange = (name: string, value: any, required: boolean) => {
-        setFormData({...formData, [name]: value})
+        setFormData({ ...formData, [name]: value });
         if (required) {
             if (!value) {
-                setErrorMessages({...errorMessages, [name]: 'This field is required.'});
+                setErrorMessages({ ...errorMessages, [name]: 'This field is required.' });
             } else {
-                setErrorMessages({...errorMessages, [name]: ''});
+                setErrorMessages({ ...errorMessages, [name]: '' });
             }
         }
     };
@@ -197,12 +199,25 @@ const ProductAssemblyForm = ({id}: IFormProps) => {
             <div className="flex w-full flex-row items-start justify-between gap-3">
                 <div className="flex justify-start flex-col items-start space-y-3 w-full">
                     <Input
-                        divClasses='w-full'
-                        label='Formula Name'
-                        type='text'
-                        name='formula_name'
+                        divClasses="w-full"
+                        label="Lab Reference"
+                        type="text"
+                        name="lab_reference"
+                        value={formData.lab_reference}
+                        placeholder="Enter Lab Reference"
+                        onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
+                        isMasked={false}
+                        required={true}
+                        errorMessage={errorMessages?.lab_reference}
+                    />
+
+                    <Input
+                        divClasses="w-full"
+                        label="Formula Name"
+                        type="text"
+                        name="formula_name"
                         value={formData.formula_name}
-                        placeholder='Enter Formula Name'
+                        placeholder="Enter Formula Name"
                         onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
                         isMasked={false}
                         required={true}
@@ -210,12 +225,12 @@ const ProductAssemblyForm = ({id}: IFormProps) => {
                     />
 
                     <Input
-                        divClasses='w-full'
-                        label='Formula Code'
-                        type='text'
-                        name='formula_code'
+                        divClasses="w-full"
+                        label="Formula Code"
+                        type="text"
+                        name="formula_code"
                         value={formData.formula_code}
-                        placeholder='Enter Formula Code'
+                        placeholder="Enter Formula Code"
                         onChange={(e) => handleChange(e.target.name, e.target.value, e.target.required)}
                         isMasked={false}
                         disabled={true}
@@ -223,16 +238,16 @@ const ProductAssemblyForm = ({id}: IFormProps) => {
                     />
 
                     <Dropdown
-                        divClasses='w-full'
-                        label='Category'
-                        name='category_id'
+                        divClasses="w-full"
+                        label="Category"
+                        name="category_id"
                         value={formData.category_id}
                         options={categoryOptions}
                         onChange={(e: any) => {
                             if (e && typeof e !== 'undefined') {
-                                handleChange('category_id', e.value, true)
+                                handleChange('category_id', e.value, true);
                             } else {
-                                handleChange('category_id', '', true)
+                                handleChange('category_id', '', true);
                             }
                         }}
                         required={true}
@@ -241,17 +256,17 @@ const ProductAssemblyForm = ({id}: IFormProps) => {
 
                     <div className="w-full flex justify-center items-end gap-2">
                         <Dropdown
-                            divClasses='w-full'
-                            label='Color Code'
-                            name='color_code_id'
+                            divClasses="w-full"
+                            label="Color Code"
+                            name="color_code_id"
                             value={formData.color_code_id}
                             styles={customStyles}
                             options={colorCodeOptions}
                             onChange={(e: any, required: any) => {
                                 if (e && typeof e !== 'undefined') {
-                                    handleChange('color_code_id', e.value, true)
+                                    handleChange('color_code_id', e.value, true);
                                 } else {
-                                    handleChange('color_code_id', '', true)
+                                    handleChange('color_code_id', '', true);
                                 }
                             }}
                             required={true}

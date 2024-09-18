@@ -1,6 +1,6 @@
-import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
-import {API} from "@/configs/api.config";
-import {configureSlice} from "@/utils/helper";
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { API } from '@/configs/api.config';
+import { configureSlice } from '@/utils/helper';
 
 
 interface IProductAssembly {
@@ -12,18 +12,19 @@ interface IProductAssembly {
 }
 
 interface IRawProduct {
-    raw_product_id: number
-    unit_id: number
-    quantity: number
-    unit_price: number
-    total: number
+    raw_product_id: number;
+    unit_id: number;
+    quantity: number;
+    unit_price: number;
+    total: number;
 }
 
 interface ProductAssemblyState {
     productAssembly: any;
-    productAssemblyDetail: any
+    productAssemblyDetail: any;
     allProductAssemblies: any;
     productAssembliesForPrint: any;
+    labReferenceAdded: boolean;
     assemblyItems: any;
     loading: boolean;
     error: any;
@@ -36,10 +37,11 @@ const initialState: ProductAssemblyState = {
     productAssemblyDetail: null,
     allProductAssemblies: null,
     productAssembliesForPrint: null,
+    labReferenceAdded: false,
     assemblyItems: null,
     loading: false,
     error: null,
-    success: false,
+    success: false
 };
 
 // Async thunks
@@ -103,7 +105,7 @@ export const updateProductAssembly = createAsyncThunk(
     'productAssemblies/update',
     async (data: any, thunkAPI) => {
         try {
-            const {id, productAssemblyData} = data;
+            const { id, productAssemblyData } = data;
             const response = await API.post('/product-assemblies/update/' + id, productAssemblyData);
             return response.data;
         } catch (error: any) {
@@ -119,7 +121,7 @@ export const deleteProductAssembly = createAsyncThunk(
     'productAssemblies/delete',
     async (ids: number[], thunkAPI) => {
         try {
-            const response = await API.post('/product-assemblies/delete', {ids});
+            const response = await API.post('/product-assemblies/delete', { ids });
             return response.data;
         } catch (error: any) {
             const message =
@@ -148,11 +150,26 @@ export const getProductAssembliesForPrint = createAsyncThunk(
     async (data: any, thunkAPI) => {
         try {
             const response = await API.post('/product-assemblies/print', data);
-            console.log(response.data);
+            // console.log(response.data);
             return response.data;
         } catch (error: any) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const storeLabReference = createAsyncThunk(
+    'productAssemblies/lab-reference',
+    async (data: any, thunkAPI) => {
+        try {
+            const response = await API.post('/product-assemblies/lab-reference/store', data);
+            // console.log(response.data);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to store';
             return thunkAPI.rejectWithValue(message);
         }
     }
@@ -171,6 +188,9 @@ export const productAssemblySlice = createSlice({
             state.assemblyItems = null;
             state.productAssembliesForPrint = null;
         },
+        clearLabReferenceAdded: (state) => {
+            state.labReferenceAdded = false;
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -265,9 +285,21 @@ export const productAssemblySlice = createSlice({
             .addCase(getProductAssembliesForPrint.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
+            })
+            .addCase(storeLabReference.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(storeLabReference.fulfilled, (state, action) => {
+                state.loading = false;
+                state.labReferenceAdded = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(storeLabReference.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
             });
-    },
+    }
 });
-export const {clearProductAssemblyState} = productAssemblySlice.actions;
+export const { clearLabReferenceAdded, clearProductAssemblyState } = productAssemblySlice.actions;
 
 export const productAssemblySliceConfig = configureSlice(productAssemblySlice, false);
