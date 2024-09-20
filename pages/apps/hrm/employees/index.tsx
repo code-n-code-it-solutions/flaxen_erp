@@ -151,7 +151,7 @@ const Index = () => {
                         // const displayedColumns = params.api.getAllDisplayedColumns();
                         // console.log(displayedColumns, params.column, displayedColumns[0], displayedColumns[0] === params.column);
                         // return displayedColumns[0] === params.column;
-                        router.push(`/apps/employees/employee-list/view/${params.data.id}`);
+                        router.push(`/apps/hrm/employees/view/${params.data.id}`);
                     }}
                 />
             </div>
