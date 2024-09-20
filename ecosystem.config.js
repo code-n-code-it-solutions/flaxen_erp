@@ -1,4 +1,10 @@
+<<<<<<< HEAD
 module.exports = {
+=======
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var config = {
+>>>>>>> ce7aef2 (server updates)
     apps: [
         {
             name: 'code-n-code',
@@ -7,7 +13,6 @@ module.exports = {
             watch: true,
         },
     ],
-
     deploy: {
         production: {
             user: 'root', // e.g., 'root'
@@ -15,8 +20,16 @@ module.exports = {
             ref: 'origin/master', // Branch to pull
             repo: 'git@github.com:code-n-code-it-solutions/flaxen_erp.git', // Git repo
             path: '/home/codencode-erp/htdocs/erp.codencode.ae',
+<<<<<<< HEAD
             'ssh_options': 'StrictHostKeyChecking=no',
             'post-deploy': 'npm install && npm run build && pm2 reload ecosystem.config.js --env production',
+=======
+            'post-deploy': 'npm install && npm run build && pm2 reload ecosystem.config.ts --env production',
+>>>>>>> 6753738 (server updates)
         },
     },
 };
+<<<<<<< HEAD
+=======
+exports.default = config;
+>>>>>>> ce7aef2 (server updates)
