@@ -5,7 +5,7 @@
     "scripts": {
         "dev": "next dev",
         "server-dev": "next dev -p 3006",
-        "server-dev-start": "npx dotenv -e .env.local next start -p 3006",
+        "server-dev-start": "./node_modules/.bin/dotenv -e .env.local next start -p 3006",
         "build": "next build",
         "start": "next start",
         "server-start": "next start -p 3005",
@@ -118,6 +118,7 @@
         "@types/react-text-mask": "^5.4.11",
         "@types/sortablejs": "^1.15.0",
         "autoprefixer": "^10.4.13",
+        "cross-env": "^7.0.3",
         "dotenv-cli": "^7.4.2",
         "postcss": "^8.4.21",
         "prettier": "^2.8.0",
