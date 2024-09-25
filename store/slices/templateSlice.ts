@@ -87,7 +87,19 @@ export const updateTemplate = createAsyncThunk(
         }
     }
 );
-
+export const deleteTemplate = createAsyncThunk(
+    'template/delete',
+    async (ids: any[] | any, thunkAPI) => {
+        try {
+            const response = await API.post('/template/delete', { ids });
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
 // Slice
 export const templateSlice = createSlice({
     name: 'templates',

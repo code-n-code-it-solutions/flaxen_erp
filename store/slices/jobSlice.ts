@@ -71,7 +71,19 @@ export const createJob = createAsyncThunk(
         }
     }
 );
-
+export const showDetails = createAsyncThunk(
+    'jobs/show',
+    async (id: number, thunkAPI) => {
+        try {
+            const response = await API.get('/job/' + id);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
 export const updateJob = createAsyncThunk(
     'jobs/update',
     async (job: Job, thunkAPI) => {
@@ -85,7 +97,20 @@ export const updateJob = createAsyncThunk(
         }
     }
 );
-
+export const editJob = createAsyncThunk(
+    'job/edit',
+    async (id: number, thunkAPI) => {
+        try {
+            const response = await API.get('/job/edit/' + id);
+            // console.log(response);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to edit';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
 export const deleteJob = createAsyncThunk(
     'jobs/delete',
     async (job_code: string, thunkAPI) => {

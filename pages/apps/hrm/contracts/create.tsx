@@ -4,24 +4,23 @@ import {useRouter} from "next/router";
 import {setPageTitle} from "@/store/slices/themeConfigSlice";
 import PageWrapper from "@/components/PageWrapper";
 import {ButtonType, ButtonVariant, IconType} from "@/utils/enums";
-import TemplateForm from "@/pages/apps/hrm/configuration/template/TemplateForm";
+import ContractForm from '@/pages/apps/hrm/contracts/contractForm';  
 
 import AppLayout from '@/components/Layouts/AppLayout';
-import { clearTemplateState } from '@/store/slices/templateSlice';
-import { create } from 'lodash';
+import { clearContractState } from '@/store/slices/contractSlice';
 
-const TemplateFormComponent = () => {
+const Create = () => {
     const dispatch = useAppDispatch();
     const router = useRouter();
     const {employee, loading, success} = useAppSelector(state => state.employee);
 
     useEffect(() => {
-        dispatch(setPageTitle('New Template'));
+        dispatch(setPageTitle('New Contract'));
     }, []);
 
     useEffect(() => {
         if (employee && success) {
-            dispatch(clearTemplateState());
+            dispatch(clearContractState());
             router.push('');
         }
     }, [employee, success]);
@@ -31,21 +30,21 @@ const TemplateFormComponent = () => {
         embedLoader={false}
         breadCrumbItems={[]}
         loading={false}
-        title="Create Template"
+        title="Create Contract"
         buttons={[
             {
                 text: 'Back',
                 type: ButtonType.link,
                 variant: ButtonVariant.primary,
                 icon: IconType.back,
-                link: '/apps/hrm/configuration/template'
+                link: '/apps/hrm/contracts'
             }
         ]}
     >
-        <TemplateForm />  
+        <ContractForm />  
     </PageWrapper>
     );
 };
 
-// template.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
-export default TemplateFormComponent;
+// Create.getLayout = (page: any) => <AppLayout>{page}</AppLayout>;
+export default Create;
