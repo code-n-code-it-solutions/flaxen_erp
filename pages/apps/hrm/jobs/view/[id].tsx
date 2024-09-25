@@ -82,7 +82,7 @@ const ViewJobDetails = () => {
                             </Tab.List>
 
                             <Tab.Panels>
-                                {/* Basic Details Tab */}
+                                
                                 <Tab.Panel>
                                     <div className="mt-5">
                                         <p>
@@ -97,7 +97,6 @@ const ViewJobDetails = () => {
                                     </div>
                                 </Tab.Panel>
 
-                                {/* Candidates Tab */}
                                 <Tab.Panel>
                                     <div className="mt-5">
                                         <table className="min-w-full text-left">
