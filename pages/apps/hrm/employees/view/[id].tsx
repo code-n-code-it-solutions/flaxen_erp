@@ -96,7 +96,7 @@ const View = () => {
                 }}
                 backButton={{
                     show: true,
-                    backLink: '/apps/employees/employee-list'
+                    backLink: '/apps/hrm/employees'
                 }}
             />
 
@@ -136,9 +136,8 @@ const View = () => {
                                 <Tab as={Fragment}>
                                     {({ selected }) => (
                                         <button
-                                            className={`${
-                                                selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
-                                            } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
+                                            className={`${selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
+                                                } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
                                         >
                                             Basic Details
                                         </button>
@@ -147,9 +146,8 @@ const View = () => {
                                 <Tab as={Fragment}>
                                     {({ selected }) => (
                                         <button
-                                            className={`${
-                                                selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
-                                            } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
+                                            className={`${selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
+                                                } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
                                         >
                                             Bank Details
                                         </button>
@@ -158,9 +156,8 @@ const View = () => {
                                 <Tab as={Fragment}>
                                     {({ selected }) => (
                                         <button
-                                            className={`${
-                                                selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
-                                            } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
+                                            className={`${selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
+                                                } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
                                         >
                                             Documents
                                         </button>
@@ -169,9 +166,8 @@ const View = () => {
                                 <Tab as={Fragment}>
                                     {({ selected }) => (
                                         <button
-                                            className={`${
-                                                selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
-                                            } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
+                                            className={`${selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
+                                                } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
                                         >
                                             Leaves
                                         </button>
@@ -180,9 +176,8 @@ const View = () => {
                                 <Tab as={Fragment}>
                                     {({ selected }) => (
                                         <button
-                                            className={`${
-                                                selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
-                                            } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
+                                            className={`${selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
+                                                } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
                                         >
                                             Payrolls
                                         </button>
@@ -191,9 +186,8 @@ const View = () => {
                                 <Tab as={Fragment}>
                                     {({ selected }) => (
                                         <button
-                                            className={`${
-                                                selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
-                                            } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
+                                            className={`${selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
+                                                } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
                                         >
                                             Attendance
                                         </button>
@@ -202,9 +196,38 @@ const View = () => {
                                 <Tab as={Fragment}>
                                     {({ selected }) => (
                                         <button
-                                            className={`${
-                                                selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
-                                            } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
+                                            className={`${selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
+                                                } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
+                                        >
+                                            Loans
+                                        </button>
+                                    )}
+                                </Tab>
+                                <Tab as={Fragment}>
+                                    {({ selected }) => (
+                                        <button
+                                            className={`${selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
+                                                } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
+                                        >
+                                            Comisions
+                                        </button>
+                                    )}
+                                </Tab>
+                                <Tab as={Fragment}>
+                                    {({ selected }) => (
+                                        <button
+                                            className={`${selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
+                                                } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
+                                        >
+                                            Advance Salaries
+                                        </button>
+                                    )}
+                                </Tab>
+                                <Tab as={Fragment}>
+                                    {({ selected }) => (
+                                        <button
+                                            className={`${selected ? '!border-white-light !border-b-white  text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black ' : ''
+                                                } -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black`}
                                         >
                                             Login Rules
                                         </button>
@@ -216,30 +239,30 @@ const View = () => {
                                     <div className="active table-responsive">
                                         <table>
                                             <tbody>
-                                            <tr>
-                                                <td>Name</td>
-                                                <td>{employeeDetail?.name}</td>
-                                                <td>Email</td>
-                                                <td>{employeeDetail?.email}</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Phone</td>
-                                                <td>{employeeDetail.employee?.phone}</td>
-                                                <td>Joining Date</td>
-                                                <td>{employeeDetail.employee?.date_of_joining}</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Department</td>
-                                                <td>{employeeDetail?.employee?.department?.name}</td>
-                                                <td>Designation</td>
-                                                <td>{employeeDetail?.employee?.designation?.name}</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Passport Number</td>
-                                                <td>{employeeDetail.employee?.passport_number}</td>
-                                                <td>Id Number</td>
-                                                <td>{employeeDetail.employee?.id_number}</td>
-                                            </tr>
+                                                <tr>
+                                                    <td>Name</td>
+                                                    <td>{employeeDetail?.name}</td>
+                                                    <td>Email</td>
+                                                    <td>{employeeDetail?.email}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Phone</td>
+                                                    <td>{employeeDetail.employee?.phone}</td>
+                                                    <td>Joining Date</td>
+                                                    <td>{employeeDetail.employee?.date_of_joining}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Department</td>
+                                                    <td>{employeeDetail?.employee?.department?.name}</td>
+                                                    <td>Designation</td>
+                                                    <td>{employeeDetail?.employee?.designation?.name}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Passport Number</td>
+                                                    <td>{employeeDetail.employee?.passport_number}</td>
+                                                    <td>Id Number</td>
+                                                    <td>{employeeDetail.employee?.id_number}</td>
+                                                </tr>
                                             </tbody>
                                         </table>
                                     </div>
@@ -261,31 +284,31 @@ const View = () => {
                                         <div className="table-responsive">
                                             <table>
                                                 <thead>
-                                                <tr>
-                                                    <th>Bank Name</th>
-                                                    <th>s</th>
-                                                    <th>Account Number</th>
-                                                    <th>IBAN</th>
-                                                    <th>Currency</th>
-                                                </tr>
+                                                    <tr>
+                                                        <th>Bank Name</th>
+                                                        <th>s</th>
+                                                        <th>Account Number</th>
+                                                        <th>IBAN</th>
+                                                        <th>Currency</th>
+                                                    </tr>
                                                 </thead>
                                                 <tbody>
-                                                {employeeDetail?.employee?.bank_accounts?.length > 0
-                                                    ? employeeDetail?.employee?.bank_accounts?.map((bank: any, index: number) => (
-                                                        <tr key={index}>
-                                                            <td>{bank.bank.name}</td>
-                                                            <td>{bank.account_name}</td>
-                                                            <td>{bank.account_number}</td>
-                                                            <td>{bank.iban}</td>
-                                                            <td>{bank.currency?.code}</td>
-                                                        </tr>
-                                                    )) : (
-                                                        <tr>
-                                                            <td colSpan={5}>
-                                                                No Bank Details Found
-                                                            </td>
-                                                        </tr>
-                                                    )}
+                                                    {employeeDetail?.employee?.bank_accounts?.length > 0
+                                                        ? employeeDetail?.employee?.bank_accounts?.map((bank: any, index: number) => (
+                                                            <tr key={index}>
+                                                                <td>{bank.bank.name}</td>
+                                                                <td>{bank.account_name}</td>
+                                                                <td>{bank.account_number}</td>
+                                                                <td>{bank.iban}</td>
+                                                                <td>{bank.currency?.code}</td>
+                                                            </tr>
+                                                        )) : (
+                                                            <tr>
+                                                                <td colSpan={5}>
+                                                                    No Bank Details Found
+                                                                </td>
+                                                            </tr>
+                                                        )}
                                                 </tbody>
                                             </table>
                                         </div>
@@ -308,19 +331,19 @@ const View = () => {
                                         <div className="table-responsive">
                                             <table>
                                                 <thead>
-                                                <tr>
-                                                    <th>Document</th>
-                                                    <th>Document Name</th>
-                                                    <th>Description</th>
-                                                </tr>
+                                                    <tr>
+                                                        <th>Document</th>
+                                                        <th>Document Name</th>
+                                                        <th>Description</th>
+                                                    </tr>
                                                 </thead>
                                                 <tbody>
-                                                {employeeDetail?.employee?.documents?.length > 0
-                                                    ? employeeDetail?.employee?.documents?.map((document: any, index: number) => (
-                                                        <tr key={index}>
-                                                            <td>
-                                                                {document.document
-                                                                    ? (<span
+                                                    {employeeDetail?.employee?.documents?.length > 0
+                                                        ? employeeDetail?.employee?.documents?.map((document: any, index: number) => (
+                                                            <tr key={index}>
+                                                                <td>
+                                                                    {document.document
+                                                                        ? (<span
                                                                             className="flex gap-2 items-center text-primary">
                                                                             <FileDownloader
                                                                                 file={document.document.path}
@@ -336,32 +359,320 @@ const View = () => {
                                                                                 size={ButtonSize.small}
                                                                             />
                                                                         </span>
-                                                                    ) : <span>No Preview</span>
-                                                                }
-                                                            </td>
-                                                            <td>{document.name}</td>
-                                                            <td>{document.description}</td>
-                                                        </tr>
-                                                    )) : (
-                                                        <tr>
-                                                            <td colSpan={2}>
-                                                                No Documents Found
-                                                            </td>
-                                                        </tr>
-                                                    )}
+                                                                        ) : <span>No Preview</span>
+                                                                    }
+                                                                </td>
+                                                                <td>{document.name}</td>
+                                                                <td>{document.description}</td>
+                                                            </tr>
+                                                        )) : (
+                                                            <tr>
+                                                                <td colSpan={2}>
+                                                                    No Documents Found
+                                                                </td>
+                                                            </tr>
+                                                        )}
                                                 </tbody>
                                             </table>
                                         </div>
                                     </div>
                                 </Tab.Panel>
                                 <Tab.Panel>
-                                    <div></div>
+                                    <div>
+                                        <div className="flex md:justify-between md:items-center mb-3">
+                                            <h3 className="text-lg font-bold">Leaves Details</h3>
+                                            <Button
+                                                type={ButtonType.button}
+                                                text="Add Leave"
+                                                variant={ButtonVariant.primary}
+                                                size={ButtonSize.small}
+                                                onClick={() => {
+
+                                                }}
+                                            />
+                                        </div>
+                                        <div className="table-responsive">
+                                            <table>
+                                                <thead>
+                                                    <tr>
+                                                        <th>Leave Date</th>
+                                                        <th>Leave Catagory</th>
+                                                        <th>Leave Type</th>
+                                                        <th>Reason</th>
+                                                        <th>Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {employeeDetail?.employee?.leaves?.length > 0
+                                                        ? employeeDetail?.employee?.leaves?.map((leave: any, index: number) => (
+                                                            <tr key={index}>
+                                                                <td>{leave.date}</td>
+                                                                <td>{leave.catagory}</td>
+                                                                <td>{leave.leave_type}</td>
+                                                                <td>{leave.reason}</td>
+                                                                <td>{leave.status}</td>
+                                                            </tr>
+                                                        )) : (
+                                                            <tr>
+                                                                <td colSpan={5}>
+                                                                    No Leaves Found
+                                                                </td>
+                                                            </tr>
+                                                        )}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
                                 </Tab.Panel>
                                 <Tab.Panel>
-                                    <div></div>
+                                    <div>
+                                        <div className="flex md:justify-between md:items-center mb-3">
+                                            <h3 className="text-lg font-bold">Payroll Details</h3>
+                                            <Button
+                                                type={ButtonType.button}
+                                                text="Add Payroll"
+                                                variant={ButtonVariant.primary}
+                                                size={ButtonSize.small}
+                                                onClick={() => {
+
+                                                }}
+                                            />
+                                        </div>
+                                        <div className="table-responsive">
+                                            <table>
+                                                <thead>
+                                                    <tr>
+                                                        <th>Payroll Code</th>
+                                                        <th>Payroll Month</th>
+                                                        <th>Basic Pay</th>
+                                                        <th>Bonus</th>
+                                                        <th>Gross Salary</th>
+                                                        <th>Deduction</th>
+                                                        <th>Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {employeeDetail?.employee?.payrolls?.length > 0
+                                                        ? employeeDetail?.employee?.payrolls?.map((payroll: any, index: number) => (
+                                                            <tr key={index}>
+                                                                <td>{payroll.payroll_code}</td>
+                                                                <td>{payroll.payroll_month}</td>
+                                                                <td>{payroll.basic_pay}</td>
+                                                                <td>{payroll.bonus}</td>
+                                                                <td>{payroll.gross_salary}</td>
+                                                                <td>{payroll.deduction}</td>
+                                                                <td>{payroll.status}</td>
+                                                            </tr>
+                                                        )) : (
+                                                            <tr>
+                                                                <td colSpan={5}>
+                                                                    No Payrolls Found
+                                                                </td>
+                                                            </tr>
+                                                        )}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
                                 </Tab.Panel>
                                 <Tab.Panel>
-                                    <div></div>
+                                    <div>
+                                        <div className="flex md:justify-between md:items-center mb-3">
+                                            <h3 className="text-lg font-bold">Attendance Details</h3>
+                                            <Button
+                                                type={ButtonType.button}
+                                                text="Add Attendance"
+                                                variant={ButtonVariant.primary}
+                                                size={ButtonSize.small}
+                                                onClick={() => {
+
+                                                }}
+                                            />
+                                        </div>
+                                        <div className="table-responsive">
+                                            <table>
+                                                <thead>
+                                                    <tr>
+                                                        <th>Date</th>
+                                                        <th>Check In</th>
+                                                        <th>Check Out</th>
+                                                        <th>Total Working Hours</th>
+                                                        <th>Overtime</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {employeeDetail?.employee?.attendances?.length > 0
+                                                        ? employeeDetail?.employee?.attendances?.map((attendance: any, index: number) => (
+                                                            <tr key={index}>
+                                                                <td>{attendance.date}</td>
+                                                                <td>{attendance.check_in}</td>
+                                                                <td>{attendance.check_out}</td>
+                                                                <td>{attendance.total_working_hours}</td>
+                                                                <td>{attendance.overtime}</td>
+                                                            </tr>
+                                                        )) : (
+                                                            <tr>
+                                                                <td colSpan={5}>
+                                                                    No Attendances Found
+                                                                </td>
+                                                            </tr>
+                                                        )}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </Tab.Panel>
+                                <Tab.Panel>
+                                    <div>
+                                        <div className="flex md:justify-between md:items-center mb-3">
+                                            <h3 className="text-lg font-bold">Loan Details</h3>
+                                            <Button
+                                                type={ButtonType.button}
+                                                text="Add Loans"
+                                                variant={ButtonVariant.primary}
+                                                size={ButtonSize.small}
+                                                onClick={() => {
+
+                                                }}
+                                            />
+                                        </div>
+                                        <div className="table-responsive">
+                                            <table>
+                                                <thead>
+                                                    <tr>
+                                                        <th>Loan Code</th>
+                                                        <th>Loan Month</th>
+                                                        <th>Amount</th>
+                                                        <th>Loan Date</th>
+                                                        <th>Paying Date</th>
+                                                        <th>Status</th>
+
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {employeeDetail?.employee?.loans?.length > 0
+                                                        ? employeeDetail?.employee?.loans?.map((loan: any, index: number) => (
+                                                            <tr key={index}>
+                                                                <td>{loan.code}</td>
+                                                                <td>{loan.loan_month}</td>
+                                                                <td>{loan.amount}</td>
+                                                                <td>{loan.loan_date}</td>
+                                                                <td>{loan.paying_date}</td>
+                                                                <td>{loan.status}</td>
+                                                            </tr>
+                                                        )) : (
+                                                            <tr>
+                                                                <td colSpan={5}>
+                                                                    No Loans Found
+                                                                </td>
+                                                            </tr>
+                                                        )}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </Tab.Panel>
+                                <Tab.Panel>
+                                    <div>
+                                        <div className="flex md:justify-between md:items-center mb-3">
+                                            <h3 className="text-lg font-bold">Comission Details</h3>
+                                            <Button
+                                                type={ButtonType.button}
+                                                text="Add Comissions"
+                                                variant={ButtonVariant.primary}
+                                                size={ButtonSize.small}
+                                                onClick={() => {
+
+                                                }}
+                                            />
+                                        </div>
+                                        <div className="table-responsive">
+                                            <table>
+                                                <thead>
+                                                    <tr>
+                                                        <th>Comission Code</th>
+                                                        <th>Comission Date</th>
+                                                        <th>Amount</th>
+                                                        <th>Source</th>
+                                                        <th>Reason</th>
+                                                        <th>Approved By</th>
+                                                        <th>Paid Through</th>
+                                                        <th>Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {employeeDetail?.employee?.comissions?.length > 0
+                                                        ? employeeDetail?.employee?.comissions?.map((comission: any, index: number) => (
+                                                            <tr key={index}>
+                                                                <td>{comission.code}</td>
+                                                                <td>{comission.date}</td>
+                                                                <td>{comission.amount}</td>
+                                                                <td>{comission.source}</td>
+                                                                <td>{comission.reason}</td>
+                                                                <td>{comission.approved_by}</td>
+                                                                <td>{comission.paid_through}</td>
+                                                                <td>{comission.status}</td>
+                                                            </tr>
+                                                        )) : (
+                                                            <tr>
+                                                                <td colSpan={5}>
+                                                                    No Comissions Found
+                                                                </td>
+                                                            </tr>
+                                                        )}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </Tab.Panel>
+                                <Tab.Panel>
+                                    <div>
+                                        <div className="flex md:justify-between md:items-center mb-3">
+                                            <h3 className="text-lg font-bold">Advance Salaries Details</h3>
+                                            <Button
+                                                type={ButtonType.button}
+                                                text="Add Advance Salary"
+                                                variant={ButtonVariant.primary}
+                                                size={ButtonSize.small}
+                                                onClick={() => {
+
+                                                }}
+                                            />
+                                        </div>
+                                        <div className="table-responsive">
+                                            <table>
+                                                <thead>
+                                                    <tr>
+                                                        <th>Salary Month</th>
+                                                        <th>No of Salaries</th>
+                                                        <th>Aproval Date</th>
+                                                        <th>Approved By</th>
+                                                        <th>Paying Months</th>
+                                                        <th>Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {employeeDetail?.employee?.advance_salaries?.length > 0
+                                                        ? employeeDetail?.employee?.advance_salaries?.map((advance_salary: any, index: number) => (
+                                                            <tr key={index}>
+                                                                <td>{advance_salary.salary_month}</td>
+                                                                <td>{advance_salary.no_of_salaries}</td>
+                                                                <td>{advance_salary.aproval_date}</td>
+                                                                <td>{advance_salary.approved_by}</td>
+                                                                <td>{advance_salary.paying_months}</td>
+                                                                <td>{advance_salary.status}</td>
+                                                            </tr>
+                                                        )) : (
+                                                            <tr>
+                                                                <td colSpan={5}>
+                                                                    No Advance Salary Found
+                                                                </td>
+                                                            </tr>
+                                                        )}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
                                 </Tab.Panel>
                                 <Tab.Panel>
                                     <div>
@@ -382,76 +693,76 @@ const View = () => {
                                         <div className="table-responsive">
                                             <table>
                                                 <thead>
-                                                <tr>
-                                                    <th>Rule Name</th>
-                                                    <th>IP Address</th>
-                                                    <th>Weekdays</th>
-                                                    <th>Start Time</th>
-                                                    <th>End Time</th>
-                                                    <th>Status</th>
-                                                    <th>Action</th>
-                                                </tr>
+                                                    <tr>
+                                                        <th>Rule Name</th>
+                                                        <th>IP Address</th>
+                                                        <th>Weekdays</th>
+                                                        <th>Start Time</th>
+                                                        <th>End Time</th>
+                                                        <th>Status</th>
+                                                        <th>Action</th>
+                                                    </tr>
                                                 </thead>
                                                 <tbody>
-                                                {employeeLoginRules.length > 0
-                                                    ? (
-                                                        employeeLoginRules.map((rule: any, index: number) => (
-                                                            <tr key={index}>
-                                                                <td>{rule.rule_name}</td>
-                                                                <td>{rule.ip_address === '*' ? rule.ip_address + ' Everywhere' : rule.ip_address}</td>
-                                                                <td>{rule.week_days ?? 'All Days'}</td>
-                                                                <td>{rule.start_time ?? 'All Times'}</td>
-                                                                <td>{rule.end_time ?? 'All Times'}</td>
-                                                                <td>{rule.is_active === 1 ? 'Active' : 'No Active'}</td>
-                                                                <td>
-                                                                    <div className="flex gap-2">
-                                                                        <button
-                                                                            className="btn btn-primary btn-xs"
-                                                                            onClick={() => {
-                                                                                setNewRuleModal(true);
-                                                                                setRuleData(rule);
-                                                                                setSelectedWeekdays(rule.week_days ? rule.week_days.split(',').map((day: any) => {
-                                                                                    return { label: day, value: day };
-                                                                                }) : []);
-                                                                            }}
-                                                                        >
-                                                                            Edit
-                                                                        </button>
-                                                                        <button
-                                                                            className="btn btn-danger btn-xs"
-                                                                            onClick={() => {
-                                                                                Swal.fire({
-                                                                                    title: 'Are you sure?',
-                                                                                    text: 'You won\'t be able to revert this!',
-                                                                                    icon: 'warning',
-                                                                                    showCancelButton: true,
-                                                                                    confirmButtonText: 'Yes, delete it!',
-                                                                                    cancelButtonText: 'No, cancel!',
-                                                                                    cancelButtonColor: 'red',
-                                                                                    confirmButtonColor: 'green'
-                                                                                }).then((result) => {
-                                                                                    if (result.isConfirmed) {
-                                                                                        // console.log(unusedItems.map((row: any) => row.id));
-                                                                                        dispatch(deleteUserLoginRule(rule.id));
-                                                                                        setNewRuleModal(false);
-                                                                                        setRuleData({});
-                                                                                        dispatch(getUserLoginRules(employeeDetail.id));
-                                                                                    }
-                                                                                });
-                                                                            }}
-                                                                        >
-                                                                            Delete
-                                                                        </button>
-                                                                    </div>
+                                                    {employeeLoginRules.length > 0
+                                                        ? (
+                                                            employeeLoginRules.map((rule: any, index: number) => (
+                                                                <tr key={index}>
+                                                                    <td>{rule.rule_name}</td>
+                                                                    <td>{rule.ip_address === '*' ? rule.ip_address + ' Everywhere' : rule.ip_address}</td>
+                                                                    <td>{rule.week_days ?? 'All Days'}</td>
+                                                                    <td>{rule.start_time ?? 'All Times'}</td>
+                                                                    <td>{rule.end_time ?? 'All Times'}</td>
+                                                                    <td>{rule.is_active === 1 ? 'Active' : 'No Active'}</td>
+                                                                    <td>
+                                                                        <div className="flex gap-2">
+                                                                            <button
+                                                                                className="btn btn-primary btn-xs"
+                                                                                onClick={() => {
+                                                                                    setNewRuleModal(true);
+                                                                                    setRuleData(rule);
+                                                                                    setSelectedWeekdays(rule.week_days ? rule.week_days.split(',').map((day: any) => {
+                                                                                        return { label: day, value: day };
+                                                                                    }) : []);
+                                                                                }}
+                                                                            >
+                                                                                Edit
+                                                                            </button>
+                                                                            <button
+                                                                                className="btn btn-danger btn-xs"
+                                                                                onClick={() => {
+                                                                                    Swal.fire({
+                                                                                        title: 'Are you sure?',
+                                                                                        text: 'You won\'t be able to revert this!',
+                                                                                        icon: 'warning',
+                                                                                        showCancelButton: true,
+                                                                                        confirmButtonText: 'Yes, delete it!',
+                                                                                        cancelButtonText: 'No, cancel!',
+                                                                                        cancelButtonColor: 'red',
+                                                                                        confirmButtonColor: 'green'
+                                                                                    }).then((result) => {
+                                                                                        if (result.isConfirmed) {
+                                                                                            // console.log(unusedItems.map((row: any) => row.id));
+                                                                                            dispatch(deleteUserLoginRule(rule.id));
+                                                                                            setNewRuleModal(false);
+                                                                                            setRuleData({});
+                                                                                            dispatch(getUserLoginRules(employeeDetail.id));
+                                                                                        }
+                                                                                    });
+                                                                                }}
+                                                                            >
+                                                                                Delete
+                                                                            </button>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            ))) : (
+                                                            <tr>
+                                                                <td colSpan={7}>
+                                                                    No Login Rules Found
                                                                 </td>
                                                             </tr>
-                                                        ))) : (
-                                                        <tr>
-                                                            <td colSpan={7}>
-                                                                No Login Rules Found
-                                                            </td>
-                                                        </tr>
-                                                    )}
+                                                        )}
                                                 </tbody>
                                             </table>
                                         </div>

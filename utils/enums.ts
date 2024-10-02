@@ -96,6 +96,7 @@ export enum ActionList {
 
 
 export enum AppBasePath {
+     
     Raw_Product = '/apps/inventory/raw-product',
     Product_Assembly = '/apps/manufacturing/formula',
     Production = '/apps/manufacturing/production',
@@ -130,4 +131,5 @@ export enum AppBasePath {
     Debit_Notes = '/apps/purchase/debit-notes',
     General_Payment_Voucher = '/apps/accounting/general-voucher/payment-voucher',
     General_Receipt_Voucher = '/apps/accounting/general-voucher/receipt-voucher',
+    Template = '/hrm/configuration/template'
 }
