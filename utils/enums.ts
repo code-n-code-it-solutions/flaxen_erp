@@ -129,5 +129,6 @@ export enum AppBasePath {
     Debit_Notes = '/apps/purchase/debit-notes',
     General_Payment_Voucher = '/apps/accounting/general-voucher/payment-voucher',
     General_Receipt_Voucher = '/apps/accounting/general-voucher/receipt-voucher',
-    Template = '/hrm/configuration/template'
+    Template = '/hrm/configuration/template',
+    Leave_Type = "Leave_Type"
 }
