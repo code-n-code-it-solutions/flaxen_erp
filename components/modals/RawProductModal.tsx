@@ -430,7 +430,7 @@ const RawProductModal = ({modalOpen, setModalOpen, handleSubmit, listFor, detail
                     isMasked={false}
                 />
             )}
-            {(listFor === RAW_PRODUCT_LIST_TYPE.PRODUCT_ASSEMBLY || listFor === RAW_PRODUCT_LIST_TYPE.PRODUCTION || listFor === RAW_PRODUCT_LIST_TYPE.PURCHASE_REQUISITION || listFor === RAW_PRODUCT_LIST_TYPE.GOOD_RECEIVE_NOTE) && (
+            {(listFor === RAW_PRODUCT_LIST_TYPE.PRODUCT_ASSEMBLY || listFor === RAW_PRODUCT_LIST_TYPE.PRODUCTION || listFor === RAW_PRODUCT_LIST_TYPE.PURCHASE_REQUISITION || listFor === RAW_PRODUCT_LIST_TYPE.LOCAL_PURCHASE_ORDER || listFor === RAW_PRODUCT_LIST_TYPE.GOOD_RECEIVE_NOTE) && (
                 <>
                     <Input
                         label={'Unit Cost (' + valuationMethod + ')'}

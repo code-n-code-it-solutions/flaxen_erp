@@ -20,7 +20,7 @@ const Create = () => {
     useEffect(() => {
         if (employee && success) {
             dispatch(clearEmployeeState());
-            router.push('/apps/employees/employee-list');
+            router.push('/apps/hrm/employees');
         }
     }, [employee, success]);
 
@@ -36,7 +36,7 @@ const Create = () => {
                     type: ButtonType.link,
                     variant: ButtonVariant.primary,
                     icon: IconType.back,
-                    link: '/apps/employees/employee-list'
+                    link: '/apps/hrm/employees'
                 }
             ]}
         >
