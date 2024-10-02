@@ -36,57 +36,46 @@ const Index = () => {
         },
         {
             headerName: 'Bill Number',
-            field: 'vendor_bill.bill_number',
-            minWidth: 150,
-            filter: false,
-            floatingFilter: false
-        },
-        {
-            headerName: 'Bill Payment Code',
-            field: 'payment_code',
+            field: 'bill_number',
             minWidth: 150,
             filter: false,
             floatingFilter: false
         },
         {
             headerName: 'Ref #',
-            field: 'vendor_bill.bill_reference',
+            field: 'bill_reference',
             minWidth: 150,
             filter: false,
             floatingFilter: false
         },
         {
-            headerName: 'Bill Type',
-            field: 'vendor_bill.bill_type',
+            headerName: 'Bill Date',
+            field: 'bill_date',
             minWidth: 150,
             filter: false,
             floatingFilter: false
         },
-        // {
-        //     headerName: 'Bill Date',
-        //     field: 'vendor_bill.bill_date',
-        //     minWidth: 150,
-        //     filter: false,
-        //     floatingFilter: false
-        // },
-        // {
-        //     headerName: 'Payment Date',
-        //     field: 'vendor_bill.payment_date',
-        //     minWidth: 150,
-        //     filter: false,
-        //     floatingFilter: false
-        // },
         {
-            headerName: 'Invoice Amount',
-            field: 'due_amount',
+            headerName: 'Bill Amount',
+            field: 'total_amount',
+            valueGetter: (row: any) => row.data?.total_amount
+                ? row.data?.total_amount.toLocaleString(undefined, {
+                    minimumFractionDigits: 3,
+                    maximumFractionDigits: 3
+                }) : 0,
             minWidth: 150,
             filter: false,
             floatingFilter: false,
             aggFunc: 'sum'
         },
         {
-            headerName: 'Received Amount',
+            headerName: 'Paid Amount',
             field: 'paid_amount',
+            valueGetter: (row: any) => row.data?.paid_amount
+                ? row.data?.paid_amount.toLocaleString(undefined, {
+                    minimumFractionDigits: 3,
+                    maximumFractionDigits: 3
+                }) : 0,
             minWidth: 150,
             filter: false,
             floatingFilter: false,
@@ -95,7 +84,12 @@ const Index = () => {
         {
             headerName: 'Balance',
             minWidth: 150,
-            valueGetter: (row: any) => row.data?.due_amount - row.data?.paid_amount,
+            field: 'due_amount',
+            valueGetter: (row: any) => row.data?.due_amount
+                ? row.data?.due_amount.toLocaleString(undefined, {
+                    minimumFractionDigits: 3,
+                    maximumFractionDigits: 3
+                }) : 0,
             filter: false,
             floatingFilter: false,
             aggFunc: 'sum'
@@ -104,14 +98,20 @@ const Index = () => {
 
     const calculateTotals = () => {
         const totals = {
+            vendor: '',
             bill_number: 'Total',
             bill_reference: '',
-            bill_type: '',
             bill_date: '',
-            debit: 0,
-            credit: 0,
-            balance: 0
+            total_amount: 0,
+            paid_amount: 0,
+            due_amount: 0
         };
+
+        reportData.forEach((item: any) => {
+            totals.total_amount += item.total_amount;
+            totals.paid_amount += item.paid_amount;
+            totals.due_amount += item.due_amount;
+        });
 
         // console.log(totals);
         setPinnedBottomRowData([totals]);

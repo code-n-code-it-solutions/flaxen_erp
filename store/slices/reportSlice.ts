@@ -201,6 +201,18 @@ export const reportSlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message;
             })
+            .addCase(getCustomerAccountReport.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getCustomerAccountReport.fulfilled, (state, action) => {
+                state.loading = false;
+                state.customerAccounts = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getCustomerAccountReport.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
             .addCase(getVendorStatementReport.pending, (state) => {
                 state.loading = true;
             })
