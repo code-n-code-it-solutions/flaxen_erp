@@ -8,13 +8,11 @@ import { getIcon, isValidIPAddress, serverFilePath } from '@/utils/helper';
 import Image from 'next/image';
 import { AppBasePath, ButtonSize, ButtonType, ButtonVariant, IconType } from '@/utils/enums';
 import FileDownloader from '@/components/FileDownloader';
-import AppLayout from '@/components/Layouts/AppLayout';
 import DetailPageHeader from '@/components/apps/DetailPageHeader';
 import { Tab } from '@headlessui/react';
 import Button from '@/components/Button';
 import Modal from '@/components/Modal';
 import { Input } from '@/components/form/Input';
-import { Dropdown } from '@/components/form/Dropdown';
 import Select, { MultiValue } from 'react-select';
 import Option from '@/components/form/Option';
 import Swal from 'sweetalert2';
@@ -24,15 +22,13 @@ import {
     getUserLoginRules,
     storeUserLoginRule
 } from '@/store/slices/userLoginRuleSlice';
-import { deleteRawProduct, getRawProducts } from '@/store/slices/rawProductSlice';
 import DocumentFormModal from '@/components/modals/DocumentFormModal';
-import documentFormModal from '@/components/modals/DocumentFormModal';
-import BankFormModal from '@/components/modals/BankFormModal';
 import BankDetailModal from '@/components/modals/BankDetailModal';
 
 const View = () => {
     const dispatch = useAppDispatch();
     const router = useRouter();
+    const { user } = useAppSelector(state => state.user);
     const { loading, employeeDetail } = useAppSelector(state => state.employee);
     const { userLoginRules, userLoginRule, loading: ruleLoading } = useAppSelector(state => state.userRuleLogin);
 

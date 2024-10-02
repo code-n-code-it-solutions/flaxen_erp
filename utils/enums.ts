@@ -121,6 +121,8 @@ export enum AppBasePath {
     General_Journal = '/apps/accounting/general-journal',
     Vendor_Report_Account = '/apps/reporting/purchases/vendors/account',
     Vendor_Report_Statement = '/apps/reporting/purchases/vendors/statement',
+    Customer_Report_Account = '/apps/reporting/sales/customers/account',
+    Customer_Report_Statement = '/apps/reporting/sales/customers/statement',
     Employee_Permission = '/apps/employees/configuration/permissions',
     Super_Admin_Permission = '/apps/super-admin/permissions',
     Employee = '/apps/employees/employees-list',
