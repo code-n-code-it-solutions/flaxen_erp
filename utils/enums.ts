@@ -96,6 +96,7 @@ export enum ActionList {
 
 
 export enum AppBasePath {
+     
     Raw_Product = '/apps/inventory/raw-product',
     Product_Assembly = '/apps/manufacturing/formula',
     Production = '/apps/manufacturing/production',
@@ -121,6 +122,8 @@ export enum AppBasePath {
     General_Journal = '/apps/accounting/general-journal',
     Vendor_Report_Account = '/apps/reporting/purchases/vendors/account',
     Vendor_Report_Statement = '/apps/reporting/purchases/vendors/statement',
+    Customer_Report_Account = '/apps/reporting/sales/customers/account',
+    Customer_Report_Statement = '/apps/reporting/sales/customers/statement',
     Employee_Permission = '/apps/employees/configuration/permissions',
     Super_Admin_Permission = '/apps/super-admin/permissions',
     Employee = '/apps/employees/employees-list',
@@ -128,4 +131,5 @@ export enum AppBasePath {
     Debit_Notes = '/apps/purchase/debit-notes',
     General_Payment_Voucher = '/apps/accounting/general-voucher/payment-voucher',
     General_Receipt_Voucher = '/apps/accounting/general-voucher/receipt-voucher',
+    Template = '/hrm/configuration/template'
 }

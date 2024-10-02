@@ -122,7 +122,7 @@ const Index = () => {
                         show: true,
                         type: 'link',
                         text: 'New',
-                        link: '/apps/employees/employee-list/create'
+                        link: '/apps/hrm/employees/create'
                     },
                     title: 'Employees',
                     showSetting: true
@@ -132,11 +132,11 @@ const Index = () => {
                 buttonActions={{
                     delete: () => handleDelete(),
                     export: () => console.log('exported'),
-                    print: () => router.push('/apps/employees/employee-list/print/' + selectedRows.map(row => row.id).join('/')),
+                    print: () => router.push('/apps/hrm/employees/print/' + selectedRows.map(row => row.id).join('/')),
                     archive: () => console.log('archived'),
                     unarchive: () => console.log('unarchived'),
                     duplicate: () => console.log('duplicated'),
-                    printLabel: () => router.push('/apps/employees/employee-list/print-label/' + selectedRows.map(row => row.id).join('/'))
+                    printLabel: () => router.push('/apps/hrm/employees/print-label/' + selectedRows.map(row => row.id).join('/'))
                 }}
             />
             <div>
@@ -151,7 +151,7 @@ const Index = () => {
                         // const displayedColumns = params.api.getAllDisplayedColumns();
                         // console.log(displayedColumns, params.column, displayedColumns[0], displayedColumns[0] === params.column);
                         // return displayedColumns[0] === params.column;
-                        router.push(`/apps/employees/employee-list/view/${params.data.id}`);
+                        router.push(`/apps/hrm/employees/view/${params.data.id}`);
                     }}
                 />
             </div>

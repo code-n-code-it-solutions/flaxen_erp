@@ -334,6 +334,7 @@ const DeliveryNoteForm = () => {
         // console.log(deliveryNoteItems);
 
         // Proceed with form submission if there are no invalid rows
+
         if (deliveryNoteItems.length === 0) {
             Swal.fire({
                 icon: 'error',
@@ -341,10 +342,14 @@ const DeliveryNoteForm = () => {
                 text: 'Please select a quotation to proceed'
             });
         } else {
-            dispatch(storeDeliveryNote({
+            console.log({
                 ...formData,
                 delivery_note_items: deliveryNoteItems
-            }));
+            });
+            // dispatch(storeDeliveryNote({
+            //     ...formData,
+            //     delivery_note_items: deliveryNoteItems
+            // }));
         }
     };
 
