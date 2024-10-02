@@ -342,14 +342,14 @@ const DeliveryNoteForm = () => {
                 text: 'Please select a quotation to proceed'
             });
         } else {
-            console.log({
-                ...formData,
-                delivery_note_items: deliveryNoteItems
-            });
-            // dispatch(storeDeliveryNote({
+            // console.log({
             //     ...formData,
             //     delivery_note_items: deliveryNoteItems
-            // }));
+            // });
+            dispatch(storeDeliveryNote({
+                ...formData,
+                delivery_note_items: deliveryNoteItems
+            }));
         }
     };
 
