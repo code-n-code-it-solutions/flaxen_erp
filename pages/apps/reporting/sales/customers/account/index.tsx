@@ -35,35 +35,41 @@ const Index = () => {
     const [colDefs, setColDefs] = useState<any>([
         {
             headerName: 'Customer',
+            field: 'customer',
             minWidth: 150,
-            valueGetter: (row: any) => row.data?.vendor?.name + ' (' + row.data?.vendor?.vendor_number + ')',
+            valueGetter: (row: any) => row.data?.customer?.name + ' (' + row.data?.customer?.customer_code + ')',
             filter: false,
             floatingFilter: false
         },
         {
             headerName: 'Invoice #',
-            field: 'vendor_bill.bill_number',
+            field: 'sale_invoice_code',
             minWidth: 150,
             filter: false,
             floatingFilter: false
         },
         {
-            headerName: 'Payment Code',
-            field: 'payment_code',
+            headerName: 'Invoice Date',
+            field: 'invoice_date',
             minWidth: 150,
             filter: false,
             floatingFilter: false
         },
         {
             headerName: 'Ref #',
-            field: 'vendor_bill.bill_reference',
+            field: 'payment_reference',
             minWidth: 150,
             filter: false,
             floatingFilter: false
         },
         {
             headerName: 'Invoice Amount',
-            field: 'due_amount',
+            field: 'total_amount',
+            valueGetter: (row: any) => row.data?.total_amount
+                ? row.data?.total_amount.toLocaleString(undefined, {
+                    minimumFractionDigits: 3,
+                    maximumFractionDigits: 3
+                }) : 0,
             minWidth: 150,
             filter: false,
             floatingFilter: false,
@@ -71,7 +77,12 @@ const Index = () => {
         },
         {
             headerName: 'Received Amount',
-            field: 'paid_amount',
+            field: 'received_amount',
+            valueGetter: (row: any) => row.data?.received_amount
+                ? row.data?.received_amount.toLocaleString(undefined, {
+                    minimumFractionDigits: 3,
+                    maximumFractionDigits: 3
+                }) : 0,
             minWidth: 150,
             filter: false,
             floatingFilter: false,
@@ -80,7 +91,12 @@ const Index = () => {
         {
             headerName: 'Balance',
             minWidth: 150,
-            valueGetter: (row: any) => row.data?.due_amount - row.data?.paid_amount,
+            field: 'due_amount',
+            valueGetter: (row: any) => row.data?.due_amount
+                ? row.data?.due_amount.toLocaleString(undefined, {
+                    minimumFractionDigits: 3,
+                    maximumFractionDigits: 3
+                }) : 0,
             filter: false,
             floatingFilter: false,
             aggFunc: 'sum'
@@ -89,14 +105,20 @@ const Index = () => {
 
     const calculateTotals = () => {
         const totals = {
-            bill_number: 'Total',
-            bill_reference: '',
-            bill_type: '',
-            bill_date: '',
-            debit: 0,
-            credit: 0,
-            balance: 0
+            customer: '',
+            sale_invoice_code: 'Total',
+            invoice_date: '',
+            payment_reference: '',
+            total_amount: 0,
+            received_amount: 0,
+            due_amount: 0
         };
+
+        reportData.forEach((item: any) => {
+            totals.total_amount += item.total_amount;
+            totals.received_amount += item.received_amount;
+            totals.due_amount += item.due_amount;
+        });
 
         // console.log(totals);
         setPinnedBottomRowData([totals]);
@@ -204,7 +226,7 @@ const Index = () => {
                                 name="from_date"
                                 value={formData.from_date}
                                 onChange={(e) => handleChange('from_date', e[0] ? e[0].toLocaleDateString() : '', true)}
-                                placeholder="Enter Filling Date"
+                                placeholder="Enter From Date"
                                 isMasked={false}
                             />
                             <Input
@@ -214,7 +236,7 @@ const Index = () => {
                                 name="to_date"
                                 value={formData.to_date}
                                 onChange={(e) => handleChange('to_date', e[0] ? e[0].toLocaleDateString() : '', true)}
-                                placeholder="Enter Filling Date"
+                                placeholder="Enter End Date"
                                 isMasked={false}
                             />
                             <Button
