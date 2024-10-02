@@ -5,29 +5,29 @@ import { setPageTitle } from "@/store/slices/themeConfigSlice";
 import PageWrapper from "@/components/PageWrapper";
 import { clearTemplateState } from "@/store/slices/templateSlice";
 import { ButtonType, ButtonVariant, IconType } from "@/utils/enums";
-import TemplateFormModal from '@/components/modals/TemplateFormModal'; 
+import TemplateFormModal from '@/components/modals/TemplateFormModal';
 import AppLayout from '@/components/Layouts/AppLayout';
 
 const CreateTemplate = () => {
     const dispatch = useAppDispatch();
     const router = useRouter();
-    const { template, loading, success } = useAppSelector(state => state.template);
+    // const { template, loading, success } = useAppSelector(state => state.template);
     const [modalOpen, setModalOpen] = useState<boolean>(false); // State to manage modal
 
     useEffect(() => {
         dispatch(setPageTitle('New Template'));
     }, [dispatch]);
 
-    useEffect(() => {
-        // If the template is successfully created, clear the state and navigate back
-        if (template && success) {
-            dispatch(clearTemplateState());
-            router.push('/apps/hrm/configuration/template');
-        }
-    }, [template, success, dispatch, router]);
+    // useEffect(() => {
+    //     // If the template is successfully created, clear the state and navigate back
+    //     if (template && success) {
+    //         dispatch(clearTemplateState());
+    //         router.push('/apps/hrm/configuration/template');
+    //     }
+    // }, [template, success, dispatch, router]);
 
     const handleSubmit = (formData: any) => {
-       
+
         console.log('Form data submitted:', formData);
     };
 
@@ -35,7 +35,7 @@ const CreateTemplate = () => {
         <PageWrapper
             embedLoader={false}
             breadCrumbItems={[]}
-            loading={loading}
+            // loading={loading}
             title="Create Template"
             buttons={[
                 {

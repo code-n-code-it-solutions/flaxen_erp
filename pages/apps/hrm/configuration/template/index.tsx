@@ -20,7 +20,7 @@ const Index = () => {
     const router = useRouter(); // Initialize the router
 
     const { token } = useAppSelector((state) => state.user);
-    const { templates } = useAppSelector((state) => state.template || { templates: [] });
+    // const { templates } = useAppSelector((state) => state.template || { templates: [] });
 
     const [selectedRows, setSelectedRows] = useState<any[]>([]);
     const [templateTypeOptions, setTemplateTypeOptions] = useState<any[]>([
@@ -95,13 +95,13 @@ const Index = () => {
         setRowData([]);
     }, [dispatch, token]);
 
-    useEffect(() => {
-        if (templates) {
-            setRowData(templates);
-        } else {
-            setRowData([]);
-        }
-    }, [templates]);
+    // useEffect(() => {
+    //     if (templates) {
+    //         setRowData(templates);
+    //     } else {
+    //         setRowData([]);
+    //     }
+    // }, [templates]);
 
     // Navigate to the create template page
     const navigateToCreateTemplate = () => {
