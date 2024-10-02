@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Modal from '@/components/Modal';
-import { Dropdown } from '@/components/form/Dropdown'; 
-import Textarea from '@/components/form/Textarea'; 
+import { Dropdown } from '@/components/form/Dropdown';
+import Textarea from '@/components/form/Textarea';
 import { IRootState, useAppDispatch, useAppSelector } from '@/store';
 import { generateCode } from '@/store/slices/utilSlice';
 import { FORM_CODE_TYPE } from '@/utils/enums'; // Ensure TEMPLATE is correctly defined in enums
@@ -54,7 +54,7 @@ const TemplateFormModal = ({ modalOpen, setModalOpen, handleSubmit, modalFormDat
                 setTemplateBody(modalFormData.template_body);
                 setTemplateCode(modalFormData.template_code);
             } else {
-                dispatch(generateCode(FORM_CODE_TYPE.TEMPLATE)); // Make sure TEMPLATE is defined
+                // dispatch(generateCode(FORM_CODE_TYPE.TEMPLATE)); // Make sure TEMPLATE is defined
             }
         }
     }, [modalOpen, modalFormData]);
@@ -158,21 +158,25 @@ const TemplateFormModal = ({ modalOpen, setModalOpen, handleSubmit, modalFormDat
                 <label htmlFor="description">Description</label>
                 <div className="form-input-wrapper"> {/* Wrap Textarea in div */}
                     <Textarea
+                        label="Description"
                         name="description"
                         placeholder="Enter template description"
                         value={description}
                         onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
+                        isReactQuill={false}
                     />
                 </div>
             </div>
             <div className="w-full">
                 <label htmlFor="template_body">Template Body</label>
-                <div className="form-input-wrapper"> 
+                <div className="form-input-wrapper">
                     <Textarea
                         name="template_body"
                         placeholder="Enter template body with placeholders like [name], [email], [joining_date], etc."
                         value={templateBody}
                         onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setTemplateBody(e.target.value)}
+                        isReactQuill={false}
+                        label="Template Body"
                     />
                 </div>
             </div>
