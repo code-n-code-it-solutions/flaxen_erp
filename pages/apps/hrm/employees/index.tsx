@@ -122,7 +122,7 @@ const Index = () => {
                         show: true,
                         type: 'link',
                         text: 'New',
-                        link: '/apps/employees/employee-list/create'
+                        link: '/apps/hrm/employees/create'
                     },
                     title: 'Employees',
                     showSetting: true

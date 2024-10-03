@@ -56,6 +56,7 @@ export enum ButtonSize {
     large = 'lg'
 }
 
+
 export enum IconType {
     print = 'print',
     view = 'view',
@@ -121,11 +122,17 @@ export enum AppBasePath {
     General_Journal = '/apps/accounting/general-journal',
     Vendor_Report_Account = '/apps/reporting/purchases/vendors/account',
     Vendor_Report_Statement = '/apps/reporting/purchases/vendors/statement',
-    Employee_Permission = '/apps/employees/configuration/permissions',
+    Employee_Permission = '/apps/employees/configuration/employee/permissions',
     Super_Admin_Permission = '/apps/super-admin/permissions',
     Employee = '/apps/employees/employees-list',
     Credit_Notes = '/apps/sales/credit-notes',
     Debit_Notes = '/apps/purchase/debit-notes',
     General_Payment_Voucher = '/apps/accounting/general-voucher/payment-voucher',
     General_Receipt_Voucher = '/apps/accounting/general-voucher/receipt-voucher',
+    Commissions = '/apps/hrm/commissions',
+    Advance_salaries = '/apps/hrm/advance-salaries',
+    Employee_loan = '/apps/hrm/loans',
+    Employee_leaves = '/apps/hrm/leaves',
+    Employee_attendance = '/apps/hrm/attendance',
+
 }
