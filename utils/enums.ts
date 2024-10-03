@@ -16,6 +16,7 @@ export enum FORM_CODE_TYPE {
     EXPENSE = 'general_payment_voucher',
     DELIVERY_NOTE = 'delivery_note',
     SALE_INVOICE = 'sale_invoice',
+    WASTAGE = "WASTAGE",
 }
 
 export enum RAW_PRODUCT_LIST_TYPE {
@@ -28,6 +29,7 @@ export enum RAW_PRODUCT_LIST_TYPE {
     VENDOR_BILL = 'vendor_bill',
     QUOTATION = 'quotation',
     EXPENSE = 'expense',
+    WASTAGE = "WASTAGE",
 }
 
 export enum ButtonType {
@@ -96,6 +98,7 @@ export enum ActionList {
 
 
 export enum AppBasePath {
+     
     Raw_Product = '/apps/inventory/raw-product',
     Product_Assembly = '/apps/manufacturing/formula',
     Production = '/apps/manufacturing/production',
@@ -128,4 +131,6 @@ export enum AppBasePath {
     Debit_Notes = '/apps/purchase/debit-notes',
     General_Payment_Voucher = '/apps/accounting/general-voucher/payment-voucher',
     General_Receipt_Voucher = '/apps/accounting/general-voucher/receipt-voucher',
+    Template = '/hrm/configuration/template',
+    Wastage = "Wastage"
 }
