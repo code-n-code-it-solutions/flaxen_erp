@@ -4,11 +4,13 @@ import { configureSlice } from '@/utils/helper';
 
 interface IReportState {
     vendor: any;
-    rawProductStock: any;
-    finishGoodStock: any;
-    salesReportData: any;
-    vendorAccounts: any;
-    vendorStatement: any;
+    rawProductStock: any[];
+    finishGoodStock: any[];
+    salesReportData: any[];
+    vendorAccounts: any[];
+    vendorStatement: any[];
+    customerAccounts: any[];
+    customerStatement: any[];
     stock: any;
     loading: boolean;
     error: any;
@@ -18,11 +20,13 @@ interface IReportState {
 // Initial state
 const initialState: IReportState = {
     vendor: null,
-    rawProductStock: null,
-    finishGoodStock: null,
-    salesReportData: null,
-    vendorAccounts: null,
-    vendorStatement: null,
+    rawProductStock: [],
+    finishGoodStock: [],
+    salesReportData: [],
+    vendorAccounts: [],
+    vendorStatement: [],
+    customerAccounts: [],
+    customerStatement: [],
     stock: null,
     loading: false,
     error: null,
@@ -86,6 +90,20 @@ export const getVendorAccountReport = createAsyncThunk(
     }
 );
 
+export const getCustomerAccountReport = createAsyncThunk(
+    'reports/customer/account',
+    async (params: any, thunkAPI) => {
+        try {
+            const response = await API.post('/reports/customer-account', params);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to fetch';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 export const getVendorStatementReport = createAsyncThunk(
     'reports/vendor/statement',
     async (params: any, thunkAPI) => {
@@ -121,11 +139,13 @@ export const reportSlice = createSlice({
     reducers: {
         clearReportState: (state) => {
             state.vendor = null;
-            state.rawProductStock = null;
-            state.finishGoodStock = null;
-            state.salesReportData = null;
-            state.vendorAccounts = null;
-            state.vendorStatement = null;
+            state.rawProductStock = [];
+            state.finishGoodStock = [];
+            state.salesReportData = [];
+            state.vendorAccounts = [];
+            state.vendorStatement = [];
+            state.customerAccounts = [];
+            state.customerStatement = [];
             state.stock = null;
             state.error = null;
             state.success = false;
@@ -178,6 +198,18 @@ export const reportSlice = createSlice({
                 state.success = action.payload.success;
             })
             .addCase(getVendorAccountReport.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(getCustomerAccountReport.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getCustomerAccountReport.fulfilled, (state, action) => {
+                state.loading = false;
+                state.customerAccounts = action.payload.data;
+                state.success = action.payload.success;
+            })
+            .addCase(getCustomerAccountReport.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })

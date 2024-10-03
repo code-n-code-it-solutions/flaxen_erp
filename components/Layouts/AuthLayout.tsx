@@ -24,7 +24,7 @@ const AuthLayout = ({ children }: PropsWithChildren) => {
                         if(!isLocked) {
                             if (user.roles.map((role: any) => role.name).includes('Super Admin')) {
                                 router.push('/super-admin');
-                            } else if (user.roles.map((role: any) => role.name).includes('Admin')) {
+                            } else if (user.roles.map((role: any) => role.name).includes('Company Admin')) {
                                 router.push('/workspace');
                             } else {
                                 router.push('/apps');

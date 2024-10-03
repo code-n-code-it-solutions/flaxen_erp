@@ -3,9 +3,9 @@ import {useAppDispatch, useAppSelector} from "@/store";
 import {useRouter} from "next/router";
 import {setPageTitle} from "@/store/slices/themeConfigSlice";
 import PageWrapper from "@/components/PageWrapper";
-import {ButtonType, ButtonVariant, IconType} from "@/utils/enums";
-import TemplateForm from "@/pages/apps/hrm/configuration/template/TemplateForm";
-
+import { clearTemplateState } from "@/store/slices/templateSlice";
+import { ButtonType, ButtonVariant, IconType } from "@/utils/enums";
+import TemplateFormModal from '@/components/modals/TemplateFormModal'; 
 import AppLayout from '@/components/Layouts/AppLayout';
 import { clearTemplateState } from '@/store/slices/templateSlice';
 import { create } from 'lodash';
@@ -13,37 +13,56 @@ import { create } from 'lodash';
 const TemplateFormComponent = () => {
     const dispatch = useAppDispatch();
     const router = useRouter();
-    const {employee, loading, success} = useAppSelector(state => state.employee);
+    const { template, loading, success } = useAppSelector(state => state.template);
+    const [modalOpen, setModalOpen] = useState<boolean>(false); // State to manage modal
 
     useEffect(() => {
         dispatch(setPageTitle('New Template'));
     }, []);
 
     useEffect(() => {
-        if (employee && success) {
+        // If the template is successfully created, clear the state and navigate back
+        if (template && success) {
             dispatch(clearTemplateState());
-            router.push('');
+            router.push('/apps/hrm/configuration/template');
         }
-    }, [employee, success]);
+    }, [template, success, dispatch, router]);
+
+    const handleSubmit = (formData: any) => {
+       
+        console.log('Form data submitted:', formData);
+    };
 
     return (
         <PageWrapper
-        embedLoader={false}
-        breadCrumbItems={[]}
-        loading={false}
-        title="Create Template"
-        buttons={[
-            {
-                text: 'Back',
-                type: ButtonType.link,
-                variant: ButtonVariant.primary,
-                icon: IconType.back,
-                link: '/apps/hrm/configuration/template'
-            }
-        ]}
-    >
-        <TemplateForm />  
-    </PageWrapper>
+            embedLoader={false}
+            breadCrumbItems={[]}
+            loading={loading}
+            title="Create Template"
+            buttons={[
+                {
+                    text: 'Back',
+                    type: ButtonType.link,
+                    variant: ButtonVariant.primary,
+                    icon: IconType.back,
+                    link: '' // Adjust the link as needed
+                },
+                {
+                    text: 'Add New Template',
+                    type: ButtonType.button,
+                    variant: ButtonVariant.primary,
+                    icon: IconType.add,
+                    onClick: () => setModalOpen(true) // Open the modal when clicked
+                }
+            ]}
+        >
+            {/* Template form modal component */}
+            <TemplateFormModal
+                modalOpen={modalOpen} // Pass modal open state
+                setModalOpen={setModalOpen} // Pass function to close modal
+                handleSubmit={handleSubmit} // Pass submit handler
+            />
+        </PageWrapper>
     );
 };
 

@@ -23,6 +23,7 @@ const Index = () => {
     const router = useRouter();
     const dispatch = useAppDispatch();
     const { token } = useAppSelector((state) => state.user);
+    const { templates } = useAppSelector((state) => state.template || { templates: [] });
 
     const { employees, loading, success } = useAppSelector((state: IRootState) => state.employee);
     const [selectedRows, setSelectedRows] = useState<any[]>([]);
@@ -100,8 +101,21 @@ const Index = () => {
         setAuthToken(token);
         setContentType('application/json');
         dispatch(clearTemplateState());
-        dispatch(getTemplates());
-    }, []);
+        setRowData([]);
+    }, [dispatch, token]);
+
+    useEffect(() => {
+        if (templates) {
+            setRowData(templates);
+        } else {
+            setRowData([]);
+        }
+    }, [templates]);
+
+    // Navigate to the create template page
+    const navigateToCreateTemplate = () => {
+        router.push('/apps/hrm/configuration/template/create'); // Adjust the path as needed
+    };
 
     return (
         <div className="flex flex-col gap-5">

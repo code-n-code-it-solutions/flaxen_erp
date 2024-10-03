@@ -21,7 +21,7 @@ const PrintContent = ({ content }: any) => {
                 <View style={styles.infoContainer}>
                     <View style={[styles.infoColumn, { borderWidth: 1, borderColor: 'black', padding: 10 }]}>
                         <Text style={styles.text}>
-                            <Text style={styles.bold}>Quotation Code: </Text>
+                            <Text style={styles.bold}>Quotation #: </Text>
                             {content?.quotation_code}
                         </Text>
                         <Text style={styles.text}>
