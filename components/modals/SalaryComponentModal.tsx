@@ -6,33 +6,23 @@ import { ButtonType, ButtonVariant } from '@/utils/enums';
 interface IProps {
     modalOpen: boolean;
     setModalOpen: (value: boolean) => void;
-    onCreate: (data: { componentCode: string; name: string; type: string }) => void;
+    onCreate: (data: { name: string; type: string }) => void;
 }
 
 const SalaryComponentModal: React.FC<IProps> = ({ modalOpen, setModalOpen, onCreate }) => {
-    const [componentCode, setComponentCode] = useState('');
     const [name, setName] = useState('');
-    const [type, setType] = useState('Earning');
+    const [type, setType] = useState('earning');
 
     const handleSubmit = () => {
-        onCreate({ componentCode, name, type });
+        // Send the form data back to the parent component
+        onCreate({ name, type });
         setModalOpen(false);
-        setComponentCode(''); // Reset form
-        setName('');
-        setType('Earning');
+        setName('');  // Clear the input fields
+        setType('earning');  // Reset the dropdown to default
     };
 
     return (
         <Modal show={modalOpen} setShow={setModalOpen} title="Create New Payroll Component">
-            <div className="mb-4">
-                <label>Component Code</label>
-                <input
-                    type="text"
-                    value={componentCode}
-                    onChange={(e) => setComponentCode(e.target.value)}
-                    className="form-input"
-                />
-            </div>
             <div className="mb-4">
                 <label>Name</label>
                 <input
@@ -40,22 +30,29 @@ const SalaryComponentModal: React.FC<IProps> = ({ modalOpen, setModalOpen, onCre
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="form-input"
+                    placeholder="Enter name"
                 />
             </div>
             <div className="mb-4">
                 <label>Type</label>
-                <select value={type} onChange={(e) => setType(e.target.value)} className="form-select">
-                    <option value="Earning">Earning</option>
-                    <option value="Deductions">Deductions</option>
+                <select
+                    value={type}
+                    onChange={(e) => setType(e.target.value)}
+                    className="form-select"
+                >
+                    <option value="earning">Earning</option>
+                    <option value="deduction">Deduction</option>  {/* Corrected value here */}
                 </select>
             </div>
             <div className="mt-4 flex justify-end">
-                <Button
-                    type={ButtonType.button}
-                    text="Cancel"
-                    variant={ButtonVariant.secondary}
-                    onClick={() => setModalOpen(false)}
-                />
+                <div className='mr-2'>
+                    <Button
+                        type={ButtonType.button}
+                        text="Cancel"
+                        variant={ButtonVariant.secondary}
+                        onClick={() => setModalOpen(false)}
+                    />
+                </div>
                 <Button
                     type={ButtonType.button}
                     text="Create"

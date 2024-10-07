@@ -1,64 +1,125 @@
-import React, { useState } from 'react';
-import SalaryComponentModal from '@/components/modals/SalaryComponentModal'; // Ensure this path is correct
-import Button from "@/components/Button";
+import React, { useEffect, useRef, useState } from 'react';
+import PageHeader from '@/components/apps/PageHeader';
 import AgGridComponent from '@/components/apps/AgGridComponent';
-import { ButtonType, ButtonVariant } from '@/utils/enums';
+import SalaryComponentModal from '@/components/modals/SalaryComponentModal';
+import Swal from 'sweetalert2';
+import { useRouter } from 'next/router';
+import { useDispatch } from 'react-redux';
+import { AppDispatch, useAppSelector } from '@/store';
+import { clearPayrollComponentState, getPayrollComponents, storePayrollComponent } from '@/store/slices/payrollComponentsSlice';
 
-const PayrollIndex = () => {
-    const [modalOpen, setModalOpen] = useState(false); // State for modal visibility
-    const [rowData, setRowData] = useState<any[]>([]); // Assume this will be populated with your data
+const SalaryComponents = () => {
+    const router = useRouter();
+    const gridRef = useRef<any>(null);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [selectedRows, setSelectedRows] = useState<any[]>([]);
+    const dispatch: AppDispatch = useDispatch();
 
-    // Define the handler to create the component
-    const handleCreateComponent = (data: { componentCode: string; name: string; type: string }) => {
-        console.log('Component Created:', data);
-        // Add the new component to the row data
-        setRowData((prev) => [...prev, { ...data }]);
-        setModalOpen(false); // Close the modal after creation
-    };
+    // Correctly accessing the components from payrollComponents slice
+    const { components } = useAppSelector((state) => state.payrollComponent);
 
     const colDefs = [
-        { headerName: 'Component Code', field: 'componentCode' },
         { headerName: 'Name', field: 'name' },
         { headerName: 'Type', field: 'type' },
         {
             headerName: 'Actions',
             cellRenderer: (params: any) => (
-                <Button
-                    type={ButtonType.button}
-                    text="Edit"
-                    variant={ButtonVariant.primary}
-                    // Add your edit functionality here
-                />
+                <div className="flex gap-2">
+                    <button className="btn btn-primary" onClick={() => router.push(`/apps/hrm/payroll/edit/${params.data.id}`)}>
+                        Edit
+                    </button>
+                    <button className="btn btn-danger" onClick={() => handleDelete(params.data.id)}>
+                        Delete
+                    </button>
+                </div>
             ),
         },
     ];
 
+    // Fetch salary components when the component mounts
+    useEffect(() => {
+        dispatch(getPayrollComponents());
+        return () => {
+            dispatch(clearPayrollComponentState()); // Clear Redux state on unmount
+        };
+    }, [dispatch]);
+
+    // Handle the deletion of a salary component
+    const handleDelete = (id: string) => {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'This action cannot be undone!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'No, cancel!',
+            cancelButtonColor: 'red',
+            confirmButtonColor: 'green',
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                // Action to delete the component
+                Swal.fire('Deleted!', 'Salary component has been deleted.', 'success');
+            }
+        });
+    };
+
+    // Handle the creation of a new salary component
+    const handleCreateComponent = (newComponent: any) => {
+        dispatch(storePayrollComponent(newComponent))
+            .then(() => {
+                dispatch(getPayrollComponents()); // Refetch components after creation
+            })
+            .catch((error) => {
+                console.error('Failed to create new component:', error);
+            });
+        setModalOpen(false);
+    };
+
+    const AppBasePath = {
+        payroll: '/apps/hrm/configuration/payroll/components',
+    };
+
     return (
         <div className="flex flex-col gap-5">
-            <div className="flex justify-between">
-                <h1 className="text-xl">Payroll Components</h1>
-                {/* Button to trigger modal */}
-                <Button
-                    type={ButtonType.button}
-                    text="Create New Component"
-                    variant={ButtonVariant.primary}
-                    onClick={() => setModalOpen(true)} // Open modal on click
+            <PageHeader
+                appBasePath={AppBasePath.payroll}
+                key={selectedRows.length}
+                selectedRows={selectedRows.length}
+                gridRef={gridRef}
+                leftComponent={{
+                    addButton: {
+                        show: true,
+                        type: 'button',
+                        text: 'New',
+                        onClick: () => setModalOpen(true), // Open modal on click
+                    },
+                    title: 'Payroll Components',
+                }}
+                rightComponent={true}
+                showSearch={true}
+            />
+
+            <div>
+                <AgGridComponent
+                    gridRef={gridRef}
+                    data={components} // Using components from the payrollComponents slice
+                    colDefs={colDefs}
+                    rowSelection="multiple"
+                    onSelectionChangedRows={(rows) => setSelectedRows(rows)}
+                    rowMultiSelectWithClick={false}
+                    onRowClicked={(params) => router.push(`/apps/hrm/payroll/view/${params.data.id}`)}
                 />
             </div>
 
-            {/* Grid/Table to display components */}
-            <AgGridComponent data={rowData} colDefs={colDefs} rowSelection="multiple" />
-
-            {/* Modal for creating new component */}
             {modalOpen && (
                 <SalaryComponentModal
                     modalOpen={modalOpen}
                     setModalOpen={setModalOpen}
-                    onCreate={handleCreateComponent}
+                    onCreate={handleCreateComponent} // Pass the create handler to the modal
                 />
             )}
         </div>
     );
 };
 
-export default PayrollIndex;
+export default SalaryComponents;
