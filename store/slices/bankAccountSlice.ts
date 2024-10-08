@@ -5,7 +5,7 @@ import {configureSlice} from "@/utils/helper";
 interface IState {
     bankAccount: any;
     bankAccountDetails: any
-    bankAccounts: any;
+    bankAccounts: any[];
     loading: boolean;
     error: any;
     success: boolean;
@@ -15,7 +15,7 @@ interface IState {
 const initialState: IState = {
     bankAccount: null,
     bankAccountDetails: null,
-    bankAccounts: null,
+    bankAccounts: [],
     loading: false,
     error: null,
     success: false,
