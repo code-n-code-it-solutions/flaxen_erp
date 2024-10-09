@@ -166,7 +166,7 @@ const VendorRepresentativeModal = ({
         <Modal
             show={modalOpen}
             setShow={setModalOpen}
-            title={`${modalFormData ? 'Update' : 'Add'} Vendor Representative`}
+            title={`${modalFormData ? 'Update' : 'Add'} Contact Person`}
             footer={
 
                 <div className="mt-8 gap-3 flex items-center justify-end">

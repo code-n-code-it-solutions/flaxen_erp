@@ -67,7 +67,7 @@ const PaymentForm = () => {
         setBills(billDetails.map((bill: any) => {
             const totalAmount = bill.good_receive_note_vendor_bill
                 .flatMap((vendorBill: any) => vendorBill.good_receive_note.raw_products)
-                .reduce((acc: number, item: any) => acc + item.total_price, 0);
+                .reduce((acc: number, item: any) => acc + item.grand_total, 0);
             return {
                 id: bill.id,
                 bill_number: bill.bill_number,

@@ -51,8 +51,15 @@ import { generalPaymentSliceConfig } from '@/store/slices/generalPaymentSlice';
 import { generalPaymentVoucherSliceConfig } from '@/store/slices/generalPaymentVoucherSlice';
 import { accountTransactionSliceConfig } from '@/store/slices/accountTransactionSlice';
 import { generalReceiptVoucherSliceConfig } from '@/store/slices/generalReceiptVoucherSlice';
+import { clientSliceConfig } from '@/store/slices/projects/clientSlice';
+import { boqSliceConfig } from '@/store/slices/projects/boqSlice';
+import { projectSliceConfig } from '@/store/slices/projects/projectSlice';
+import { projectTypeSliceConfig } from '@/store/slices/projects/projectTypeSlice';
+import { consultantSliceConfig } from '@/store/slices/projects/consultantSlice';
+import { clientTypeSliceConfig } from '@/store/slices/projects/clientTypeSlice';
 
 
+// Register the slice
 export const slices = {
     user: userSliceConfig,
     unit: unitSliceConfig,
@@ -106,10 +113,16 @@ export const slices = {
     generalPayment: generalPaymentSliceConfig,
     generalPaymentVoucher: generalPaymentVoucherSliceConfig,
     generalReceiptVoucher: generalReceiptVoucherSliceConfig,
-    accountTransaction: accountTransactionSliceConfig
+    accountTransaction: accountTransactionSliceConfig,
+    client: clientSliceConfig,
+    boq: boqSliceConfig,
+    project: projectSliceConfig,
+    projectType: projectTypeSliceConfig,
+    consultant: consultantSliceConfig,
+    clientType: clientTypeSliceConfig
 };
 
-
+// Register the reducer
 export const reducers = {
     user: userSliceConfig.reducer,
     unit: unitSliceConfig.reducer,
@@ -163,5 +176,11 @@ export const reducers = {
     generalPayment: generalPaymentSliceConfig.reducer,
     generalPaymentVoucher: generalPaymentVoucherSliceConfig.reducer,
     generalReceiptVoucher: generalReceiptVoucherSliceConfig.reducer,
-    accountTransaction: accountTransactionSliceConfig.reducer
+    accountTransaction: accountTransactionSliceConfig.reducer,
+    client: clientSliceConfig.reducer,
+    boq: boqSliceConfig.reducer,
+    project: projectSliceConfig.reducer,
+    projectType: projectTypeSliceConfig.reducer,
+    consultant: consultantSliceConfig.reducer,
+    clientType: clientTypeSliceConfig.reducer
 };

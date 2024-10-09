@@ -4,83 +4,75 @@ import { setPageTitle } from '@/store/slices/themeConfigSlice';
 import { AgGridReact } from 'ag-grid-react';
 import { useRouter } from 'next/router';
 import { useAppDispatch, useAppSelector } from '@/store';
+import { capitalize } from 'lodash';
 import { setAuthToken, setContentType } from '@/configs/api.config';
 import AgGridComponent from '@/components/apps/AgGridComponent';
 import DisabledClickRenderer from '@/components/apps/DisabledClickRenderer';
-import { checkPermission } from '@/utils/helper';
 import { ActionList, AppBasePath } from '@/utils/enums';
+import { checkPermission } from '@/utils/helper';
 import useSetActiveMenu from '@/hooks/useSetActiveMenu';
-import { clearVendorBillState, getVendorBills } from '@/store/slices/vendorBillSlice';
+import { getClients } from '@/store/slices/projects/clientSlice';
 
 const Index = () => {
-    useSetActiveMenu(AppBasePath.Vendor_Bill);
+    useSetActiveMenu(AppBasePath.Client);
     const router = useRouter();
-
     const dispatch = useAppDispatch();
-    const { token, menus } = useAppSelector((state) => state.user);
-
-    const { vendorBills, loading } = useAppSelector((state) => state.vendorBill);
-    const { activeMenu } = useAppSelector((state) => state.menu);
-    const [selectedRows, setSelectedRows] = useState<any[]>([]);
     const gridRef = useRef<AgGridReact<any>>(null);
+    const { token, menus } = useAppSelector((state) => state.user);
+    const { activeMenu } = useAppSelector((state) => state.menu);
+    const { clients, loading, success } = useAppSelector((state) => state.client);
+    const [selectedRows, setSelectedRows] = useState<any[]>([]);
     const [colDefs, setColDefs] = useState<any>([
         {
-            headerName: 'Bill Number',
+            headerName: 'Code',
             headerCheckboxSelection: true,
             checkboxSelection: true,
-            field: 'bill_number',
+            field: 'client_code',
             minWidth: 150,
             cellRenderer: DisabledClickRenderer
         },
         {
-            headerName: 'Vendor',
-            field: 'vendor.name',
+            headerName: 'Name',
+            field: 'name',
             minWidth: 150
         },
         {
-            headerName: 'Bill Ref',
-            field: 'bill_reference',
+            headerName: 'Phone',
+            field: 'phone',
             minWidth: 150
         },
         {
-            headerName: 'Bill Date',
-            field: 'bill_date',
+            headerName: 'Type',
+            field: 'client_type.name',
             minWidth: 150
         },
         {
-            headerName: 'Due Date/Terms',
-            valueGetter: (params: any) => params.data.due_date ? params.data.due_date : params.data.payment_terms + ' Days',
-            minWidth: 150
-        },
-        {
-            headerName: 'Bill Amount',
-            valueGetter: (params: any) => {
-                return params.data.good_receive_note_vendor_bill
-                    ?.flatMap((invoice: any) => invoice.good_receive_note.raw_products)
-                    .map((item: any) => parseFloat(item.grand_total))
-                    .reduce((a: number, b: number) => a + b, 0).toFixed(2);
-            },
+            headerName: 'Email',
+            field: 'email',
             minWidth: 150
         },
         {
             headerName: 'Status',
-            field: 'status',
+            field: 'is_active',
+            cellRenderer: (row: any) => (
+                <span className={`badge bg-${row.data.is_active ? 'success' : 'danger'}`}>
+                    {capitalize(row.data.is_active ? 'active' : 'inactive')}
+                </span>
+            ),
             minWidth: 150
         }
     ]);
 
     useEffect(() => {
-        dispatch(setPageTitle('Bills'));
+        dispatch(setPageTitle('Clients'));
         setAuthToken(token);
-        setContentType('application/json');
-        dispatch(getVendorBills());
-        dispatch(clearVendorBillState());
+        dispatch(getClients());
     }, []);
 
     return (
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-3">
             <PageHeader
-                appBasePath={AppBasePath.Vendor_Bill}
+                appBasePath={AppBasePath.Customer}
                 key={selectedRows.length}
                 selectedRows={selectedRows.length}
                 gridRef={gridRef}
@@ -89,33 +81,33 @@ const Index = () => {
                         show: true,
                         type: 'link',
                         text: 'New',
-                        link: '/apps/purchase/bills/create'
+                        link: `${AppBasePath.Client}/create`
                     },
-                    title: 'Vendor Bills',
+                    title: 'Clients',
                     showSetting: true
                 }}
                 rightComponent={true}
                 showSearch={true}
                 buttonActions={{
                     export: () => console.log('exported'),
-                    print: () => router.push('/apps/purchase/bills/print/' + selectedRows.map(row => row.id).join('/')),
+                    print: () => router.push(AppBasePath.Client + '/print/' + selectedRows.map(row => row.id).join('/')),
                     archive: () => console.log('archived'),
                     unarchive: () => console.log('unarchived'),
                     duplicate: () => console.log('duplicated'),
-                    printLabel: () => router.push('/apps/purchase/bills/print-label/' + selectedRows.map(row => row.id).join('/'))
+                    printLabel: () => console.log('printLabel')
                 }}
             />
             <div>
                 <AgGridComponent
                     gridRef={gridRef}
-                    data={vendorBills}
+                    data={clients}
                     colDefs={colDefs}
                     rowSelection={'multiple'}
                     onSelectionChangedRows={(rows) => setSelectedRows(rows)}
                     rowMultiSelectWithClick={false}
                     onRowClicked={(params) => {
-                        checkPermission(menus.map((plugin: any) => plugin.menus).flat(), activeMenu.route, ActionList.VIEW_DETAIL, AppBasePath.Vendor_Bill) &&
-                        router.push(`/apps/purchase/bills/view/${params.data.id}`);
+                        checkPermission(menus.map((plugin: any) => plugin.menus).flat(), activeMenu.route, ActionList.VIEW_DETAIL, AppBasePath.Client) &&
+                        router.push(`${AppBasePath.boq}/view/${params.data.id}`);
                     }}
                 />
             </div>

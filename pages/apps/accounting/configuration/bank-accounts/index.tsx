@@ -10,77 +10,67 @@ import DisabledClickRenderer from '@/components/apps/DisabledClickRenderer';
 import { checkPermission } from '@/utils/helper';
 import { ActionList, AppBasePath } from '@/utils/enums';
 import useSetActiveMenu from '@/hooks/useSetActiveMenu';
-import { clearVendorBillState, getVendorBills } from '@/store/slices/vendorBillSlice';
+import { clearBankAccountState, getBankAccounts } from '@/store/slices/bankAccountSlice';
 
 const Index = () => {
-    useSetActiveMenu(AppBasePath.Vendor_Bill);
+    useSetActiveMenu(AppBasePath.Bank_Accounts);
     const router = useRouter();
-
     const dispatch = useAppDispatch();
-    const { token, menus } = useAppSelector((state) => state.user);
-
-    const { vendorBills, loading } = useAppSelector((state) => state.vendorBill);
-    const { activeMenu } = useAppSelector((state) => state.menu);
-    const [selectedRows, setSelectedRows] = useState<any[]>([]);
     const gridRef = useRef<AgGridReact<any>>(null);
+
+    const { token, menus } = useAppSelector((state) => state.user);
+    const { activeMenu } = useAppSelector((state) => state.menu);
+    const { bankAccounts, loading, success } = useAppSelector((state) => state.bankAccount);
+
+    const [selectedRows, setSelectedRows] = useState<any[]>([]);
     const [colDefs, setColDefs] = useState<any>([
         {
-            headerName: 'Bill Number',
+            headerName: 'Account Code',
             headerCheckboxSelection: true,
             checkboxSelection: true,
-            field: 'bill_number',
+            field: 'account.code',
             minWidth: 150,
             cellRenderer: DisabledClickRenderer
         },
         {
-            headerName: 'Vendor',
-            field: 'vendor.name',
+            headerName: 'Bank',
+            field: 'bank.name',
             minWidth: 150
         },
         {
-            headerName: 'Bill Ref',
-            field: 'bill_reference',
+            headerName: 'Account Name',
+            field: 'account_name',
             minWidth: 150
         },
         {
-            headerName: 'Bill Date',
-            field: 'bill_date',
+            headerName: 'account_number',
+            field: 'account_number',
             minWidth: 150
         },
         {
-            headerName: 'Due Date/Terms',
-            valueGetter: (params: any) => params.data.due_date ? params.data.due_date : params.data.payment_terms + ' Days',
+            headerName: 'IBAN',
+            field: 'iban',
             minWidth: 150
         },
         {
-            headerName: 'Bill Amount',
-            valueGetter: (params: any) => {
-                return params.data.good_receive_note_vendor_bill
-                    ?.flatMap((invoice: any) => invoice.good_receive_note.raw_products)
-                    .map((item: any) => parseFloat(item.grand_total))
-                    .reduce((a: number, b: number) => a + b, 0).toFixed(2);
-            },
-            minWidth: 150
-        },
-        {
-            headerName: 'Status',
-            field: 'status',
+            headerName: 'Swift Code',
+            field: 'swift_code',
             minWidth: 150
         }
     ]);
 
     useEffect(() => {
-        dispatch(setPageTitle('Bills'));
+        dispatch(setPageTitle('Bank Accounts'));
         setAuthToken(token);
         setContentType('application/json');
-        dispatch(getVendorBills());
-        dispatch(clearVendorBillState());
+        dispatch(clearBankAccountState());
+        dispatch(getBankAccounts());
     }, []);
 
     return (
         <div className="flex flex-col gap-5">
             <PageHeader
-                appBasePath={AppBasePath.Vendor_Bill}
+                appBasePath={AppBasePath.Bank_Accounts}
                 key={selectedRows.length}
                 selectedRows={selectedRows.length}
                 gridRef={gridRef}
@@ -89,33 +79,34 @@ const Index = () => {
                         show: true,
                         type: 'link',
                         text: 'New',
-                        link: '/apps/purchase/bills/create'
+                        link: `${AppBasePath.Bank_Accounts}/create`
                     },
-                    title: 'Vendor Bills',
+                    title: 'Bank Accounts',
                     showSetting: true
                 }}
                 rightComponent={true}
                 showSearch={true}
                 buttonActions={{
+                    delete: () => console.log('deleted'),
                     export: () => console.log('exported'),
-                    print: () => router.push('/apps/purchase/bills/print/' + selectedRows.map(row => row.id).join('/')),
+                    print: () => router.push(AppBasePath.Bank_Accounts + '/print/' + selectedRows.map(row => row.id).join('/')),
                     archive: () => console.log('archived'),
                     unarchive: () => console.log('unarchived'),
                     duplicate: () => console.log('duplicated'),
-                    printLabel: () => router.push('/apps/purchase/bills/print-label/' + selectedRows.map(row => row.id).join('/'))
+                    printLabel: () => console.log('print label')
                 }}
             />
             <div>
                 <AgGridComponent
                     gridRef={gridRef}
-                    data={vendorBills}
+                    data={bankAccounts}
                     colDefs={colDefs}
                     rowSelection={'multiple'}
                     onSelectionChangedRows={(rows) => setSelectedRows(rows)}
                     rowMultiSelectWithClick={false}
                     onRowClicked={(params) => {
-                        checkPermission(menus.map((plugin: any) => plugin.menus).flat(), activeMenu.route, ActionList.VIEW_DETAIL, AppBasePath.Vendor_Bill) &&
-                        router.push(`/apps/purchase/bills/view/${params.data.id}`);
+                        checkPermission(menus.map((plugin: any) => plugin.menus).flat(), activeMenu.route, ActionList.VIEW_DETAIL, AppBasePath.Bank_Accounts) &&
+                        router.push(`${AppBasePath.Bank_Accounts}/view/${params.data.id}`);
                     }}
                 />
             </div>
