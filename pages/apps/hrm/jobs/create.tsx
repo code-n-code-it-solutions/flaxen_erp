@@ -1,26 +1,27 @@
-import React, {useEffect} from 'react';
-import {useAppDispatch, useAppSelector} from "@/store";
-import {useRouter} from "next/router";
-import {setPageTitle} from "@/store/slices/themeConfigSlice";
+import React, { useEffect } from 'react';
+import { useAppDispatch, useAppSelector } from "@/store";
+import { useRouter } from "next/router";
+import { setPageTitle } from "@/store/slices/themeConfigSlice";
 import PageWrapper from "@/components/PageWrapper";
-import {clearEmployeeState} from "@/store/slices/employeeSlice";
-import {ButtonType, ButtonVariant, IconType} from "@/utils/enums";
-import EmployeeForm from '@/pages/apps/hrm/employees/EmployeeForm';
+import { ButtonType, ButtonVariant, IconType } from "@/utils/enums";
+import JobForm from '@/pages/apps/hrm/jobs/JobForm'; // Correctly importing the JobForm component
+
 import AppLayout from '@/components/Layouts/AppLayout';
+import { clearJobState } from '@/store/slices/jobSlice';
 
 const Create = () => {
     const dispatch = useAppDispatch();
     const router = useRouter();
-    const {employee, loading, success} = useAppSelector(state => state.employee);
+    const { employee, loading, success } = useAppSelector(state => state.employee);
 
     useEffect(() => {
-        dispatch(setPageTitle('New Employee'));
+        dispatch(setPageTitle('New Job'));
     }, []);
 
     useEffect(() => {
         if (employee && success) {
-            dispatch(clearEmployeeState());
-            router.push('/apps/hrm/employees');
+            dispatch(clearJobState());
+            router.push('/apps/hrm/jobs'); // Redirect to job list after successful creation
         }
     }, [employee, success]);
 
@@ -29,18 +30,19 @@ const Create = () => {
             embedLoader={false}
             breadCrumbItems={[]}
             loading={false}
-            title="Create Employee"
+            title="Create Job"
             buttons={[
                 {
                     text: 'Back',
                     type: ButtonType.link,
                     variant: ButtonVariant.primary,
                     icon: IconType.back,
-                    link: '/apps/hrm/employees'
+                    link: '/apps/hrm/jobs'
                 }
             ]}
         >
-            <EmployeeForm/>
+            {/* Render the JobForm component */}
+            <JobForm />
         </PageWrapper>
     );
 };

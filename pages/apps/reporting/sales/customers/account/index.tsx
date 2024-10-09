@@ -9,54 +9,61 @@ import { Dropdown } from '@/components/form/Dropdown';
 import Button from '@/components/Button';
 import { AgGridReact } from 'ag-grid-react';
 import AgGridComponent from '@/components/apps/AgGridComponent';
-import { clearReportState, getRawProductReport, getVendorAccountReport } from '@/store/slices/reportSlice';
+import {
+    clearReportState,
+    getCustomerAccountReport,
+    getRawProductReport,
+    getVendorAccountReport
+} from '@/store/slices/reportSlice';
 import Swal from 'sweetalert2';
 import { Input } from '@/components/form/Input';
 import { clearVendorState, getVendors } from '@/store/slices/vendorSlice';
+import { clearCustomerState, getCustomers } from '@/store/slices/customerSlice';
 
 const Index = () => {
-    useSetActiveMenu(AppBasePath.Vendor_Report_Account);
+    useSetActiveMenu(AppBasePath.Customer_Report_Account);
     const dispatch = useAppDispatch();
     // const { data, isLoading, isError } = useQuery('raw-materials', () => getRawMaterials(dispatch))
     const { user, token } = useAppSelector(state => state.user);
-    const { allVendors } = useAppSelector(state => state.vendor);
-    const { vendorAccounts } = useAppSelector(state => state.report);
+    const { customers } = useAppSelector(state => state.customer);
+    const { customerAccounts } = useAppSelector(state => state.report);
     const [formData, setFormData] = useState<any>({});
-    const [vendorOptions, setVendorOptions] = useState([]);
+    const [customerOptions, setCustomerOptions] = useState([]);
     const [reportData, setReportData] = useState<any[]>([]);
     const [pinnedBottomRowData, setPinnedBottomRowData] = useState<any[]>([]);
     const gridRef = useRef<AgGridReact<any>>(null);
     const [colDefs, setColDefs] = useState<any>([
         {
-            headerName: 'Vendor',
+            headerName: 'Customer',
+            field: 'customer',
             minWidth: 150,
-            valueGetter: (row: any) => row.data?.vendor?.name + ' (' + row.data?.vendor?.vendor_number + ')',
+            valueGetter: (row: any) => row.data?.customer?.name + ' (' + row.data?.customer?.customer_code + ')',
             filter: false,
             floatingFilter: false
         },
         {
-            headerName: 'Bill Number',
-            field: 'bill_number',
+            headerName: 'Invoice #',
+            field: 'sale_invoice_code',
+            minWidth: 150,
+            filter: false,
+            floatingFilter: false
+        },
+        {
+            headerName: 'Invoice Date',
+            field: 'invoice_date',
             minWidth: 150,
             filter: false,
             floatingFilter: false
         },
         {
             headerName: 'Ref #',
-            field: 'bill_reference',
+            field: 'payment_reference',
             minWidth: 150,
             filter: false,
             floatingFilter: false
         },
         {
-            headerName: 'Bill Date',
-            field: 'bill_date',
-            minWidth: 150,
-            filter: false,
-            floatingFilter: false
-        },
-        {
-            headerName: 'Bill Amount',
+            headerName: 'Invoice Amount',
             field: 'total_amount',
             valueGetter: (row: any) => row.data?.total_amount
                 ? row.data?.total_amount.toLocaleString(undefined, {
@@ -69,10 +76,10 @@ const Index = () => {
             aggFunc: 'sum'
         },
         {
-            headerName: 'Paid Amount',
-            field: 'paid_amount',
-            valueGetter: (row: any) => row.data?.paid_amount
-                ? row.data?.paid_amount.toLocaleString(undefined, {
+            headerName: 'Received Amount',
+            field: 'received_amount',
+            valueGetter: (row: any) => row.data?.received_amount
+                ? row.data?.received_amount.toLocaleString(undefined, {
                     minimumFractionDigits: 3,
                     maximumFractionDigits: 3
                 }) : 0,
@@ -98,18 +105,18 @@ const Index = () => {
 
     const calculateTotals = () => {
         const totals = {
-            vendor: '',
-            bill_number: 'Total',
-            bill_reference: '',
-            bill_date: '',
+            customer: '',
+            sale_invoice_code: 'Total',
+            invoice_date: '',
+            payment_reference: '',
             total_amount: 0,
-            paid_amount: 0,
+            received_amount: 0,
             due_amount: 0
         };
 
         reportData.forEach((item: any) => {
             totals.total_amount += item.total_amount;
-            totals.paid_amount += item.paid_amount;
+            totals.received_amount += item.received_amount;
             totals.due_amount += item.due_amount;
         });
 
@@ -126,7 +133,7 @@ const Index = () => {
     };
 
     const handleGenerate = () => {
-        dispatch(getVendorAccountReport(formData));
+        dispatch(getCustomerAccountReport(formData));
     };
 
     const handleReset = () => {
@@ -150,26 +157,26 @@ const Index = () => {
     useEffect(() => {
         dispatch(setPageTitle('Vendor Account'));
         setAuthToken(token);
-        dispatch(clearVendorState());
+        dispatch(clearCustomerState());
         dispatch(clearReportState());
-        dispatch(getVendors());
+        dispatch(getCustomers());
         handleReset();
     }, []);
 
     useEffect(() => {
-        if (allVendors) {
-            setVendorOptions(allVendors.map((item: any) => ({
+        if (customers) {
+            setCustomerOptions(customers.map((item: any) => ({
                 value: item.id,
-                label: item.name + ' (' + item.vendor_number + ')'
+                label: item.name + ' (' + item.customer_code + ')'
             })));
         }
-    }, [allVendors]);
+    }, [customers]);
 
     useEffect(() => {
-        if (vendorAccounts) {
-            setReportData(vendorAccounts);
+        if (customerAccounts) {
+            setReportData(customerAccounts);
         }
-    }, [vendorAccounts]);
+    }, [customerAccounts]);
 
     useEffect(() => {
         if (reportData.length > 0) {
@@ -192,22 +199,22 @@ const Index = () => {
                 <div className="panel">
                     <div className="flex flex-col md:justify-between md:items-center gap-3">
                         <div className="border-b w-full">
-                            <h2 className="text-lg font-semibold text-center">Vendor Account Report</h2>
+                            <h2 className="text-lg font-semibold text-center">Customer Account Report</h2>
                         </div>
                         <div className="flex flex-col md:flex-row md:items-end justify-start gap-2 w-full">
                             <Dropdown
                                 divClasses="w-full"
-                                label="Vendor"
-                                name="vendor_id"
-                                value={formData.vendor_id}
-                                options={vendorOptions}
+                                label="Customer"
+                                name="customer_id"
+                                value={formData.customer_id}
+                                options={customerOptions}
                                 isMulti={false}
                                 onChange={(e: any) => {
                                     if (e && typeof e !== 'undefined') {
                                         // console.log(e);
-                                        handleChange('vendor_id', e.value, false);
+                                        handleChange('customer_id', e.value, false);
                                     } else {
-                                        handleChange('vendor_id', '', false);
+                                        handleChange('customer_id', '', false);
                                     }
                                 }}
                                 hint="None will consider all"
@@ -219,7 +226,7 @@ const Index = () => {
                                 name="from_date"
                                 value={formData.from_date}
                                 onChange={(e) => handleChange('from_date', e[0] ? e[0].toLocaleDateString() : '', true)}
-                                placeholder="Enter Filling Date"
+                                placeholder="Enter From Date"
                                 isMasked={false}
                             />
                             <Input
@@ -229,7 +236,7 @@ const Index = () => {
                                 name="to_date"
                                 value={formData.to_date}
                                 onChange={(e) => handleChange('to_date', e[0] ? e[0].toLocaleDateString() : '', true)}
-                                placeholder="Enter Filling Date"
+                                placeholder="Enter End Date"
                                 isMasked={false}
                             />
                             <Button

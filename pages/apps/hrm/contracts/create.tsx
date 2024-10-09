@@ -3,10 +3,11 @@ import {useAppDispatch, useAppSelector} from "@/store";
 import {useRouter} from "next/router";
 import {setPageTitle} from "@/store/slices/themeConfigSlice";
 import PageWrapper from "@/components/PageWrapper";
-import {clearEmployeeState} from "@/store/slices/employeeSlice";
 import {ButtonType, ButtonVariant, IconType} from "@/utils/enums";
-import EmployeeForm from '@/pages/apps/hrm/employees/EmployeeForm';
+import ContractForm from '@/pages/apps/hrm/contracts/contractForm';  
+
 import AppLayout from '@/components/Layouts/AppLayout';
+import { clearContractState } from '@/store/slices/contractSlice';
 
 const Create = () => {
     const dispatch = useAppDispatch();
@@ -14,34 +15,34 @@ const Create = () => {
     const {employee, loading, success} = useAppSelector(state => state.employee);
 
     useEffect(() => {
-        dispatch(setPageTitle('New Employee'));
+        dispatch(setPageTitle('New Contract'));
     }, []);
 
     useEffect(() => {
         if (employee && success) {
-            dispatch(clearEmployeeState());
-            router.push('/apps/hrm/employees');
+            dispatch(clearContractState());
+            router.push('');
         }
     }, [employee, success]);
 
     return (
         <PageWrapper
-            embedLoader={false}
-            breadCrumbItems={[]}
-            loading={false}
-            title="Create Employee"
-            buttons={[
-                {
-                    text: 'Back',
-                    type: ButtonType.link,
-                    variant: ButtonVariant.primary,
-                    icon: IconType.back,
-                    link: '/apps/hrm/employees'
-                }
-            ]}
-        >
-            <EmployeeForm/>
-        </PageWrapper>
+        embedLoader={false}
+        breadCrumbItems={[]}
+        loading={false}
+        title="Create Contract"
+        buttons={[
+            {
+                text: 'Back',
+                type: ButtonType.link,
+                variant: ButtonVariant.primary,
+                icon: IconType.back,
+                link: '/apps/hrm/contracts'
+            }
+        ]}
+    >
+        <ContractForm />  
+    </PageWrapper>
     );
 };
 

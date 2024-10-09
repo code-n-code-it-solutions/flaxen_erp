@@ -12,7 +12,7 @@ import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-mod
 import AgGridComponent from '@/components/apps/AgGridComponent';
 import DisabledClickRenderer from '@/components/apps/DisabledClickRenderer';
 import Swal from 'sweetalert2';
-import { clearEmployeeState, getEmployees, deleteEmployee } from '@/store/slices/employeeSlice';
+import { clearContractState, getContracts, deleteContract } from '@/store/slices/contractSlice';
 import { serverFilePath } from '@/utils/helper';
 import Image from 'next/image';
 import { AppBasePath } from '@/utils/enums';
@@ -29,21 +29,21 @@ const Index = () => {
     const gridRef = useRef<AgGridReact<any>>(null);
     const [colDefs, setColDefs] = useState<any>([
         {
-            headerName: 'Employee Code',
+            headerName: 'Contract Code',
             headerCheckboxSelection: true,
             checkboxSelection: true,
-            field: 'employee_code',
-            valueGetter: (row: any) => row.data.employee?.employee_code,
+            field: 'contract_code',
+            valueGetter: (row: any) => row.data.contract?.contract_code,
             minWidth: 150,
             cellRenderer: DisabledClickRenderer
         },
         {
-            headerName: 'Name',
-            field: 'name',
+            headerName: ' Employee Name',
+            field: 'employee.name',
             cellRenderer: (params: any) => (
                 <div className="flex gap-1 items-center">
                     <Image
-                        src={serverFilePath(params.data.employee?.thumbnail?.path)}
+                        src={serverFilePath(params.data.contract?.thumbnail?.path)}
                         alt={params.data.name}
                         priority={true}
                         width={40}
@@ -57,19 +57,30 @@ const Index = () => {
             minWidth: 150
         },
         {
-            headerName: 'Email',
-            field: 'email',
-            minWidth: 150
+            hheaderName: 'Template',
+            field: 'template.name',
+            minWidth: 150,
         },
         {
-            headerName: 'Department',
-            field: 'employee.department.name',
-            minWidth: 150
+            headerName: 'Contract Date',
+            field: 'contract_date',
+            minWidth: 150,
+        },
+      
+        {
+            headerName: 'Start Date',
+            field: 'start_date',
+            minWidth: 150,
         },
         {
-            headerName: 'Designation',
-            field: 'employee.designation.name',
-            minWidth: 150
+            headerName: 'End Date',
+            field: 'end_date',
+            minWidth: 150,
+        },
+        {
+            headerName: 'Type',
+            field: 'type',
+            minWidth: 150,
         },
         {
             headerName: 'Status',
@@ -80,7 +91,18 @@ const Index = () => {
                 </span>
             ),
             minWidth: 150
-        }
+        },
+        {
+            headerName: 'Approved By',
+            field: 'approved_by',
+            minWidth: 150,
+        },
+        {
+            headerName: 'Remarks',
+            field: 'remarks',
+            minWidth: 150,
+        },
+
     ]);
 
     const handleDelete = () => {
@@ -96,24 +118,24 @@ const Index = () => {
             confirmButtonColor: 'green'
         }).then((result) => {
             if (result.isConfirmed) {
-                dispatch(deleteEmployee(selectedNodes.map((row: any) => row.id)));
-                dispatch(getEmployees());
+                dispatch(deleteContract(selectedNodes.map((row: any) => row.id)));
+                dispatch(getContracts());
             }
         });
     };
 
     useEffect(() => {
-        dispatch(setPageTitle('Employee List'));
+        dispatch(setPageTitle(''));
         setAuthToken(token);
         setContentType('application/json');
-        dispatch(clearEmployeeState());
-        dispatch(getEmployees());
+        dispatch(clearContractState());
+        dispatch(getContracts());
     }, []);
 
     return (
         <div className="flex flex-col gap-5">
             <PageHeader
-                appBasePath={AppBasePath.Employee}
+                appBasePath={AppBasePath.contract}
                 key={selectedRows.length}
                 selectedRows={selectedRows.length}
                 gridRef={gridRef}
@@ -122,9 +144,9 @@ const Index = () => {
                         show: true,
                         type: 'link',
                         text: 'New',
-                        link: '/apps/hrm/employees/create'
+                        link: '/apps/hrm/contracts/create'
                     },
-                    title: 'Employees',
+                    title: 'Contract',
                     showSetting: true
                 }}
                 rightComponent={true}
@@ -132,11 +154,11 @@ const Index = () => {
                 buttonActions={{
                     delete: () => handleDelete(),
                     export: () => console.log('exported'),
-                    print: () => router.push('/apps/hrm/employees/print/' + selectedRows.map(row => row.id).join('/')),
+                    print: () => router.push('' + selectedRows.map(row => row.id).join('/')),
                     archive: () => console.log('archived'),
                     unarchive: () => console.log('unarchived'),
                     duplicate: () => console.log('duplicated'),
-                    printLabel: () => router.push('/apps/hrm/employees/print-label/' + selectedRows.map(row => row.id).join('/'))
+                    printLabel: () => router.push('/apps/employees/employee-list/print-label/' + selectedRows.map(row => row.id).join('/'))
                 }}
             />
             <div>

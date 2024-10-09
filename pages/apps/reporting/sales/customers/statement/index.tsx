@@ -9,18 +9,25 @@ import { Dropdown } from '@/components/form/Dropdown';
 import Button from '@/components/Button';
 import { AgGridReact } from 'ag-grid-react';
 import AgGridComponent from '@/components/apps/AgGridComponent';
-import { clearReportState, getRawProductReport, getVendorAccountReport } from '@/store/slices/reportSlice';
+import {
+    clearReportState,
+    getVendorStatementReport
+} from '@/store/slices/reportSlice';
 import Swal from 'sweetalert2';
 import { Input } from '@/components/form/Input';
 import { clearVendorState, getVendors } from '@/store/slices/vendorSlice';
+import { FileSpreadsheetIcon, PrinterIcon, RefreshCwIcon } from 'lucide-react';
+import { CloseIcon } from '@mantine/core';
+import { calculateDateFromDays } from '@/utils/helper';
+import { capitalize } from 'lodash';
 
 const Index = () => {
-    useSetActiveMenu(AppBasePath.Vendor_Report_Account);
+    useSetActiveMenu(AppBasePath.Vendor_Report_Statement);
     const dispatch = useAppDispatch();
     // const { data, isLoading, isError } = useQuery('raw-materials', () => getRawMaterials(dispatch))
     const { user, token } = useAppSelector(state => state.user);
     const { allVendors } = useAppSelector(state => state.vendor);
-    const { vendorAccounts } = useAppSelector(state => state.report);
+    const { vendorStatement } = useAppSelector(state => state.report);
     const [formData, setFormData] = useState<any>({});
     const [vendorOptions, setVendorOptions] = useState([]);
     const [reportData, setReportData] = useState<any[]>([]);
@@ -28,41 +35,43 @@ const Index = () => {
     const gridRef = useRef<AgGridReact<any>>(null);
     const [colDefs, setColDefs] = useState<any>([
         {
-            headerName: 'Vendor',
+            headerName: 'Date',
+            valueGetter: (row: any) => row.data?.bill_date ?? new Date(row.data?.created_at).toLocaleDateString(),
             minWidth: 150,
-            valueGetter: (row: any) => row.data?.vendor?.name + ' (' + row.data?.vendor?.vendor_number + ')',
             filter: false,
             floatingFilter: false
         },
         {
-            headerName: 'Bill Number',
+            headerName: 'Due Date',
+            valueGetter: (row: any) => row.data?.bill_type === 'credit' ? calculateDateFromDays(row.data?.vendor?.due_in_days, row.data?.bill_date ?? new Date(row.data?.created_at)) : row.data?.due_date,
+            minWidth: 150,
+            filter: false,
+            floatingFilter: false
+        },
+        {
+            headerName: 'Due Days',
+            valueGetter: (row: any) => row.data?.bill_type === 'credit' ? row.data?.vendor?.due_in_days : '',
+            minWidth: 150,
+            filter: false,
+            floatingFilter: false
+        },
+        {
+            headerName: 'Bill Type',
+            valueGetter: (row: any) => capitalize(row.data?.bill_type),
+            minWidth: 150,
+            filter: false,
+            floatingFilter: false
+        },
+        {
+            headerName: 'Bill #',
             field: 'bill_number',
             minWidth: 150,
             filter: false,
             floatingFilter: false
         },
         {
-            headerName: 'Ref #',
-            field: 'bill_reference',
-            minWidth: 150,
-            filter: false,
-            floatingFilter: false
-        },
-        {
-            headerName: 'Bill Date',
-            field: 'bill_date',
-            minWidth: 150,
-            filter: false,
-            floatingFilter: false
-        },
-        {
-            headerName: 'Bill Amount',
-            field: 'total_amount',
-            valueGetter: (row: any) => row.data?.total_amount
-                ? row.data?.total_amount.toLocaleString(undefined, {
-                    minimumFractionDigits: 3,
-                    maximumFractionDigits: 3
-                }) : 0,
+            headerName: 'Invoice Amount',
+            field: 'bill_amount',
             minWidth: 150,
             filter: false,
             floatingFilter: false,
@@ -70,12 +79,7 @@ const Index = () => {
         },
         {
             headerName: 'Paid Amount',
-            field: 'paid_amount',
-            valueGetter: (row: any) => row.data?.paid_amount
-                ? row.data?.paid_amount.toLocaleString(undefined, {
-                    minimumFractionDigits: 3,
-                    maximumFractionDigits: 3
-                }) : 0,
+            valueGetter: (row: any) => row.data?.vendor_payments?.reduce((acc: number, item: any) => acc + parseFloat(item.paid_amount), 0),
             minWidth: 150,
             filter: false,
             floatingFilter: false,
@@ -84,12 +88,7 @@ const Index = () => {
         {
             headerName: 'Balance',
             minWidth: 150,
-            field: 'due_amount',
-            valueGetter: (row: any) => row.data?.due_amount
-                ? row.data?.due_amount.toLocaleString(undefined, {
-                    minimumFractionDigits: 3,
-                    maximumFractionDigits: 3
-                }) : 0,
+            valueGetter: (row: any) => row.data?.bill_amount - row.data?.vendor_payments?.reduce((acc: number, item: any) => acc + parseFloat(item.paid_amount), 0),
             filter: false,
             floatingFilter: false,
             aggFunc: 'sum'
@@ -98,20 +97,14 @@ const Index = () => {
 
     const calculateTotals = () => {
         const totals = {
-            vendor: '',
             bill_number: 'Total',
             bill_reference: '',
+            bill_type: '',
             bill_date: '',
-            total_amount: 0,
-            paid_amount: 0,
-            due_amount: 0
+            debit: 0,
+            credit: 0,
+            balance: 0
         };
-
-        reportData.forEach((item: any) => {
-            totals.total_amount += item.total_amount;
-            totals.paid_amount += item.paid_amount;
-            totals.due_amount += item.due_amount;
-        });
 
         // console.log(totals);
         setPinnedBottomRowData([totals]);
@@ -126,7 +119,15 @@ const Index = () => {
     };
 
     const handleGenerate = () => {
-        dispatch(getVendorAccountReport(formData));
+        if (!formData.vendor_id) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Please select a vendor'
+            });
+            return;
+        }
+        dispatch(getVendorStatementReport(formData));
     };
 
     const handleReset = () => {
@@ -166,10 +167,10 @@ const Index = () => {
     }, [allVendors]);
 
     useEffect(() => {
-        if (vendorAccounts) {
-            setReportData(vendorAccounts);
+        if (vendorStatement) {
+            setReportData(vendorStatement);
         }
-    }, [vendorAccounts]);
+    }, [vendorStatement]);
 
     useEffect(() => {
         if (reportData.length > 0) {
@@ -192,7 +193,7 @@ const Index = () => {
                 <div className="panel">
                     <div className="flex flex-col md:justify-between md:items-center gap-3">
                         <div className="border-b w-full">
-                            <h2 className="text-lg font-semibold text-center">Vendor Account Report</h2>
+                            <h2 className="text-lg font-semibold text-center">Vendor Statement Report</h2>
                         </div>
                         <div className="flex flex-col md:flex-row md:items-end justify-start gap-2 w-full">
                             <Dropdown
@@ -234,20 +235,26 @@ const Index = () => {
                             />
                             <Button
                                 type={ButtonType.button}
-                                text="Generate"
+                                text={<RefreshCwIcon size={18} />}
                                 variant={ButtonVariant.primary}
                                 onClick={() => handleGenerate()}
                             />
                             <Button
                                 type={ButtonType.button}
-                                text="Reset"
+                                text={<CloseIcon size={'18'} />}
                                 variant={ButtonVariant.info}
                                 onClick={() => handleReset()}
                             />
                             <Button
                                 type={ButtonType.button}
-                                text="Export"
+                                text={<FileSpreadsheetIcon size={18} />}
                                 variant={ButtonVariant.success}
+                                onClick={() => handleExport()}
+                            />
+                            <Button
+                                type={ButtonType.button}
+                                text={<PrinterIcon size={18} />}
+                                variant={ButtonVariant.secondary}
                                 onClick={() => handleExport()}
                             />
                         </div>
@@ -255,13 +262,27 @@ const Index = () => {
                     </div>
                 </div>
                 {reportData.length > 0 ? (
-                    <div>
+                    <div className="panel">
                         <AgGridComponent
                             gridRef={gridRef}
                             data={reportData}
                             colDefs={colDefs}
                             pinnedBottomRowData={pinnedBottomRowData}
                         />
+                        <div className="flex flex-col md:items-end md:justify-end mt-5 text-lg font-bold">
+                            <div className="grid grid-cols-2 gap-5">
+                                <div>Balance Total</div>
+                                {/*<div>{reportData.reduce((acc, item)=> acc + item.}</div>*/}
+                            </div>
+                            <div className="grid grid-cols-2 gap-5">
+                                <div>PDC Amount</div>
+                                <div>170,987.92</div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-5">
+                                <div>Net Balance</div>
+                                <div>170,987.92</div>
+                            </div>
+                        </div>
                     </div>
                 ) : (
                     <div className="panel">
