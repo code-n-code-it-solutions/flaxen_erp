@@ -14,7 +14,8 @@ import Option from '@/components/form/Option';
 import Alert from '@/components/Alert';
 import { Tab } from '@headlessui/react';
 import Swal from 'sweetalert2';
-import { clearClientState, getClientTypes, storeClient, updateClient } from '@/store/slices/projects/clientSlice';
+import { clearClientState, storeClient, updateClient } from '@/store/slices/projects/clientSlice';
+import { getClientTypes } from '@/store/slices/projects/clientTypeSlice';
 
 interface IFormProps {
     id?: any;
