@@ -134,6 +134,7 @@ export enum AppBasePath {
     General_Payment_Voucher = '/apps/accounting/general-voucher/payment-voucher',
     General_Receipt_Voucher = '/apps/accounting/general-voucher/receipt-voucher',
     Template = '/hrm/configuration/template',
+    payroll = '/apps/hrm/configuration/payroll/components'
     Client = '/apps/project/configuration/clients',
     boq = '/apps/project/boq',
     Project = '/apps/project/project-list',

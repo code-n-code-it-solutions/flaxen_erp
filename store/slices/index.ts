@@ -51,6 +51,7 @@ import { generalPaymentSliceConfig } from '@/store/slices/generalPaymentSlice';
 import { generalPaymentVoucherSliceConfig } from '@/store/slices/generalPaymentVoucherSlice';
 import { accountTransactionSliceConfig } from '@/store/slices/accountTransactionSlice';
 import { generalReceiptVoucherSliceConfig } from '@/store/slices/generalReceiptVoucherSlice';
+import { payrollComponentSliceConfig } from '@/store/slices/payrollComponentsSlice';
 import { clientSliceConfig } from '@/store/slices/projects/clientSlice';
 import { boqSliceConfig } from '@/store/slices/projects/boqSlice';
 import { projectSliceConfig } from '@/store/slices/projects/projectSlice';
@@ -114,6 +115,7 @@ export const slices = {
     generalPaymentVoucher: generalPaymentVoucherSliceConfig,
     generalReceiptVoucher: generalReceiptVoucherSliceConfig,
     accountTransaction: accountTransactionSliceConfig,
+    payrollComponent: payrollComponentSliceConfig,
     client: clientSliceConfig,
     boq: boqSliceConfig,
     project: projectSliceConfig,
@@ -177,6 +179,7 @@ export const reducers = {
     generalPaymentVoucher: generalPaymentVoucherSliceConfig.reducer,
     generalReceiptVoucher: generalReceiptVoucherSliceConfig.reducer,
     accountTransaction: accountTransactionSliceConfig.reducer,
+    payrollComponent: payrollComponentSliceConfig.reducer,
     client: clientSliceConfig.reducer,
     boq: boqSliceConfig.reducer,
     project: projectSliceConfig.reducer,
