@@ -7,6 +7,7 @@ import MaskedInput from 'react-text-mask';
 import Modal from '@/components/Modal';
 import { Input } from '@/components/form/Input';
 import { Dropdown } from '@/components/form/Dropdown';
+import PhoneNumber from '@/components/form/PhoneNumber';
 
 interface IProps {
     modalOpen: boolean;
@@ -188,6 +189,19 @@ const BankFormModal: FC<IProps> = ({
             </div>
             <div className="w-full">
                 <label htmlFor="phone">Bank Phone (optional)</label>
+                {/*<PhoneNumber*/}
+                {/*    divClasses="w-full"*/}
+                {/*    label={'Bank Phone'}*/}
+                {/*    value={formData.phone}*/}
+                {/*    onChange={(phone: any) => {*/}
+                {/*        setFormData((prev: any) => ({*/}
+                {/*            ...prev,*/}
+                {/*            phone: phone*/}
+                {/*        }));*/}
+                {/*    }}*/}
+                {/*    enableSearch={true}*/}
+                {/*    name="phone"*/}
+                {/*/>*/}
                 <MaskedInput
                     id="phone"
                     type="text"

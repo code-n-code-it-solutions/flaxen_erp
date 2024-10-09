@@ -779,3 +779,7 @@ pre.hljs {
 .basic .tree-node {
     cursor: pointer;
 }
+
+.form-control {
+    width: 100% !important;
+}

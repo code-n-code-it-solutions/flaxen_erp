@@ -94,7 +94,7 @@ const View = () => {
     }, [labReferenceAdded]);
 
     return (
-        <div>
+        <div className="flex gap-3 flex-col">
             <DetailPageHeader
                 appBasePath={AppBasePath.Product_Assembly}
                 title="Product Assembly Details"

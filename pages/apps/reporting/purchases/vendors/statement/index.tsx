@@ -42,57 +42,41 @@ const Index = () => {
             floatingFilter: false
         },
         {
-            headerName: 'Due Date',
+            headerName: 'Transaction #',
             valueGetter: (row: any) => row.data?.bill_type === 'credit' ? calculateDateFromDays(row.data?.vendor?.due_in_days, row.data?.bill_date ?? new Date(row.data?.created_at)) : row.data?.due_date,
             minWidth: 150,
             filter: false,
             floatingFilter: false
         },
         {
-            headerName: 'Due Days',
+            headerName: 'Document #',
             valueGetter: (row: any) => row.data?.bill_type === 'credit' ? row.data?.vendor?.due_in_days : '',
             minWidth: 150,
             filter: false,
             floatingFilter: false
         },
         {
-            headerName: 'Bill Type',
+            headerName: 'Narration',
             valueGetter: (row: any) => capitalize(row.data?.bill_type),
             minWidth: 150,
             filter: false,
             floatingFilter: false
         },
         {
-            headerName: 'Bill #',
+            headerName: 'Transaction Type',
             field: 'bill_number',
             minWidth: 150,
             filter: false,
             floatingFilter: false
         },
         {
-            headerName: 'Invoice Amount',
-            field: 'bill_amount',
-            minWidth: 150,
-            filter: false,
-            floatingFilter: false,
-            aggFunc: 'sum'
-        },
-        {
-            headerName: 'Paid Amount',
+            headerName: 'Amount',
             valueGetter: (row: any) => row.data?.vendor_payments?.reduce((acc: number, item: any) => acc + parseFloat(item.paid_amount), 0),
             minWidth: 150,
             filter: false,
             floatingFilter: false,
             aggFunc: 'sum'
         },
-        {
-            headerName: 'Balance',
-            minWidth: 150,
-            valueGetter: (row: any) => row.data?.bill_amount - row.data?.vendor_payments?.reduce((acc: number, item: any) => acc + parseFloat(item.paid_amount), 0),
-            filter: false,
-            floatingFilter: false,
-            aggFunc: 'sum'
-        }
     ]);
 
     const calculateTotals = () => {
