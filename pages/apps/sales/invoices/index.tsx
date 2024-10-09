@@ -72,7 +72,7 @@ const Index = () => {
             valueGetter: (params: any) => {
                 return params.data.delivery_note_sale_invoices
                     .flatMap((invoice: any) => invoice.delivery_note.delivery_note_items)
-                    .map((item: any) => parseFloat(item.total_cost))
+                    .map((item: any) => parseFloat(item.grand_total))
                     .reduce((a: number, b: number) => a + b, 0).toFixed(2);
             },
             minWidth: 150
