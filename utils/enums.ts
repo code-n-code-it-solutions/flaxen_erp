@@ -16,6 +16,9 @@ export enum FORM_CODE_TYPE {
     EXPENSE = 'general_payment_voucher',
     DELIVERY_NOTE = 'delivery_note',
     SALE_INVOICE = 'sale_invoice',
+    CLIENT = 'client',
+    PROJECT = 'project',
+    CONSULTANT = 'consultant',
 }
 
 export enum RAW_PRODUCT_LIST_TYPE {
@@ -123,6 +126,8 @@ export enum AppBasePath {
     Vendor_Report_Account = '/apps/reporting/purchases/vendors/account',
     Vendor_Report_Statement = '/apps/reporting/purchases/vendors/statement',
     Employee_Permission = '/apps/employees/configuration/employee/permissions',
+    Customer_Report_Account = '/apps/reporting/sales/customers/account',
+    Customer_Report_Statement = '/apps/reporting/sales/customers/statement',
     Super_Admin_Permission = '/apps/super-admin/permissions',
     Employee = '/apps/employees/employees-list',
     Credit_Notes = '/apps/sales/credit-notes',
@@ -134,5 +139,11 @@ export enum AppBasePath {
     Employee_loan = '/apps/hrm/loans',
     Employee_leaves = '/apps/hrm/leaves',
     Employee_attendance = '/apps/hrm/attendance',
-
+    Template = '/hrm/configuration/template',
+    payroll = '/apps/hrm/configuration/payroll/components'
+    Client = '/apps/project/configuration/clients',
+    boq = '/apps/project/boq',
+    Project = '/apps/project/project-list',
+    Consultant = '/apps/project/configuration/consultant',
+    Bank_Accounts = '/apps/accounting/configuration/bank-accounts',
 }

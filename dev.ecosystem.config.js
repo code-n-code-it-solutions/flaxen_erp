@@ -5,12 +5,6 @@ module.exports = {
             script: 'npm',
             args: 'run server-dev-start',
             watch: true,
-            env: {
-                NODE_ENV: 'development',
-            },
-            env_development: {
-                NODE_ENV: 'development',
-            },
         },
     ],
 
@@ -22,9 +16,7 @@ module.exports = {
             repo: 'git@github.com:code-n-code-it-solutions/flaxen_erp.git',
             path: '/home/codencode-dev-erp/htdocs/dev.codencode.ae',
             'ssh_options': 'StrictHostKeyChecking=no',
-            env: {
-                NODE_ENV: 'development',
-            },
+            'post-deploy': 'npm install && npm run build && pm2 reload dev.ecosystem.config.js --env production',
         },
         deployment: {
             user: 'root',
@@ -33,9 +25,7 @@ module.exports = {
             repo: 'git@github.com:code-n-code-it-solutions/flaxen_erp.git',
             path: '/home/codencode-dev-erp/htdocs/dev.codencode.ae',
             'ssh_options': 'StrictHostKeyChecking=no',
-            env: {
-                NODE_ENV: 'development',
-            },
+            'post-deploy': 'npm install && npm run build && pm2 reload dev.ecosystem.config.js --env deployment',
         },
     },
 };

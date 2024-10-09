@@ -132,11 +132,11 @@ const Index = () => {
                 buttonActions={{
                     delete: () => handleDelete(),
                     export: () => console.log('exported'),
-                    print: () => router.push('/apps/employees/employee-list/print/' + selectedRows.map(row => row.id).join('/')),
+                    print: () => router.push('/apps/hrm/employees/print/' + selectedRows.map(row => row.id).join('/')),
                     archive: () => console.log('archived'),
                     unarchive: () => console.log('unarchived'),
                     duplicate: () => console.log('duplicated'),
-                    printLabel: () => router.push('/apps/employees/employee-list/print-label/' + selectedRows.map(row => row.id).join('/'))
+                    printLabel: () => router.push('/apps/hrm/employees/print-label/' + selectedRows.map(row => row.id).join('/'))
                 }}
             />
             <div>

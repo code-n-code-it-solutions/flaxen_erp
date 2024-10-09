@@ -162,7 +162,7 @@ const VendorAddressModal = ({ modalOpen, setModalOpen, handleSubmit, modalFormDa
         <Modal
             show={modalOpen}
             setShow={setModalOpen}
-            title="Add Vendor Address"
+            title="Add Address"
             footer={
                 <div className="mt-8 gap-3 flex items-center justify-end">
                     <Button

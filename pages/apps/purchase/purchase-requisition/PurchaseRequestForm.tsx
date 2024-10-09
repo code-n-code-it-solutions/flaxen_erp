@@ -19,6 +19,7 @@ import { AgGridReact } from 'ag-grid-react';
 import { getIcon } from '@/utils/helper';
 import { useSelector } from 'react-redux';
 import { getAssets } from '@/store/slices/assetSlice';
+import { getRawProducts } from '@/store/slices/rawProductSlice';
 
 interface IFormData {
     pr_title: string;
@@ -74,6 +75,99 @@ const PurchaseRequestForm = ({ id }: IFormProps) => {
         setRequestItems(requestItems.filter((item) => item.raw_product_id === row.raw_product_id && item.quantity === row.quantity));
     };
 
+    const handleChange = (name: string, value: any, required: boolean) => {
+
+        if (required) {
+            if (!value) {
+                setErrorMessages((prev: any) => ({ ...prev, [name]: 'This field is required' }));
+            } else {
+                setErrorMessages((prev: any) => {
+                    delete prev[name];
+                    return prev;
+                });
+            }
+        }
+
+        switch (name) {
+            case 'type':
+                if (value && typeof value !== 'undefined') {
+                    setFormData(prev => ({
+                        ...prev,
+                        type: value.value
+                    }));
+                } else {
+                    setFormData(prev => ({
+                        ...prev,
+                        type: ''
+                    }));
+                }
+                break;
+            case 'status':
+                if (value && typeof value !== 'undefined') {
+                    setFormData(prev => ({
+                        ...prev,
+                        status: value.value
+                    }));
+                } else {
+                    setFormData(prev => ({
+                        ...prev,
+                        status: ''
+                    }));
+                }
+                break;
+            default:
+                setFormData(prevFormData => ({ ...prevFormData, [name]: value }));
+                break;
+        }
+    };
+
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setAuthToken(token);
+        dispatch(generateCode(FORM_CODE_TYPE.PURCHASE_REQUISITION));
+        let finalData = {
+            ...formData,
+            user_id: user.id,
+            pr_code: formData.pr_code, // Assuming pr_code is a string
+            department_id: user.employee?.department_id,
+            designation_id: user.employee?.designation_id,
+            items: requestItems
+        };
+        if (id) {
+            dispatch(updatePurchaseRequisition({ id, purchaseRequestData: finalData }));
+        } else {
+            if (requestItems.length > 0) {
+                dispatch(storePurchaseRequest(finalData));
+            } else {
+                Swal.fire('Error', 'Please select at least one product', 'error');
+            }
+        }
+    };
+
+    useEffect(() => {
+        dispatch(clearPurchaseRequisitionState());
+        setAuthToken(token);
+        setContentType('application/json');
+        dispatch(clearUtilState());
+        dispatch(getAssets());
+        dispatch(getRawProducts([]))
+
+        if (id) {
+            // dispatch(editPurchaseRequisition(id))
+        } else {
+            dispatch(generateCode(FORM_CODE_TYPE.PURCHASE_REQUISITION));
+        }
+    }, []);
+
+    useEffect(() => {
+        if (code) {
+            setFormData(prev => ({
+                ...prev,
+                pr_code: code[FORM_CODE_TYPE.PURCHASE_REQUISITION]
+            }));
+        }
+    }, [code]);
+
     useEffect(() => {
         // setRequestItems([]);
         let columnDefinitions: any[] = [];
@@ -88,6 +182,7 @@ const PurchaseRequestForm = ({ id }: IFormProps) => {
                         values: allRawProducts ? allRawProducts.map((option: any) => option.id) : []
                     },
                     valueFormatter: (params: any) => {
+                        // console.log(allRawProducts);
                         if (params.node?.rowPinned) return 'Total';  // No formatting for pinned row, just return 'Total'
                         const selectedOption = allRawProducts?.find((option: any) => option.id === params.value);
                         return selectedOption ? selectedOption.title : '';
@@ -197,99 +292,7 @@ const PurchaseRequestForm = ({ id }: IFormProps) => {
                 sortable: false
             }
         ]);
-    }, [formData.type]);
-
-    const handleChange = (name: string, value: any, required: boolean) => {
-
-        if (required) {
-            if (!value) {
-                setErrorMessages((prev: any) => ({ ...prev, [name]: 'This field is required' }));
-            } else {
-                setErrorMessages((prev: any) => {
-                    delete prev[name];
-                    return prev;
-                });
-            }
-        }
-
-        switch (name) {
-            case 'type':
-                if (value && typeof value !== 'undefined') {
-                    setFormData(prev => ({
-                        ...prev,
-                        type: value.value
-                    }));
-                } else {
-                    setFormData(prev => ({
-                        ...prev,
-                        type: ''
-                    }));
-                }
-                break;
-            case 'status':
-                if (value && typeof value !== 'undefined') {
-                    setFormData(prev => ({
-                        ...prev,
-                        status: value.value
-                    }));
-                } else {
-                    setFormData(prev => ({
-                        ...prev,
-                        status: ''
-                    }));
-                }
-                break;
-            default:
-                setFormData(prevFormData => ({ ...prevFormData, [name]: value }));
-                break;
-        }
-    };
-
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        setAuthToken(token);
-        dispatch(generateCode(FORM_CODE_TYPE.PURCHASE_REQUISITION));
-        let finalData = {
-            ...formData,
-            user_id: user.id,
-            pr_code: formData.pr_code, // Assuming pr_code is a string
-            department_id: user.employee?.department_id,
-            designation_id: user.employee?.designation_id,
-            items: requestItems
-        };
-        if (id) {
-            dispatch(updatePurchaseRequisition({ id, purchaseRequestData: finalData }));
-        } else {
-            if (requestItems.length > 0) {
-                dispatch(storePurchaseRequest(finalData));
-            } else {
-                Swal.fire('Error', 'Please select at least one product', 'error');
-            }
-        }
-    };
-
-    useEffect(() => {
-        dispatch(clearPurchaseRequisitionState());
-        setAuthToken(token);
-        setContentType('application/json');
-        dispatch(clearUtilState());
-        dispatch(getAssets());
-
-        if (id) {
-            // dispatch(editPurchaseRequisition(id))
-        } else {
-            dispatch(generateCode(FORM_CODE_TYPE.PURCHASE_REQUISITION));
-        }
-    }, []);
-
-    useEffect(() => {
-        if (code) {
-            setFormData(prev => ({
-                ...prev,
-                pr_code: code[FORM_CODE_TYPE.PURCHASE_REQUISITION]
-            }));
-        }
-    }, [code]);
+    }, [formData.type, allRawProducts]);
 
     return (
         <form className="space-y-5" onSubmit={handleSubmit}>
@@ -363,7 +366,7 @@ const PurchaseRequestForm = ({ id }: IFormProps) => {
                 <div
                     className="flex mb-3 justify-start items-start md:justify-between md:items-center gap-3 flex-col md:flex-row">
                     <div>
-                        <h3 className="text-lg font-semibold">Quotation Items</h3>
+                        <h3 className="text-lg font-semibold">sItems</h3>
                         <span className="mt-1 text-info text-sm italic">Double click cell to enter data</span>
                     </div>
 

@@ -345,8 +345,8 @@ export const truncatePathname = (pathname: string, basePath: string) => {
 export const checkPermission = (menus: any[], pathname: string, permission: string, basePath: string) => {
     const truncatedPath = truncatePathname(pathname, basePath);
     const activeMenu = findActiveMenu(menus, truncatedPath);
-    if (activeMenu) {
-        return activeMenu.actions.find((action: any) => action.name === permission);
+    if (activeMenu && Array.isArray(activeMenu.actions)) {
+        return activeMenu.actions?.find((action: any) => action.name === permission);
     }
     return null;
 };
@@ -373,7 +373,7 @@ export const transformAccountsToSelectOptions = (accounts: any) => {
     });
 };
 
-export const isValidIPAddress = (ip:string) => {
+export const isValidIPAddress = (ip: string) => {
     const ipPattern = /^(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}$/;
     return ip === '*' || ipPattern.test(ip);
 };

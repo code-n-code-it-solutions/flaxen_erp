@@ -246,7 +246,7 @@ const View = () => {
                                         Total Without Tax
                                     </td>
                                     <td className="text-left ps-5">
-                                        {LPODetail?.raw_materials?.reduce((acc: number, item: any) => acc + item.sub_total, 0).toFixed(2)}
+                                        {LPODetail?.raw_materials?.reduce((acc: number, item: any) => acc + item.total_price, 0).toFixed(2)}
                                     </td>
                                 </tr>
                                 <tr>
